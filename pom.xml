@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -28,8 +29,38 @@
 		<cumulocity-sdk-resource-bundles.version>2.6.0-SNAPSHOT</cumulocity-sdk-resource-bundles.version>
 	</properties>
 
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://en.wikipedia.org/wiki/MIT_License</url>
+			<comments>
+                    Copyright (C) 2013 Cumulocity GmbH
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of 
+    this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+    
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            </comments>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>(C) Cumulocity GmbH</name>
+	</organization>
+
 	<build>
-    	<plugins>
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-remote-resources-plugin</artifactId>
@@ -47,61 +78,61 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+			</plugin>
 		</plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>generate-manifest</id>
-                            <goals>
-                                <goal>manifest</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <archive>
-                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                        </archive>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>test-jar</id>
-                            <goals>
-                                <goal>test-jar</goal>
-                            </goals>
-                            <configuration>
-                                <skip>${skip.test.jar}</skip>
-                                <skipIfEmpty>true</skipIfEmpty>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>generate-manifest</id>
+							<goals>
+								<goal>manifest</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+						</archive>
+					</configuration>
+					<executions>
+						<execution>
+							<id>test-jar</id>
+							<goals>
+								<goal>test-jar</goal>
+							</goals>
+							<configuration>
+								<skip>${skip.test.jar}</skip>
+								<skipIfEmpty>true</skipIfEmpty>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<dependencies>
-        <dependency>
-            <groupId>com.nsn.cumulocity.shared-components</groupId>
-            <artifactId>test-utils</artifactId>
-        </dependency>      
-    </dependencies>
+		<dependency>
+			<groupId>com.nsn.cumulocity.shared-components</groupId>
+			<artifactId>test-utils</artifactId>
+		</dependency>
+	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
-            <!-- COMPILE DEPENDENCIES START -->
+			<!-- COMPILE DEPENDENCIES START -->
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>core-model</artifactId>
@@ -113,9 +144,9 @@
 				<version>${cumulocity.model.version}</version>
 			</dependency>
 			<dependency>
-    			<groupId>com.nsn.cumulocity.model</groupId>
-    			<artifactId>rest-representation</artifactId>
-				<version>${cumulocity.model.version}</version>				
+				<groupId>com.nsn.cumulocity.model</groupId>
+				<artifactId>rest-representation</artifactId>
+				<version>${cumulocity.model.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -128,17 +159,17 @@
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
 			<!-- COMPILE DEPENDENCIES END -->
-            
-            <!-- PLEASE add new dependencies ALPHABETICALLY -->
-            
-            <!-- TEST DEPENDENCIES START -->
+
+			<!-- PLEASE add new dependencies ALPHABETICALLY -->
+
+			<!-- TEST DEPENDENCIES START -->
 			<dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>core-model</artifactId>
-                <version>${cumulocity.model.version}</version>
-                <scope>test</scope>
-                <classifier>tests</classifier>
-            </dependency>
+				<groupId>com.nsn.cumulocity.model</groupId>
+				<artifactId>core-model</artifactId>
+				<version>${cumulocity.model.version}</version>
+				<scope>test</scope>
+				<classifier>tests</classifier>
+			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>model-test-tools</artifactId>
@@ -152,13 +183,13 @@
 				<scope>test</scope>
 				<classifier>tests</classifier>
 			</dependency>
-            <dependency>
-                <groupId>com.nsn.cumulocity.shared-components</groupId>
-                <artifactId>common-rest</artifactId>
-                <version>${cumulocity.shared-components.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.shared-components</groupId>
+				<artifactId>common-rest</artifactId>
+				<version>${cumulocity.shared-components.version}</version>
+				<classifier>tests</classifier>
+				<scope>test</scope>
+			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.shared-components</groupId>
 				<artifactId>test-utils</artifactId>
@@ -166,7 +197,7 @@
 				<scope>test</scope>
 			</dependency>
 			<!-- TEST DEPENDENCIES END -->
-            <!-- PLEASE add new dependencies ALPHABETICALLY -->
+			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 		</dependencies>
 	</dependencyManagement>
 
