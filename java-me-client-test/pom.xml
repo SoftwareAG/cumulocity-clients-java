@@ -10,7 +10,7 @@
 
     <groupId>com.nsn.cumulocity.sdk.me</groupId>
     <artifactId>java-me-client-test</artifactId>
-    <name>Cumulocity :: Clients Java :: Java Client ME Test</name>
+    <name>Cumulocity :: Clients Java :: Java ME Client Test</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
     <properties>
