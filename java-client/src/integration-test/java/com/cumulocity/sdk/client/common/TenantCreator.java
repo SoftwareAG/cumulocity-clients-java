@@ -1,0 +1,89 @@
+package com.cumulocity.sdk.client.common;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.cumulocity.rest.representation.application.ApplicationMediaType;
+import com.cumulocity.rest.representation.tenant.TenantMediaType;
+import com.cumulocity.sdk.client.PlatformImpl;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+
+public class TenantCreator {
+
+    private static final String TENANT_URI = "tenant/tenants";
+
+    private final PlatformImpl platform;
+
+    private final ApplicationCreator applicationCreator;
+
+    @Autowired
+    public TenantCreator(PlatformImpl platform, ApplicationCreator applicationCreator) {
+        this.platform = platform;
+        this.applicationCreator = applicationCreator;
+    }
+
+    public void createTenant() {
+        Client httpClient = new HttpClientFactory().createClient();
+        try {
+            createTenant(httpClient);
+        } finally {
+            httpClient.destroy();
+        }
+    }
+
+    private void createTenant(Client httpClient) {
+        ClientResponse tr = postNewTenant(httpClient);
+        assertThat(tr.getStatus(), is(201));
+
+        ClientResponse atr = addApplicationToTenant(httpClient);
+        assertThat(atr.getStatus(), is(201));
+    }
+
+    public void removeTenant() {
+        Client httpClient = new HttpClientFactory().createClient();
+        try {
+            removeTenant(httpClient);
+        } finally {
+            httpClient.destroy();
+        }
+    }
+
+    private void removeTenant(Client httpClient) {
+        ClientResponse tenantResponse = deleteTenant(httpClient);
+        assertThat(tenantResponse.getStatus(), is(204));
+    }
+
+    private ClientResponse postNewTenant(Client httpClient) {
+        String host = platform.getHost();
+        String tenantId = platform.getTenantId();
+        WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE);
+        String tenantJson = "{ " +
+                "\"id\": \"" + tenantId + "\", " +
+                "\"domain\": \"sample-tenant.com\", " +
+                "\"company\": \"sample-tenant\", " +
+                "\"adminName\": \"" + platform.getUser() + "\", " +
+                "\"adminPass\": \"" + platform.getPassword() + "\" " +
+                "}";
+        return resource.post(ClientResponse.class, tenantJson);
+    }
+
+    private ClientResponse addApplicationToTenant(Client httpClient) {
+        String host = platform.getHost();
+        String tenantId = platform.getTenantId();
+        WebResource.Builder resource = httpClient.resource(host + TENANT_URI + "/" + tenantId + "/applications").type(
+                ApplicationMediaType.APPLICATION_REFERENCE);
+        String applicationJson = "{ \"application\": " +
+                "{ \"self\": \"" + host + "application/applications/" + applicationCreator.getApplicationId() + "\" } }";
+        return resource.post(ClientResponse.class, applicationJson);
+    }
+
+    private ClientResponse deleteTenant(Client httpClient) {
+        String host = platform.getHost();
+        WebResource tenantResource = httpClient.resource(host + TENANT_URI + "/" + platform.getTenantId());
+        return tenantResource.delete(ClientResponse.class);
+    }
+}
