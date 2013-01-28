@@ -26,7 +26,6 @@ public class DeviceConverter extends BaseRepresentationConverter {
 
     @Override
     protected Class<?> supportedRepresentationType() {
-        //return Device.class;
         return null;
     }
 
@@ -37,7 +36,6 @@ public class DeviceConverter extends BaseRepresentationConverter {
 
     @Override
     public Object fromJson(JSONObject json) {
-        //return new Device();
         return null;
     }
     

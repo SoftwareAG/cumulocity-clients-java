@@ -49,7 +49,6 @@ import cucumber.annotation.en.Given;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
 
-//TODO inline step definitions (see AlarmIT or InventoryIT)
 public class IdentityIT extends JavaSdkITBase {
 
     private IdentityApi identity;
@@ -105,7 +104,6 @@ public class IdentityIT extends JavaSdkITBase {
 
     //
     //    Scenario: Create multiple external ids and get all for the global id
-
     @Test
     public void createMultipleExternalIdsAndGetAllForTheGlobalId() throws Exception {
         //    Given I have the global id '200' with following external ids:
@@ -123,7 +121,6 @@ public class IdentityIT extends JavaSdkITBase {
 
     //
     //    Scenario: Create one external id and get the external id
-
     @Test
     public void createOneExternalIdAndGetTheExternalId() throws Exception {
         //    Given I have external id for '100' with value 'DN-1' and type 'com.nsn.DN'
@@ -138,7 +135,6 @@ public class IdentityIT extends JavaSdkITBase {
 
     //
     //    Scenario: Create one external id, delete it and get the external id
-
     @Test
     public void createOneExternalIdAndDeleteIdAndGetTheExternalId() throws Exception {
         //    Given I have external id for '100' with value 'DN-1' and type 'com.nsn.DN'

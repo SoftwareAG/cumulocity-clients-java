@@ -58,7 +58,6 @@ import cucumber.annotation.en.Given;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
 
-//TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
 public class AuditRecordIT {
 
     private static List managedObjects = new ArrayList();
@@ -136,7 +135,6 @@ public class AuditRecordIT {
     //
     //
     //    Scenario: Create and get audit record
-
     @Test
     public void createAndGetAuditRecord() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -154,7 +152,6 @@ public class AuditRecordIT {
     }
 
     //    Scenario: Query by user
-
     @Test
     public void queryByUser() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -187,7 +184,6 @@ public class AuditRecordIT {
 
     //
     //    Scenario: Query by type
-
     @Test
     public void queryByType() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -221,7 +217,6 @@ public class AuditRecordIT {
     //
     //
     //    Scenario: Query by application
-
     @Test
     public void queryByApplication() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -254,7 +249,6 @@ public class AuditRecordIT {
 
     //
     //    Scenario: Query by user and type
-
     @Test
     public void queryByUserAndType() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -287,7 +281,6 @@ public class AuditRecordIT {
 
     //
     //    Scenario: Query by user and application
-
     @Test
     public void queryByUserAndApplication() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -321,7 +314,6 @@ public class AuditRecordIT {
     //
     //
     //    Scenario: Query by user, application and type
-
     @Test
     public void queryByUserApplicationAndType() throws Exception {
         //    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -354,7 +346,6 @@ public class AuditRecordIT {
 
     //
     //    Scenario: Query to test the paging with user
-
     @Test
     public void queryToTestThePagingWithUser() throws Exception {
         //    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -373,7 +364,6 @@ public class AuditRecordIT {
 
     //
     //    Scenario: Query to test the paging to get all AuditRecords
-
     @Test
     public void queryToTestThePagingToGetAllAuditRecords() throws Exception {
         //    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
@@ -399,8 +389,6 @@ public class AuditRecordIT {
         //    And I should get current page as '1'
         shouldBeCurrentPage(1);
     }
-
-    //
 
     private static final int OK = 200;
 

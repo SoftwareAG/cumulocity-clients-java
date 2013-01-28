@@ -23,9 +23,6 @@ import com.cumulocity.me.rest.representation.alarm.AlarmRepresentationBuilder;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectReferenceRepresentationBuilder;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentationBuilder;
 
-/**
- * Domain object builder pattern.
- */
 public class RestRepresentationObjectBuilder {
 
     public static ManagedObjectRepresentationBuilder aManagedObjectRepresentation() {

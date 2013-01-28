@@ -47,7 +47,6 @@ import cucumber.annotation.en.Given;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
 
-//TODO inline step definitions (see AlarmIT or InventoryIT)
 public class EventIT extends JavaSdkITBase {
 
     private static ManagedObjectRepresentation managedObject;
@@ -116,7 +115,6 @@ public class EventIT extends JavaSdkITBase {
     //
     //
     //    Scenario: Create Events without time
-
     @Test
     public void createEventsWithoutTime() throws Exception {
         //    Given I have a Event with no time value for the managed object
@@ -129,7 +127,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Create Events without text
-
     @Test
     public void createEventsWithoutText() throws Exception {
         //    Given I have a Event with no text value for the managed object
@@ -142,7 +139,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Get Event collection
-
     @Test
     public void getEventCollection() throws Exception {
         //    Given I have '2' Events of type 'type1' for the managed object
@@ -158,7 +154,6 @@ public class EventIT extends JavaSdkITBase {
     //
     //
     //    Scenario: Get event collection by type
-
     @Test
     public void getEventCollectionByType() throws Exception {
         //    Given I have '2' Events of type 'type' for the managed object
@@ -186,9 +181,7 @@ public class EventIT extends JavaSdkITBase {
     }
 
     //
-    //
     //    Scenario: Get event collection by source
-
     @Test
     public void getEventCollectionBySource() throws Exception {
         //    Given I have '3' Events for the source '0' the managed object
@@ -208,7 +201,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Get event collection by source and type
-
     @Test
     public void getEventCollectionbySourceAndType() throws Exception {
         //    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
@@ -256,7 +248,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Get Event
-
     @Test
     public void getEvent() throws Exception {
         //    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
@@ -271,7 +262,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Delete Event
-
     @Test
     public void deleteEvent() throws Exception {
         //    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
@@ -288,7 +278,6 @@ public class EventIT extends JavaSdkITBase {
 
     //
     //    Scenario: Get event collection by paging
-
     @Test
     public void getEventCollectionByPaging() throws Exception {
         //    Given I have '17' Events for the source '0' the managed object

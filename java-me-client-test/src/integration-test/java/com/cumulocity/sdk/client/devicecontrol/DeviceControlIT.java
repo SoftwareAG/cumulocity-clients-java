@@ -58,7 +58,6 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
 
-//TODO inline step definitions (see AlarmIT or InventoryIT)
 public class DeviceControlIT extends JavaSdkITBase {
 
     private List managedObjects = new ArrayList();
@@ -137,9 +136,6 @@ public class DeviceControlIT extends JavaSdkITBase {
             deleteMOs(mosOn1stPage);
             mosOn1stPage = getMOsFrom1stPage();
         }
-        //        if (poller != null) {
-        //            poller.stop();
-        //        }
     }
 
     private void deleteMOs(List mosOn1stPage) throws SDKException {
@@ -150,20 +146,8 @@ public class DeviceControlIT extends JavaSdkITBase {
     }
 
     private List getMOsFrom1stPage() throws SDKException {
-        //TODO CHECK
         return ((ManagedObjectCollectionRepresentation) inventoryApi.getManagedObjects().get()).getManagedObjects();
     }
-
-    //    Scenario: Create Operation and poll it
-    //    @Test
-    //    public void createOperationAndPollIt() throws Exception {
-    ////    Given I have a poller for agent '0'
-    //        iHaveAPollerForAgent(0);
-    ////    When I create an operation for device '1'
-    //        iCreateAnOperationForDevice(1);
-    ////    Then poller should receive operation
-    //        pollerShouldRecieveOperation();
-    //    }
 
     //
     //    Scenario: adding operations to queue
@@ -183,7 +167,6 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     //
     //    Scenario: Operation CRUD
-
     @Test
     public void operationCRUD() throws Exception {
         //    When I create an operation for device '1'
@@ -237,7 +220,6 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     //
     //    Scenario: query operations by device
-
     @Test
     public void queryOperationsByDevice() throws Exception {
         //    And I create an operation for device '1'
@@ -258,7 +240,6 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     //
     //    Scenario: query operations by agent
-
     @Test
     public void queryOperationsByAgent() throws Exception {
         //    And I create an operation for device '1'
@@ -281,17 +262,7 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     SimpleOperationProcessor operationProcessor = new SimpleOperationProcessor();
 
-    //    FixedRatePoller poller = null;
-
     OperationCollectionRepresentation allOperations;
-
-    //    @Given("^I have a poller for agent '([^']*)'$")
-    //    public void iHaveAPollerForAgent(int arg1) throws Exception {
-    //        GId agentId = getMoId(arg1);
-    //        poller = new OperationsByAgentAndStatusPollerImpl(deviceControlResource, agentId.getValue(), OperationStatus.PENDING,
-    //                operationProcessor);
-    //        poller.start();
-    //    }
 
     @When("^I create an operation for device '([^']*)'$")
     public void iCreateAnOperationForDevice(int deviceNum) throws Exception {

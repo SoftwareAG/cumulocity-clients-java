@@ -101,7 +101,6 @@ public abstract class BaseManagedObjectConverterTestCase extends BaseConverterTe
     }
 
     protected JSONObjectBuilder minimalJsonManagedObjectRepresentation() {
-        //return aJSONObject().withPropertyBuilder(PROP_ID, minimalJsonGidRepresentation()).withProperty(PROP_SELF, SELF);
         return aJSONObject().withProperty(PROP_ID, ID).withProperty(PROP_SELF, SELF);
     }
     

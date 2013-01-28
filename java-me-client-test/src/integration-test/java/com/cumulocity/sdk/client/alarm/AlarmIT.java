@@ -325,7 +325,6 @@ public class AlarmIT extends JavaSdkITBase {
 
     //
     //    Scenario: Get alarm next and previous collection
-
     @Test
     public void getAlarmNextAndPreviousCollection() throws Exception {
         // Given

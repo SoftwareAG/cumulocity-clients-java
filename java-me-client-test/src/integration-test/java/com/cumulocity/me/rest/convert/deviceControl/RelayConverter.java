@@ -41,7 +41,8 @@ public class RelayConverter extends BaseRepresentationConverter {
         return relayControl;
     }
 
-    protected Class supportedRepresentationType() {
+    @SuppressWarnings("rawtypes")
+	protected Class supportedRepresentationType() {
         return Relay.class;
     }
 
