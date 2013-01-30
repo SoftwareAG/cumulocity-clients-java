@@ -1,0 +1,44 @@
+<HTML>
+<BODY>
+Cumulocity SDK Java Client library provides the classes necessary to interact with the Cumulocity REST
+API.
+
+<p>The Cumulocity SDK Java client library provides Java interfaces
+    to the following:
+<ul>
+    <li>Inventory</li>
+    <li>Identity</li>
+    <li>Measurement</li>
+    <li>Alarm</li>
+    <li>Audit Record</li>
+    <li>Event</li>
+</ul>
+<p>
+    Example Usage:
+
+	<pre>
+	
+	// Create the platform instance providing the URL of the platform, the tenant id, the tenant user name and password.
+	Platform platform = new PlatformImpl("http://domain.cumulocity.com/", "tenant", "username", "password"); 
+	
+	// Access individual API resource object
+	MeasurementApi  measurement = platform.getMeasurementApi()();
+	
+	// Create necessary representation
+	GId sourceId = new GId();
+	sourceId.setValue("12345");
+	
+	MeasurementRepresentation representation = new MeasurementRepresentation();
+	representation.setType("reading");
+	representation.setTime(new Date());
+	representation.setSource(sourceId);
+	
+	ExampleFragment fragment = new ExampleFragment();
+	representation.set(fragment);
+
+	// Call the method
+	MeasurementRepresentation createdRepresentation = measurement.create(representation);
+	</pre>
+@since 0.11
+</BODY>
+</HTML>

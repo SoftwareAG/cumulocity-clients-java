@@ -1,0 +1,296 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.nsn.cumulocity.clients-java</groupId>
+		<artifactId>clients-java</artifactId>
+		<version>2.6.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>java-client</artifactId>
+	<packaging>jar</packaging>
+	<name>Cumulocity :: Clients Java :: Java Client</name>
+	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://en.wikipedia.org/wiki/MIT_License</url>
+			<comments>
+                    Copyright (C) 2013 Cumulocity GmbH
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of 
+    this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+    
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            </comments>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>(C) Cumulocity GmbH</name>
+	</organization>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.nsn.cumulocity.shared-components</groupId>
+			<artifactId>common-rest</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-bundle-jaxrs</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>com.springsource.javax.validation</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-lang</groupId>
+					<artifactId>commons-lang</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.nsn.cumulocity.shared-components</groupId>
+					<artifactId>common-exception</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>rest-representation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+			<artifactId>jersey-apache-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>device-capability-model</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>model-test-tools</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>core-model</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>rest-representation</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<Export-Package>
+							com.cumulocity.sdk.client.*,
+							!*
+						</Export-Package>
+						<Import-Package>
+							!com.cumulocity.sdk.client.*,
+							*
+						</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-site-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-descriptor</id>
+						<goals>
+							<goal>attach-descriptor</goal>
+						</goals>
+					</execution>
+
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies-sources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!--List of artifacts that will be included to javadoc generation -->
+					<artifactItems>
+						<artifactItem>
+							<groupId>com.nsn.cumulocity.model</groupId>
+							<artifactId>core-model</artifactId>
+							<version>${cumulocity.model.version}</version>
+							<type>jar</type>
+							<classifier>sources</classifier>
+							<overWrite>true</overWrite>
+							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>com.nsn.cumulocity.model</groupId>
+							<artifactId>rest-representation</artifactId>
+							<version>${cumulocity.model.version}</version>
+							<type>jar</type>
+							<classifier>sources</classifier>
+							<overWrite>true</overWrite>
+							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>com.nsn.cumulocity.model</groupId>
+							<artifactId>device-capability-model</artifactId>
+							<version>${cumulocity.model.version}</version>
+							<type>jar</type>
+							<classifier>sources</classifier>
+							<overWrite>true</overWrite>
+							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
+						</artifactItem>
+					</artifactItems>
+					<!-- other configurations here -->
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+					<doctitle>Cumulocity SDK - Java Client API</doctitle>
+					<windowtitle>Cumulocity SDK - Java Client API</windowtitle>
+					<sourcepath>${project.build.directory}/dependenciesSources;./src/main/java</sourcepath>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-test-source</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${basedir}/src/integration-test/java</source>
+								<source>${basedir}/src/integration-test/resources</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>all-deps</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>integration</id>
+			<build>
+				<defaultGoal>integration-test</defaultGoal>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.7</version>
+						<executions>
+							<execution>
+								<id>add-test-resource</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>add-test-resource</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>${basedir}/src/integration-test/resources</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>2.10</version>
+						<executions>
+							<execution>
+								<id>integration-test</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<testSourceDirectory>${basedir}/src/integration-test/java</testSourceDirectory>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
