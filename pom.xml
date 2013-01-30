@@ -16,6 +16,11 @@
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
+	<scm>
+		<connection>scm:hg:https://bitbucket.org/m2m/cumulocity-clients-java</connection>
+		<tag>HEAD</tag>
+	</scm>
+
 	<modules>
 		<module>java-client</module>
 		<module>java-agent-support</module>
