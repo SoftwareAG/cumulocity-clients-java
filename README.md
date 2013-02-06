@@ -37,7 +37,7 @@ Please add [Cumulocity] [1] [Maven repository] [2] to Your `settings.xml` like t
       </profiles>
     </settings>
 
-Basic authentication credentials to access de repository are available on [Cumulocity documentation] [3] in _Installing the SDK_ section.
+Basic authentication credentials to access the repository are available on [Cumulocity documentation] [3] in _Installing the SDK_ section.
 
   [1]: http://www.cumulocity.com
   [2]: http://maven.apache.org/
