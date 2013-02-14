@@ -28,12 +28,12 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 
 public class GenericResourceImplTest {
 
-    private static final Class<BaseCumulocityResourceRepresentation> RESPONSE_TYPE = BaseCumulocityResourceRepresentation.class;
+    private static final Class<BaseResourceRepresentation> RESPONSE_TYPE = BaseResourceRepresentation.class;
 
     private static final String URL = "path_to_resource";
 
@@ -42,12 +42,12 @@ public class GenericResourceImplTest {
     @Mock
     private RestConnector restConnector;
 
-    private GenericResourceImpl<BaseCumulocityResourceRepresentation> resource;
+    private GenericResourceImpl<BaseResourceRepresentation> resource;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        resource = new GenericResourceImpl<BaseCumulocityResourceRepresentation>(restConnector, URL) {
+        resource = new GenericResourceImpl<BaseResourceRepresentation>(restConnector, URL) {
 
             @Override
             protected CumulocityMediaType getMediaType() {
@@ -55,7 +55,7 @@ public class GenericResourceImplTest {
             }
 
             @Override
-            protected Class<BaseCumulocityResourceRepresentation> getResponseClass() {
+            protected Class<BaseResourceRepresentation> getResponseClass() {
                 return RESPONSE_TYPE;
             }
 
@@ -65,11 +65,11 @@ public class GenericResourceImplTest {
     @Test
     public void shouldUseRestConnector() throws Exception {
         // given
-        BaseCumulocityResourceRepresentation representation = new BaseCumulocityResourceRepresentation();
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
         when(restConnector.get(URL, MEDIA_TYPE, RESPONSE_TYPE)).thenReturn(representation);
 
         // when
-        BaseCumulocityResourceRepresentation result = resource.get();
+        BaseResourceRepresentation result = resource.get();
 
         // then
         assertThat(result, sameInstance(representation));

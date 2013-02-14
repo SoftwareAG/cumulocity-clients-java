@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
@@ -64,12 +64,12 @@ public class ResponseParserTest {
     public void shouldParse() throws Exception {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
-        BaseCumulocityResourceRepresentation representation = new BaseCumulocityResourceRepresentation();
-        when(response.getEntity(BaseCumulocityResourceRepresentation.class)).thenReturn(representation);
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
+        when(response.getEntity(BaseResourceRepresentation.class)).thenReturn(representation);
 
         // When
-        BaseCumulocityResourceRepresentation result = parser.parse(response, EXPECTED_STATUS,
-                BaseCumulocityResourceRepresentation.class);
+        BaseResourceRepresentation result = parser.parse(response, EXPECTED_STATUS,
+                BaseResourceRepresentation.class);
 
         // Then
         assertThat(result, sameInstance(representation));
@@ -102,7 +102,7 @@ public class ResponseParserTest {
         thrown.expectMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation.toString());
 
         // When
-        parser.parse(response, EXPECTED_STATUS, BaseCumulocityResourceRepresentation.class);
+        parser.parse(response, EXPECTED_STATUS, BaseResourceRepresentation.class);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ResponseParserTest {
         thrown.expectMessage("Http status code: " + ERROR_STATUS);
 
         // When
-        parser.parse(response, EXPECTED_STATUS, BaseCumulocityResourceRepresentation.class);
+        parser.parse(response, EXPECTED_STATUS, BaseResourceRepresentation.class);
     }
 
     @Test
