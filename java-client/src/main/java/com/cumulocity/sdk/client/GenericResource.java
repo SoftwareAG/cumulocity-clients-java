@@ -20,11 +20,11 @@
 
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 
 /**
  * Generic Cumulocity operationCollection representation
  */
-public interface GenericResource<T extends BaseCumulocityResourceRepresentation> {
+public interface GenericResource<T extends BaseResourceRepresentation> {
     public T get() throws SDKException;
 }
