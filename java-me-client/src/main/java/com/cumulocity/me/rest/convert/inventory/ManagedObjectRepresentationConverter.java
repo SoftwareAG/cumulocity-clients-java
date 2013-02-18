@@ -33,6 +33,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
 
     public static final String PROP_TYPE = "type";
     public static final String PROP_NAME = "name";
+    public static final String PROP_OWNER = "owner";
     public static final String PROP_CHILD_DEVICES = "childDevices";
     public static final String PROP_CHILD_ASSETS = "childAssets";
     public static final String PROP_PARENTS = "parents";
@@ -46,6 +47,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         putGId(json, $(representation).getId());
         putString(json, PROP_TYPE, $(representation).getType());
         putString(json, PROP_NAME, $(representation).getName());
+        putString(json, PROP_OWNER,$(representation).getOwner());
         putObject(json, PROP_CHILD_DEVICES, $(representation).getChildDevices());
         putObject(json, PROP_CHILD_ASSETS, $(representation).getChildAssets());
         putObject(json, PROP_PARENTS, $(representation).getParents());
@@ -56,6 +58,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         $(representation).setId(getGId(json));
         $(representation).setType(getString(json, PROP_TYPE));
         $(representation).setName(getString(json, PROP_NAME));
+        $(representation).setOwner(getString(json, PROP_OWNER));
         $(representation).setChildAssets((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_CHILD_ASSETS,
                 ManagedObjectReferenceCollectionRepresentation.class));
         $(representation).setChildDevices((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_CHILD_DEVICES, 
