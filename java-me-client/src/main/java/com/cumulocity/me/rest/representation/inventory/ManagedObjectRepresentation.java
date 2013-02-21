@@ -43,6 +43,8 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
     private String type;
 
     private String name;
+    
+    private String owner;
 
     private Date lastUpdated;
 
@@ -84,6 +86,14 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
 //    @JSONProperty(value = "lastUpdated", ignoreIfNull = true)
