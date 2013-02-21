@@ -16,14 +16,6 @@ Please add [Cumulocity] [1] [Maven repository] [2] to Your `settings.xml` like t
         <activeProfile>cumulocity</activeProfile>
       </activeProfiles>
 
-      <servers>
-        <server>
-          <id>cumulocity-maven-repo</id>
-          <username>********</username>
-          <password>********</password>
-        </server>
-      </servers>
-
       <profiles>
         <profile>
           <id>cumulocity</id>
