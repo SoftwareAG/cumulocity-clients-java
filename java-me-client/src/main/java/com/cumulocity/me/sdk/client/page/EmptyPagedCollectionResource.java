@@ -20,7 +20,7 @@
 package com.cumulocity.me.sdk.client.page;
 
 import com.cumulocity.me.rest.representation.BaseCollectionRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.PageStatisticsRepresentation;
 import com.cumulocity.me.sdk.SDKException;
 
@@ -32,7 +32,7 @@ public class EmptyPagedCollectionResource implements PagedCollectionResource {
         this.type = type;
     }
 
-    public CumulocityResourceRepresentation get() {
+    public ResourceRepresentation get() {
     	BaseCollectionRepresentation collectionRepresentaton = (BaseCollectionRepresentation) newCollectionRepresentationInstance();
     	collectionRepresentaton.setPageStatistics(new PageStatisticsRepresentation());
         return collectionRepresentaton;

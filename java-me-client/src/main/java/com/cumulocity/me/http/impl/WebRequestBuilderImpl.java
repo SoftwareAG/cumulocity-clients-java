@@ -27,7 +27,7 @@ import com.cumulocity.me.http.WebRequestWriter;
 import com.cumulocity.me.lang.HashMap;
 import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public class WebRequestBuilderImpl implements WebRequestBuilder {
     
@@ -58,16 +58,16 @@ public class WebRequestBuilderImpl implements WebRequestBuilder {
         return this;
     }
     
-    public CumulocityResourceRepresentation get(int responseStatus, Class responseEntityType) {
+    public ResourceRepresentation get(int responseStatus, Class responseEntityType) {
         return client.handle(buildRequest(WebMethod.GET, null), responseStatus, responseEntityType);
     }
 
-    public CumulocityResourceRepresentation post(CumulocityResourceRepresentation requestEntity, int responseStatus,
+    public ResourceRepresentation post(ResourceRepresentation requestEntity, int responseStatus,
             Class responseEntityType) {
         return client.handle(buildRequest(WebMethod.POST, requestEntity), responseStatus, responseEntityType);
     }
 
-    private WebRequest buildRequest(WebMethod method, CumulocityResourceRepresentation requestEntity) {
+    private WebRequest buildRequest(WebMethod method, ResourceRepresentation requestEntity) {
         if (requestEntity == null) {
             return new WebRequestImpl(method, path, headers, null);
         } else {
@@ -77,11 +77,11 @@ public class WebRequestBuilderImpl implements WebRequestBuilder {
         }
     }
 
-    public CumulocityResourceRepresentation delete(int responseStatus, Class responseEntityType) {
+    public ResourceRepresentation delete(int responseStatus, Class responseEntityType) {
         return client.handle(buildRequest(WebMethod.DELETE, null), responseStatus, responseEntityType);
     }
 
-    public CumulocityResourceRepresentation put(CumulocityResourceRepresentation requestEntity, int responseStatus, Class responseEntityType) {
+    public ResourceRepresentation put(ResourceRepresentation requestEntity, int responseStatus, Class responseEntityType) {
         return client.handle(buildRequest(WebMethod.PUT, requestEntity), responseStatus, responseEntityType);
     }
 }

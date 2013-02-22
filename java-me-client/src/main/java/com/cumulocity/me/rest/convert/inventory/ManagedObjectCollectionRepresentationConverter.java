@@ -21,7 +21,7 @@ package com.cumulocity.me.rest.convert.inventory;
 
 import com.cumulocity.me.rest.convert.base.BaseCollectionRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
 
@@ -33,15 +33,15 @@ public class ManagedObjectCollectionRepresentationConverter extends BaseCollecti
         return ManagedObjectCollectionRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         putList(json, PROP_MANAGED_OBJECTS, $(representation).getManagedObjects());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setManagedObjects(getList(json, PROP_MANAGED_OBJECTS, ManagedObjectRepresentation.class));
     }
 
-    private ManagedObjectCollectionRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private ManagedObjectCollectionRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (ManagedObjectCollectionRepresentation) baseRepresentation;
     }
 }

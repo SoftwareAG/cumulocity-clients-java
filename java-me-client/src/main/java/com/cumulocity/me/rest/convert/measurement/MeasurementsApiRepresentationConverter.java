@@ -23,7 +23,7 @@ import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.model.idtype.GId;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.me.rest.representation.measurement.MeasurementsApiRepresentation;
 
@@ -33,11 +33,11 @@ public class MeasurementsApiRepresentationConverter extends BaseResourceRepresen
         return MeasurementsApiRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setMeasurements((MeasurementCollectionRepresentation) 
                 getObject(json, "measurements", MeasurementCollectionRepresentation.class));
         $(representation).setMeasurementsForSource(getString(json, "measurementsForSource"));
@@ -57,7 +57,7 @@ public class MeasurementsApiRepresentationConverter extends BaseResourceRepresen
         $(representation).setMeasurementsForSourceAndDateAndFragmentTypeAndType(getString(json, "measurementsForSourceAndDateAndFragmentTypeAndType"));
     }
 
-    private MeasurementsApiRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private MeasurementsApiRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (MeasurementsApiRepresentation) baseRepresentation;
     }
 

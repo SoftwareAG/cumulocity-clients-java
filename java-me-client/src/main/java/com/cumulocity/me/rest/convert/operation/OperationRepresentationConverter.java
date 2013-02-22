@@ -21,8 +21,8 @@ package com.cumulocity.me.rest.convert.operation;
 
 import com.cumulocity.me.rest.convert.base.BaseExtensibleResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.me.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext;
@@ -36,7 +36,7 @@ public class OperationRepresentationConverter extends BaseExtensibleResourceRepr
     private static final String PROP_CREATION_TIME = "creationTime";
     private static final String PROP_DEVICE_EXTERNAL_IDS = "deviceExternalIDs";
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         putGId(json, $(representation).getId());
         putGId(json, PROP_DEVICE_ID, $(representation).getDeviceId());
         putString(json, PROP_STATUS, $(representation).getStatus());
@@ -45,7 +45,7 @@ public class OperationRepresentationConverter extends BaseExtensibleResourceRepr
         putObject(json, PROP_DEVICE_EXTERNAL_IDS, $(representation).getDeviceExternalIDs());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setId(getGId(json));
         $(representation).setDeviceId(getGId(json, PROP_DEVICE_ID));
         $(representation).setStatus(getString(json, PROP_STATUS));
@@ -55,7 +55,7 @@ public class OperationRepresentationConverter extends BaseExtensibleResourceRepr
                 (ExternalIDCollectionRepresentation) getObject(json, PROP_DEVICE_EXTERNAL_IDS, ExternalIDCollectionRepresentation.class));
     }
 
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         if (CommandBasedRepresentationValidationContext.CREATE.equals(context)) {
             assertNull(PROP_ID, $(representation).getId());
             assertNotNull(PROP_DEVICE_ID, $(representation).getDeviceId());
@@ -78,7 +78,7 @@ public class OperationRepresentationConverter extends BaseExtensibleResourceRepr
         return OperationRepresentation.class;
     }
 
-    private OperationRepresentation $(CumulocityResourceRepresentation baseRepresentation) {
+    private OperationRepresentation $(ResourceRepresentation baseRepresentation) {
         return (OperationRepresentation) baseRepresentation;
     }
 

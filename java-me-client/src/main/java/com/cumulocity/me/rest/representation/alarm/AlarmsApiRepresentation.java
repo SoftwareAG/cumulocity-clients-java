@@ -21,9 +21,9 @@ package com.cumulocity.me.rest.representation.alarm;
 
 import com.cumulocity.me.lang.ArrayList;
 import com.cumulocity.me.lang.List;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class AlarmsApiRepresentation extends BaseCumulocityResourceRepresentation {
+public class AlarmsApiRepresentation extends BaseResourceRepresentation {
 
     private AlarmCollectionRepresentation alarms;
 

@@ -21,7 +21,7 @@ package com.cumulocity.me.rest.convert.base;
 
 import com.cumulocity.me.model.idtype.GId;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.util.BeanUtils;
 
 public abstract class BaseResourceRepresentationConverter extends BaseRepresentationConverter {
@@ -33,7 +33,7 @@ public abstract class BaseResourceRepresentationConverter extends BaseRepresenta
         if (representation == null) {
             return null;
         }
-        BaseCumulocityResourceRepresentation baseRepresentation = (BaseCumulocityResourceRepresentation) representation;
+        BaseResourceRepresentation baseRepresentation = (BaseResourceRepresentation) representation;
         JSONObject json = new JSONObject();
         basePropertiesToJson(baseRepresentation, json);
         instanceToJson(baseRepresentation, json);
@@ -41,37 +41,37 @@ public abstract class BaseResourceRepresentationConverter extends BaseRepresenta
         return json;
     }
     
-    protected abstract void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json);
+    protected abstract void instanceToJson(BaseResourceRepresentation representation, JSONObject json);
     
-    protected void basePropertiesToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void basePropertiesToJson(BaseResourceRepresentation representation, JSONObject json) {
         putString(json, PROP_SELF, representation.getSelf());
     }
     
-    protected void extraPropertiesToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void extraPropertiesToJson(BaseResourceRepresentation representation, JSONObject json) {
     }
     
-    protected BaseCumulocityResourceRepresentation newRepresentation() {
-        return (BaseCumulocityResourceRepresentation) BeanUtils.newInstance(supportedRepresentationType());
+    protected BaseResourceRepresentation newRepresentation() {
+        return (BaseResourceRepresentation) BeanUtils.newInstance(supportedRepresentationType());
     }
     
     public Object fromJson(JSONObject json) {
         if (json == null) {
             return null;
         }
-        BaseCumulocityResourceRepresentation representation = newRepresentation();
+        BaseResourceRepresentation representation = newRepresentation();
         basePropertiesFromJson(json, representation);
         instanceFromJson(json, representation);
         extraPropertiesFromJson(json, representation);
         return representation;
     }
     
-    protected abstract void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation);
+    protected abstract void instanceFromJson(JSONObject json, BaseResourceRepresentation representation);
 
-    protected void basePropertiesFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void basePropertiesFromJson(JSONObject json, BaseResourceRepresentation representation) {
         representation.setSelf(getString(json, PROP_SELF));
     }
     
-    protected void extraPropertiesFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void extraPropertiesFromJson(JSONObject json, BaseResourceRepresentation representation) {
     }
 
     protected void putGId(JSONObject json, GId id) {

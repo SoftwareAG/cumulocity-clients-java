@@ -19,7 +19,7 @@
  */
 package com.cumulocity.me.rest.representation;
 
-public class PageStatisticsRepresentation implements CumulocityResourceRepresentation {
+public class PageStatisticsRepresentation implements ResourceRepresentation {
 
     private int totalPages;
 

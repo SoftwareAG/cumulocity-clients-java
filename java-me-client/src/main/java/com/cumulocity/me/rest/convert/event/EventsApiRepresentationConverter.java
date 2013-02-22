@@ -22,17 +22,17 @@ package com.cumulocity.me.rest.convert.event;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.me.rest.representation.event.EventsApiRepresentation;
 
 public class EventsApiRepresentationConverter extends BaseResourceRepresentationConverter {
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setSelf(getString(json, "self"));
         $(representation).setEventsForType(getString(json, "eventsForType"));
         $(representation).setEventsForSource(getString(json, "eventsForSource"));
@@ -56,7 +56,7 @@ public class EventsApiRepresentationConverter extends BaseResourceRepresentation
         return EventsApiRepresentation.class;
     }
 
-    private EventsApiRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private EventsApiRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (EventsApiRepresentation) baseRepresentation;
     }
 

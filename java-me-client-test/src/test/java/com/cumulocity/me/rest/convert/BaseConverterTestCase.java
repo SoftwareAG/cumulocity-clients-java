@@ -24,7 +24,7 @@ import org.junit.Before;
 import com.cumulocity.me.rest.RepresentationServicesFactory;
 import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.validate.RepresentationValidationContext;
 
 public abstract class BaseConverterTestCase {
@@ -41,11 +41,11 @@ public abstract class BaseConverterTestCase {
         return (T) getConverter().fromJson(json);
     }
 
-    protected JSONObject toJson(CumulocityResourceRepresentation representation) {
+    protected JSONObject toJson(ResourceRepresentation representation) {
         return getConverter().toJson(representation);
     }
     
-    protected boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    protected boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         return getConverter().isValid(representation, context);
     }
     

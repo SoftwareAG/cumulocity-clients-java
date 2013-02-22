@@ -24,7 +24,7 @@ import javax.microedition.io.HttpConnection;
 import com.cumulocity.me.http.WebClient;
 import com.cumulocity.me.http.WebRequestBuilder;
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.sdk.client.PlatformParameters;
 import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.StringUtils;
@@ -40,11 +40,11 @@ public class RestConnectorImpl implements RestConnector {
         this.client = client;
     }
 
-    public CumulocityResourceRepresentation get(String path, CumulocityMediaType mediaType, Class responseEntityType) {
+    public ResourceRepresentation get(String path, CumulocityMediaType mediaType, Class responseEntityType) {
         return authorizedRequest(path).accept(mediaType).get(HttpConnection.HTTP_OK, responseEntityType);
     }
 
-    public CumulocityResourceRepresentation post(String path, CumulocityMediaType mediaType, CumulocityResourceRepresentation representation) {
+    public ResourceRepresentation post(String path, CumulocityMediaType mediaType, ResourceRepresentation representation) {
         WebRequestBuilder builder = authorizedRequest(path).type(mediaType);
         if (platformParameters.isRequireResponseBody()) {
             builder.accept(mediaType);
@@ -52,7 +52,7 @@ public class RestConnectorImpl implements RestConnector {
         return builder.post(representation, HttpConnection.HTTP_CREATED, representation.getClass());
     }
 
-    public CumulocityResourceRepresentation put(String path, CumulocityMediaType mediaType, CumulocityResourceRepresentation representation) {
+    public ResourceRepresentation put(String path, CumulocityMediaType mediaType, ResourceRepresentation representation) {
         WebRequestBuilder builder = authorizedRequest(path).type(mediaType);
         if (platformParameters.isRequireResponseBody()) {
             builder.accept(mediaType);

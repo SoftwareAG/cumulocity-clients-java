@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.platform;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordsRepresentation;
 import com.cumulocity.me.rest.representation.event.EventsApiRepresentation;
@@ -38,11 +38,11 @@ public class PlatformApiRepresentationConverter extends BaseResourceRepresentati
         return PlatformApiRepresentation.class;
     }
     
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
     
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setSelf(getString(json, "self"));
         $(representation).setInventory((InventoryRepresentation) getObject(json, "inventory", InventoryRepresentation.class));
         $(representation).setMeasurement((MeasurementsApiRepresentation) getObject(json, "measurement", MeasurementsApiRepresentation.class));
@@ -53,7 +53,7 @@ public class PlatformApiRepresentationConverter extends BaseResourceRepresentati
         $(representation).setIdentity((IdentityRepresentation) getObject(json, "identity", IdentityRepresentation.class));
     }
 
-    private PlatformApiRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private PlatformApiRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (PlatformApiRepresentation) baseRepresentation;
     }
 }

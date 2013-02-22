@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.rest.representation.identity;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class IdentityRepresentation extends BaseCumulocityResourceRepresentation {
+public class IdentityRepresentation extends BaseResourceRepresentation {
 
     private String externalId;
 

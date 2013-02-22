@@ -33,11 +33,11 @@ import com.cumulocity.me.model.idtype.GId;
 import com.cumulocity.me.model.util.ExtensibilityConverter;
 import com.cumulocity.me.rest.json.JSONObject;
 import com.cumulocity.me.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
 public abstract class BaseExtensibleResourceRepresentationConverter extends BaseResourceRepresentationConverter {
 
-    protected void basePropertiesToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void basePropertiesToJson(BaseResourceRepresentation representation, JSONObject json) {
         super.basePropertiesToJson(representation, json);
         AbstractExtensibleRepresentation r = (AbstractExtensibleRepresentation) representation;
         Map attrs = r.getAttrs();
@@ -54,7 +54,7 @@ public abstract class BaseExtensibleResourceRepresentationConverter extends Base
     
     private final Stack parseContext = new Stack();
     
-    protected void basePropertiesFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void basePropertiesFromJson(JSONObject json, BaseResourceRepresentation representation) {
         ArrayList parsed = new ArrayList();
         parsed.add(PROP_SELF);
         parseContext.push(parsed);
@@ -62,7 +62,7 @@ public abstract class BaseExtensibleResourceRepresentationConverter extends Base
         super.basePropertiesFromJson(json, representation);
     }
     
-    protected void extraPropertiesFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void extraPropertiesFromJson(JSONObject json, BaseResourceRepresentation representation) {
         super.extraPropertiesFromJson(json, representation);
         
         AbstractExtensibleRepresentation r = (AbstractExtensibleRepresentation) representation;

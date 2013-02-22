@@ -19,7 +19,6 @@
  */
 package com.cumulocity.me.rest.representation;
 
-
 import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.model.CumulocityCharset;
 import com.cumulocity.me.model.CumulocityVersionParameter;

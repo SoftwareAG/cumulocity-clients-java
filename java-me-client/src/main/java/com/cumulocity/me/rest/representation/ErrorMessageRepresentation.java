@@ -19,13 +19,11 @@
  */
 package com.cumulocity.me.rest.representation;
 
-//import org.svenson.JSONProperty;
+public class ErrorMessageRepresentation implements ResourceRepresentation {
 
-public class ErrorMessageRepresentation implements CumulocityResourceRepresentation {
-
-    // Application level error code 
+    // Application level error code
     private String error;
-    // Short text description of the error 
+    // Short text description of the error
     private String message;
     
     private String info; //   1   URL to error description on the Internet.
@@ -57,7 +55,6 @@ public class ErrorMessageRepresentation implements CumulocityResourceRepresentat
         this.info = info;
     }
 
-    //@JSONProperty(ignoreIfNull = true)
     public ErrorDetails getDetails() {
         return details;
     }

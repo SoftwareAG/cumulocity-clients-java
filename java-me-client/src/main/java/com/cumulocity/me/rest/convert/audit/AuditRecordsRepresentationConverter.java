@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.audit;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordsRepresentation;
 
@@ -37,11 +37,11 @@ public class AuditRecordsRepresentationConverter extends BaseResourceRepresentat
     private static final String PROP_FOR_TYPE_AND_USER_AND_APPLICATION = "auditRecordsForTypeAndUserAndApplication";
     private static final String PROP_AUDIT_RECORDS = "auditRecords";
     
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setAuditRecordsForType(getString(json, PROP_FOR_TYPE));
         $(representation).setAuditRecordsForUser(getString(json, PROP_FOR_USER));
         $(representation).setAuditRecordsForApplication(getString(json, PROP_FOR_APPLICATION));
@@ -56,7 +56,7 @@ public class AuditRecordsRepresentationConverter extends BaseResourceRepresentat
         return AuditRecordsRepresentation.class;
     }
     
-    private AuditRecordsRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private AuditRecordsRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (AuditRecordsRepresentation) baseRepresentation;
     }
 }

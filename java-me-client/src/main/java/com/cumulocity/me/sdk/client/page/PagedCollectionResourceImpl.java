@@ -26,7 +26,7 @@ import com.cumulocity.me.lang.HashMap;
 import com.cumulocity.me.lang.Iterator;
 import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.rest.representation.BaseCollectionRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.sdk.client.GenericResourceImpl;
 import com.cumulocity.me.sdk.client.http.RestConnector;
@@ -85,7 +85,7 @@ public abstract class PagedCollectionResourceImpl extends GenericResourceImpl im
         return getCollection(collectionRepresentation.getPrev());
     }
 
-    public CumulocityResourceRepresentation get() {
+    public ResourceRepresentation get() {
         String urlToCall = replaceOrAddQueryParam(url, Collections.singletonMap(PAGE_SIZE_KEY, String.valueOf(pageSize)));
         return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }

@@ -80,44 +80,48 @@ public class RepresentationServicesFactory {
 
     private Collection getConverters() {
         if (converters == null) {
-            converters = new ArrayList();
-            converters.add(new PageStatisticsRepresentationConverter());
-            converters.add(new PlatformApiRepresentationConverter());
-            
-            converters.add(new InventoryRepresentationConverter());
-            converters.add(new ManagedObjectRepresentationConverter());
-            converters.add(new ManagedObjectReferenceRepresentationConverter());
-            converters.add(new ManagedObjectCollectionRepresentationConverter());
-            converters.add(new ManagedObjectReferenceCollectionRepresentationConverter());
-            
-            converters.add(new AlarmsApiRepresentationConverter());
-            converters.add(new AlarmRepresentationConverter());
-            converters.add(new AlarmCollectionRepresentationConverter());
-            converters.add(new ChangeConverter());
-            
-            converters.add(new AuditRecordCollectionRepresentationConverter());
-            converters.add(new AuditRecordRepresentationConverter());
-            converters.add(new AuditRecordsRepresentationConverter());
-            
-            converters.add(new EventsApiRepresentationConverter());
-            converters.add(new EventCollectionRepresentationConverter());
-            converters.add(new EventRepresentationConverter());
-
-            converters.add(new IdentityRepresentationConverter());
-            converters.add(new ExternalIDRepresentationConverter());
-            converters.add(new ExternalIDCollectionRepresentationConverter());
-            
-            converters.add(new DeviceControlRepresentationConverter());
-            converters.add(new OperationCollectionRepresentationConverter());
-            converters.add(new OperationRepresentationConverter());
-            
-            converters.add(new MeasurementsApiRepresentationConverter());
-            converters.add(new MeasurementRepresentationConverter());
-            converters.add(new MeasurementCollectionRepresentationConverter());
-//            converters.add(new FragmentOneConverter());
-            
-            // FIXME add all converters !!!
+            initConverters();
         }
         return converters;
+    }
+
+    private void initConverters() {
+        converters = new ArrayList();
+
+        converters.add(new PageStatisticsRepresentationConverter());
+        converters.add(new PlatformApiRepresentationConverter());
+
+        converters.add(new InventoryRepresentationConverter());
+        converters.add(new ManagedObjectRepresentationConverter());
+        converters.add(new ManagedObjectReferenceRepresentationConverter());
+        converters.add(new ManagedObjectCollectionRepresentationConverter());
+        converters.add(new ManagedObjectReferenceCollectionRepresentationConverter());
+
+        converters.add(new AlarmsApiRepresentationConverter());
+        converters.add(new AlarmRepresentationConverter());
+        converters.add(new AlarmCollectionRepresentationConverter());
+        converters.add(new ChangeConverter());
+
+        converters.add(new AuditRecordCollectionRepresentationConverter());
+        converters.add(new AuditRecordRepresentationConverter());
+        converters.add(new AuditRecordsRepresentationConverter());
+
+        converters.add(new EventsApiRepresentationConverter());
+        converters.add(new EventCollectionRepresentationConverter());
+        converters.add(new EventRepresentationConverter());
+
+        converters.add(new IdentityRepresentationConverter());
+        converters.add(new ExternalIDRepresentationConverter());
+        converters.add(new ExternalIDCollectionRepresentationConverter());
+
+        converters.add(new DeviceControlRepresentationConverter());
+        converters.add(new OperationCollectionRepresentationConverter());
+        converters.add(new OperationRepresentationConverter());
+
+        converters.add(new MeasurementsApiRepresentationConverter());
+        converters.add(new MeasurementRepresentationConverter());
+        converters.add(new MeasurementCollectionRepresentationConverter());
+
+        // add all converters here !!!
     }
 }

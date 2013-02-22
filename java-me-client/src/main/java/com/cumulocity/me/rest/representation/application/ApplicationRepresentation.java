@@ -19,16 +19,14 @@
  */
 package com.cumulocity.me.rest.representation.application;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class ApplicationRepresentation extends BaseCumulocityResourceRepresentation {
+public class ApplicationRepresentation extends BaseResourceRepresentation {
 
     private String id;
 
-//	@NotNull(operation = Command.CREATE)
 	private String name;
 	
-//	@NotNull(operation = Command.CREATE)
 	private String key;
 
     /**

@@ -19,14 +19,14 @@
  */
 package com.cumulocity.me.rest.representation.inventory;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
 /**
  * A Java Representation for the MediaType Inventory, making a compromise between
  * https://startups.jira.com/wiki/display/MTM/Inventory and the example in 
  * https://startups.jira.com/wiki/display/MTM/Requests+to+Inventory
  */
-public class InventoryRepresentation extends BaseCumulocityResourceRepresentation {
+public class InventoryRepresentation extends BaseResourceRepresentation {
 
     /** The URL to get Managed Objects by type */
     private String managedObjectsForType;

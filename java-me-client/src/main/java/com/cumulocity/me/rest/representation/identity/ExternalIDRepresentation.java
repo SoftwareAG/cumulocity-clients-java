@@ -19,10 +19,10 @@
  */
 package com.cumulocity.me.rest.representation.identity;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
 
-public class ExternalIDRepresentation extends BaseCumulocityResourceRepresentation {
+public class ExternalIDRepresentation extends BaseResourceRepresentation {
 
     private String externalId;
 

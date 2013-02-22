@@ -22,8 +22,8 @@ package com.cumulocity.me.rest.convert.inventory;
 import com.cumulocity.me.rest.convert.base.BaseExtensibleResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONException;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext;
@@ -43,7 +43,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         return ManagedObjectRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) throws JSONException {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) throws JSONException {
         putGId(json, $(representation).getId());
         putString(json, PROP_TYPE, $(representation).getType());
         putString(json, PROP_NAME, $(representation).getName());
@@ -54,7 +54,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         putDate(json, PROP_LAST_UPDATED, $(representation).getLastUpdated());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) throws JSONException {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) throws JSONException {
         $(representation).setId(getGId(json));
         $(representation).setType(getString(json, PROP_TYPE));
         $(representation).setName(getString(json, PROP_NAME));
@@ -68,7 +68,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         $(representation).setLastUpdated(getDate(json, PROP_LAST_UPDATED));
     }
 
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         if (CommandBasedRepresentationValidationContext.CREATE.equals(context) ||
                 CommandBasedRepresentationValidationContext.UPDATE.equals(context)) {
            
@@ -78,7 +78,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         return true;
     }
 
-    private ManagedObjectRepresentation $(CumulocityResourceRepresentation baseRepresentation) {
+    private ManagedObjectRepresentation $(ResourceRepresentation baseRepresentation) {
         return (ManagedObjectRepresentation) baseRepresentation;
     }
 }

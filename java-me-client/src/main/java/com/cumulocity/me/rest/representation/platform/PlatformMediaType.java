@@ -19,8 +19,6 @@
  */
 package com.cumulocity.me.rest.representation.platform;
 
-//import javax.ws.rs.core.MediaType;
-
 import com.cumulocity.me.rest.representation.BaseCumulocityMediaType;
 
 /**

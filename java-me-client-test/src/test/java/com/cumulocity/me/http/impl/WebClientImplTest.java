@@ -48,7 +48,7 @@ import com.cumulocity.me.http.WebResponse;
 import com.cumulocity.me.http.WebResponseReader;
 import com.cumulocity.me.lang.HashMap;
 import com.cumulocity.me.lang.Map;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.ErrorMessageRepresentation;
 
 public class WebClientImplTest extends BaseHttpTestCase {
@@ -114,7 +114,7 @@ public class WebClientImplTest extends BaseHttpTestCase {
         assertThat(response.getStatus()).isEqualTo(HTTP_NO_CONTENT);
     }
     
-    private static class TestRepresentation implements CumulocityResourceRepresentation {
+    private static class TestRepresentation implements ResourceRepresentation {
         
         private String value;
 
@@ -128,14 +128,14 @@ public class WebClientImplTest extends BaseHttpTestCase {
     }
     
     private static class TestWriter implements WebRequestWriter {
-        public byte[] write(WebMethod method, CumulocityResourceRepresentation entity) {
+        public byte[] write(WebMethod method, ResourceRepresentation entity) {
             return ((TestRepresentation) entity).getValue().getBytes();
         }
     }
     
     private static class TestReader implements WebResponseReader {
         @SuppressWarnings("rawtypes")
-        public CumulocityResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType) {
+        public ResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType) {
             byte[] data = response.getData();
             return new TestRepresentation(data == null ? null : new String(data));
         }

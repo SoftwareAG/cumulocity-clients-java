@@ -24,7 +24,7 @@ import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.lang.Set;
 import com.cumulocity.me.model.util.ExtensibilityConverter;
 
-public class AbstractExtensibleRepresentation extends BaseCumulocityResourceRepresentation {
+public class AbstractExtensibleRepresentation extends BaseResourceRepresentation {
 
     private Map attrs = new HashMap();
 
