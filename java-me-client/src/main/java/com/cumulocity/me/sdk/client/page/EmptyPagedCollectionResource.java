@@ -32,21 +32,29 @@ public class EmptyPagedCollectionResource implements PagedCollectionResource {
         this.type = type;
     }
 
-    public ResourceRepresentation get() {
+    public ResourceRepresentation get() throws SDKException {
+        return get(DEFAULT_PAGE_SIZE);
+    }
+
+    public BaseCollectionRepresentation get(int pageSize) throws SDKException {
     	BaseCollectionRepresentation collectionRepresentaton = (BaseCollectionRepresentation) newCollectionRepresentationInstance();
     	collectionRepresentaton.setPageStatistics(new PageStatisticsRepresentation());
         return collectionRepresentaton;
     }
 
-    public Object getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) {
-        return pageNumber == 1 ? get() : null;
+    public BaseCollectionRepresentation getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) {
+        return getPage(null, pageNumber, DEFAULT_PAGE_SIZE);
     }
 
-    public Object getNextPage(BaseCollectionRepresentation collectionRepresentation) {
+    public BaseCollectionRepresentation getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) {
+        return (BaseCollectionRepresentation) (pageNumber == 1 ? get() : null);
+    }
+
+    public BaseCollectionRepresentation getNextPage(BaseCollectionRepresentation collectionRepresentation) {
         return null;
     }
 
-    public Object getPreviousPage(BaseCollectionRepresentation collectionRepresentation) {
+    public BaseCollectionRepresentation getPreviousPage(BaseCollectionRepresentation collectionRepresentation) {
         return null;
     }
 

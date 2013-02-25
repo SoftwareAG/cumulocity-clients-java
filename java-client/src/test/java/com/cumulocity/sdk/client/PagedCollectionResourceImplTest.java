@@ -38,6 +38,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.PageStatisticsRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -124,10 +125,10 @@ public class PagedCollectionResourceImplTest {
     public void shouldGetPageWhenNoParamsPresent() throws SDKException {
         // Given
         BaseCollectionRepresentation input = new BaseCollectionRepresentation();
-        String myUrl = URL + "/measuremnt/measurments";
-        input.setSelf(myUrl);
+        input.setPageStatistics(new PageStatisticsRepresentation(PAGE_SIZE));
+        input.setSelf(URL + "/measuremnt/measurments");
 
-        String expectedUrl = myUrl + "?pageSize=" + PAGE_SIZE + "&currentPage=5";
+        String expectedUrl = input.getSelf() + "?pageSize=" + PAGE_SIZE + "&currentPage=5";
         BaseCollectionRepresentation expectedRep = new BaseCollectionRepresentation();
         when(restConnector.get(argThat(matchesUrl(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
@@ -139,13 +140,31 @@ public class PagedCollectionResourceImplTest {
     }
 
     @Test
+    public void shouldGetPageWhenWithGivenPageSize() throws SDKException {
+        // Given
+        BaseCollectionRepresentation input = new BaseCollectionRepresentation();
+        String myUrl = URL + "/measuremnt/measurments";
+        input.setSelf(myUrl);
+
+        String expectedUrl = myUrl + "?pageSize=50&currentPage=5";
+        BaseCollectionRepresentation expectedRep = new BaseCollectionRepresentation();
+        when(restConnector.get(argThat(matchesUrl(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
+
+        // When
+        BaseCollectionRepresentation page = target.getPage(input, 5, 50);
+
+        // Then
+        assertThat(page, sameInstance(expectedRep));
+    }
+
+    @Test
     public void shouldGetPageWhenOtherParamsAlreadyPresent() throws SDKException {
         // Given
         BaseCollectionRepresentation input = new BaseCollectionRepresentation();
-        String myUrl = URL + "/measuremnt/measurments?param1=value1";
-        input.setSelf(myUrl);
+        input.setPageStatistics(new PageStatisticsRepresentation(PAGE_SIZE));
+        input.setSelf(URL + "/measuremnt/measurments?param1=value1");
 
-        String expectedUrl = myUrl + "&pageSize=" + PAGE_SIZE + "&currentPage=5";
+        String expectedUrl = input.getSelf() + "&pageSize=" + PAGE_SIZE + "&currentPage=5";
         BaseCollectionRepresentation expectedRep = new BaseCollectionRepresentation();
         when(restConnector.get(argThat(matchesUrl(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
@@ -160,6 +179,7 @@ public class PagedCollectionResourceImplTest {
     public void shouldGetPageAndReplaceAlreadyPresentPageSizeAndCurrentPageParams() throws SDKException {
         // Given
         BaseCollectionRepresentation input = new BaseCollectionRepresentation();
+        input.setPageStatistics(new PageStatisticsRepresentation(PAGE_SIZE));
         String myUrl = URL + "/measuremnt/measurments?param1=value1&pageSize=123&currentPage=234";
         input.setSelf(myUrl);
 

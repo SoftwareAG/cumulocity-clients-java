@@ -20,7 +20,6 @@
 
 package com.cumulocity.me.sdk.client.page;
 
-
 import com.cumulocity.me.lang.Collections;
 import com.cumulocity.me.lang.HashMap;
 import com.cumulocity.me.lang.Iterator;
@@ -48,24 +47,32 @@ public abstract class PagedCollectionResourceImpl extends GenericResourceImpl im
         this.pageSize = pageSize;
     }
 
-    public Object getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) {
+    public BaseCollectionRepresentation getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) {
+        if (collectionRepresentation == null) {
+            throw new SDKException("Unable to determin the Resource URL. ");
+        }
+        return getPage(collectionRepresentation, pageNumber, collectionRepresentation.getPageStatistics() == null ?
+                DEFAULT_PAGE_SIZE : collectionRepresentation.getPageStatistics().getPageSize());
+    }
+
+    public BaseCollectionRepresentation getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) {
         if (collectionRepresentation == null || collectionRepresentation.getSelf() == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
 
         Map params = new HashMap();
-        params.put(PAGE_SIZE_KEY, String.valueOf(pageSize));
+        params.put(PAGE_SIZE_KEY, String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize));
         params.put(PAGE_NUMBER_KEY, String.valueOf(pageNumber));
 
         String url = replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
         return getCollection(url);
     }
 
-    private Object getCollection(String url) {
-        return restConnector.get(url, getMediaType(), getResponseClass());
+    private BaseCollectionRepresentation getCollection(String url) {
+        return (BaseCollectionRepresentation) restConnector.get(url, getMediaType(), getResponseClass());
     }
 
-    public Object getNextPage(BaseCollectionRepresentation collectionRepresentation) {
+    public BaseCollectionRepresentation getNextPage(BaseCollectionRepresentation collectionRepresentation) {
         if (collectionRepresentation == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
@@ -75,7 +82,7 @@ public abstract class PagedCollectionResourceImpl extends GenericResourceImpl im
         return getCollection(collectionRepresentation.getNext());
     }
 
-    public Object getPreviousPage(BaseCollectionRepresentation collectionRepresentation) {
+    public BaseCollectionRepresentation getPreviousPage(BaseCollectionRepresentation collectionRepresentation) {
         if (collectionRepresentation == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
@@ -86,8 +93,13 @@ public abstract class PagedCollectionResourceImpl extends GenericResourceImpl im
     }
 
     public ResourceRepresentation get() {
-        String urlToCall = replaceOrAddQueryParam(url, Collections.singletonMap(PAGE_SIZE_KEY, String.valueOf(pageSize)));
-        return restConnector.get(urlToCall, getMediaType(), getResponseClass());
+        return get(pageSize);
+    }
+
+    public BaseCollectionRepresentation get(int pageSize) {
+        String urlToCall = replaceOrAddQueryParam(url, Collections.singletonMap(PAGE_SIZE_KEY,
+                String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize)));
+        return (BaseCollectionRepresentation) restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
 
     public boolean equals(Object obj) {
