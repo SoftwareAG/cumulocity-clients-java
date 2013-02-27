@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.http;
 
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public interface WebResponseReader {
 
-    CumulocityResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType);
+    ResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType);
 }

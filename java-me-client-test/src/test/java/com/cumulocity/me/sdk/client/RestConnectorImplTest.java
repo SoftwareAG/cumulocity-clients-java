@@ -32,7 +32,7 @@ import org.junit.Test;
 import com.cumulocity.me.http.WebClient;
 import com.cumulocity.me.http.WebRequestBuilder;
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.me.sdk.client.http.RestConnectorImpl;
 
@@ -54,7 +54,7 @@ public class RestConnectorImplTest {
         when(httpClient.request(path)).thenReturn(requestBuilder);
         when(requestBuilder.get(HttpConnection.HTTP_OK, responseEntityType)).thenReturn(new ErrorMessageRepresentation());
         
-        CumulocityResourceRepresentation representation = restConnector.get(path, mediaType, responseEntityType);
+        ResourceRepresentation representation = restConnector.get(path, mediaType, responseEntityType);
         
         assertThat(representation).isInstanceOf(ErrorMessageRepresentation.class);
     }

@@ -21,7 +21,7 @@
 package com.cumulocity.me.sdk.client;
 
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.sdk.client.http.RestConnector;
 
 public abstract class GenericResourceImpl implements GenericResource {
@@ -39,7 +39,7 @@ public abstract class GenericResourceImpl implements GenericResource {
     
     abstract protected Class getResponseClass();
 
-    public CumulocityResourceRepresentation get() {
+    public ResourceRepresentation get() {
         return restConnector.get(url, getMediaType(), getResponseClass());
     }
 }

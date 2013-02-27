@@ -19,7 +19,7 @@
  */
 package com.cumulocity.me.rest.representation.platform;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordsRepresentation;
 import com.cumulocity.me.rest.representation.event.EventsApiRepresentation;
@@ -28,7 +28,7 @@ import com.cumulocity.me.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.me.rest.representation.measurement.MeasurementsApiRepresentation;
 import com.cumulocity.me.rest.representation.operation.DeviceControlRepresentation;
 
-public class PlatformApiRepresentation extends BaseCumulocityResourceRepresentation {
+public class PlatformApiRepresentation extends BaseResourceRepresentation {
 	
 	private InventoryRepresentation inventory;
 	
@@ -41,8 +41,6 @@ public class PlatformApiRepresentation extends BaseCumulocityResourceRepresentat
 	private AuditRecordsRepresentation audit;
 	
 	private AlarmsApiRepresentation alarm;
-	
-//	private UsersApiRepresentation user;
 	
 	private DeviceControlRepresentation deviceControl;
 
@@ -93,14 +91,6 @@ public class PlatformApiRepresentation extends BaseCumulocityResourceRepresentat
 	public void setAlarm(AlarmsApiRepresentation alarm) {
 		this.alarm = alarm;
 	}
-
-//	public UsersApiRepresentation getUser() {
-//		return user;
-//	}
-//
-//	public void setUser(UsersApiRepresentation user) {
-//		this.user = user;
-//	}
 
 	public DeviceControlRepresentation getDeviceControl() {
 		return deviceControl;

@@ -20,7 +20,7 @@
 package com.cumulocity.me.sdk.client.http;
 
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public interface RestConnector {
 
@@ -28,13 +28,13 @@ public interface RestConnector {
     
     String AUTHORIZATION = "Authorization";
     
-    CumulocityResourceRepresentation get(String path, CumulocityMediaType mediaType, Class responseType);
+    ResourceRepresentation get(String path, CumulocityMediaType mediaType, Class responseType);
 
-    CumulocityResourceRepresentation post(String path, CumulocityMediaType mediaType,
-            CumulocityResourceRepresentation representation);
+    ResourceRepresentation post(String path, CumulocityMediaType mediaType,
+            ResourceRepresentation representation);
 
-    CumulocityResourceRepresentation put(String path, CumulocityMediaType mediaType,
-            CumulocityResourceRepresentation representation);
+    ResourceRepresentation put(String path, CumulocityMediaType mediaType,
+            ResourceRepresentation representation);
 
     void delete(String path);
     

@@ -25,6 +25,21 @@ import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 public interface PagedCollectionResource<T extends BaseCollectionRepresentation> extends GenericResource<T> {
 
     /**
+     * The method returns the first page.
+     */
+    @Override
+    T get() throws SDKException;
+
+    /**
+     * The method returns the first page.
+     *
+     * @param pageSize                 - page size
+     * @return BaseCollectionRepresentation type of BaseCollectionRepresentation.
+     * @throws SDKException
+     */
+    T get(int pageSize) throws SDKException;
+
+    /**
      * The method returns the specified page number.
      *
      * @param collectionRepresentation It uses the BaseCollectionRepresentation.getSelf() URL to find the collection.
@@ -32,7 +47,18 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @return BaseCollectionRepresentation type of BaseCollectionRepresentation.
      * @throws SDKException
      */
-    public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException;
+    T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException;
+
+    /**
+     * The method returns the specified page number.
+     *
+     * @param collectionRepresentation It uses the BaseCollectionRepresentation.getSelf() URL to find the collection.
+     * @param pageNumber               - page number
+     * @param pageSize                 - page size
+     * @return BaseCollectionRepresentation type of BaseCollectionRepresentation.
+     * @throws SDKException
+     */
+    T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException;
 
     /**
      * The method returns the next page from the collection.
@@ -41,7 +67,7 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @return collectionRepresentation type of BaseCollectionRepresentation.
      * @throws SDKException
      */
-    public T getNextPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
+    T getNextPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
 
     /**
      * This method returns the previous page in the collection.
@@ -50,6 +76,6 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @return BaseCollectionRepresentation type of BaseCollectionRepresentation.
      * @throws SDKException
      */
-    public T getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
+    T getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
 
 }

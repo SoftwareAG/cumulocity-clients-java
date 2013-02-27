@@ -27,7 +27,7 @@ import com.cumulocity.me.http.WebResponseReader;
 import com.cumulocity.me.model.CumulocityCharset;
 import com.cumulocity.me.rest.convert.JsonConversionService;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.sdk.SDKException;
 
 public class JsonResponseReaderImpl implements WebResponseReader {
@@ -38,17 +38,17 @@ public class JsonResponseReaderImpl implements WebResponseReader {
         this.conversionService = conversionService;
     }
 
-    public CumulocityResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType) {
+    public ResourceRepresentation read(WebResponse response, int expectedStatus, Class expectedEntityType) {
         checkStatus(response, expectedStatus);
         return getEntity(response, expectedEntityType);
     }
 
-    private CumulocityResourceRepresentation getEntity(WebResponse response, Class entityType) {
+    private ResourceRepresentation getEntity(WebResponse response, Class entityType) {
         if (response.getData() == null || entityType == null) {
             return null;
         }
         JSONObject json = new JSONObject(getJsonSource(response));
-        return (CumulocityResourceRepresentation) conversionService.fromJson(json, entityType);
+        return (ResourceRepresentation) conversionService.fromJson(json, entityType);
     }
 
     private String getJsonSource(WebResponse response) {

@@ -22,8 +22,7 @@ package com.cumulocity.me.rest.validate;
 import com.cumulocity.me.lang.ArrayList;
 import com.cumulocity.me.lang.Collection;
 import com.cumulocity.me.lang.Iterator;
-import com.cumulocity.me.rest.convert.ConversionException;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public class RepresentationValidationServiceImpl implements RepresentationValidationService {
 
@@ -47,9 +46,9 @@ public class RepresentationValidationServiceImpl implements RepresentationValida
         validators.add(validator);
     }
     
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         if (representation == null) {
-            return true; // FIXME should it be this way?
+            return true;
         }
         return findValidator(representation.getClass()).isValid(representation, context);
     }
@@ -62,7 +61,7 @@ public class RepresentationValidationServiceImpl implements RepresentationValida
                 return validator;
             }
         }
-        throw new ConversionException("Unsupported representation: " + representationType);
+        return NoOpRepresentationValidator.getInstance();
     }
 
 }

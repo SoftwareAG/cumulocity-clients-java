@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.alarm;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.me.rest.representation.alarm.AlarmsApiRepresentation;
 
@@ -32,11 +32,11 @@ public class AlarmsApiRepresentationConverter extends BaseResourceRepresentation
         return AlarmsApiRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setAlarms((AlarmCollectionRepresentation) getObject(json, "alarms", AlarmCollectionRepresentation.class));
         $(representation).setAlarmsForStatus(getString(json, "alarmsForStatus"));
         $(representation).setAlarmsForSource(getString(json, "alarmsForSource"));
@@ -47,7 +47,7 @@ public class AlarmsApiRepresentationConverter extends BaseResourceRepresentation
         $(representation).setAlarmsForSourceAndStatusAndTime(getString(json, "alarmsForSourceAndStatusAndTime"));
     }
 
-    private AlarmsApiRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private AlarmsApiRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (AlarmsApiRepresentation) baseRepresentation;
     }
 }

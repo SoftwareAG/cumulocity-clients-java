@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.rest.representation.operation;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class DeviceControlRepresentation extends BaseCumulocityResourceRepresentation {
+public class DeviceControlRepresentation extends BaseResourceRepresentation {
 
     private OperationCollectionRepresentation operations;
 

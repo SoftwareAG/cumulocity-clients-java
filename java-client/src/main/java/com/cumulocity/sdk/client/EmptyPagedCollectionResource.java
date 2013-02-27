@@ -19,6 +19,8 @@
  */
 package com.cumulocity.sdk.client;
 
+import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
+
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.PageStatisticsRepresentation;
 
@@ -32,6 +34,11 @@ public class EmptyPagedCollectionResource<T extends BaseCollectionRepresentation
 
     @Override
     public T get() throws SDKException {
+        return get(DEFAULT_PAGE_SIZE);
+    }
+
+    @Override
+    public T get(int pageSize) throws SDKException {
         T collectionRepresentaton = newCollectionRepresentationInstance();
         collectionRepresentaton.setPageStatistics(new PageStatisticsRepresentation());
         return collectionRepresentaton;
@@ -39,7 +46,12 @@ public class EmptyPagedCollectionResource<T extends BaseCollectionRepresentation
 
     @Override
     public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException {
-        return pageNumber == 1 ? get() : null;
+        return getPage(null, pageNumber, DEFAULT_PAGE_SIZE);
+    }
+
+    @Override
+    public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException {
+        return pageNumber == 1 ? get(pageSize) : null;
     }
 
     @Override

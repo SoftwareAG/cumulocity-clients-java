@@ -27,7 +27,7 @@ import com.cumulocity.me.lang.HashMap;
 import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.model.CumulocityCharset;
 import com.cumulocity.me.rest.convert.JsonConversionService;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext;
 import com.cumulocity.me.rest.validate.RepresentationValidationContext;
 import com.cumulocity.me.rest.validate.RepresentationValidationException;
@@ -53,7 +53,7 @@ public class JsonRequestWriterImpl implements WebRequestWriter {
         this.conversionService = conversionService;
     }
 
-    public byte[] write(WebMethod method, CumulocityResourceRepresentation entity) {
+    public byte[] write(WebMethod method, ResourceRepresentation entity) {
         if (entity == null) {
             return null;
         }
@@ -62,7 +62,7 @@ public class JsonRequestWriterImpl implements WebRequestWriter {
         return getJsonData(json);
     }
 
-    private void validateEntity(WebMethod method, CumulocityResourceRepresentation entity) {
+    private void validateEntity(WebMethod method, ResourceRepresentation entity) {
         try {
             validationService.isValid(entity, (RepresentationValidationContext) contextForMethod.get(method));
         } catch (RepresentationValidationException e) {

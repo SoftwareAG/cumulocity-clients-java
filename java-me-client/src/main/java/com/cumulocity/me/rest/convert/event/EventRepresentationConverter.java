@@ -21,8 +21,8 @@ package com.cumulocity.me.rest.convert.event;
 
 import com.cumulocity.me.rest.convert.base.BaseExtensibleResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.event.EventRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext;
@@ -40,7 +40,7 @@ public class EventRepresentationConverter extends BaseExtensibleResourceRepresen
         return EventRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         putGId(json, $(representation).getId());
         putString(json, PROP_TYPE, $(representation).getType());
         putDate(json, PROP_TIME, $(representation).getTime());
@@ -49,7 +49,7 @@ public class EventRepresentationConverter extends BaseExtensibleResourceRepresen
         putObject(json, getSourcePropertyName(), $(representation).getSource());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setId(getGId(json));
         $(representation).setType(getString(json, PROP_TYPE));
         $(representation).setTime(getDate(json, PROP_TIME));
@@ -62,7 +62,7 @@ public class EventRepresentationConverter extends BaseExtensibleResourceRepresen
         return PROP_SOURCE;
     }
     
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         if (CommandBasedRepresentationValidationContext.CREATE.equals(context)) {
             assertNull(PROP_ID, $(representation).getId());
             assertNotNull(PROP_TYPE, $(representation).getType());
@@ -79,7 +79,7 @@ public class EventRepresentationConverter extends BaseExtensibleResourceRepresen
         return true;
     }
 
-    private EventRepresentation $(CumulocityResourceRepresentation baseRepresentation) {
+    private EventRepresentation $(ResourceRepresentation baseRepresentation) {
         return (EventRepresentation) baseRepresentation;
     }
 }

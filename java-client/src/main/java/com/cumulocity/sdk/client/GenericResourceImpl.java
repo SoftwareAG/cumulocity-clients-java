@@ -20,10 +20,10 @@
 
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 
-public abstract class GenericResourceImpl<T extends BaseCumulocityResourceRepresentation> implements GenericResource<T> {
+public abstract class GenericResourceImpl<T extends BaseResourceRepresentation> implements GenericResource<T> {
 
     @Deprecated
     /**

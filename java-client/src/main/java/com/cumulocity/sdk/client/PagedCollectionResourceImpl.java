@@ -20,7 +20,9 @@
 
 package com.cumulocity.sdk.client;
 
-import java.util.Collections;
+import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
+import static java.util.Collections.singletonMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,12 +54,22 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
 
     @Override
     public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException {
+        if (collectionRepresentation == null) {
+            throw new SDKException("Unable to determin the Resource URL. ");
+        }
+        return getPage(collectionRepresentation, pageNumber, collectionRepresentation.getPageStatistics() == null ?
+                DEFAULT_PAGE_SIZE : collectionRepresentation.getPageStatistics().getPageSize());
+    }
+
+    @Override
+    public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException {
+
         if (collectionRepresentation == null || collectionRepresentation.getSelf() == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
 
         Map<String, String> params = new HashMap<String, String>();
-        params.put(PAGE_SIZE_KEY, String.valueOf(pageSize));
+        params.put(PAGE_SIZE_KEY, String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize));
         params.put(PAGE_NUMBER_KEY, String.valueOf(pageNumber));
 
         String url = replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
@@ -95,7 +107,13 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     @SuppressWarnings("deprecation")
     @Override
     public T get() throws SDKException {
-        String urlToCall = replaceOrAddQueryParam(url, Collections.singletonMap(PAGE_SIZE_KEY, String.valueOf(pageSize)));
+        return get(pageSize);
+    }
+
+        @Override
+    public T get(int pageSize) throws SDKException {
+        String urlToCall = replaceOrAddQueryParam(url, singletonMap(PAGE_SIZE_KEY,
+                String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize)));
         return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
 

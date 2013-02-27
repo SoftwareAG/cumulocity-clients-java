@@ -21,14 +21,9 @@ package com.cumulocity.me.rest.representation.inventory;
 
 import java.util.Date;
 
-//import org.svenson.JSONProperty;
-//import org.svenson.converter.JSONConverter;
-
-//import com.cumulocity.model.DateConverter;
-//import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.me.model.idtype.GId;
 import com.cumulocity.me.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentationWithId;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentationWithId;
 
 /**
  * A Java Representation for the MediaType ManagedObject
@@ -36,13 +31,15 @@ import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentatio
  */
 
 public class ManagedObjectRepresentation extends AbstractExtensibleRepresentation
-        implements BaseCumulocityResourceRepresentationWithId {
+        implements BaseResourceRepresentationWithId {
     
     private GId id;
 
     private String type;
 
     private String name;
+    
+    private String owner;
 
     private Date lastUpdated;
 
@@ -58,8 +55,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
     public ManagedObjectRepresentation() {
     }
     
-//    @JSONConverter(type = IDTypeConverter.class)
-//    @JSONProperty(ignoreIfNull = true)
     public GId getId() {
         return id;
     }
@@ -68,7 +63,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
         this.id = id;
     }
     
-//    @JSONProperty(ignoreIfNull = true)
     public String getType() {
         return type;
     }
@@ -77,7 +71,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
         this.type = type;
     }
     
-//    @JSONProperty(ignoreIfNull = true)
     public String getName() {
         return name;
     }
@@ -85,9 +78,15 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
-//    @JSONProperty(value = "lastUpdated", ignoreIfNull = true)
-//    @JSONConverter(type = DateConverter.class)
     public Date getLastUpdated() {
         return lastUpdated;
     }
@@ -96,7 +95,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
         this.lastUpdated = lastUpdate;
     }
 
-//    @JSONProperty(ignoreIfNull = true)
     public ManagedObjectReferenceCollectionRepresentation getChildDevices() {
         return childDevices;
     }
@@ -105,7 +103,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
         this.childDevices = childDevices;
     }
     
-//    @JSONProperty(ignoreIfNull = true)
     public ManagedObjectReferenceCollectionRepresentation getChildAssets() {
         return childAssets;
     }
@@ -114,7 +111,6 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
         this.childAssets = childAssets;
     }
 
-//    @JSONProperty(ignoreIfNull = true)
     public ManagedObjectReferenceCollectionRepresentation getParents() {
         return parents;
     }

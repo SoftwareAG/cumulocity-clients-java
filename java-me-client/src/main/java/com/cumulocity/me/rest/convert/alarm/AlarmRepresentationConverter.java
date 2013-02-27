@@ -21,8 +21,8 @@ package com.cumulocity.me.rest.convert.alarm;
 
 import com.cumulocity.me.rest.convert.event.EventRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext;
@@ -38,21 +38,21 @@ public class AlarmRepresentationConverter extends EventRepresentationConverter {
         return AlarmRepresentation.class;
     }
     
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         super.instanceToJson(representation, json);
         putString(json, PROP_STATUS, $(representation).getStatus());
         putString(json, PROP_SEVERITY, $(representation).getSeverity());
         putObject(json, PROP_HISTORY, $(representation).getHistory());
     }
     
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         super.instanceFromJson(json, representation);
         $(representation).setStatus(getString(json, PROP_STATUS));
         $(representation).setSeverity(getString(json, PROP_SEVERITY));
         $(representation).setHistory((AuditRecordCollectionRepresentation) getObject(json, PROP_HISTORY, AuditRecordCollectionRepresentation.class));
     }
     
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         if (CommandBasedRepresentationValidationContext.CREATE.equals(context)) {
             assertNotNull(PROP_STATUS, $(representation).getStatus());
             assertNotNull(PROP_SEVERITY, $(representation).getSeverity());
@@ -63,7 +63,7 @@ public class AlarmRepresentationConverter extends EventRepresentationConverter {
         return super.isValid(representation, context);
     }
 
-    private AlarmRepresentation $(CumulocityResourceRepresentation baseRepresentation) {
+    private AlarmRepresentation $(ResourceRepresentation baseRepresentation) {
         return (AlarmRepresentation) baseRepresentation;
     }
 }

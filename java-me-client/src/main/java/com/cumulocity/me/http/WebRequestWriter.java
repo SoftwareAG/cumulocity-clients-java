@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.http;
 
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public interface WebRequestWriter {
 
-    byte[] write(WebMethod method, CumulocityResourceRepresentation entity);
+    byte[] write(WebMethod method, ResourceRepresentation entity);
 }

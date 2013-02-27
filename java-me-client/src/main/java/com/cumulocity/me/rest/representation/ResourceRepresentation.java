@@ -19,9 +19,6 @@
  */
 package com.cumulocity.me.rest.representation;
 
-import com.cumulocity.me.model.idtype.GId;
-
-public interface BaseCumulocityResourceRepresentationWithId extends CumulocityResourceRepresentation {
+public interface ResourceRepresentation {
     
-	void setId(GId gId);
 }

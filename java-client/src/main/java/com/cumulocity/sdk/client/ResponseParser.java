@@ -21,13 +21,13 @@
 package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentationIf;
+import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParser {
 
-    public <T extends BaseCumulocityResourceRepresentationIf> T parse(ClientResponse response, int expectedStatusCode,
+    public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
             Class<T> type) throws SDKException {
 
         checkStatus(response, expectedStatusCode);

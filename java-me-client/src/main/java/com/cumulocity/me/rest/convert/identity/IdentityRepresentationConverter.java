@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.identity;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.identity.IdentityRepresentation;
 
 public class IdentityRepresentationConverter extends BaseResourceRepresentationConverter {
@@ -31,11 +31,11 @@ public class IdentityRepresentationConverter extends BaseResourceRepresentationC
 
     private static final String PROP_EXTERNAL_ID = "externalId";
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setExternalId(getString(json, PROP_EXTERNAL_ID));
         $(representation).setExternalIdsOfGlobalId(getString(json, PROP_EXTERNAL_IDS_OF_GLOBAL_ID));
     }
@@ -44,7 +44,7 @@ public class IdentityRepresentationConverter extends BaseResourceRepresentationC
         return IdentityRepresentation.class;
     }
 
-    private IdentityRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private IdentityRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (IdentityRepresentation) baseRepresentation;
     }
 

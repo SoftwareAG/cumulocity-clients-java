@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.inventory;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 
@@ -32,11 +32,11 @@ public class InventoryRepresentationConverter extends BaseResourceRepresentation
         return InventoryRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setManagedObjectsForType(getString(json, "managedObjectsForType"));
         $(representation).setManagedObjectsForFragmentType(getString(json, "managedObjectsForFragmentType"));
         $(representation).setManagedObjectsForListOfIds(getString(json, "managedObjectsForListOfIds"));
@@ -45,7 +45,7 @@ public class InventoryRepresentationConverter extends BaseResourceRepresentation
         $(representation).setSelf(getString(json, "self"));
     }
 
-    private InventoryRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private InventoryRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (InventoryRepresentation) baseRepresentation;
     }
 

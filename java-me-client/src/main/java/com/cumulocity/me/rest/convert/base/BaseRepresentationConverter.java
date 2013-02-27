@@ -31,7 +31,7 @@ import com.cumulocity.me.rest.convert.JsonConversionServiceAware;
 import com.cumulocity.me.rest.convert.JsonConverter;
 import com.cumulocity.me.rest.json.JSONArray;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.validate.RepresentationValidationContext;
 import com.cumulocity.me.rest.validate.RepresentationValidationException;
 import com.cumulocity.me.rest.validate.RepresentationValidator;
@@ -59,7 +59,7 @@ public abstract class BaseRepresentationConverter implements JsonConverter, Json
 
     protected abstract Class supportedRepresentationType();
 
-    public boolean isValid(CumulocityResourceRepresentation representation, RepresentationValidationContext context) {
+    public boolean isValid(ResourceRepresentation representation, RepresentationValidationContext context) {
         return true;
     }
 
@@ -229,7 +229,7 @@ public abstract class BaseRepresentationConverter implements JsonConverter, Json
         JSONArray jsonarray = new JSONArray();
         Iterator iterator = array.iterator();
         while (iterator.hasNext()) {
-            jsonarray.put(conversionService.toJson((CumulocityResourceRepresentation) iterator.next()));
+            jsonarray.put(conversionService.toJson((ResourceRepresentation) iterator.next()));
         }
         json.putOpt(key, jsonarray);
     }
@@ -251,7 +251,7 @@ public abstract class BaseRepresentationConverter implements JsonConverter, Json
             JSONArray jsonarray = new JSONArray();
             Iterator iterator = set.iterator();
             while (iterator.hasNext()) {
-                jsonarray.put(conversionService.toJson((CumulocityResourceRepresentation) iterator.next()));
+                jsonarray.put(conversionService.toJson((ResourceRepresentation) iterator.next()));
             }
             json.putOpt(key, jsonarray);
         }

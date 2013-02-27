@@ -21,13 +21,12 @@ package com.cumulocity.sdk.client;
 
 import static com.cumulocity.sdk.client.RestConnector.X_CUMULOCITY_APPLICATION_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
+
 import javax.ws.rs.core.MediaType;
 
 import org.junit.Before;
@@ -38,7 +37,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.sun.jersey.api.client.Client;
@@ -98,12 +97,12 @@ public class RestConnectorTest {
         when(typeBuilder.header(X_CUMULOCITY_APPLICATION_KEY, APP_KEY)).thenReturn(headerBuilder);
         when(headerBuilder.get(ClientResponse.class)).thenReturn(response);
 
-        BaseCumulocityResourceRepresentation representation = new BaseCumulocityResourceRepresentation();
-        when(parser.parse(response, 200, BaseCumulocityResourceRepresentation.class)).thenReturn(representation);
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
+        when(parser.parse(response, 200, BaseResourceRepresentation.class)).thenReturn(representation);
 
         // When
-        BaseCumulocityResourceRepresentation result = restConnector.get(PATH, mediaType,
-                BaseCumulocityResourceRepresentation.class);
+        BaseResourceRepresentation result = restConnector.get(PATH, mediaType,
+                BaseResourceRepresentation.class);
 
         // Then
         assertThat(result, sameInstance(representation));
@@ -112,13 +111,13 @@ public class RestConnectorTest {
     @Test
     public void shouldPostBaseRepresentation() throws Exception {
         // Given
-        BaseCumulocityResourceRepresentation representation = new BaseCumulocityResourceRepresentation();
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
-        BaseCumulocityResourceRepresentation outputRepresentation = new BaseCumulocityResourceRepresentation();
-        when(parser.parse(response, 201, BaseCumulocityResourceRepresentation.class)).thenReturn(outputRepresentation);
+        BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
+        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
 
         // When
-        BaseCumulocityResourceRepresentation result = restConnector.post(PATH, mediaType, representation);
+        BaseResourceRepresentation result = restConnector.post(PATH, mediaType, representation);
 
         // Then
         assertThat(result, sameInstance(outputRepresentation));
@@ -179,7 +178,7 @@ public class RestConnectorTest {
     }
 
 
-    private void returnResponseWhenPosting(BaseCumulocityResourceRepresentation representation) {
+    private void returnResponseWhenPosting(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
         when(headerBuilder.post(ClientResponse.class, representation)).thenReturn(response);
     }
@@ -206,19 +205,19 @@ public class RestConnectorTest {
     @Test
     public void shouldPutBaseRepresentation() throws Exception {
         // Given
-        BaseCumulocityResourceRepresentation representation = new BaseCumulocityResourceRepresentation();
-        BaseCumulocityResourceRepresentation outputRepresentation = new BaseCumulocityResourceRepresentation();
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
+        BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
         returnResponseWhenPut(representation);
-        when(parser.parse(response, 200, BaseCumulocityResourceRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, 200, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
 
         // When
-        BaseCumulocityResourceRepresentation result = restConnector.put(PATH, mediaType, representation);
+        BaseResourceRepresentation result = restConnector.put(PATH, mediaType, representation);
 
         // Then
         assertThat(result, sameInstance(outputRepresentation));
     }
 
-    private void returnResponseWhenPut(BaseCumulocityResourceRepresentation representation) {
+    private void returnResponseWhenPut(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
         when(headerBuilder.put(ClientResponse.class, representation)).thenReturn(response);
     }

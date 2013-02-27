@@ -30,6 +30,11 @@ public class ManagedObjectRepresentationBuilder extends BaseRepresentationBuilde
         setObjectField("name", value);
         return this;
     }
+    
+    public ManagedObjectRepresentationBuilder withOwner(final String value) {
+        setObjectField("owner", value);
+        return this;
+    }
 
     public ManagedObjectRepresentationBuilder withID(final IDBuilder id) {
         setObjectFieldBuilder("id", id);

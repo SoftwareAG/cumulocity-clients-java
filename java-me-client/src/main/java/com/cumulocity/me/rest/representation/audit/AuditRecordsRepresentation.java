@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.rest.representation.audit;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class AuditRecordsRepresentation extends BaseCumulocityResourceRepresentation {
+public class AuditRecordsRepresentation extends BaseResourceRepresentation {
 
     private String auditRecordsForType;
 

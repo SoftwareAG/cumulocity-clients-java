@@ -20,7 +20,7 @@
 package com.cumulocity.me.http;
 
 import com.cumulocity.me.rest.representation.CumulocityMediaType;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public interface WebRequestBuilder {
     
@@ -30,11 +30,11 @@ public interface WebRequestBuilder {
     
     WebRequestBuilder header(String name, Object value);
 
-    CumulocityResourceRepresentation get(int responseStatus, Class responseEntityType);
+    ResourceRepresentation get(int responseStatus, Class responseEntityType);
     
-    CumulocityResourceRepresentation post(CumulocityResourceRepresentation requestEntity, int responseStatus, Class responseEntityType);
+    ResourceRepresentation post(ResourceRepresentation requestEntity, int responseStatus, Class responseEntityType);
     
-    CumulocityResourceRepresentation put(CumulocityResourceRepresentation requestEntity, int responseStatus, Class responseEntityType);
+    ResourceRepresentation put(ResourceRepresentation requestEntity, int responseStatus, Class responseEntityType);
     
-    CumulocityResourceRepresentation delete(int responseStatus, Class responseEntityType);
+    ResourceRepresentation delete(int responseStatus, Class responseEntityType);
 }

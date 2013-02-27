@@ -20,13 +20,13 @@
 
 package com.cumulocity.me.sdk.client;
 
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 /**
  * Generic Cumulocity operationCollection representation
  */
 public interface GenericResource {
     
-    CumulocityResourceRepresentation get();
+    ResourceRepresentation get();
     
 }

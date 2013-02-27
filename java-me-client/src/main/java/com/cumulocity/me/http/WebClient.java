@@ -19,7 +19,7 @@
  */
 package com.cumulocity.me.http;
 
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public interface WebClient {
 
@@ -27,5 +27,5 @@ public interface WebClient {
 
     WebResponse handle(WebRequest request);
 
-    CumulocityResourceRepresentation handle(WebRequest request, int expectedStatus, Class responseEntityType);
+    ResourceRepresentation handle(WebRequest request, int expectedStatus, Class responseEntityType);
 }

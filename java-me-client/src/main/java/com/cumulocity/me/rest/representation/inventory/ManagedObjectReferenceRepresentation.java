@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.rest.representation.inventory;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class ManagedObjectReferenceRepresentation extends BaseCumulocityResourceRepresentation {
+public class ManagedObjectReferenceRepresentation extends BaseResourceRepresentation {
 
     private ManagedObjectRepresentation managedObject;
     

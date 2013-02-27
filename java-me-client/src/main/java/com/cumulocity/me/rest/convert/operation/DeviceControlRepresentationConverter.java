@@ -22,17 +22,17 @@ package com.cumulocity.me.rest.convert.operation;
 import com.cumulocity.me.lang.UnsupportedOperationException;
 import com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.operation.DeviceControlRepresentation;
 import com.cumulocity.me.rest.representation.operation.OperationCollectionRepresentation;
 
 public class DeviceControlRepresentationConverter extends BaseResourceRepresentationConverter {
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         throw new UnsupportedOperationException();
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setOperations((OperationCollectionRepresentation) 
                 getObject(json, "operations", OperationCollectionRepresentation.class));
         $(representation).setOperationsByStatus(getString(json, "operationsByStatus"));
@@ -46,7 +46,7 @@ public class DeviceControlRepresentationConverter extends BaseResourceRepresenta
         return DeviceControlRepresentation.class;
     }
     
-    private DeviceControlRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private DeviceControlRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (DeviceControlRepresentation) baseRepresentation;
     }
 }

@@ -27,7 +27,7 @@ import com.cumulocity.me.http.WebRequestBuilder;
 import com.cumulocity.me.http.WebRequestWriter;
 import com.cumulocity.me.http.WebResponse;
 import com.cumulocity.me.http.WebResponseReader;
-import com.cumulocity.me.rest.representation.CumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.ResourceRepresentation;
 
 public class WebClientImpl implements WebClient {
 
@@ -57,7 +57,7 @@ public class WebClientImpl implements WebClient {
         }
     }
     
-    public CumulocityResourceRepresentation handle(WebRequest request, int expectedStatus, Class responseEntityType) {
+    public ResourceRepresentation handle(WebRequest request, int expectedStatus, Class responseEntityType) {
         WebResponse response = handle(request);
         return responseReader.read(response, expectedStatus, responseEntityType);
     }

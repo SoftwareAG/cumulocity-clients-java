@@ -21,7 +21,7 @@ package com.cumulocity.me.rest.convert.measurement;
 
 import com.cumulocity.me.rest.convert.base.BaseCollectionRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.me.rest.representation.measurement.MeasurementRepresentation;
 
@@ -33,15 +33,15 @@ public class MeasurementCollectionRepresentationConverter extends BaseCollection
         return MeasurementCollectionRepresentation.class;
     }
 
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         putList(json, PROP_MEASUREMENTS, $(representation).getMeasurements());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setMeasurements(getList(json, PROP_MEASUREMENTS, MeasurementRepresentation.class));
     }
     
-    private MeasurementCollectionRepresentation $(BaseCumulocityResourceRepresentation baseRepresentation) {
+    private MeasurementCollectionRepresentation $(BaseResourceRepresentation baseRepresentation) {
         return (MeasurementCollectionRepresentation) baseRepresentation;
     }
 }

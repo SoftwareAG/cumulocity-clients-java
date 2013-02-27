@@ -19,7 +19,7 @@
  */
 package com.cumulocity.me.rest.representation;
 
-public class BaseCumulocityResourceRepresentation implements CumulocityResourceRepresentation {
+public class BaseResourceRepresentation implements ResourceRepresentation {
     
     private String self;
 

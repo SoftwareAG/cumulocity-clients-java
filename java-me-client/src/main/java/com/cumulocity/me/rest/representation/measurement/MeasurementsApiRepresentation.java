@@ -19,9 +19,9 @@
  */
 package com.cumulocity.me.rest.representation.measurement;
 
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 
-public class MeasurementsApiRepresentation extends BaseCumulocityResourceRepresentation {
+public class MeasurementsApiRepresentation extends BaseResourceRepresentation {
 
     private MeasurementCollectionRepresentation measurements;
 

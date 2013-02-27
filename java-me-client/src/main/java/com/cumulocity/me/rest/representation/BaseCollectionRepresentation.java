@@ -19,16 +19,12 @@
  */
 package com.cumulocity.me.rest.representation;
 
-//import org.svenson.JSONProperty;
-
-
-
 /**
  * Common Base Class for all Collection Representations. The actual items are intentionally not part  of this class because
  * the (json) name varies from Collection to Collection and the Mapping has to be defined for each Collection Type separately because
  * the a generic Type Parameter would not be available at runtime.
  */
-public class BaseCollectionRepresentation  extends BaseCumulocityResourceRepresentation {
+public class BaseCollectionRepresentation  extends BaseResourceRepresentation {
 
     private PageStatisticsRepresentation pageStatistics;
     private String prev;

@@ -21,7 +21,7 @@ package com.cumulocity.me.rest.convert.audit;
 
 import com.cumulocity.me.rest.convert.base.BaseCollectionRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.me.rest.representation.BaseCumulocityResourceRepresentation;
+import com.cumulocity.me.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.me.rest.representation.audit.AuditRecordRepresentation;
 
@@ -29,11 +29,11 @@ public class AuditRecordCollectionRepresentationConverter extends BaseCollection
 
     private static final String PROP_AUDIT_RECORDS = "auditRecords";
     
-    protected void instanceToJson(BaseCumulocityResourceRepresentation representation, JSONObject json) {
+    protected void instanceToJson(BaseResourceRepresentation representation, JSONObject json) {
         putList(json, PROP_AUDIT_RECORDS, $(representation).getAuditRecords());
     }
 
-    protected void instanceFromJson(JSONObject json, BaseCumulocityResourceRepresentation representation) {
+    protected void instanceFromJson(JSONObject json, BaseResourceRepresentation representation) {
         $(representation).setAuditRecords(getList(json, PROP_AUDIT_RECORDS, AuditRecordRepresentation.class));
     }
 
@@ -41,7 +41,7 @@ public class AuditRecordCollectionRepresentationConverter extends BaseCollection
         return AuditRecordCollectionRepresentation.class;
     }
     
-    private AuditRecordCollectionRepresentation $(BaseCumulocityResourceRepresentation representation) {
+    private AuditRecordCollectionRepresentation $(BaseResourceRepresentation representation) {
         return (AuditRecordCollectionRepresentation) representation;
     }
 
