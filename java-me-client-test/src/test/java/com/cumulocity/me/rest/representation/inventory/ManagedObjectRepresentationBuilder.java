@@ -27,42 +27,42 @@ import com.cumulocity.model.builder.IDBuilder;
 public class ManagedObjectRepresentationBuilder extends BaseRepresentationBuilder<ManagedObjectRepresentation, ManagedObjectRepresentationBuilder> {
 
     public ManagedObjectRepresentationBuilder withName(final String value) {
-        setObjectField("name", value);
+        setFieldValue("name", value);
         return this;
     }
     
     public ManagedObjectRepresentationBuilder withOwner(final String value) {
-        setObjectField("owner", value);
+        setFieldValue("owner", value);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withID(final IDBuilder id) {
-        setObjectFieldBuilder("id", id);
+        setFieldValueBuilder("id", id);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withType(final String type) {
-        setObjectField("type", type);
+        setFieldValue("type", type);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withChildAssets(final ManagedObjectReferenceCollectionRepresentation childAssets) {
-        setObjectField("childAssets", childAssets);
+        setFieldValue("childAssets", childAssets);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withChildDevices(final ManagedObjectReferenceCollectionRepresentation childDevices) {
-        setObjectField("childDevices", childDevices);
+        setFieldValue("childDevices", childDevices);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withParents(final ManagedObjectReferenceCollectionRepresentation parents) {
-        setObjectField("parents", parents);
+        setFieldValue("parents", parents);
         return this;
     }
 
     public ManagedObjectRepresentationBuilder withLastUpdated(final Date lastUpdated) {
-        setObjectField("lastUpdated", lastUpdated);
+        setFieldValue("lastUpdated", lastUpdated);
         return this;
     }
 

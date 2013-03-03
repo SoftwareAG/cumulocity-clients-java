@@ -31,17 +31,17 @@ public class MeasurementRepresentationBuilder extends BaseRepresentationBuilder<
     }
     
     public MeasurementRepresentationBuilder withType(String type) {
-        setObjectField("type", type);
+        setFieldValue("type", type);
         return this;
     }
     
     public MeasurementRepresentationBuilder withTime(Date time) {
-        setObjectField("time", time);
+        setFieldValue("time", time);
         return this;
     }
     
     public MeasurementRepresentationBuilder withSource(ManagedObjectRepresentation source) {
-        setObjectField("source", source);
+        setFieldValue("source", source);
         return this;
     }
     

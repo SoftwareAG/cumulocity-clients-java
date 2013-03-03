@@ -33,27 +33,27 @@ public class AuditRecordRepresentationBuilder extends AbstractObjectBuilder<Audi
     }
     
     public AuditRecordRepresentationBuilder withUser(String user) {
-        setObjectField("user", user);
+        setFieldValue("user", user);
         return this;
     }
 
     public AuditRecordRepresentationBuilder withApplication(String application) {
-        setObjectField("application", application);
+        setFieldValue("application", application);
         return this;
     }
 
     public AuditRecordRepresentationBuilder withSeverity(String severity) {
-        setObjectField("severity", severity);
+        setFieldValue("severity", severity);
         return this;
     }
 
     public AuditRecordRepresentationBuilder withActivity(String activity) {
-        setObjectField("activity", activity);
+        setFieldValue("activity", activity);
         return this;
     }
 
     public AuditRecordRepresentationBuilder withChanges(HashSet changes) {
-        setObjectField("changes", changes);
+        setFieldValue("changes", changes);
         return this;
     }
 

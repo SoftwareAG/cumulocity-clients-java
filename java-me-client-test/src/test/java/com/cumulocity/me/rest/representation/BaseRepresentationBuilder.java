@@ -35,17 +35,17 @@ public abstract class BaseRepresentationBuilder<T extends AbstractExtensibleRepr
     Map<String, Object> dynamicProperties = new LinkedHashMap<String, Object>();
 
     public B withID(final ID id) {
-        setObjectField("id", id);
+        setFieldValue("id", id);
         return (B) this;
     }
 
     public B withID(final IDBuilder id) {
-        setObjectFieldBuilder("id", id);
+        setFieldValueBuilder("id", id);
         return (B) this;
     }
 
     public B withSelf(final String value) {
-        setObjectField("self", value);
+        setFieldValue("self", value);
         return (B) this;
     }
 
