@@ -97,8 +97,6 @@
 			<artifactId>device-capability-model</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>model-test-tools</artifactId>
@@ -116,6 +114,11 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>

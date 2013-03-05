@@ -44,9 +44,9 @@ import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
 
-import cucumber.annotation.en.Given;
-import cucumber.annotation.en.Then;
-import cucumber.annotation.en.When;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
 
 //TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
 public class AuditRecordIT {
