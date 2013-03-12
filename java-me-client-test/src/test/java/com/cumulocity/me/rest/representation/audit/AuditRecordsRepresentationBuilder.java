@@ -28,41 +28,41 @@ public class AuditRecordsRepresentationBuilder extends AbstractObjectBuilder<Aud
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForType(String auditRecordsForType) {
-        setObjectField("auditRecordsForType", auditRecordsForType);
+        setFieldValue("auditRecordsForType", auditRecordsForType);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForUser(String auditRecordsForUser) {
-        setObjectField("auditRecordsForUser", auditRecordsForUser);
+        setFieldValue("auditRecordsForUser", auditRecordsForUser);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForApplication(String auditRecordsForApplication) {
-        setObjectField("auditRecordsForApplication", auditRecordsForApplication);
+        setFieldValue("auditRecordsForApplication", auditRecordsForApplication);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForUserAndType(String auditRecordsForUserAndType) {
-        setObjectField("auditRecordsForUserAndType", auditRecordsForUserAndType);
+        setFieldValue("auditRecordsForUserAndType", auditRecordsForUserAndType);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForUserAndApplication(String auditRecordsForUserAndApplication) {
-        setObjectField("auditRecordsForUserAndApplication", auditRecordsForUserAndApplication);
+        setFieldValue("auditRecordsForUserAndApplication", auditRecordsForUserAndApplication);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecordsForTypeAndApplication(String auditRecordsForTypeAndApplication) {
-        setObjectField("auditRecordsForTypeAndApplication", auditRecordsForTypeAndApplication);
+        setFieldValue("auditRecordsForTypeAndApplication", auditRecordsForTypeAndApplication);
         return this;
     }
     public AuditRecordsRepresentationBuilder withAuditRecordsForTypeAndUserAndApplication(String auditRecordsForTypeAndUserAndApplication) {
-        setObjectField("auditRecordsForTypeAndUserAndApplication", auditRecordsForTypeAndUserAndApplication);
+        setFieldValue("auditRecordsForTypeAndUserAndApplication", auditRecordsForTypeAndUserAndApplication);
         return this;
     }
     
     public AuditRecordsRepresentationBuilder withAuditRecords(AuditRecordCollectionRepresentation auditRecords) {
-        setObjectField("auditRecords", auditRecords);
+        setFieldValue("auditRecords", auditRecords);
         return this;
     }
     

@@ -31,27 +31,27 @@ public class EventRepresentationBuilder extends BaseRepresentationBuilder<EventR
     }
     
     public EventRepresentationBuilder withType(String type) {
-        setObjectField("type", type);
+        setFieldValue("type", type);
         return this;
     }
     
     public EventRepresentationBuilder withTime(Date time) {
-        setObjectField("time", time);
+        setFieldValue("time", time);
         return this;
     }
     
     public EventRepresentationBuilder withCreationTime(Date creationTime) {
-        setObjectField("creationTime", creationTime);
+        setFieldValue("creationTime", creationTime);
         return this;
     }
     
     public EventRepresentationBuilder withText(String text) {
-        setObjectField("text", text);
+        setFieldValue("text", text);
         return this;
     }
     
     public EventRepresentationBuilder withSource(ManagedObjectRepresentation source) {
-        setObjectField("managedObject", source);
+        setFieldValue("managedObject", source);
         return this;
     }
     

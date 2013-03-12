@@ -37,27 +37,27 @@ public class OperationRepresentationBuilder extends BaseRepresentationBuilder<Op
     }
     
     public OperationRepresentationBuilder withStatus(String status) {
-        setObjectField("status", status);
+        setFieldValue("status", status);
         return this;
     }
     
     public OperationRepresentationBuilder withFailureReason(String failureReason) {
-        setObjectField("failureReason", failureReason);
+        setFieldValue("failureReason", failureReason);
         return this;
     }
     
     public OperationRepresentationBuilder withCreationTime(Date creationTime) {
-        setObjectField("creationTime", creationTime);
+        setFieldValue("creationTime", creationTime);
         return this;
     }
     
     public OperationRepresentationBuilder withSource(ExternalIDCollectionRepresentation deviceExternalIDs) {
-        setObjectField("deviceExternalIDs", deviceExternalIDs);
+        setFieldValue("deviceExternalIDs", deviceExternalIDs);
         return this;
     }
     
     public OperationRepresentationBuilder withDeviceId(GId deviceId) {
-        setObjectField("deviceId", deviceId);
+        setFieldValue("deviceId", deviceId);
         return this;
     }
     

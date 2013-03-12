@@ -29,17 +29,17 @@ public class ExternalIDRepresentationBuilder extends AbstractObjectBuilder<Exter
     }
     
     public ExternalIDRepresentationBuilder withExternalId(String externalId) {
-        setObjectField("externalId", externalId);
+        setFieldValue("externalId", externalId);
         return this;
     }
     
     public ExternalIDRepresentationBuilder withType(String type) {
-        setObjectField("type", type);
+        setFieldValue("type", type);
         return this;
     }
     
     public ExternalIDRepresentationBuilder withManagedObject(ManagedObjectRepresentation managedObject) {
-        setObjectField("managedObject", managedObject);
+        setFieldValue("managedObject", managedObject);
         return this;
     }
     
