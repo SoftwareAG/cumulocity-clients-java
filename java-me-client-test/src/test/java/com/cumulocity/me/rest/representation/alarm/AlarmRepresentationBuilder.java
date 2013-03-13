@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.cumulocity.me.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
 import com.nsn.cumulocity.model.builder.AbstractObjectBuilder;
@@ -33,42 +32,42 @@ public class AlarmRepresentationBuilder extends AbstractObjectBuilder<AlarmRepre
     private final Set<Object> dynamicProperties = new HashSet<Object>();
 
     public AlarmRepresentationBuilder withStatus(String value) {
-        setObjectField("status", value);
+        setFieldValue("status", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withSeverity(String value) {
-        setObjectField("severity", value);
+        setFieldValue("severity", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withHistory(AuditRecordCollectionRepresentation value) {
-        setObjectField("history", value);
+        setFieldValue("history", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withText(String value) {
-        setObjectField("text", value);
+        setFieldValue("text", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withSource(ManagedObjectRepresentation value) {
-        setObjectField("managedObject", value);
+        setFieldValue("managedObject", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withType(String value) {
-        setObjectField("type", value);
+        setFieldValue("type", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withTime(Date value) {
-        setObjectField("time", value);
+        setFieldValue("time", value);
         return this;
     }
 
     public AlarmRepresentationBuilder withCreationTime(Date value) {
-        setObjectField("creationTime", value);
+        setFieldValue("creationTime", value);
         return this;
     }
 

@@ -28,12 +28,12 @@ public class IdentityRepresentationBuilder extends AbstractObjectBuilder<Identit
     }
     
     public IdentityRepresentationBuilder withExternalIdsOfGlobalId(String externalIdsOfGlobalId) {
-        setObjectField("externalIdsOfGlobalId", externalIdsOfGlobalId);
+        setFieldValue("externalIdsOfGlobalId", externalIdsOfGlobalId);
         return this;
     }
     
     public IdentityRepresentationBuilder withExternalId(String externalId) {
-        setObjectField("externalId", externalId);
+        setFieldValue("externalId", externalId);
         return this;
     }
     

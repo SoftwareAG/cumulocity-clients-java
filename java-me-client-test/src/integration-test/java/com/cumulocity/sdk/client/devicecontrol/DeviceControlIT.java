@@ -55,8 +55,8 @@ import com.cumulocity.model.control.Relay;
 import com.cumulocity.model.control.Relay.RelayState;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
-import cucumber.annotation.en.Then;
-import cucumber.annotation.en.When;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
 
 public class DeviceControlIT extends JavaSdkITBase {
 

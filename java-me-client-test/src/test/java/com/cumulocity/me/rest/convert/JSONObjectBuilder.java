@@ -34,12 +34,12 @@ public class JSONObjectBuilder extends AbstractObjectBuilder<JSONObject> {
     }
     
     public JSONObjectBuilder withProperty(String key, Object value) {
-        setObjectField(key, value);
+        setFieldValue(key, value);
         return this;
     }
     
     public JSONObjectBuilder withPropertyBuilder(String key, AbstractObjectBuilder<?> value) {
-        setObjectFieldBuilder(key, value);
+        setFieldValueBuilder(key, value);
         return this;
     }
     
