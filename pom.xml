@@ -28,8 +28,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>2.8.2-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>2.8.2-SNAPSHOT</cumulocity.shared-components.version>
+		<cumulocity.model.version>2.8.3</cumulocity.model.version>
+		<cumulocity.shared-components.version>2.8.2</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
