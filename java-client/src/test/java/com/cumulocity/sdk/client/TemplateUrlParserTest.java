@@ -59,4 +59,34 @@ public class TemplateUrlParserTest {
         assertThat(finalUrl, is("myTemplateUrl?source=myStrangeSource%7Btype%7D&type=myType"));
     }
 
+    @Test
+    public void shouldReplacePlaceholdersInTemplateWithUrlEncodedParamsContainingSpaces() throws Exception {
+        // Given
+        String templateUrl = "myTemplateUrlsource={source}&type={type}";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("source", "myStrangeSource {type}");
+        params.put("type", "myType");
+
+        // When
+        String finalUrl = new TemplateUrlParser().replacePlaceholdersWithParams(templateUrl, params);
+
+        // Then
+        assertThat(finalUrl, is("myTemplateUrlsource=myStrangeSource%20%7Btype%7D&type=myType"));
+    }
+
+
+    @Test
+    public void shouldReplacePlaceholdersInTemplateWithUrlProperlyEncodedValuesContainingSpaces() throws Exception {
+        // Given
+        String templateUrl = "myTemplateUrlsource={source}&type={type}?source={source}&type={type}";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("source", "myStrangeSource {type}");
+        params.put("type", "myType");
+
+        // When
+        String finalUrl = new TemplateUrlParser().replacePlaceholdersWithParams(templateUrl, params);
+
+        // Then
+        assertThat(finalUrl, is("myTemplateUrlsource=myStrangeSource%20%7Btype%7D&type=myType?source=myStrangeSource+%7Btype%7D&type=myType"));
+    }
 }
