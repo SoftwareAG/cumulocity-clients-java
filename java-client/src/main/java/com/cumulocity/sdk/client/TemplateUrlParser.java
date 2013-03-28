@@ -27,19 +27,37 @@ import java.util.Map.Entry;
 
 public class TemplateUrlParser {
 
-    public String replacePlaceholdersWithParams(String templateUrl, Map<String, String> params) {
-        for (Entry<String, String> entry : params.entrySet()) {
-            templateUrl = templateUrl.replaceAll("\\{" + entry.getKey() + "\\}", encode(entry.getValue()));
-        }
-        return templateUrl;
-    }
-
-    public static String encode(String url) {
+    public static String encode(String value) {
         try {
-            return URLEncoder.encode(url, "UTF-8");
+            return URLEncoder.encode(value, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("UTF-8 is unsupported???", e);
         }
+    }
+
+    public String replacePlaceholdersWithParams(String template, Map<String, String> params) {
+        for (Entry<String, String> entry : params.entrySet()) {
+            template = replaceAll(template, asPattern(entry.getKey()), encode(entry.getValue()));
+        }
+        return template;
+    }
+
+    private String replaceAll(String template, String key, String value) {
+        String[] tokens = template.split("\\?");
+        boolean hasQuery = tokens.length > 1;
+        return replaceAllInPath(tokens[0], key, value) + (hasQuery ? replaceAllInQuery(tokens[1], key, value) : "");
+    }
+
+    private String replaceAllInPath(String template, String key, String value) {
+        return template.replaceAll(key, value.replaceAll("\\+", "%20"));
+    }
+
+    private String replaceAllInQuery(String template, String key, String value) {
+        return "?" + template.replaceAll(key, value);
+    }
+
+    private String asPattern(String key) {
+        return "\\{" + key + "\\}";
     }
 
 }

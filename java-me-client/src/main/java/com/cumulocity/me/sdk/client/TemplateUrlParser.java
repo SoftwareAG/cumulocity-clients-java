@@ -76,13 +76,34 @@ public class TemplateUrlParser {
         }
         return sbuf.toString();
     }
-    
-    public String replacePlaceholdersWithParams(String templateUrl, Map params) {
+
+    public String replacePlaceholdersWithParams(String template, Map params) {
         Iterator iterator = params.entrySet().iterator();
         while (iterator.hasNext()) {
             Entry entry = (Entry) iterator.next();
-            templateUrl = StringUtils.replaceAll(templateUrl, "{" + entry.getKey() + "}", encode((String) entry.getValue()));
+            template = replaceAll(template, asPattern((String) entry.getKey()), encode((String) entry.getValue()));
         }
-        return templateUrl;
+        return template;
+    }
+
+    private String replaceAll(String template, String key, String value) {
+        String[] tokens = StringUtils.split(template, "?");
+        if (tokens.length > 1) {
+            return replaceAllInPath(tokens[0], key, value) + replaceAllInQuery(tokens[1], key, value);
+        } else {
+            return replaceAllInPath(tokens[0], key, value);
+        }
+    }
+
+    private String replaceAllInPath(String template, String key, String value) {
+        return StringUtils.replaceAll(template, key, StringUtils.replaceAll(value, "+", "%20"));
+    }
+
+    private String replaceAllInQuery(String template, String key, String value) {
+        return "?" + StringUtils.replaceAll(template, key, value);
+    }
+
+    private String asPattern(String key) {
+        return "{" + key + "}";
     }
 }
