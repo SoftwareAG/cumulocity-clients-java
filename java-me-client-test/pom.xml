@@ -13,10 +13,6 @@
     <name>Cumulocity :: Clients Java :: Java ME Client Test</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
-    <properties>
-        <jetty.version>8.1.8.v20121106</jetty.version>
-    </properties>
-
 	<licenses>
 		<license>
 			<name>MIT License</name>
