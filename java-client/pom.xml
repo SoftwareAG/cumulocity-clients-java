@@ -63,6 +63,10 @@
 					<groupId>com.nsn.cumulocity.shared-components</groupId>
 					<artifactId>common-exception</artifactId>
 				</exclusion>
+				 <exclusion>
+                                        <groupId>com.nsn.cumulocity.shared-components</groupId>
+                                        <artifactId>common-spring</artifactId>
+                                </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
