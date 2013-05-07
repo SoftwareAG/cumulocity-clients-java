@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>3.1.1-SNAPSHOT</version>
+		<version>3.1.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-client</artifactId>
@@ -63,6 +63,10 @@
 					<groupId>com.nsn.cumulocity.shared-components</groupId>
 					<artifactId>common-exception</artifactId>
 				</exclusion>
+				 <exclusion>
+                                        <groupId>com.nsn.cumulocity.shared-components</groupId>
+                                        <artifactId>common-spring</artifactId>
+                                </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
