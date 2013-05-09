@@ -5,17 +5,13 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>3.1.3-SNAPSHOT</version>
+        <version>3.2.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.nsn.cumulocity.sdk.me</groupId>
     <artifactId>java-me-client-test</artifactId>
     <name>Cumulocity :: Clients Java :: Java ME Client Test</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
-
-    <properties>
-        <jetty.version>8.1.8.v20121106</jetty.version>
-    </properties>
 
 	<licenses>
 		<license>
