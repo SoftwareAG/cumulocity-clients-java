@@ -43,6 +43,14 @@
 	</organization>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.cometd.java</groupId>
+            <artifactId>cometd-java-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.platform-services.notification</groupId>
+            <artifactId>notification-service</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.shared-components</groupId>
 			<artifactId>common-rest</artifactId>
@@ -63,10 +71,10 @@
 					<groupId>com.nsn.cumulocity.shared-components</groupId>
 					<artifactId>common-exception</artifactId>
 				</exclusion>
-				 <exclusion>
-                                        <groupId>com.nsn.cumulocity.shared-components</groupId>
-                                        <artifactId>common-spring</artifactId>
-                                </exclusion>
+				<exclusion>
+                 	<groupId>com.nsn.cumulocity.shared-components</groupId>
+                	 <artifactId>common-spring</artifactId>
+                </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
