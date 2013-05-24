@@ -29,8 +29,6 @@ import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
-import com.cumulocity.notification.service.impl.SvensonJSONContextClient;
-
 public abstract class BayeuxClientProvider {
     
     public static BayeuxClientProvider getInstance(){
@@ -42,23 +40,18 @@ public abstract class BayeuxClientProvider {
     
     private static class BayeuxClientProviderSingleton {
         private static final BayeuxClientProvider instance =  new BayeuxClientProvider(){
+            
             @Override
             public BayeuxClient get(String url) {
                 final Map<String,Object> options = new HashMap<String,Object>();
                 options.put(ClientTransport.JSON_CONTEXT, new SvensonJSONContextClient());
                 return new BayeuxClient(url, LongPollingTransport.create(options, HttpClientSingleton.instance));
             }
+            
         };
     }
 
     private static class HttpClientSingleton {
-        private static final HttpClient instance;
-        static {
-            instance = new HttpClient();
-            instance.setThreadPool(new ExecutorThreadPool(Executors.newCachedThreadPool()));
-            instance.setIdleTimeout(5000);
-            instance.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
-            instance.setMaxConnectionsPerAddress(32768);
-        }
+        private static final HttpClient instance = new HttpClient();
     }
 }

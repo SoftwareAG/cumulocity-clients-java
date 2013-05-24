@@ -6,8 +6,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import javax.management.NotificationListener;
+
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.client.BayeuxClient;
+import org.cometd.client.BayeuxClient.State;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,32 +18,28 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.cumulocity.sdk.client.notification.Subscriber.Subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriberImplTest {
-
-    private static final class NullNotificationListener implements NotificationListener {
-        @Override
-        public void onNotification(Map<String, Object> notification) {
-
-        }
-    }
 
     @Mock
     BayeuxClient client;
 
     @Mock
-    ChannelNameResolver<Object> channelNameResolver;
+    SubscriptionNameResolver<Object> subscriptionNameResolver;
 
     @Mock
     BayeuxClientProvider bayeuxClientProvider;
 
     Subscriber<Object> subscriber;
+    
+    @Mock
+    SubscriptionListener<Object> listener; 
 
     @Before
     public void setup() {
-        subscriber = new SubscriberImpl("", channelNameResolver, bayeuxClientProvider);
+        subscriber = new SubscriberImpl<Object>("", subscriptionNameResolver, bayeuxClientProvider);
+        mockClientProvider();
     }
 
     private void mockClientProvider() {
@@ -48,10 +47,11 @@ public class SubscriberImplTest {
     }
 
     @Test
-    public final void shouldConnectSuccessfuly() {
+    public final void shouldStartSuccessfuly() {
         //Given
-        mockClientProvider();
-        subsciberConnected();
+        clientCanConnect();
+        //When
+        subscriber.start();
         //Then
         verify(client).handshake();
     }
@@ -59,15 +59,13 @@ public class SubscriberImplTest {
     @Test(expected = IllegalArgumentException.class)
     public final void shouldFailSubscribeWhenSubscriptionObjectIsNull() {
         //Given
-        mockClientProvider();
         //when
-        subscriber.subscribe(null, new NullNotificationListener());
+        subscriber.subscribe(null, listener);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public final void shouldFailSubscribeWhenNotificationListenerIsNull() {
         //Given
-        mockClientProvider();
         //when
         subscriber.subscribe(new Object(), null);
     }
@@ -75,58 +73,107 @@ public class SubscriberImplTest {
     @Test(expected = IllegalStateException.class)
     public final void shouldFailSubscribeWhenNotConnected() {
         //Given
-        mockClientProvider();
         //when
-        subscriber.subscribe(new Object(), new NullNotificationListener());
+        subscriber.subscribe(new Object(), listener);
     }
     
     @Test
     public final void shouldSuccesfulySubscribeWhenConnected() {
         //Given
         final Object objectToSubscribe = new Object();
-        mockClientProvider();
-        subsciberConnected();
+        subsciberStarted();
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
         //when
-        subscriber.subscribe(objectToSubscribe, new NullNotificationListener());
+        subscriber.subscribe(objectToSubscribe, listener);
         //Then
         verify(channel).subscribe(Mockito.any(MessageListenerAdapter.class));
     }
     
-    @Test
-    public final void shouldSuccesfulyUnSubscribeAfterSubscribe() {
-        //Given
-        final Object objectToSubscribe = new Object();
-        mockClientProvider();
-        subsciberConnected();
-        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        //when
-        final Subscription subscription = subscriber.subscribe(objectToSubscribe, new NullNotificationListener());
-        subscription.unsubscribe();
-        //Then
-        verify(channel).subscribe(Mockito.any(MessageListenerAdapter.class));
-        verify(channel).unsubscribe(Mockito.any(MessageListenerAdapter.class));
-    }
+    
     
     
     @Test(expected=IllegalStateException.class)
     public final void shouldFailDisconnectWithIllegalStateExceptionWhenNotConnected() {
         //Given
-        mockClientProvider();
         //when
-        subscriber.disconnect();
+        subscriber.stop();
+    }
+    
+    
+    
+    @Test
+    public final void shouldSuccesfulySubscribeAndMakeHandshake() {
+        //Given
+        final Object objectToSubscribe = new Object();
+        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        subsciberStarted();
+        //when
+        subscriber.subscribe(objectToSubscribe, listener);
+        verifyConnected();
+        verifySubscribed(channel);
+    }
+
+    @Test
+    public final void shouldSuccesfulyUnSubscribeAfterSubscribe() {
+        //Given
+        final Object objectToSubscribe = new Object();
+        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        subsciberStarted();
+        //when
+        final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
+        subscription.unsubscribe();
+        //Then
+        verifyConnected();
+        verifySubscribed(channel);
+        verifyUnsubscribe(channel);
+    }
+    
+    @Test
+    public final void shouldSuccesfulyDisconnectOnStop(){
+        //Given
+        subsciberStarted();
+        clientCanDisconnect();
+        //When
+        subscriber.stop();
+        //Then
+        verifyDisconnected();
+    }
+    
+    private void clientCanConnect() {
+        when(client.waitFor(Mockito.anyLong(), Mockito.eq(State.CONNECTED))).thenReturn(true);
+    }
+    private void clientCanDisconnect() {
+        when(client.waitFor(Mockito.anyLong(), Mockito.eq(State.DISCONNECTED))).thenReturn(true);
+        when(client.disconnect(Mockito.anyLong())).thenReturn(true);
+    }
+
+    private void verifyUnsubscribe(final ClientSessionChannel channel) {
+        verify(channel).unsubscribe(Mockito.any(MessageListenerAdapter.class));
+    }
+
+    private void verifySubscribed(final ClientSessionChannel channel) {
+        verify(channel).subscribe(Mockito.any(MessageListenerAdapter.class));
+    }
+
+    private void verifyDisconnected() {
+        verify(client).disconnect(Mockito.anyLong());
+    }
+
+    private void verifyConnected() {
+        verify(client).handshake();
     }
 
     private ClientSessionChannel mockChannel(Object objectToSubscribe) {
         final String id = objectToSubscribe.toString();
-        when(channelNameResolver.apply(objectToSubscribe)).thenReturn(id);
+        when(subscriptionNameResolver.apply(objectToSubscribe)).thenReturn(id);
         ClientSessionChannel channel = Mockito.mock(ClientSessionChannel.class);
         when(client.getChannel(id)).thenReturn(channel); 
         return channel;
     }
 
-    private void subsciberConnected() {
-        subscriber.connect();
+    private void subsciberStarted() {
+        clientCanConnect();
+        subscriber.start();
     }
 
 

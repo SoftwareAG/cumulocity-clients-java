@@ -24,15 +24,27 @@ import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
 
-final class MessageListenerAdapter implements MessageListener {
-    private final NotificationListener handler;
-
-    MessageListenerAdapter(NotificationListener handler) {
+final class MessageListenerAdapter<T> implements MessageListener {
+    private final SubscriptionListener<T> handler;
+    private final Subscription<T> subscription;
+    
+    MessageListenerAdapter(SubscriptionListener<T> handler, ClientSessionChannel channel, T object) {
         this.handler = handler;
+        subscription = createSubscription(channel, object);
+    }
+
+    protected ChannelSubscription<T> createSubscription(ClientSessionChannel channel, T object) {
+        return new ChannelSubscription<T>(this, channel, object);
     }
 
     @Override
     public void onMessage(ClientSessionChannel channel, Message message) {
-        handler.onNotification(message.getDataAsMap());
+        handler.onNotification(subscription, message.getDataAsMap());
     }
+
+    public Subscription<T> getSubscription() {
+        return subscription;
+    }
+    
+    
 }

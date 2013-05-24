@@ -47,10 +47,6 @@
             <groupId>org.cometd.java</groupId>
             <artifactId>cometd-java-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.nsn.cumulocity.platform-services.notification</groupId>
-            <artifactId>notification-service</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.shared-components</groupId>
 			<artifactId>common-rest</artifactId>
@@ -75,6 +71,14 @@
                  	<groupId>com.nsn.cumulocity.shared-components</groupId>
                 	 <artifactId>common-spring</artifactId>
                 </exclusion>
+				<exclusion>
+				    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+				    <groupId>org.apache.cxf</groupId>
+				</exclusion>
+				<exclusion>
+				    <artifactId>cxf-rt-transports-http-jetty</artifactId>
+				    <groupId>org.apache.cxf</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

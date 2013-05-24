@@ -20,21 +20,29 @@
 package com.cumulocity.sdk.client.notification;
 
 import org.cometd.bayeux.client.ClientSessionChannel;
+import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
-import com.cumulocity.sdk.client.notification.Subscriber.Subscription;
 
-final class ChannelSubscription implements Subscription {
-    private final MessageListenerAdapter listener;
+class ChannelSubscription<T> implements Subscription<T> {
+    private final MessageListener listener;
 
     private final ClientSessionChannel channel;
 
-    ChannelSubscription(MessageListenerAdapter listener, ClientSessionChannel channel) {
+    private T object;
+
+    ChannelSubscription(MessageListener listener, ClientSessionChannel channel, T object) {
         this.listener = listener;
         this.channel = channel;
+        this.object = object;
     }
 
     @Override
     public void unsubscribe() {
         channel.unsubscribe(listener);
+    }
+
+    @Override
+    public T getObject() {      
+        return object;
     }
 }

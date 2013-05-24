@@ -19,6 +19,6 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-public interface ChannelNameResolver<T> {
+public interface SubscriptionNameResolver<T> {
     String apply(T o);
 }

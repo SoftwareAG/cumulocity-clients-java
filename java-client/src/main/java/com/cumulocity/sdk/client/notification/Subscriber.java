@@ -22,14 +22,7 @@ package com.cumulocity.sdk.client.notification;
 
 public interface Subscriber<T> {
     
-    interface Subscription{
-        void unsubscribe();
-    }
-    
-    void connect();
-    
-    Subscription subscribe(T object, NotificationListener handler);
-    
-    void disconnect();
-
+    Subscription<T> subscribe(T object, SubscriptionListener<T> handler);
+    void start();
+    void stop();
 }

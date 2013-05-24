@@ -29,52 +29,57 @@ public class SubscriberImpl<T> implements Subscriber<T> {
 
     private final String url;
 
-    private final ChannelNameResolver<T> channelNameResolver;
+    private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
     private final BayeuxClientProvider bayeuxClientProvider;
 
-    private BayeuxClient client;
+    private volatile BayeuxClient client;
 
-    public SubscriberImpl(String url, ChannelNameResolver<T> channelNameResolver) {
+    public SubscriberImpl(String url, SubscriptionNameResolver<T> channelNameResolver) {
         this(url, channelNameResolver, BayeuxClientProvider.getInstance());
     }
 
-    public SubscriberImpl(String url, ChannelNameResolver<T> channelNameResolver, BayeuxClientProvider bayeuxClientProvider) {
+    public SubscriberImpl(String url, SubscriptionNameResolver<T> channelNameResolver, BayeuxClientProvider bayeuxClientProvider) {
         this.url = url;
-        this.channelNameResolver = channelNameResolver;
+        this.subscriptionNameResolver = channelNameResolver;
         this.bayeuxClientProvider = bayeuxClientProvider;
     }
 
     @Override
-    public void connect() {
-        client = bayeuxClientProvider.get(url);
+    public void start() {
+        checkState(!isConnected(), "subscriber already started");
+        BayeuxClient client = bayeuxClientProvider.get(url);
         client.handshake();
-        boolean handshake = client.waitFor(TimeUnit.SECONDS.toMillis(10),State.CONNECTED);
+        boolean handshake = client.waitFor(TimeUnit.SECONDS.toMillis(10), State.CONNECTED);
         checkState(handshake, "unable to connect to server");
+        this.client = client;
     }
-    
 
-    @Override 
-    public Subscription subscribe(T object, NotificationListener handler) {
+    public Subscription<T> subscribe(T object, SubscriptionListener<T> handler) {
+
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-        checkState(client != null, "subscriber not connected to server");
-        
+        checkState(isConnected(), "subscriber not connected to server, invoke start first");
+
         final ClientSessionChannel channel = getChannel(object);
-        final MessageListenerAdapter listener = new MessageListenerAdapter(handler);
+        final MessageListenerAdapter<T> listener = new MessageListenerAdapter<T>(handler, channel, object);
         channel.subscribe(listener);
-        return new ChannelSubscription(listener, channel);
+        return listener.getSubscription();
+    }
+
+    private boolean isConnected() {
+        return client != null;
     }
 
     private ClientSessionChannel getChannel(final T object) {
-        final String channelId = channelNameResolver.apply(object);
-        checkState(channelId != null && channelId.length() > 0, "channalId is null or empty for object : "+object);
+        final String channelId = subscriptionNameResolver.apply(object);
+        checkState(channelId != null && channelId.length() > 0, "channalId is null or empty for object : " + object);
         return client.getChannel(channelId);
     }
 
     @Override
-    public void disconnect() {
-        checkState(client != null, "subscriber not connected to server");
+    public void stop() {
+        checkState(isConnected(), "subscriber not connected to server, invoke start first");
         client.disconnect(10000);
         client = null;
     }
