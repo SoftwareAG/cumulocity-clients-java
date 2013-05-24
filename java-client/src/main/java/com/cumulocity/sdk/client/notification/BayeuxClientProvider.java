@@ -21,13 +21,11 @@ package com.cumulocity.sdk.client.notification;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.transport.ClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 public abstract class BayeuxClientProvider {
     

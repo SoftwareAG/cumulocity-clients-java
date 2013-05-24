@@ -47,6 +47,10 @@
             <groupId>org.cometd.java</groupId>
             <artifactId>cometd-java-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.shared-components</groupId>
+            <artifactId>common-notification</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.shared-components</groupId>
 			<artifactId>common-rest</artifactId>
