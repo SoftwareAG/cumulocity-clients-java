@@ -19,10 +19,12 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import com.cumulocity.sdk.client.SDKException;
 
-public interface Subscriber<T> {
+
+public interface Subscriber<T,R> {
     
-    Subscription<T> subscribe(T object, SubscriptionListener<T> handler);
-    void start();
+    Subscription<T> subscribe(T object, SubscriptionListener<T,R> handler);
+    void start() throws SDKException;
     void stop();
 }

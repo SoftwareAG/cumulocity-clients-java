@@ -19,43 +19,33 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import java.util.concurrent.TimeUnit;
-
+import org.cometd.bayeux.Message;
+import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
-import org.cometd.client.BayeuxClient;
-import org.cometd.client.BayeuxClient.State;
+import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
-public class SubscriberImpl<T> implements Subscriber<T> {
+import com.cumulocity.sdk.client.SDKException;
 
-    private final String url;
+public class SubscriberImpl<T> implements Subscriber<T, Message> {
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
-    private final BayeuxClientProvider bayeuxClientProvider;
+    private final BayeuxSessionProvider bayeuxSessionProvider;
 
-    private volatile BayeuxClient client;
+    private volatile ClientSession session;
 
-    public SubscriberImpl(String url, SubscriptionNameResolver<T> channelNameResolver) {
-        this(url, channelNameResolver, BayeuxClientProvider.getInstance());
-    }
-
-    public SubscriberImpl(String url, SubscriptionNameResolver<T> channelNameResolver, BayeuxClientProvider bayeuxClientProvider) {
-        this.url = url;
+    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider) {
         this.subscriptionNameResolver = channelNameResolver;
-        this.bayeuxClientProvider = bayeuxClientProvider;
+        this.bayeuxSessionProvider = bayeuxSessionProvider;
     }
 
     @Override
-    public void start() {
+    public void start() throws SDKException {
         checkState(!isConnected(), "subscriber already started");
-        BayeuxClient client = bayeuxClientProvider.get(url);
-        client.handshake();
-        boolean handshake = client.waitFor(TimeUnit.SECONDS.toMillis(10), State.CONNECTED);
-        checkState(handshake, "unable to connect to server");
-        this.client = client;
+        session = bayeuxSessionProvider.get();
     }
 
-    public Subscription<T> subscribe(T object, SubscriptionListener<T> handler) {
+    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) {
 
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
@@ -63,25 +53,30 @@ public class SubscriberImpl<T> implements Subscriber<T> {
 
         final ClientSessionChannel channel = getChannel(object);
         final MessageListenerAdapter<T> listener = new MessageListenerAdapter<T>(handler, channel, object);
+
+        final ClientSessionChannel subscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
+        subscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, subscribeChannel));
+
         channel.subscribe(listener);
+
         return listener.getSubscription();
     }
 
     private boolean isConnected() {
-        return client != null;
+        return session != null;
     }
 
     private ClientSessionChannel getChannel(final T object) {
         final String channelId = subscriptionNameResolver.apply(object);
         checkState(channelId != null && channelId.length() > 0, "channalId is null or empty for object : " + object);
-        return client.getChannel(channelId);
+        return session.getChannel(channelId);
     }
 
     @Override
     public void stop() {
         checkState(isConnected(), "subscriber not connected to server, invoke start first");
-        client.disconnect(10000);
-        client = null;
+        session.disconnect();
+        session = null;
     }
 
     private final void checkState(boolean state, String message) {
@@ -93,6 +88,32 @@ public class SubscriberImpl<T> implements Subscriber<T> {
     private final void checkArgument(boolean state, String message) {
         if (!state) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    private final class SubscriptionSuccessListener implements MessageListener {
+        private final MessageListenerAdapter<T> listener;
+
+        private final SubscriptionListener<T, Message> handler;
+
+        private final ClientSessionChannel subscribeChannel;
+
+        private SubscriptionSuccessListener(MessageListenerAdapter<T> listener, SubscriptionListener<T, Message> handler,
+                ClientSessionChannel subscribeChannel) {
+            this.listener = listener;
+            this.handler = handler;
+            this.subscribeChannel = subscribeChannel;
+        }
+
+        @Override
+        public void onMessage(ClientSessionChannel channel, Message message) {
+            try {
+                if (channel.getChannelId().equals(message.get(Message.SUCCESSFUL_FIELD)) && !message.isSuccessful()) {
+                    handler.onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel"));
+                }
+            } finally {
+                subscribeChannel.removeListener(this);
+            }
         }
     }
 

@@ -19,10 +19,9 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import java.util.Map;
 
 
-public interface SubscriptionListener<T>{
-    void onNotification(Subscription<T> subscription, Map<String,Object> notification);
+public interface SubscriptionListener<T,R>{
+    void onNotification(Subscription<T> subscription, R notification);
     void onError(Subscription<T> subscription, Throwable ex);
 }

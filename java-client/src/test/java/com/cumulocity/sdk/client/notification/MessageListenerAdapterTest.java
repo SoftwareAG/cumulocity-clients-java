@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
-import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -16,7 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class MessageListenerAdapterTest {
 
     @Mock
-    SubscriptionListener<Object> listenerMock;
+    SubscriptionListener<Object, Message> listenerMock;
     @Mock
     ClientSessionChannel channel;
     @Mock
@@ -32,19 +31,17 @@ public class MessageListenerAdapterTest {
         final Subscription<Object> subscription = adapter.getSubscription();
         assertThat(subscription).isNotNull();
         assertThat(subscription.getObject()).isNotNull().isEqualTo(subscribedOn);
-        verify(message).getDataAsMap();
     }
     
     @Test
-    public final void onMessageShouldPassMessageDataAsMap() {
+    public final void onMessageShouldPassMessageData() {
         //Given
         Object subscribedOn = new Object();
         MessageListenerAdapter<Object> adapter = new MessageListenerAdapter<Object>(listenerMock, channel, subscribedOn );
         //When
         adapter.onMessage(channel, message);
         //Then
-        verify(listenerMock).onNotification( Mockito.any(Subscription.class) ,Mockito.anyMap());
-        verify(message).getDataAsMap();
+        verify(listenerMock).onNotification( Mockito.any(Subscription.class) ,Mockito.any(Message.class));
     }
 
 }
