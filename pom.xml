@@ -156,11 +156,21 @@
 				<artifactId>java-me-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.nsn.cumulocity.shared-components</groupId>
+                <artifactId>common-notification</artifactId>
+                <version>${cumulocity.shared-components.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.shared-components</groupId>
 				<artifactId>common-rest</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.nsn.cumulocity.platform-services.notification</groupId>
+                <artifactId>notification-service</artifactId>
+                <version>${cumulocity.shared-components.version}</version>
+            </dependency>
 			<!-- COMPILE DEPENDENCIES END -->
 
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->

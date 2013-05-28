@@ -93,7 +93,7 @@ public class ApplicationCreator {
         String host = platform.getHost();
         WebResource applicationApi = httpClient.resource(host + APPLICATIONS_URI);
         String applicationJson = "{\"name\" : \"" + appName + "\", " +
-                "\"key\" : \"" + platform.getApplicationKey() + "\"}";
+                "\"key\" : \"" + platform.getApplicationKey() + "\", \"type\" : \"EXTERNAL\", \"externalUrl\" : \"http://some_fake_url\"}";
         return applicationApi.type(APPLICATION_MIME_TYPE).accept(APPLICATION_MIME_TYPE).post(ClientResponse.class, applicationJson);
     }
 

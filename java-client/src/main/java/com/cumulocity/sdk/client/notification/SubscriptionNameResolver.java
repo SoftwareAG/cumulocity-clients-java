@@ -17,29 +17,9 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.cumulocity.sdk.client.devicecontrol;
+package com.cumulocity.sdk.client.notification;
 
-import java.util.ArrayList;
-import java.util.List;
+public interface SubscriptionNameResolver<T> {
 
-import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationProcessor;
-
-public class SimpleOperationProcessor implements OperationProcessor {
-    private List<OperationRepresentation> operations = new ArrayList<OperationRepresentation>();
-
-    @Override
-    public boolean process(OperationRepresentation operation) {
-        operations.add(operation);
-        return true;
-    }
-
-    public List<OperationRepresentation> getOperations() {
-        return operations;
-    }
-
-    public void setOperations(List<OperationRepresentation> operations) {
-        this.operations = operations;
-    }
-
+    String apply(T o);
 }

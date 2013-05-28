@@ -46,7 +46,10 @@ import com.cumulocity.sdk.client.FixedRatePoller;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationsByAgentAndStatusPollerImpl;
+import com.cumulocity.sdk.client.devicecontrol.notification.OperationNotificationSubscriber;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.notification.Subscription;
+import com.cumulocity.sdk.client.notification.SubscriptionListener;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -58,18 +61,21 @@ public class DeviceControlIT extends JavaSdkITBase {
     private List<ManagedObjectRepresentation> managedObjects = new LinkedList<ManagedObjectRepresentation>();
 
     private DeviceControlApi deviceControlResource;
+
     private InventoryApi inventoryApi;
 
+    private OperationNotificationSubscriber subscriber;
+
     public void createManagedObjects() throws Exception {
-//        And I have managed object with name 'Agent', type 'com.type' and 'com.cumulocity.model.Agent' fragment
-//        And I have managed object with name 'Device' and type 'com.type'
-//        And I have managed object with name 'Agent2', type 'com.type' and 'com.cumulocity.model.Agent' fragment
-//        And I have managed object with name 'Device2' and type 'com.type'
-//        And I create all
-//        And I add child devices as per the following:
-//        | parent | child |
-//        | 0      | 1     |
-//        | 2      | 3     |
+        //        And I have managed object with name 'Agent', type 'com.type' and 'com.cumulocity.model.Agent' fragment
+        //        And I have managed object with name 'Device' and type 'com.type'
+        //        And I have managed object with name 'Agent2', type 'com.type' and 'com.cumulocity.model.Agent' fragment
+        //        And I have managed object with name 'Device2' and type 'com.type'
+        //        And I create all
+        //        And I add child devices as per the following:
+        //        | parent | child |
+        //        | 0      | 1     |
+        //        | 2      | 3     |
 
         ManagedObjectRepresentation agent = aSampleMo().withName("Agent").withType("com.type").with(new Agent()).build();
         ManagedObjectRepresentation device = aSampleMo().withName("Device").withType("com.type").build();
@@ -93,8 +99,7 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     }
 
-    private void addChildDevice(ManagedObjectRepresentation parent, ManagedObjectRepresentation child)
-            throws SDKException {
+    private void addChildDevice(ManagedObjectRepresentation parent, ManagedObjectRepresentation child) throws SDKException {
 
         ManagedObjectReferenceRepresentation deviceRef = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(child).build();
         inventoryApi.getManagedObject(parent.getId()).addChildDevice(deviceRef);
@@ -123,6 +128,10 @@ public class DeviceControlIT extends JavaSdkITBase {
         if (poller != null) {
             poller.stop();
         }
+        if (subscriber != null) {
+            subscriber.disconnect();
+            subscriber = null;
+        }
     }
 
     private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
@@ -138,51 +147,62 @@ public class DeviceControlIT extends JavaSdkITBase {
     //    Scenario: Create Operation and poll it
     @Test
     public void createOperationAndPollIt() throws Exception {
-//    Given I have a poller for agent '0'
+        //    Given I have a poller for agent '0'
         iHaveAPollerForAgent(0);
-//    When I create an operation for device '1'
+        //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    Then poller should receive operation
+        //    Then poller should receive operation
         pollerShouldRecieveOperation();
     }
 
     //
-//    Scenario: adding operations to queue
+    //    Scenario: adding operations to queue
     @Test
     public void addingOperationToQueue() throws Exception {
-//    When I get all operations for device '1'
+        //    When I get all operations for device '1'
         iGetAllOperationsForAgent(1);
-//    Then I should receive '0' operations
+        //    Then I should receive '0' operations
         iShouldReceiveXOperations(0);
-//    When I create an operation for device '1'
+        //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I get all operations for device '1'
+        //    And I get all operations for device '1'
         iGetAllOperationsForDeviceX(1);
-//    Then I should receive '1' operations
+        //    Then I should receive '1' operations
         iShouldReceiveXOperations(1);
     }
 
-//
-//    Scenario: Operation CRUD
+    //  Scenario: get notification about new operation
+    @Test
+    public void getNotificationAboutNewOperation() throws Exception {
+        //      Given I have a operation subscriber for agent '0'
+        iHaveAOperationSubscriberForAgent(0);
+        //    When I create an operation for device '1'
+        iCreateAnOperationForDevice(1);
+        //    Then subscriber should receive operation
+        subscriberShouldReceiveOperation();
+    }
+
+    //
+    //    Scenario: Operation CRUD
 
     @Test
     public void operationCRUD() throws Exception {
-//    When I create an operation for device '1'
+        //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I call get on created operation
+        //    And I call get on created operation
         iCallGetOnCreatedOperation();
-//    Then I should receive operation with status 'PENDING'
+        //    Then I should receive operation with status 'PENDING'
         iShouldReceiveOperationWithStatusX("PENDING");
-//    When I update created operation with status 'EXECUTING'
+        //    When I update created operation with status 'EXECUTING'
         iUpdateCreatedOperationWithStatusX("EXECUTING");
-//    And I call get on created operation
+        //    And I call get on created operation
         iCallGetOnCreatedOperation();
-//    Then I should receive operation with status 'EXECUTING'
+        //    Then I should receive operation with status 'EXECUTING'
         iShouldReceiveOperationWithStatusX("EXECUTING");
     }
 
     //
-//    Scenario: query operations by status
+    //    Scenario: query operations by status
     @Test
     public void queryOperationByStatus() throws Exception {
         iGetAllOperations();
@@ -192,69 +212,69 @@ public class DeviceControlIT extends JavaSdkITBase {
         iQueryOperationsWithStatusX("PENDING");
         int numOfPending = allOperations.getOperations().size();
 
-//    When I create an operation for device '1'
+        //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I update created operation with status 'EXECUTING'
+        //    And I update created operation with status 'EXECUTING'
         iUpdateCreatedOperationWithStatusX("EXECUTING");
-//    And I create an operation for device '1'
+        //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I get all operations
+        //    And I get all operations
         iGetAllOperations();
-//    Then I should receive '2' operations
+        //    Then I should receive '2' operations
         iShouldReceiveXOperations(numOfAll + 2);
-//    When I query operations with status 'PENDING'
+        //    When I query operations with status 'PENDING'
         iQueryOperationsWithStatusX("PENDING");
-//    Then I should receive '1' operations
+        //    Then I should receive '1' operations
         iShouldReceiveXOperations(numOfPending + 1);
-//    And all received operations should have status 'PENDING'
+        //    And all received operations should have status 'PENDING'
         allRecievedOperationsShouldHaveStatusX("PENDING");
-//    When I query operations with status 'EXECUTING'
+        //    When I query operations with status 'EXECUTING'
         iQueryOperationsWithStatusX("EXECUTING");
-//    Then I should receive '1' operations
+        //    Then I should receive '1' operations
         iShouldReceiveXOperations(numOfExecuting + 1);
-//    And all received operations should have status 'EXECUTING'
+        //    And all received operations should have status 'EXECUTING'
         allRecievedOperationsShouldHaveStatusX("EXECUTING");
     }
 
-//
-//    Scenario: query operations by device
+    //
+    //    Scenario: query operations by device
 
     @Test
     public void queryOperationsByDevice() throws Exception {
-//    And I create an operation for device '1'
+        //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I create an operation for device '1'
+        //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I create an operation for device '3'
+        //    And I create an operation for device '3'
         iCreateAnOperationForDevice(3);
-//    When I get all operations for device '1'
+        //    When I get all operations for device '1'
         iGetAllOperationsForDeviceX(1);
-//    Then I should receive '2' operations
+        //    Then I should receive '2' operations
         iShouldReceiveXOperations(2);
-//    When I get all operations for device '3'
+        //    When I get all operations for device '3'
         iGetAllOperationsForDeviceX(3);
-//    Then I should receive '1' operations
+        //    Then I should receive '1' operations
         iShouldReceiveXOperations(1);
     }
 
-//
-//    Scenario: query operations by agent
+    //
+    //    Scenario: query operations by agent
 
     @Test
     public void queryOperationsByAgent() throws Exception {
-//    And I create an operation for device '1'
+        //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I create an operation for device '1'
+        //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-//    And I create an operation for device '3'
+        //    And I create an operation for device '3'
         iCreateAnOperationForDevice(3);
-//    When I get all operations for agent '0'
+        //    When I get all operations for agent '0'
         iGetAllOperationsForAgent(0);
-//    Then I should receive '2' operations
+        //    Then I should receive '2' operations
         iShouldReceiveXOperations(2);
-//    When I get all operations for agent '2'
+        //    When I get all operations for agent '2'
         iGetAllOperationsForAgent(2);
-//    Then I should receive '1' operations
+        //    Then I should receive '1' operations
         iShouldReceiveXOperations(1);
     }
 
@@ -274,6 +294,28 @@ public class DeviceControlIT extends JavaSdkITBase {
         poller.start();
     }
 
+    @Given("^I have a operation subscriber for agent '([^']*)'$")
+    public void iHaveAOperationSubscriberForAgent(int arg1) throws Exception {
+        GId agentId = getMoId(arg1);
+        subscriber = new OperationNotificationSubscriber(platform);
+        subscriber.subscribe(agentId, new SubscriptionListener<GId, OperationRepresentation>() {
+
+            @Override
+            public void onNotification(Subscription<GId> subscription, OperationRepresentation notification) {
+                operationProcessor.process(notification);
+            }
+
+            @Override
+            public void onError(Subscription<GId> subscription, Throwable ex) {
+            }
+        });
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @When("^I create an operation for device '([^']*)'$")
     public void iCreateAnOperationForDevice(int deviceNum) throws Exception {
         GId deviceId = getMoId(deviceNum);
@@ -285,6 +327,16 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     @Then("^poller should receive operation$")
     public void pollerShouldRecieveOperation() {
+        try {
+            Thread.sleep(11000);
+            assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Then("^subscriber should receive operation$")
+    public void subscriberShouldReceiveOperation() {
         try {
             Thread.sleep(11000);
             assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
