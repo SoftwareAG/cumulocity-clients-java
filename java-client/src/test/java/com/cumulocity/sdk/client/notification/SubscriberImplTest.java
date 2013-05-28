@@ -49,21 +49,21 @@ public class SubscriberImplTest {
     @Test(expected = IllegalArgumentException.class)
     public final void shouldFailSubscribeWhenSubscriptionObjectIsNull() throws SDKException {
         //Given
-        //when
+        //When
         subscriber.subscribe(null, listener);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public final void shouldFailSubscribeWhenNotificationListenerIsNull() throws SDKException {
         //Given
-        //when
+        //When
         subscriber.subscribe(new Object(), null);
     }
 
     @Test(expected = IllegalStateException.class)
     public final void shouldFailSubscribeWhenNotConnected() throws SDKException {
         //Given
-        //when
+        //When
         subscriber.subscribe(new Object(), listener);
     }
 
@@ -71,19 +71,19 @@ public class SubscriberImplTest {
     public final void shouldSuccesfulySubscribeWhenConnected() throws SDKException {
         //Given
         final Object objectToSubscribe = new Object();
-
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        //when
+        //When
         subscriber.subscribe(objectToSubscribe, listener);
         //Then
         verify(channel).subscribe(Mockito.any(MessageListenerAdapter.class));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public final void shouldFailDisconnectWithIllegalStateExceptionWhenNotConnected() {
+    
+    public final void shouldFailDisconnectNotThrowExcpetionWhenNotConnected() {
         //Given
-        //when
+        //When
         subscriber.disconnect();
+        //Then
     }
 
     @Test
@@ -91,7 +91,7 @@ public class SubscriberImplTest {
         //Given
         final Object objectToSubscribe = new Object();
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        //when
+        //When
         subscriber.subscribe(objectToSubscribe, listener);
         verifyConnected();
         verifySubscribed(channel);
@@ -102,7 +102,7 @@ public class SubscriberImplTest {
         //Given
         final Object objectToSubscribe = new Object();
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        //when
+        //When
         final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
         subscription.unsubscribe();
         //Then
