@@ -4,8 +4,7 @@ import org.cometd.bayeux.client.ClientSession;
 
 import com.cumulocity.sdk.client.SDKException;
 
-public interface BayeuxSessionProvider {
-
+interface BayeuxSessionProvider {
+    
     ClientSession get() throws SDKException;
-
 }

@@ -4,7 +4,7 @@ import org.eclipse.jetty.client.security.Realm;
 
 import com.cumulocity.sdk.client.PlatformParameters;
 
-public class PlatformPropertiesRealm implements Realm {
+class PlatformPropertiesRealm implements Realm {
 
     private PlatformParameters paramters;
 

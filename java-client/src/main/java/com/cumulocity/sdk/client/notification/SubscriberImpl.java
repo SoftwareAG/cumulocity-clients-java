@@ -26,7 +26,7 @@ import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
 import com.cumulocity.sdk.client.SDKException;
 
-public class SubscriberImpl<T> implements Subscriber<T, Message> {
+class SubscriberImpl<T> implements Subscriber<T, Message> {
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
@@ -39,24 +39,25 @@ public class SubscriberImpl<T> implements Subscriber<T, Message> {
         this.bayeuxSessionProvider = bayeuxSessionProvider;
     }
 
-    @Override
     public void start() throws SDKException {
         checkState(!isConnected(), "subscriber already started");
         session = bayeuxSessionProvider.get();
     }
 
-    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) {
+    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
 
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-        checkState(isConnected(), "subscriber not connected to server, invoke start first");
+
+        if (!isConnected()) {
+            start();
+        }
 
         final ClientSessionChannel channel = getChannel(object);
         final MessageListenerAdapter<T> listener = new MessageListenerAdapter<T>(handler, channel, object);
-
         final ClientSessionChannel subscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
-        subscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, subscribeChannel));
 
+        subscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, subscribeChannel));
         channel.subscribe(listener);
 
         return listener.getSubscription();
@@ -73,10 +74,11 @@ public class SubscriberImpl<T> implements Subscriber<T, Message> {
     }
 
     @Override
-    public void stop() {
-        checkState(isConnected(), "subscriber not connected to server, invoke start first");
-        session.disconnect();
-        session = null;
+    public void disconnect() {
+        if (isConnected()) {
+            session.disconnect();
+            session = null;
+        }
     }
 
     private final void checkState(boolean state, String message) {

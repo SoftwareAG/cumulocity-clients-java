@@ -19,9 +19,9 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-
-
-public interface SubscriptionListener<T,R>{
+public interface SubscriptionListener<T, R> {
+    
     void onNotification(Subscription<T> subscription, R notification);
+
     void onError(Subscription<T> subscription, Throwable ex);
 }

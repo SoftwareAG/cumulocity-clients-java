@@ -4,6 +4,7 @@ import org.eclipse.jetty.client.HttpClient;
 
 import com.cumulocity.sdk.client.SDKException;
 
-public interface HttpClientProvider {
+interface HttpClientProvider {
+    
     HttpClient get() throws SDKException;
 }

@@ -35,7 +35,7 @@ import com.cumulocity.common.notification.ClientSvensonJSONContext;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 
-public class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
+class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     final PlatformParameters paramters;
 
@@ -67,9 +67,7 @@ public class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private BayeuxClient createSession() throws SDKException {
-        final BayeuxClient bayeuxClient = new BayeuxClient(buildUrl(), createTransport(createHttpClient()));
-        bayeuxClient.setDebugEnabled(true);
-        return bayeuxClient;
+        return new BayeuxClient(buildUrl(), createTransport(createHttpClient()));
     }
 
     private BayeuxClient openSession(final BayeuxClient bayeuxClient) throws SDKException {
@@ -100,7 +98,6 @@ public class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
                 throw new RuntimeException(x);
             }
         }
-        transport.setDebugEnabled(true);
         return transport;
     }
 

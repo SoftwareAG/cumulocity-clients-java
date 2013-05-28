@@ -10,7 +10,7 @@ import org.eclipse.jetty.client.security.SimpleRealmResolver;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 
-public class DefaultHttpClientProvider implements HttpClientProvider {
+class DefaultHttpClientProvider implements HttpClientProvider {
 
     private PlatformParameters paramters;
 

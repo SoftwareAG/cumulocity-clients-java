@@ -8,7 +8,7 @@ import org.eclipse.jetty.client.HttpClient;
 
 import com.cumulocity.sdk.client.RestConnector;
 
-public class CumulocityLongPollingTransport extends LongPollingTransport {
+class CumulocityLongPollingTransport extends LongPollingTransport {
     private final String applicationKey;
 
     CumulocityLongPollingTransport(Map<String, Object> options, HttpClient httpClient, String applicationKey) {

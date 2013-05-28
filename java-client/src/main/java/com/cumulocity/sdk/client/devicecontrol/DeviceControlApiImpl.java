@@ -36,6 +36,8 @@ import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.devicecontrol.notification.OperationNotificationSubscriber;
+import com.cumulocity.sdk.client.notification.Subscriber;
 
 public class DeviceControlApiImpl implements DeviceControlApi {
 
@@ -55,19 +57,26 @@ public class DeviceControlApiImpl implements DeviceControlApi {
 
     private DeviceControlRepresentation deviceControlRepresentation = null;
 
+    private final PlatformParameters parameters;
+
     @Deprecated
     public DeviceControlApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl) {
-        this.restConnector = restConnector;
-        this.templateUrlParser = templateUrlParser;
-        this.platformApiUrl = platformApiUrl;
-        this.pageSize = PlatformParameters.DEFAULT_PAGE_SIZE;
+        this(null, restConnector, templateUrlParser, platformApiUrl, PlatformParameters.DEFAULT_PAGE_SIZE);
+    }
+    
+    @Deprecated
+    public DeviceControlApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl, int pageSize) {
+        this(null, restConnector, templateUrlParser, platformApiUrl, pageSize);
     }
 
-    public DeviceControlApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl, int pageSize) {
+    public DeviceControlApiImpl(PlatformParameters parameters, RestConnector restConnector, TemplateUrlParser templateUrlParser,
+            String platformApiUrl, int pageSize) {
+        this.parameters = parameters;
         this.restConnector = restConnector;
         this.templateUrlParser = templateUrlParser;
         this.platformApiUrl = platformApiUrl;
         this.pageSize = pageSize;
+      
     }
 
     private DeviceControlRepresentation getDeviceControlRepresentation() throws SDKException {
@@ -76,13 +85,12 @@ public class DeviceControlApiImpl implements DeviceControlApi {
         }
         return deviceControlRepresentation;
     }
-    
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformApiUrl,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
+
+    private void createApiRepresentation() throws SDKException {
+        PlatformApiRepresentation platformApiRepresentation = restConnector.get(platformApiUrl, PlatformMediaType.PLATFORM_API,
+                PlatformApiRepresentation.class);
         deviceControlRepresentation = platformApiRepresentation.getDeviceControl();
     }
-
 
     @Override
     public OperationRepresentation getOperation(GId gid) throws SDKException {
@@ -184,5 +192,10 @@ public class DeviceControlApiImpl implements DeviceControlApi {
         } else {
             return getOperations();
         }
+    }
+
+    @Override
+    public Subscriber<GId, OperationRepresentation> getNotificationsSubscriber() throws SDKException {
+        return new OperationNotificationSubscriber(parameters);
     }
 }

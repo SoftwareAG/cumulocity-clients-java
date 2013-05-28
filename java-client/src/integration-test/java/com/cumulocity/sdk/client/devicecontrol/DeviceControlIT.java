@@ -129,7 +129,7 @@ public class DeviceControlIT extends JavaSdkITBase {
             poller.stop();
         }
         if (subscriber != null) {
-            subscriber.stop();
+            subscriber.disconnect();
             subscriber = null;
         }
     }
@@ -178,7 +178,7 @@ public class DeviceControlIT extends JavaSdkITBase {
         iHaveAOperationSubscriberForAgent(0);
         //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-        //    Then poller should receive operation
+        //    Then subscriber should receive operation
         subscriberShouldReceiveOperation();
     }
 
@@ -298,7 +298,6 @@ public class DeviceControlIT extends JavaSdkITBase {
     public void iHaveAOperationSubscriberForAgent(int arg1) throws Exception {
         GId agentId = getMoId(arg1);
         subscriber = new OperationNotificationSubscriber(platform);
-        subscriber.start();
         subscriber.subscribe(agentId, new SubscriptionListener<GId, OperationRepresentation>() {
 
             @Override

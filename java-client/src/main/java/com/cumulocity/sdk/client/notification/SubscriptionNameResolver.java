@@ -20,5 +20,6 @@
 package com.cumulocity.sdk.client.notification;
 
 public interface SubscriptionNameResolver<T> {
+
     String apply(T o);
 }

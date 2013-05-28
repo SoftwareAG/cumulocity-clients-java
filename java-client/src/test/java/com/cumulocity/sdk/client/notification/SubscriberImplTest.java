@@ -1,18 +1,11 @@
 package com.cumulocity.sdk.client.notification;
 
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.Map;
-
-import javax.management.NotificationListener;
 
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
-import org.cometd.client.BayeuxClient;
-import org.cometd.client.BayeuxClient.State;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +22,9 @@ public class SubscriberImplTest {
     ClientSession client;
 
     @Mock
+    ClientSessionChannel subscribptionChannel;
+
+    @Mock
     SubscriptionNameResolver<Object> subscriptionNameResolver;
 
     @Mock
@@ -43,37 +39,29 @@ public class SubscriberImplTest {
     public void setup() throws SDKException {
         subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider);
         mockClientProvider();
+        when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(subscribptionChannel);
     }
 
     private void mockClientProvider() throws SDKException {
         Mockito.when(bayeuxSessionProvider.get()).thenReturn(client);
     }
 
-    @Test
-    public final void shouldStartSuccessfuly() throws SDKException {
-        //Given
-        //When
-        subscriber.start();
-        //Then
-        verifyConnected();
-    }
-
     @Test(expected = IllegalArgumentException.class)
-    public final void shouldFailSubscribeWhenSubscriptionObjectIsNull() {
+    public final void shouldFailSubscribeWhenSubscriptionObjectIsNull() throws SDKException {
         //Given
         //when
         subscriber.subscribe(null, listener);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public final void shouldFailSubscribeWhenNotificationListenerIsNull() {
+    public final void shouldFailSubscribeWhenNotificationListenerIsNull() throws SDKException {
         //Given
         //when
         subscriber.subscribe(new Object(), null);
     }
 
     @Test(expected = IllegalStateException.class)
-    public final void shouldFailSubscribeWhenNotConnected() {
+    public final void shouldFailSubscribeWhenNotConnected() throws SDKException {
         //Given
         //when
         subscriber.subscribe(new Object(), listener);
@@ -83,7 +71,7 @@ public class SubscriberImplTest {
     public final void shouldSuccesfulySubscribeWhenConnected() throws SDKException {
         //Given
         final Object objectToSubscribe = new Object();
-        subsciberStarted();
+
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
         //when
         subscriber.subscribe(objectToSubscribe, listener);
@@ -95,7 +83,7 @@ public class SubscriberImplTest {
     public final void shouldFailDisconnectWithIllegalStateExceptionWhenNotConnected() {
         //Given
         //when
-        subscriber.stop();
+        subscriber.disconnect();
     }
 
     @Test
@@ -103,7 +91,6 @@ public class SubscriberImplTest {
         //Given
         final Object objectToSubscribe = new Object();
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        subsciberStarted();
         //when
         subscriber.subscribe(objectToSubscribe, listener);
         verifyConnected();
@@ -115,7 +102,6 @@ public class SubscriberImplTest {
         //Given
         final Object objectToSubscribe = new Object();
         final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        subsciberStarted();
         //when
         final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
         subscription.unsubscribe();
@@ -128,11 +114,16 @@ public class SubscriberImplTest {
     @Test
     public final void shouldSuccesfulyDisconnectOnStop() throws SDKException {
         //Given
-        subsciberStarted();
+        subscriberConnected();
         //When
-        subscriber.stop();
+        subscriber.disconnect();
         //Then
         verifyDisconnected();
+    }
+    private void subscriberConnected() throws SDKException {
+        final Object objectToSubscribe = new Object();
+        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
     }
 
     private void verifyUnsubscribe(final ClientSessionChannel channel) {
@@ -157,10 +148,6 @@ public class SubscriberImplTest {
         ClientSessionChannel channel = Mockito.mock(ClientSessionChannel.class);
         when(client.getChannel(id)).thenReturn(channel);
         return channel;
-    }
-
-    private void subsciberStarted() throws SDKException {
-        subscriber.start();
     }
 
 }

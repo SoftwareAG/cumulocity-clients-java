@@ -22,7 +22,6 @@ package com.cumulocity.sdk.client.notification;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
-
 class ChannelSubscription<T> implements Subscription<T> {
     private final MessageListener listener;
 
@@ -42,7 +41,7 @@ class ChannelSubscription<T> implements Subscription<T> {
     }
 
     @Override
-    public T getObject() {      
+    public T getObject() {
         return object;
     }
 }

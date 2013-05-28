@@ -30,7 +30,6 @@ public class SimpleOperationProcessor implements OperationProcessor {
 
     @Override
     public boolean process(OperationRepresentation operation) {
-        System.out.println("processing operationRep:" + operation.getId().toString() + " status:" + operation.getStatus());
         operations.add(operation);
         return true;
     }
