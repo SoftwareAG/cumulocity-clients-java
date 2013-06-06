@@ -173,7 +173,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     @Override
     public DeviceControlApi getDeviceControlApi() {
-        return new DeviceControlApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new DeviceControlApiImpl(this, createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     @Override

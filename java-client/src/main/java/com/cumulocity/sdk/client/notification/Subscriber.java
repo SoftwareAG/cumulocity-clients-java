@@ -17,29 +17,14 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.cumulocity.sdk.client.devicecontrol;
+package com.cumulocity.sdk.client.notification;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.cumulocity.sdk.client.SDKException;
 
-import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationProcessor;
 
-public class SimpleOperationProcessor implements OperationProcessor {
-    private List<OperationRepresentation> operations = new ArrayList<OperationRepresentation>();
+public interface Subscriber<T, R> {
 
-    @Override
-    public boolean process(OperationRepresentation operation) {
-        operations.add(operation);
-        return true;
-    }
+    Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException;
 
-    public List<OperationRepresentation> getOperations() {
-        return operations;
-    }
-
-    public void setOperations(List<OperationRepresentation> operations) {
-        this.operations = operations;
-    }
-
+    void disconnect();
 }

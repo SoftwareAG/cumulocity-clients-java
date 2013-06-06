@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>3.3.1-SNAPSHOT</version>
+		<version>3.4.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-client</artifactId>
@@ -43,6 +43,14 @@
 	</organization>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.cometd.java</groupId>
+            <artifactId>cometd-java-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.shared-components</groupId>
+            <artifactId>common-notification</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.shared-components</groupId>
 			<artifactId>common-rest</artifactId>
@@ -63,10 +71,18 @@
 					<groupId>com.nsn.cumulocity.shared-components</groupId>
 					<artifactId>common-exception</artifactId>
 				</exclusion>
-				 <exclusion>
-                                        <groupId>com.nsn.cumulocity.shared-components</groupId>
-                                        <artifactId>common-spring</artifactId>
-                                </exclusion>
+				<exclusion>
+                 	<groupId>com.nsn.cumulocity.shared-components</groupId>
+                	 <artifactId>common-spring</artifactId>
+                </exclusion>
+				<exclusion>
+				    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+				    <groupId>org.apache.cxf</groupId>
+				</exclusion>
+				<exclusion>
+				    <artifactId>cxf-rt-transports-http-jetty</artifactId>
+				    <groupId>org.apache.cxf</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

@@ -17,29 +17,33 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.cumulocity.sdk.client.devicecontrol;
+package com.cumulocity.sdk.client.notification;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.cometd.bayeux.Message;
+import org.cometd.bayeux.client.ClientSessionChannel;
+import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 
-import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationProcessor;
+final class MessageListenerAdapter<T> implements MessageListener {
+    private final SubscriptionListener<T, Message> handler;
 
-public class SimpleOperationProcessor implements OperationProcessor {
-    private List<OperationRepresentation> operations = new ArrayList<OperationRepresentation>();
+    private final Subscription<T> subscription;
+
+    MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object) {
+        this.handler = handler;
+        subscription = createSubscription(channel, object);
+    }
+
+    protected ChannelSubscription<T> createSubscription(ClientSessionChannel channel, T object) {
+        return new ChannelSubscription<T>(this, channel, object);
+    }
 
     @Override
-    public boolean process(OperationRepresentation operation) {
-        operations.add(operation);
-        return true;
+    public void onMessage(ClientSessionChannel channel, Message message) {
+        handler.onNotification(subscription, message);
     }
 
-    public List<OperationRepresentation> getOperations() {
-        return operations;
-    }
-
-    public void setOperations(List<OperationRepresentation> operations) {
-        this.operations = operations;
+    public Subscription<T> getSubscription() {
+        return subscription;
     }
 
 }

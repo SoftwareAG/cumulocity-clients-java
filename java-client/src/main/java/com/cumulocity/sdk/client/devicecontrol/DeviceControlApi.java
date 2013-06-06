@@ -25,6 +25,9 @@ import com.cumulocity.rest.representation.operation.OperationCollectionRepresent
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.notification.Subscriber;
+import com.cumulocity.sdk.client.notification.Subscription;
+import com.cumulocity.sdk.client.notification.SubscriptionListener;
 
 /**
  * API for creating, updating and retrieving operations from the platform.
@@ -79,4 +82,33 @@ public interface DeviceControlApi {
      *                                  deviceId}, {@code agentId}]
      */
     PagedCollectionResource<OperationCollectionRepresentation> getOperationsByFilter(OperationFilter filter) throws SDKException;
+    
+    /**
+     * Gets the notifications subscriber, which allows to receive newly created operations for agent.
+     * <pre>
+     * <code>
+     * Example:
+     * 
+     *  final GId agentId = ...
+     *  Subscriber<GId, OperationRepresentation> subscriber = deviceControlApi.getNotificationsSubscriber();
+     *  
+     *  subscriber.subscirbe( agentId , new SubscriptionListener<GId, OperationRepresentation>() {
+     *
+     *      {@literal @}Override
+     *      public void onNotification(Subscription<GId> subscription, OperationRepresentation operation) {
+     *             //process operation 
+     *      }
+     *    
+     *      {@literal @}Override
+     *      public void onError(Subscription<GId> subscription, Throwable ex) {
+     *          // handle subscribe operation error
+     *      }
+     *  });
+     *  </code>
+     *  </pre>
+     * 
+     * @return subscriber 
+     * @throws SDKException
+     */
+    Subscriber<GId, OperationRepresentation> getNotificationsSubscriber() throws SDKException;
 }
