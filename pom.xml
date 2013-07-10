@@ -22,7 +22,6 @@
 
 	<modules>
 		<module>java-client</module>
-		<module>java-agent-support</module>
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
 	</modules>
