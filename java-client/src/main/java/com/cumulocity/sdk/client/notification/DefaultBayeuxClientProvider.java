@@ -28,7 +28,6 @@ import org.cometd.client.BayeuxClient;
 import org.cometd.client.BayeuxClient.State;
 import org.cometd.client.transport.ClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
-import org.eclipse.jetty.client.Address;
 import org.eclipse.jetty.client.HttpClient;
 
 import com.cumulocity.common.notification.ClientSvensonJSONContext;
@@ -42,19 +41,20 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     private String endpoint;
 
     private HttpClientProvider httpClientProvider;
-    
+
     private final Class<?> endpointDataType;
 
     public static BayeuxSessionProvider createProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType) {
         return createProvider(endpoint, paramters, endpointDataType, DefaultHttpClientProvider.createProvider(paramters));
     }
 
-    public static BayeuxSessionProvider createProvider(final String endpoint,final PlatformParameters paramters,
+    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
             Class<?> endpointDataType, final HttpClientProvider httpClientProvider) {
         return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClientProvider);
     }
 
-    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters,Class<?> endpointDataType, HttpClientProvider httpClientProvider) {
+    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
+            HttpClientProvider httpClientProvider) {
         this.paramters = paramters;
         this.endpoint = endpoint;
         this.httpClientProvider = httpClientProvider;
