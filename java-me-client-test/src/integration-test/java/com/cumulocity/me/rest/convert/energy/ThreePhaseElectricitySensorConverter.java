@@ -19,9 +19,10 @@
  */
 package com.cumulocity.me.rest.convert.energy;
 
+import c8y.ThreePhaseElectricitySensor;
+
 import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
-import com.cumulocity.model.energy.sensor.ThreePhaseElectricitySensor;
 
 public class ThreePhaseElectricitySensorConverter extends BaseRepresentationConverter {
     

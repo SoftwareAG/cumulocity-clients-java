@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Cumulocity GmbH
+iz * Copyright (C) 2013 Cumulocity GmbH
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of 
  * this software and associated documentation files (the "Software"),
@@ -17,34 +17,43 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.cumulocity.me.rest.convert.devicecontrol;
 
-import c8y.Relay;
-import c8y.Relay.RelayState;
+package c8y;
 
-import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
-import com.cumulocity.me.rest.json.JSONObject;
+public class Configuration {
+	private String config;
 
-public class RelayConverter extends BaseRepresentationConverter {
+	public Configuration() {
+	}
 
-    private static final String PROP_STATE = "state";
-    
-    public JSONObject toJson(Object representation) {
-        JSONObject json = new JSONObject();
-        Relay relayControl = (Relay) representation;
-        putString(json, PROP_STATE, relayControl.getRelayState().name());
-        return json;
-    }
+	public Configuration(String config) {
+		this.config = config;
+	}
 
-    public Object fromJson(JSONObject json) {
-        Relay relayControl = new Relay();
-        relayControl.setRelayState(RelayState.OPEN);
-        return relayControl;
-    }
+	public String getConfig() {
+		return config;
+	}
 
-    @SuppressWarnings("rawtypes")
-	protected Class supportedRepresentationType() {
-        return Relay.class;
-    }
+	public void setConfig(String config) {
+		this.config = config;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Configuration))
+			return false;
+
+		Configuration rhs = (Configuration) obj;
+		return config == null ? rhs.getConfig() == null : config.equals(rhs
+				.getConfig());
+	}
+
+	@Override
+	public int hashCode() {
+		return config != null ? config.hashCode() : 0;
+	}
 }
