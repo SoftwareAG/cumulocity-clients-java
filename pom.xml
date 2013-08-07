@@ -21,6 +21,7 @@
 	</scm>
 
 	<modules>
+		<module>device-capability-model</module>
 		<module>java-client</module>
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
