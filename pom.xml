@@ -185,7 +185,7 @@
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>device-capability-model</artifactId>
-				<version>${cumulocity.model.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
