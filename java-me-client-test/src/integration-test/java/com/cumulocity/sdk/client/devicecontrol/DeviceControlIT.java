@@ -32,6 +32,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import c8y.Relay;
+import c8y.Relay.RelayState;
+
 import com.cumulocity.me.lang.ArrayList;
 import com.cumulocity.me.lang.Iterator;
 import com.cumulocity.me.lang.List;
@@ -51,8 +54,6 @@ import com.cumulocity.me.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.me.sdk.client.devicecontrol.OperationFilter;
 import com.cumulocity.me.sdk.client.inventory.InventoryApi;
 import com.cumulocity.model.Agent;
-import com.cumulocity.model.control.Relay;
-import com.cumulocity.model.control.Relay.RelayState;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 import cucumber.api.java.en.Then;

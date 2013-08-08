@@ -46,7 +46,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.cumulocity.model.energy.sensor.ThreePhaseElectricitySensor;
+import c8y.ThreePhaseElectricitySensor;
+
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;

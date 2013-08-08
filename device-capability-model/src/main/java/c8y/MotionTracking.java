@@ -17,34 +17,36 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.cumulocity.me.rest.convert.devicecontrol;
 
-import c8y.Relay;
-import c8y.Relay.RelayState;
+package c8y;
 
-import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
-import com.cumulocity.me.rest.json.JSONObject;
+public class MotionTracking {
+	
+	private boolean active;
 
-public class RelayConverter extends BaseRepresentationConverter {
+	public boolean isActive() {
+		return active;
+	}
 
-    private static final String PROP_STATE = "state";
-    
-    public JSONObject toJson(Object representation) {
-        JSONObject json = new JSONObject();
-        Relay relayControl = (Relay) representation;
-        putString(json, PROP_STATE, relayControl.getRelayState().name());
-        return json;
-    }
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 
-    public Object fromJson(JSONObject json) {
-        Relay relayControl = new Relay();
-        relayControl.setRelayState(RelayState.OPEN);
-        return relayControl;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof MotionTracking))
+			return false;
 
-    @SuppressWarnings("rawtypes")
-	protected Class supportedRepresentationType() {
-        return Relay.class;
-    }
+		MotionTracking rhs = (MotionTracking) obj;
+		return active == rhs.active;
+	}
 
+	@Override
+	public int hashCode() {
+		return active ? 0 : 1;
+	}
 }

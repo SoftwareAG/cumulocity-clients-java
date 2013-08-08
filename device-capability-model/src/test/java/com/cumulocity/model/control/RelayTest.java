@@ -5,7 +5,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.svenson.JSONParser;
 
-import com.cumulocity.model.control.Relay.RelayState;
+import c8y.Relay;
+import c8y.Relay.RelayState;
 
 public class RelayTest {
 

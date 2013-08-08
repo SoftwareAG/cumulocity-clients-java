@@ -1,0 +1,69 @@
+{
+"c8y_TemperatureSensor" : {}
+,
+"c8y_TemperatureMeasurement": {
+    "T": { "value": 23, "unit": "C" }
+}
+,
+"c8y_MotionSensor" : {}
+,
+"c8y_MotionMeasurement": {
+    "motionDetected": { "value": 1.0, "unit": "", "type": "BOOLEAN" },
+    "speed": { "value": -63.2, "unit": "km/h" }
+}
+, 
+"c8y_AccelerationSensor" : {}
+,
+"c8y_AccelerationMeasurement": {
+    "acceleration": { "value": 8.36, "unit": "m/s2" }
+}
+,
+"c8y_SinglePhaseElectricitySensor" : {}
+,
+"c8y_SinglePhaseElectricityMeasurement": {
+  "A+": { "value": 123, "unit": "kWh" },
+  "A-": { "value": 2, "unit": "kWh" },
+  "P+": { "value": 56, "unit": "W" },
+  "P-": { "value": 0, "unit": "W" }
+}
+,
+"c8y_ThreePhaseElectricitySensor" : {}
+,
+"c8y_ThreePhaseElectricityMeasurement": {
+  "A+": { "value": 435, "unit": "kWh" },
+  "A-": { "value": 23, "unit": "kWh" },
+  "P+": { "value": 657, "unit": "W" },
+  "P-": { "value": 0, "unit": "W" },
+  "A+:1": { "value": 123, "unit": "kWh" },
+  "A-:1": { "value": 2, "unit": "kWh" },
+  "P+:1": { "value": 56, "unit": "W" },
+  "P-:1": { "value": 0, "unit": "W" },
+  "A+:2": { "value": 231, "unit": "kWh" },
+  "A-:2": { "value": 23, "unit": "kWh" },
+  "P+:2": { "value": 516, "unit": "W" },
+  "P-:2": { "value": 2, "unit": "W" },  
+  "A+:3": { "value": 1423, "unit": "kWh" },
+  "A-:3": { "value": 422, "unit": "kWh" },
+  "P+:3": { "value": 16, "unit": "W" },
+  "P-:3": { "value": 9, "unit": "W" },
+  "Ri+": { "value": 231, "unit": "kVArh" },
+  "Ri-": { "value": 23, "unit": "kVArh" },
+  "Rc+": { "value": 342, "unit": "kVArh" },
+  "Rc-": { "value": 43, "unit": "kVArh" },
+  "Qi+": { "value": 234, "unit": "kVAr" },
+  "Qi-": { "value": 645, "unit": "kVAr" },
+  "Qc+": { "value": 76, "unit": "kVAr" },
+  "Qc-": { "value": 34, "unit": "kVAr" }
+}
+,
+"c8y_Position": {
+  "alt": 67,
+  "lng": 6.15173,
+  "lat": 51.211977
+}
+,
+"c8y_Relay" : 
+{
+  "relayState" : "OPEN"
+}
+}
