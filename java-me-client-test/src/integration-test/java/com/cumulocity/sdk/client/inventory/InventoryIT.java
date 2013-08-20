@@ -41,6 +41,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import c8y.ThreePhaseElectricitySensor;
+
 import com.cumulocity.me.lang.ArrayList;
 import com.cumulocity.me.lang.Iterator;
 import com.cumulocity.me.lang.List;
@@ -61,7 +63,6 @@ import com.cumulocity.me.sdk.client.inventory.InventoryApi;
 import com.cumulocity.me.sdk.client.inventory.InventoryFilter;
 import com.cumulocity.me.sdk.client.inventory.ManagedObject;
 import com.cumulocity.me.sdk.client.page.PagedCollectionResource;
-import com.cumulocity.model.energy.sensor.ThreePhaseElectricitySensor;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 public class InventoryIT extends JavaSdkITBase {

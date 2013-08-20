@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>3.7.1-SNAPSHOT</version>
+		<version>3.8.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-client</artifactId>
@@ -143,7 +143,19 @@
 
 	<build>
 		<plugins>
-
+            <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <executions>
+                            <execution>
+                                    <id>bundle-sources</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                            <!-- produce source artifact for main project sources -->
+                                            <goal>jar-no-fork</goal>
+                                    </goals>
+                            </execution>
+                    </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -199,15 +211,6 @@
 						<artifactItem>
 							<groupId>com.nsn.cumulocity.model</groupId>
 							<artifactId>rest-representation</artifactId>
-							<version>${cumulocity.model.version}</version>
-							<type>jar</type>
-							<classifier>sources</classifier>
-							<overWrite>true</overWrite>
-							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
-						</artifactItem>
-						<artifactItem>
-							<groupId>com.nsn.cumulocity.model</groupId>
-							<artifactId>device-capability-model</artifactId>
 							<version>${cumulocity.model.version}</version>
 							<type>jar</type>
 							<classifier>sources</classifier>

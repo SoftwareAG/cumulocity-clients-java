@@ -1,6 +1,7 @@
 package com.cumulocity.model.environmental.measurement;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 
@@ -9,6 +10,9 @@ import org.junit.Test;
 import org.svenson.JSON;
 import org.svenson.JSONParser;
 
+import c8y.SpeedMeasurement;
+
+import com.cumulocity.model.measurement.MeasurementValue;
 import com.cumulocity.model.measurement.ValueType;
 
 public class MotionMeasurementTest {
@@ -18,12 +22,12 @@ public class MotionMeasurementTest {
     @Before
     public void setUp() throws Exception {
         
-        MotionValue mValue= new MotionValue();
+        MeasurementValue mValue= new MeasurementValue();
         mValue.setValue(new BigDecimal(1.0));
         mValue.setUnit("-");
         mValue.setType(ValueType.BOOLEAN);
         
-        SpeedValue sValue= new SpeedValue();
+        MeasurementValue sValue= new MeasurementValue();
         sValue.setValue(new BigDecimal(9.8));
         sValue.setUnit("m/s");
 
