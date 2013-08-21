@@ -1,14 +1,18 @@
 package com.cumulocity.sdk.client.notification;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.cometd.bayeux.ChannelId;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
+import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -22,7 +26,7 @@ public class SubscriberImplTest {
     ClientSession client;
 
     @Mock
-    ClientSessionChannel subscribptionChannel;
+    ClientSessionChannel metaSubscribeChannel;
 
     @Mock
     SubscriptionNameResolver<Object> subscriptionNameResolver;
@@ -39,7 +43,7 @@ public class SubscriberImplTest {
     public void setup() throws SDKException {
         subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider);
         mockClientProvider();
-        when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(subscribptionChannel);
+        when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
     }
 
     private void mockClientProvider() throws SDKException {
@@ -70,10 +74,10 @@ public class SubscriberImplTest {
     @Test
     public final void shouldSuccesfulySubscribeWhenConnected() throws SDKException {
         //Given
-        final Object objectToSubscribe = new Object();
-        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = mockChannel(channelId);
         //When
-        subscriber.subscribe(objectToSubscribe, listener);
+        subscriber.subscribe(channelId, listener);
         //Then
         verify(channel).subscribe(Mockito.any(MessageListenerAdapter.class));
     }
@@ -89,10 +93,10 @@ public class SubscriberImplTest {
     @Test
     public final void shouldSuccesfulySubscribeAndMakeHandshake() throws SDKException {
         //Given
-        final Object objectToSubscribe = new Object();
-        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = mockChannel(channelId);
         //When
-        subscriber.subscribe(objectToSubscribe, listener);
+        subscriber.subscribe(channelId, listener);
         verifyConnected();
         verifySubscribed(channel);
     }
@@ -100,16 +104,19 @@ public class SubscriberImplTest {
     @Test
     public final void shouldSuccesfulyUnSubscribeAfterSubscribe() throws SDKException {
         //Given
-        final Object objectToSubscribe = new Object();
-        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = mockChannel(channelId);
         //When
-        final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, listener);
         subscription.unsubscribe();
         //Then
         verifyConnected();
         verifySubscribed(channel);
         verifyUnsubscribe(channel);
     }
+    
+    
+    
 
     @Test
     public final void shouldSuccesfulyDisconnectOnStop() throws SDKException {
@@ -120,10 +127,37 @@ public class SubscriberImplTest {
         //Then
         verifyDisconnected();
     }
+    
+    
+    @Test
+    public final void shouldNotifySubscriberAboutSubscribeOperationFail() throws SDKException {
+        //Given
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = mockChannel(channelId);
+        final ArgumentCaptor<MessageListener> listenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
+      
+        //When
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, listener);
+        verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
+        listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockUnsuccessfulSubscribeMessge(channelId.toString()));
+        //Then
+        verifyConnected();
+        verifySubscribed(channel);
+        
+        verify(listener).onError(Mockito.eq(subscription),Mockito.any(SDKException.class));
+    }
+
+    private Message mockUnsuccessfulSubscribeMessge(String channelID) {
+        Message message = mock(Message.class);
+        when(message.get(Message.SUBSCRIPTION_FIELD)).thenReturn(channelID);
+        when(message.isSuccessful()).thenReturn(false);
+        return message;
+    }
+    
     private void subscriberConnected() throws SDKException {
-        final Object objectToSubscribe = new Object();
-        final ClientSessionChannel channel = mockChannel(objectToSubscribe);
-        final Subscription<Object> subscription = subscriber.subscribe(objectToSubscribe, listener);
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = mockChannel(channelId);
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, listener);
     }
 
     private void verifyUnsubscribe(final ClientSessionChannel channel) {
@@ -142,11 +176,11 @@ public class SubscriberImplTest {
         verify(bayeuxSessionProvider).get();
     }
 
-    private ClientSessionChannel mockChannel(Object objectToSubscribe) {
-        final String id = objectToSubscribe.toString();
-        when(subscriptionNameResolver.apply(objectToSubscribe)).thenReturn(id);
+    private ClientSessionChannel mockChannel(String channelId) {
+        when(subscriptionNameResolver.apply(channelId)).thenReturn(channelId);
         ClientSessionChannel channel = Mockito.mock(ClientSessionChannel.class);
-        when(client.getChannel(id)).thenReturn(channel);
+        when(client.getChannel(channelId)).thenReturn(channel);
+        when(channel.getId()).thenReturn(channelId);
         return channel;
     }
 
