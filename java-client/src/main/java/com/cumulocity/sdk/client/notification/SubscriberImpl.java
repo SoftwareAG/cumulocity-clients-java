@@ -48,16 +48,17 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-
-        if (!isConnected()) {
-            start();
+        synchronized (this) {
+            if (!isConnected()) {
+                start();
+            }
         }
 
         final ClientSessionChannel channel = getChannel(object);
         final MessageListenerAdapter<T> listener = new MessageListenerAdapter<T>(handler, channel, object);
-        final ClientSessionChannel subscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
+        final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
 
-        subscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, subscribeChannel));
+        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, metaSubscribeChannel, channel));
         channel.subscribe(listener);
 
         return listener.getSubscription();
@@ -98,23 +99,27 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         private final SubscriptionListener<T, Message> handler;
 
-        private final ClientSessionChannel subscribeChannel;
+        private final ClientSessionChannel metaSubscribeChannel;
+
+        private final ClientSessionChannel channel;
 
         private SubscriptionSuccessListener(MessageListenerAdapter<T> listener, SubscriptionListener<T, Message> handler,
-                ClientSessionChannel subscribeChannel) {
+                ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
             this.listener = listener;
             this.handler = handler;
-            this.subscribeChannel = subscribeChannel;
+            this.metaSubscribeChannel = subscribeChannel;
+            this.channel = channel;
         }
 
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
             try {
-                if (channel.getChannelId().equals(message.get(Message.SUCCESSFUL_FIELD)) && !message.isSuccessful()) {
-                    handler.onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel"));
+                if (message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId()) && !message.isSuccessful()) {
+                    handler.onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
+                            + " " + message.get(Message.ERROR_FIELD)));
                 }
             } finally {
-                subscribeChannel.removeListener(this);
+                metaSubscribeChannel.removeListener(this);
             }
         }
     }
