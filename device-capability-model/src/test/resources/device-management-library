@@ -42,4 +42,8 @@
 }
 ,
 "c8y_Restart": {}
+,
+"c8y_RequiredAvailability": { "responseInterval": 60 }
+,
+"c8y_Availability": { "lastMessage": "2013-10-15T16:00:50.532+02:00", "status": "CONNECTED" }
 }
