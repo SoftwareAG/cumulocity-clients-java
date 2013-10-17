@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>4.2.0</version>
+		<version>4.3.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>4.2.1-SNAPSHOT</version>
+	<version>4.3.1-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -28,8 +28,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>4.2.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>4.2.0</cumulocity.shared-components.version>
+		<cumulocity.model.version>4.3.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>4.3.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>

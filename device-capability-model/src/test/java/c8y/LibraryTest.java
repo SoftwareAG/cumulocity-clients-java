@@ -31,7 +31,6 @@ public class LibraryTest {
 		return ManagedObject.getJSONParser().parse(ManagedObject.class, source);
 	}
 	
-	@SuppressWarnings("unused")
 	@Test
 	public void trivialCases() {
 		assertTrue( sensorLib.get(AccelerationSensor.class) instanceof AccelerationSensor);
@@ -39,6 +38,9 @@ public class LibraryTest {
 		assertTrue( sensorLib.get(SinglePhaseElectricitySensor .class) instanceof SinglePhaseElectricitySensor);
 		assertTrue( sensorLib.get(ThreePhaseElectricitySensor.class) instanceof ThreePhaseElectricitySensor);
 		assertTrue( sensorLib.get(TemperatureSensor.class) instanceof TemperatureSensor);
+		
+		assertTrue( deviceMgmtLib.get(Availability.class) instanceof Availability);
+		assertTrue( deviceMgmtLib.get(RequiredAvailability.class) instanceof RequiredAvailability);
 	}
 	
 	@Test
@@ -51,5 +53,17 @@ public class LibraryTest {
 	public void accelerationMeasurement() {
 		AccelerationMeasurement m = sensorLib.get(AccelerationMeasurement.class);
 		assertEquals(new BigDecimal("8.36"), m.getAccelerationValue());		
+	}
+	
+	@Test
+	public void availability() {
+		Availability a = deviceMgmtLib.get(Availability.class);
+		assertEquals(ConnectionState.CONNECTED, a.getStatus());
+	}
+	
+	@Test
+	public void requiredAvailability() {
+		RequiredAvailability ra = deviceMgmtLib.get(RequiredAvailability.class);
+		assertEquals(60, ra.getResponseInterval());
 	}
 }
