@@ -39,6 +39,14 @@ public interface ManagedObject {
      * @throws SDKException
      */
     public ManagedObjectRepresentation get() throws SDKException;
+    
+    /**
+     * Returns the Managed Object of the Resource with its parents.
+     *
+     * @return ManagedObjectRepresentation
+     * @throws SDKException
+     */
+    public ManagedObjectRepresentation getWithParents() throws SDKException;
 
     /**
      * Deletes the Managed Object from the Cumulocity Server.

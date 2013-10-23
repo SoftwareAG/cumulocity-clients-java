@@ -26,18 +26,17 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollec
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResource;
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
 public class ManagedObjectImpl implements ManagedObject {
 
     static final String PAGE_SIZE_PARAM_WITH_MAX_VALUE = "?pageSize=" + Short.MAX_VALUE;
+    private static final String PARAM_WITH_PARENTS = "?withParents=true"; 
     private final RestConnector restConnector;
     private final int pageSize;
 
     final String url;
-
 
     public ManagedObjectImpl(RestConnector restConnector, String url, int pageSize) {
         this.restConnector = restConnector;
@@ -48,6 +47,11 @@ public class ManagedObjectImpl implements ManagedObject {
     @Override
     public ManagedObjectRepresentation get() throws SDKException {
         return restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
+    }
+    
+    @Override
+    public ManagedObjectRepresentation getWithParents() throws SDKException {
+        return restConnector.get(url + PARAM_WITH_PARENTS, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
     }
 
     @Override
