@@ -34,13 +34,9 @@ import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> extends GenericResourceImpl<T> implements
         PagedCollectionResource<T> {
 
-    private int pageSize = 5;
-
-    private static String PAGE_SIZE_KEY = "pageSize";
-
-    private static String PAGE_NUMBER_KEY = "currentPage";
-
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
+
+    private int pageSize = 5;
 
     @Deprecated
     public PagedCollectionResourceImpl(RestConnector restConnector, String url) {
