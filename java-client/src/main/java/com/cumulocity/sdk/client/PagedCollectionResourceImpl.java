@@ -36,7 +36,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
 
-    private int pageSize = 5;
+    protected int pageSize = 5;
 
     @Deprecated
     public PagedCollectionResourceImpl(RestConnector restConnector, String url) {
@@ -100,19 +100,28 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
         return getCollection(collectionRepresentation.getPrev());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public T get() throws SDKException {
         return get(pageSize);
     }
 
-        @Override
+    @Override
     public T get(int pageSize) throws SDKException {
-        String urlToCall = replaceOrAddQueryParam(url, singletonMap(PAGE_SIZE_KEY,
-                String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize)));
-        return restConnector.get(urlToCall, getMediaType(), getResponseClass());
+    	String urlToCall = replaceOrAddQueryParam(url, prepareGetParams(pageSize));
+    	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
+    }
+    
+    protected T get(Map<String, String> params) throws SDKException {
+    	String urlToCall = replaceOrAddQueryParam(url, params);
+    	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
 
+	protected Map<String, String> prepareGetParams(int pageSize) {
+		HashMap<String, String> result = new HashMap<String, String>();
+		result.put(PAGE_SIZE_KEY, String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize));
+		return result;
+	}
+    
     @SuppressWarnings("deprecation")
     @Override
     public boolean equals(Object obj) {

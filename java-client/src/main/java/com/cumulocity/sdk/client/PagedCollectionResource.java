@@ -27,6 +27,7 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
     String PAGE_SIZE_KEY = "pageSize";
 
     String PAGE_NUMBER_KEY = "currentPage";
+    
 
     /**
      * The method returns the first page.

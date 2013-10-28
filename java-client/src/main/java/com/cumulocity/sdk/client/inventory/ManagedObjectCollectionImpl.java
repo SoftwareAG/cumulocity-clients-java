@@ -20,16 +20,18 @@
 
 package com.cumulocity.sdk.client.inventory;
 
+import java.util.Map;
+
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.SDKException;
 
 public class ManagedObjectCollectionImpl extends PagedCollectionResourceImpl<ManagedObjectCollectionRepresentation> implements
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> {
-
+	ManagedObjectCollection {
+	
     @Deprecated
     public ManagedObjectCollectionImpl(RestConnector restConnector, String url) {
         super(restConnector, url);
@@ -48,4 +50,18 @@ public class ManagedObjectCollectionImpl extends PagedCollectionResourceImpl<Man
     protected Class<ManagedObjectCollectionRepresentation> getResponseClass() {
         return ManagedObjectCollectionRepresentation.class;
     }
+
+	@Override
+	public ManagedObjectCollectionRepresentation getWithParents() throws SDKException {
+		return getWithParents(pageSize);
+	}
+
+	@Override
+	public ManagedObjectCollectionRepresentation getWithParents(int pageSize) throws SDKException {
+		Map<String, String> params = prepareGetParams(pageSize);
+		params.put(WITH_PARENTS_KEYS, String.valueOf(true));
+		return get(params);
+	}
+    
+    
 }
