@@ -26,6 +26,7 @@ import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
+import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
@@ -51,17 +52,14 @@ public class ManagedObjectCollectionImpl extends PagedCollectionResourceImpl<Man
         return ManagedObjectCollectionRepresentation.class;
     }
 
-	@Override
-	public ManagedObjectCollectionRepresentation getWithParents() throws SDKException {
-		return getWithParents(pageSize);
-	}
-
-	@Override
-	public ManagedObjectCollectionRepresentation getWithParents(int pageSize) throws SDKException {
-		Map<String, String> params = prepareGetParams(pageSize);
-		params.put(WITH_PARENTS_KEYS, String.valueOf(true));
-		return get(params);
-	}
+    @Override
+    public ManagedObjectCollectionRepresentation get(QueryParam... queryParams) throws SDKException {
+        Map<String, String> params = prepareGetParams(pageSize);
+        for (QueryParam param : queryParams) {
+            params.put(param.getKey().getName(), param.getValue());
+        }
+        return get(params);
+    }
     
     
 }

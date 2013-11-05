@@ -27,9 +27,9 @@ import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
+import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
-import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -66,7 +66,6 @@ public class RestConnector {
 
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType,
             Class<T> responseType) throws SDKException {
-        
         ClientResponse response = client.resource(path).accept(mediaType)
                 .header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey()).get(ClientResponse.class);
         return responseParser.parse(response, OK.getStatusCode(), responseType);

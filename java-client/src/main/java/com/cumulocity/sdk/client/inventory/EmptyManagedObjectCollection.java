@@ -3,6 +3,7 @@ package com.cumulocity.sdk.client.inventory;
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.sdk.client.EmptyPagedCollectionResource;
+import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.SDKException;
 
 public class EmptyManagedObjectCollection implements ManagedObjectCollection {
@@ -24,13 +25,8 @@ public class EmptyManagedObjectCollection implements ManagedObjectCollection {
 	}
 	
 	@Override
-	public ManagedObjectCollectionRepresentation getWithParents() throws SDKException {
+	public ManagedObjectCollectionRepresentation get(QueryParam... queryParams) throws SDKException {
 		return get();
-	}
-
-	@Override
-	public ManagedObjectCollectionRepresentation getWithParents(int pageSize) throws SDKException {
-		return get(pageSize);
 	}
 
 	@Override

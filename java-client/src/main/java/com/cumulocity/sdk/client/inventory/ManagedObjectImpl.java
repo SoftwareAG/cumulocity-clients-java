@@ -32,7 +32,6 @@ import com.cumulocity.sdk.client.SDKException;
 public class ManagedObjectImpl implements ManagedObject {
 
     static final String PAGE_SIZE_PARAM_WITH_MAX_VALUE = "?pageSize=" + Short.MAX_VALUE;
-    private static final String PARAM_WITH_PARENTS = "?withParents=true"; 
     private final RestConnector restConnector;
     private final int pageSize;
 
@@ -49,11 +48,6 @@ public class ManagedObjectImpl implements ManagedObject {
         return restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
     }
     
-    @Override
-    public ManagedObjectRepresentation getWithParents() throws SDKException {
-        return restConnector.get(url + PARAM_WITH_PARENTS, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
-    }
-
     @Override
     public void delete() throws SDKException {
         restConnector.delete(url);

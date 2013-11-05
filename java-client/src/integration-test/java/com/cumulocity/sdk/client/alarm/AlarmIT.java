@@ -183,7 +183,7 @@ public class AlarmIT {
         AlarmCollectionRepresentation alarms = alarmApi.getAlarms().get();
 
         // Then
-        assertThat(alarms.getAlarms().size(), is(2));
+        assertThat(alarms.getAlarms().size(), is(1));
     }
 
     @Test
@@ -212,7 +212,7 @@ public class AlarmIT {
 
         // Then
         List<AlarmRepresentation> alarms = bySource.getAlarms();
-        assertThat(alarms.size(), is(equalTo(2)));
+        assertThat(alarms.size(), is(equalTo(1)));
     }
 
     @Test
@@ -327,83 +327,6 @@ public class AlarmIT {
 
         assertThat(returned.getStatus(), is("ACKNOWLEDGED"));
         assertThat(returned.getSource().getId(), is(mo1.getId()));
-    }
-
-    @Test
-    public void getAlarmCollectionByDefaultPageSettings() throws Exception {
-        // Given
-        for (int i = 0; i < 12; i++) {
-            AlarmRepresentation rep = aSampleAlarm(mo1);
-            alarmApi.create(rep);
-        }
-
-        // When
-        AlarmCollectionRepresentation alarms = alarmApi.getAlarms().get();
-
-        // Then
-        assertThat(alarms.getAlarms().size(), is(equalTo(5)));
-
-        // When
-        AlarmCollectionRepresentation page1st = alarmApi.getAlarms().getPage(alarms, 1);
-
-        // Then
-        assertThat(page1st.getAlarms().size(), is(equalTo(5)));
-
-        // When
-        AlarmCollectionRepresentation page2nd = alarmApi.getAlarms().getPage(alarms, 2);
-
-        // Then
-        assertThat(page2nd.getAlarms().size(), is(equalTo(5)));
-
-        // When
-        AlarmCollectionRepresentation page3rd = alarmApi.getAlarms().getPage(alarms, 3);
-
-        // Then
-        assertThat(page3rd.getAlarms().size(), is(equalTo(2)));
-
-        // When
-        AlarmCollectionRepresentation page4th = alarmApi.getAlarms().getPage(alarms, 4);
-
-        // Then
-        assertThat(page4th.getAlarms().size(), is(equalTo(0)));
-    }
-
-    //
-//    Scenario: Get alarm next and previous collection
-
-    @Test
-    public void getAlarmNextAndPreviousCollection() throws Exception {
-        // Given
-        for (int i = 0; i < 12; i++) {
-            alarmApi.create(aSampleAlarm(mo1));
-        }
-
-        // When
-        AlarmCollectionRepresentation alarms = alarmApi.getAlarms().get();
-
-        // Then
-        assertThat(alarms.getAlarms().size(), is(equalTo(5)));
-
-        // When
-        AlarmCollectionRepresentation page2nd = alarmApi.getAlarms().getPage(alarms, 2);
-
-        // Then
-        assertThat(page2nd.getAlarms().size(), is(equalTo(5)));
-
-        // When
-        AlarmCollectionRepresentation page3rd = alarmApi.getAlarms().getNextPage(page2nd);
-
-        // Then
-        assertThat(3, is(equalTo(page3rd.getPageStatistics().getCurrentPage())));
-        assertThat(2, is(equalTo(page3rd.getAlarms().size())));
-
-        // When
-        AlarmCollectionRepresentation page1st = alarmApi.getAlarms().getPreviousPage(page2nd);
-
-        // Then
-        assertThat(1, is(equalTo(page1st.getPageStatistics().getCurrentPage())));
-        assertThat(5, is(equalTo(page1st.getAlarms().size())));
-
     }
 
     private AlarmRepresentation aSampleAlarm(ManagedObjectRepresentation source) {
