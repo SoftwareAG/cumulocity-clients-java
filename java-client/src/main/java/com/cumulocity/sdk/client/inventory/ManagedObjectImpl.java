@@ -26,7 +26,6 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollec
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResource;
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
@@ -38,7 +37,6 @@ public class ManagedObjectImpl implements ManagedObject {
 
     final String url;
 
-
     public ManagedObjectImpl(RestConnector restConnector, String url, int pageSize) {
         this.restConnector = restConnector;
         this.url = url;
@@ -49,7 +47,7 @@ public class ManagedObjectImpl implements ManagedObject {
     public ManagedObjectRepresentation get() throws SDKException {
         return restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
     }
-
+    
     @Override
     public void delete() throws SDKException {
         restConnector.delete(url);

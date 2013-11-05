@@ -39,7 +39,7 @@ public interface ManagedObject {
      * @throws SDKException
      */
     public ManagedObjectRepresentation get() throws SDKException;
-
+    
     /**
      * Deletes the Managed Object from the Cumulocity Server.
      *

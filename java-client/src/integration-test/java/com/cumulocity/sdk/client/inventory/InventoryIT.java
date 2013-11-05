@@ -307,7 +307,7 @@ public class InventoryIT extends JavaSdkITBase {
         List<ManagedObjectReferenceRepresentation> refs = refCollection.getReferences();
         Set<GId> childDeviceIDs = asSet(refs.get(0).getManagedObject().getId(), refs.get(1).getManagedObject().getId());
         assertThat(childDeviceIDs, is(asSet(child1.getId(), child2.getId())));
-
+        
         // When
         parentMo.deleteChildDevice(child1.getId());
         parentMo.deleteChildDevice(child2.getId());

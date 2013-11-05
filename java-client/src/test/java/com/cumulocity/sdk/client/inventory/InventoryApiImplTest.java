@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -36,10 +37,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
@@ -47,7 +51,6 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollec
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.TemplateUrlParser;
@@ -145,11 +148,11 @@ public class InventoryApiImplTest {
     @Test
     public void shouldGetMos() throws SDKException {
         // Given
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector,
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector,
                 INVENTORY_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjects();
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjects();
 
         // Then 
         assertThat(result, is(expected));
@@ -158,12 +161,12 @@ public class InventoryApiImplTest {
     @Test
     public void shouldGetMosByEmptyFilter() throws SDKException {
         // Given
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector,
+    	ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector,
                 INVENTORY_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
         InventoryFilter filter = new InventoryFilter();
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));
@@ -176,16 +179,15 @@ public class InventoryApiImplTest {
         inventoryRepresentation.setManagedObjectsForType(TEMPLATE_URL);
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("type", myType))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL, DEFAULT_PAGE_SIZE);
 
         // When
         InventoryFilter filter = new InventoryFilter().byType(myType);
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));
-    }
+    }    
 
     @Test
     public void shouldGetMosByFragmentTypeFilterClass() throws SDKException {
@@ -196,12 +198,11 @@ public class InventoryApiImplTest {
                 templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL,
                         singletonMap("fragmentType", classToStringRepresentation(myFragment)))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL, DEFAULT_PAGE_SIZE);
 
         // When
         InventoryFilter filter = new InventoryFilter().byFragmentType(myFragment);
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));
@@ -214,11 +215,10 @@ public class InventoryApiImplTest {
         String myFragment = "myFragment";
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("fragmentType", myFragment))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL, DEFAULT_PAGE_SIZE);
         // When
         InventoryFilter filter = new InventoryFilter().byFragmentType(myFragment);
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));
@@ -234,8 +234,7 @@ public class InventoryApiImplTest {
     @Test
     public void shouldReturnEmptyCollectionWhenSearchingWithEmptyListOfIds() throws SDKException {
         // When
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource
-                .getManagedObjectsByListOfIds(Collections.EMPTY_LIST);
+    	ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByListOfIds(Collections.EMPTY_LIST);
         // Then
         assertThat(result.get().getManagedObjects().size(), is(equalTo(0)));
     }
@@ -246,13 +245,12 @@ public class InventoryApiImplTest {
         inventoryRepresentation.setManagedObjectsForListOfIds(TEMPLATE_URL);
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("ids", "1"))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL, DEFAULT_PAGE_SIZE);
 
         // When
         List<GId> ids = new LinkedList<GId>();
         ids.add(new GId("1"));
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByListOfIds(ids);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByListOfIds(ids);
 
         // Then
         assertThat(result, is(expected));
@@ -264,15 +262,14 @@ public class InventoryApiImplTest {
         inventoryRepresentation.setManagedObjectsForListOfIds(TEMPLATE_URL);
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("ids", "111,1,5"))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, EXACT_URL, DEFAULT_PAGE_SIZE);
 
         // When
         List<GId> ids = new LinkedList<GId>();
         ids.add(new GId("111"));
         ids.add(new GId("1"));
         ids.add(new GId("5"));
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByListOfIds(ids);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByListOfIds(ids);
 
         // Then
         assertThat(result, is(expected));
