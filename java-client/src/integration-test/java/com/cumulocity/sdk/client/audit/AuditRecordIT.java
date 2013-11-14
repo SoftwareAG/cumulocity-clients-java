@@ -37,6 +37,7 @@ import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentat
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.CumulocityCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.ApplicationCreator;
@@ -70,10 +71,10 @@ public class AuditRecordIT {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                p.get("cumulocity.tenant"),
+                CumulocityCredentials.create(p.get("cumulocity.tenant"),
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
-                p.get("cumulocity.applicationKey"),
+                p.get("cumulocity.applicationKey")),
                 5);
     }
 

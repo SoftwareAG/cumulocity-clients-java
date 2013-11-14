@@ -38,7 +38,7 @@ class PlatformPropertiesRealm implements Realm {
 
     @Override
     public String getPrincipal() {
-        return paramters.getTenantId() + "/" + paramters.getUser();
+        return paramters.getPrincipal();
     }
 
     @Override

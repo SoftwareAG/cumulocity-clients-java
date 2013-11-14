@@ -33,6 +33,7 @@ import com.cumulocity.rest.representation.ResourceRepresentationWithId;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
@@ -66,8 +67,9 @@ public class RestConnector {
 
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType,
             Class<T> responseType) throws SDKException {
-        ClientResponse response = client.resource(path).accept(mediaType)
-                .header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey()).get(ClientResponse.class);
+         Builder builder = client.resource(path).accept(mediaType);
+         builder = addApplicationKeyHeader(builder);
+         ClientResponse response = builder.get(ClientResponse.class);
         return responseParser.parse(response, OK.getStatusCode(), responseType);
     }
 
@@ -116,6 +118,13 @@ public class RestConnector {
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithoutId(representation, response, OK.getStatusCode());
     }
+    
+    private Builder addApplicationKeyHeader(Builder builder) {
+        if (platformParameters.getApplicationKey() != null) {
+             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
+         }
+        return builder;
+    }
 
     private <T extends ResourceRepresentation> T parseResponseWithoutId(T representation, ClientResponse response,
             int responseCode) throws SDKException {
@@ -131,7 +140,8 @@ public class RestConnector {
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
-        return builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey()).post(ClientResponse.class,
+        builder = addApplicationKeyHeader(builder);
+        return builder.post(ClientResponse.class,
                 representation);
     }
 
@@ -142,13 +152,15 @@ public class RestConnector {
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
-        return builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey()).put(
-                ClientResponse.class, representation);
+        builder = addApplicationKeyHeader(builder);
+        return builder.put(ClientResponse.class, representation);
     }
 
     public void delete(String path) throws SDKException {
-        ClientResponse response = client.resource(path).header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey())
-                .delete(ClientResponse.class);
+        Builder builder = client.resource(path).getRequestBuilder();
+        
+        builder = addApplicationKeyHeader(builder);
+        ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
 
@@ -172,8 +184,7 @@ public class RestConnector {
 
         Client client = ApacheHttpClient.create(config);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getTenantId() + "/" + platformParameters.getUser(),
-                platformParameters.getPassword()));
+        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
         
         return client;
     }
