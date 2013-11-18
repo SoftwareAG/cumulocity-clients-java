@@ -29,6 +29,6 @@ public class FilterTest {
         
         Map<String, String> queryParams = eventFilter.getQueryParams();
 
-        assertThat(queryParams.get("dateFrom")).isEqualTo("2011-11-03T06%3A31%3A00.000%2B01%3A00");
+        assertThat(queryParams.get("dateFrom")).doesNotContain(":");
     }
 }
