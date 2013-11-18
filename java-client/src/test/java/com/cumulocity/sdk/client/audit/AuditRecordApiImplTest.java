@@ -25,8 +25,6 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,11 +41,9 @@ import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class AuditRecordApiImplTest {
-
-    private static final String EXACT_URL = "exactUrl";
 
     private static final String TEMPLATE_URL = "template_url";
 
@@ -65,7 +61,7 @@ public class AuditRecordApiImplTest {
     private RestConnector restConnector;
 
     @Mock
-    private TemplateUrlParser templateUrlParser;
+    private UrlProcessor urlProcessor;
 
     @Before
     public void setup() throws Exception {
@@ -76,7 +72,7 @@ public class AuditRecordApiImplTest {
         collectionRepresentation.setSelf(AUDIT_RECORDS_URL);
         auditRecordsApiRepresentation.setAuditRecords(collectionRepresentation);
 
-        auditRecordApi = new AuditRecordApiImpl(restConnector, templateUrlParser, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
+        auditRecordApi = new AuditRecordApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
 
         when(restConnector.get(PLATFORM_API_URL, AuditMediaType.AUDIT_API, AuditRecordsRepresentation.class)).thenReturn(
                 auditRecordsApiRepresentation);
@@ -132,6 +128,7 @@ public class AuditRecordApiImplTest {
     @Test
     public void shouldReturnAuditRecordsByEmptyFilter() throws Exception {
         // Given
+        when(urlProcessor.replaceOrAddQueryParam(AUDIT_RECORDS_URL, Collections.<String, String>emptyMap())).thenReturn(AUDIT_RECORDS_URL);
         PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector,
                 AUDIT_RECORDS_URL, DEFAULT_PAGE_SIZE);
 
@@ -147,146 +144,17 @@ public class AuditRecordApiImplTest {
     public void shouldReturnAuditRecordsByTypeFilter() throws Exception {
         // Given
         String myType = "myType";
-        auditRecordsApiRepresentation.setAuditRecordsForType(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, Collections.singletonMap("type", myType))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
         AuditRecordFilter filter = new AuditRecordFilter().byType(myType);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnAuditRecordsByUserFilter() throws Exception {
-        // Given
-        String myUser = "myUser";
-        auditRecordsApiRepresentation.setAuditRecordsForUser(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, Collections.singletonMap("user", myUser))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
+        auditRecordsApiRepresentation.setAuditRecordsForType(TEMPLATE_URL);
+        String auditsByTypeUrl = AUDIT_RECORDS_URL + "?type=" + myType;
+        when(urlProcessor.replaceOrAddQueryParam(AUDIT_RECORDS_URL, filter.getQueryParams())).thenReturn(auditsByTypeUrl);
+        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, auditsByTypeUrl,
                 DEFAULT_PAGE_SIZE);
 
         // When
-        AuditRecordFilter filter = new AuditRecordFilter().byUser(myUser);
         PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));
     }
-
-    @Test
-    public void shouldReturnAuditRecordsByApplicationFilter() throws Exception {
-        // Given
-        String myApp = "myApp";
-        auditRecordsApiRepresentation.setAuditRecordsForApplication(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, Collections.singletonMap("application", myApp))).thenReturn(
-                EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
-        AuditRecordFilter filter = new AuditRecordFilter().byApplication(myApp);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnAuditRecordsByTypeAndApplicationFilter() throws SDKException {
-        // Given 
-        String myType = "type1";
-        String myApp = "application1";
-        auditRecordsApiRepresentation.setAuditRecordsForTypeAndApplication(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("type", myType);
-        params.put("application", myApp);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
-        AuditRecordFilter filter = new AuditRecordFilter().byType(myType).byApplication(myApp);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnAuditRecordsByUserAndApplicationFilter() throws SDKException {
-        // Given 
-        String myUser = "user1";
-        String myApp = "application1";
-        auditRecordsApiRepresentation.setAuditRecordsForUserAndApplication(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("user", myUser);
-        params.put("application", myApp);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
-        AuditRecordFilter filter = new AuditRecordFilter().byUser(myUser).byApplication(myApp);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnAuditRecordsByTypeAndUserAndStatusFilter() throws Exception {
-        // Given 
-        String myType = "type1";
-        String myUser = "user1";
-        String myApplication = "application1";
-        auditRecordsApiRepresentation.setAuditRecordsForTypeAndUserAndApplication(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("user", myUser);
-        params.put("type", myType);
-        params.put("application", myApplication);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
-        AuditRecordFilter filter = new AuditRecordFilter().byApplication(myApplication).byType(myType).byUser(myUser);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnAuditRecordsByUserAndTypeFilter() throws SDKException {
-        // Given 
-        String myUser = "user1";
-        String myType = "type1";
-        auditRecordsApiRepresentation.setAuditRecordsForUserAndType(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("user", myUser);
-        params.put("type", myType);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, EXACT_URL,
-                DEFAULT_PAGE_SIZE);
-
-        // When
-        AuditRecordFilter filter = new AuditRecordFilter().byUser(myUser).byType(myType);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-
-    }
-
 }

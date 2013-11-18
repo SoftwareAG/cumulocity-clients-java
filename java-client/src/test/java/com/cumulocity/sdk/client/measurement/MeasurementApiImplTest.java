@@ -19,26 +19,20 @@
  */
 package com.cumulocity.sdk.client.measurement;
 
-import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
-import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
@@ -49,13 +43,11 @@ import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class MeasurementApiImplTest {
 
     private static final String SOURCE_GID = "gid1";
-
-    private static final String EXACT_URL = "exact_url";
 
     private static final String MEASUREMENT_COLLECTION_URL = "path_to_measurement";
 
@@ -69,10 +61,6 @@ public class MeasurementApiImplTest {
 
     private MeasurementApi measurementApi;
 
-    private Date from = new Date(10000L);
-
-    private Date to = new Date(20000L);
-
     private MeasurementsApiRepresentation measurementsApiRepresentation = new MeasurementsApiRepresentation();
 
     private PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
@@ -85,12 +73,12 @@ public class MeasurementApiImplTest {
     private RestConnector restConnector;
 
     @Mock
-    private TemplateUrlParser templateUrlParser;
+    private UrlProcessor urlProcessor;
 
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        measurementApi = new MeasurementApiImpl(restConnector, templateUrlParser,PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
+        measurementApi = new MeasurementApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
         source.setId(new GId(SOURCE_GID));
         measurementCollectionRepresentation.setSelf(MEASUREMENT_COLLECTION_URL);
         measurementsApiRepresentation.setMeasurements(measurementCollectionRepresentation);
@@ -149,6 +137,7 @@ public class MeasurementApiImplTest {
     @Test
     public void shouldReturnMeasurementsByEmptyFilter() throws SDKException {
         // Given
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(MEASUREMENT_COLLECTION_URL);
         PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector,
                 MEASUREMENT_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
@@ -163,316 +152,15 @@ public class MeasurementApiImplTest {
     @Test
     public void shouldReturnMeasurementsByTypeFilter() throws Exception {
         // Given 
-        measurementsApiRepresentation.setMeasurementsForType(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("type", TYPE))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
         MeasurementFilter filter = new MeasurementFilter().byType(TYPE);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
+        measurementsApiRepresentation.setMeasurementsForType(TEMPLATE_URL);
+        String measurementsByTypeUrl = MEASUREMENT_COLLECTION_URL + "?type=" + TYPE;
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, filter.getQueryParams())).thenReturn(measurementsByTypeUrl);
 
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsMeasurementsByDateFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForDate(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
+        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, measurementsByTypeUrl,
                 DEAFAULT_PAGE_SIZE);
 
         // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsByDateAndFragmentTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForDateAndFragmentType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byFragmentType(NonRelevantFragmentType.class).byDate(from, to);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsByDateAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForDateAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("type", TYPE);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to).byType(TYPE);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsByDateAndFragmentTypeAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForDateAndFragmentTypeAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("type", TYPE);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to).byFragmentType(NonRelevantFragmentType.class).byType(TYPE);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsByFragmentTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForFragmentType(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("fragmentType", classToStringRepresentation(NonRelevantFragmentType.class));
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byFragmentType(NonRelevantFragmentType.class);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsByFragmentTypeAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForFragmentTypeAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("fragmentType", classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("type", TYPE);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byType(TYPE).byFragmentType(NonRelevantFragmentType.class);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSource(TEMPLATE_URL);
-
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("source", SOURCE_GID))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().bySource(source);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndDateFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndDate(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to).bySource(source);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndDateAndFragmentTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndDateAndFragmentType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to).byFragmentType(NonRelevantFragmentType.class).bySource(source);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndDateAndFragmentTypeAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndDateAndFragmentTypeAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("type", TYPE);
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().bySource(source).byDate(from, to).byFragmentType(NonRelevantFragmentType.class)
-                .byType(TYPE);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndDateAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndDateAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("dateFrom", DateConverter.date2String(from));
-        params.put("dateTo", DateConverter.date2String(to));
-        params.put("type", TYPE);
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().byDate(from, to).byType(TYPE).bySource(source);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndFragmentTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndFragmentType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().bySource(source).byFragmentType(NonRelevantFragmentType.class);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("type", TYPE);
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().bySource(source).byType(TYPE);
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldReturnMeasurementsBySourceAndFragmentTypeAndTypeFilter() throws SDKException {
-        // Given 
-        measurementsApiRepresentation.setMeasurementsForSourceAndFragmentTypeAndType(TEMPLATE_URL);
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("fragmentType", ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class));
-        params.put("type", TYPE);
-        params.put("source", SOURCE_GID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        MeasurementFilter filter = new MeasurementFilter().bySource(source).byFragmentType(NonRelevantFragmentType.class).byType(TYPE);
         PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
 
         // Then

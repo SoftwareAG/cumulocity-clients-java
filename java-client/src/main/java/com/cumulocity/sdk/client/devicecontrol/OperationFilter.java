@@ -21,18 +21,23 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import com.cumulocity.model.operation.OperationStatus;
+import com.cumulocity.sdk.client.Filter;
+import com.cumulocity.sdk.client.Name;
 
 /**
  * A filter to be used in operation queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code OperationFilter filter = new OperationFilter().byStatus(status).byDevice(deviceId);}
  */
-public class OperationFilter {
+public class OperationFilter extends Filter {
 
-    private OperationStatus status;
+    @Name("status")
+    private String status;
 
+    @Name("deviceId")
     private String deviceId;
 
+    @Name("agentId")
     private String agentId;
 
     /**
@@ -42,7 +47,7 @@ public class OperationFilter {
      * @return the operation filter with {@code status} set
      */
     public OperationFilter byStatus(OperationStatus status) {
-        this.status = status;
+        this.status = status.toString();
         return this;
     }
 
@@ -71,7 +76,7 @@ public class OperationFilter {
     /**
      * @return the {@code status} parameter of the query
      */
-    public OperationStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 

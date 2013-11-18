@@ -71,4 +71,9 @@ public class EmptyPagedCollectionResource<T extends BaseCollectionRepresentation
             throw new SDKException("internal error", ex);
         }
     }
+
+    @Override
+    public T get(QueryParam... queryParams) throws SDKException {
+        return get();
+    }
 }

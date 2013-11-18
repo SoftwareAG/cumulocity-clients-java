@@ -179,7 +179,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     @Override
     public InventoryApi getInventoryApi() {
-        return new InventoryApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new InventoryApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     @Override
@@ -189,27 +189,27 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     @Override
     public MeasurementApi getMeasurementApi() {
-        return new MeasurementApiImpl(createRestConnector(), new TemplateUrlParser(),getHost() + PLATFORM_URL, getPageSize());
+        return new MeasurementApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
       }
 
     @Override
     public DeviceControlApi getDeviceControlApi() {
-        return new DeviceControlApiImpl(this, createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new DeviceControlApiImpl(this, createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     @Override
     public EventApi getEventApi() {
-        return new EventApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new EventApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     @Override
     public AlarmApi getAlarmApi() {
-        return new AlarmApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new AlarmApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     @Override
     public AuditRecordApi getAuditRecordApi() {
-        return new AuditRecordApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+        return new AuditRecordApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
     }
 
     private RestConnector createRestConnector() {

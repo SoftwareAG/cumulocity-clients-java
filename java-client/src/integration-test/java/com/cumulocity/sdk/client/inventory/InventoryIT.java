@@ -437,8 +437,7 @@ public class InventoryIT extends JavaSdkITBase {
         inventory.create(aSampleMo().withName("MO2").build());
 
         // When
-        ManagedObjectCollectionRepresentation moCollection = inventory.getManagedObjectsByListOfIds(
-                asList(mo3.getId(), mo1.getId())).get();
+        ManagedObjectCollectionRepresentation moCollection = inventory.getManagedObjectsByFilter(new InventoryFilter().byIds(asList(mo3.getId(), mo1.getId()))).get();
 
         // Then
         List<ManagedObjectRepresentation> mos = moCollection.getManagedObjects();

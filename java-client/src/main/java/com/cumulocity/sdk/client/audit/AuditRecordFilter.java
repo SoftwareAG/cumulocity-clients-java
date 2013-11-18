@@ -20,17 +20,23 @@
 
 package com.cumulocity.sdk.client.audit;
 
+import com.cumulocity.sdk.client.Filter;
+import com.cumulocity.sdk.client.Name;
+
 /**
  * A filter to be used in audit record queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code AuditRecordFilter filter = new AuditRecordFilter().byUser(user).byType(type);}
  */
-public class AuditRecordFilter {
+public class AuditRecordFilter extends Filter {
 
+    @Name("user")
     private String user;
 
+    @Name("type")
     private String type;
 
+    @Name("application")
     private String application;
 
     /**

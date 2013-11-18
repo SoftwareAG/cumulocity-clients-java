@@ -19,20 +19,17 @@
  */
 package com.cumulocity.sdk.client.devicecontrol;
 
-import static java.util.Collections.singletonMap;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
@@ -54,19 +51,13 @@ import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class DeviceControlApiImplTest {
-
-    private static final OperationStatus STATUS = OperationStatus.FAILED;
-
-    private static final String EXACT_URL = "exact_url";
 
     private static final String TEMPLATE_URL = "template_url";
 
     private static final String DEVICE_CONTROL_COLLECTION_URL = "http://abcd.com/devicecontrol/operations";
-
-    private static final String AGENT_ID = "AgentABC";
 
     private static final String DEVICE_ID = "123ABC";
 
@@ -82,12 +73,12 @@ public class DeviceControlApiImplTest {
     private RestConnector restConnector;
 
     @Mock
-    private TemplateUrlParser templateUrlParser;
+    private UrlProcessor urlProcessor;
 
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        deviceControlApi = new DeviceControlApiImpl(restConnector, templateUrlParser, PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
+        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
 
         OperationCollectionRepresentation ocr = new OperationCollectionRepresentation();
         ocr.setSelf(DEVICE_CONTROL_COLLECTION_URL);
@@ -167,6 +158,7 @@ public class DeviceControlApiImplTest {
     @Test
     public void shouldGetOperationsByEmptyFilter() throws Exception {
         //Given
+        when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(DEVICE_CONTROL_COLLECTION_URL);
         PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector,
                 DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
@@ -179,109 +171,21 @@ public class DeviceControlApiImplTest {
     }
 
     @Test
-    public void shouldGetOperationsByAgentFilter() throws Exception {
-        // Given
-        deviceControlApiRepresentation.setOperationsByAgentId(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("agentId", AGENT_ID))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        OperationFilter filter = new OperationFilter().byAgent(AGENT_ID);
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
     public void shouldGetOperationsByDeviceFilter() throws Exception {
         // Given
-        deviceControlApiRepresentation.setOperationsByDeviceId(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("deviceId", DEVICE_ID))).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
         OperationFilter filter = new OperationFilter().byDevice(DEVICE_ID);
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
+        deviceControlApiRepresentation.setOperationsByDeviceId(TEMPLATE_URL);
+        String operationsByDeviceIdUrl = DEVICE_CONTROL_COLLECTION_URL + "?deviceId="+ DEVICE_ID;
+        when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, filter.getQueryParams())).thenReturn(operationsByDeviceIdUrl);
 
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldGetOperationsByAgentAndStatusFilter() throws Exception {
-        // Given
-        deviceControlApiRepresentation.setOperationsByAgentIdAndStatus(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("status", STATUS.toString());
-        params.put("agentId", AGENT_ID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, EXACT_URL,
+        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, operationsByDeviceIdUrl,
                 DEAFAULT_PAGE_SIZE);
 
         // When
-        OperationFilter filter = new OperationFilter().byStatus(STATUS).byAgent(AGENT_ID);
         PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldGetOperationsByDeviceAndStatusFilter() throws Exception {
-        // Given
-        deviceControlApiRepresentation.setOperationsByDeviceIdAndStatus(TEMPLATE_URL);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("status", STATUS.toString());
-        params.put("deviceId", DEVICE_ID);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
-
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        OperationFilter filter = new OperationFilter().byStatus(STATUS).byDevice(DEVICE_ID);
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test
-    public void shouldGetOperationsByStatusFilter() throws Exception {
-        // Given
-        deviceControlApiRepresentation.setOperationsByStatus(TEMPLATE_URL);
-        when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("status", STATUS.toString())))
-                .thenReturn(EXACT_URL);
-
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, EXACT_URL,
-                DEAFAULT_PAGE_SIZE);
-
-        // When
-        OperationFilter filter = new OperationFilter().byStatus(STATUS);
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
-
-        // Then
-        assertThat(result, is(expected));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowUnsupportedOperationExceptionWhenSearchingByAgentAndDeviceAndStatusFilter() throws Exception {
-        // When
-        OperationFilter filter = new OperationFilter().byAgent("").byDevice("").byStatus(STATUS);
-        deviceControlApi.getOperationsByFilter(filter);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowUnsupportedOperationExceptionWhenSearchingByAgentAndDeviceFilter() throws Exception {
-        // When
-        OperationFilter filter = new OperationFilter().byAgent("").byDevice("");
-        deviceControlApi.getOperationsByFilter(filter);
     }
 
     private Matcher<OperationRepresentation> hasOnlyUpdateFields(final OperationRepresentation op) {

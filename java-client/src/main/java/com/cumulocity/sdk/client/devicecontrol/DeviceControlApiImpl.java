@@ -20,7 +20,6 @@
 
 package com.cumulocity.sdk.client.devicecontrol;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
@@ -35,48 +34,30 @@ import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.devicecontrol.notification.OperationNotificationSubscriber;
 import com.cumulocity.sdk.client.notification.Subscriber;
 
 public class DeviceControlApiImpl implements DeviceControlApi {
 
-    private static final String AGENT_ID = "agentId";
-
-    private static final String STATUS = "status";
-
-    private static final String DEVICE_ID = "deviceId";
-
     private final String platformApiUrl;
 
     private final RestConnector restConnector;
-
-    private TemplateUrlParser templateUrlParser;
 
     private final int pageSize;
 
     private DeviceControlRepresentation deviceControlRepresentation = null;
 
     private final PlatformParameters parameters;
-
-    @Deprecated
-    public DeviceControlApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl) {
-        this(null, restConnector, templateUrlParser, platformApiUrl, PlatformParameters.DEFAULT_PAGE_SIZE);
-    }
     
-    @Deprecated
-    public DeviceControlApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl, int pageSize) {
-        this(null, restConnector, templateUrlParser, platformApiUrl, pageSize);
-    }
+    private UrlProcessor urlProcessor;
 
-    public DeviceControlApiImpl(PlatformParameters parameters, RestConnector restConnector, TemplateUrlParser templateUrlParser,
-            String platformApiUrl, int pageSize) {
+    public DeviceControlApiImpl(PlatformParameters parameters, RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUrl, int pageSize) {
         this.parameters = parameters;
         this.restConnector = restConnector;
-        this.templateUrlParser = templateUrlParser;
+        this.urlProcessor = urlProcessor;
         this.platformApiUrl = platformApiUrl;
         this.pageSize = pageSize;
-      
     }
 
     private DeviceControlRepresentation getDeviceControlRepresentation() throws SDKException {
@@ -94,69 +75,30 @@ public class DeviceControlApiImpl implements DeviceControlApi {
 
     @Override
     public OperationRepresentation getOperation(GId gid) throws SDKException {
-        String url = getDeviceControlRepresentation().getOperations().getSelf() + "/" + gid.getValue();
+        String url = getSelfUri() + "/" + gid.getValue();
         return restConnector.get(url, DeviceControlMediaType.OPERATION, OperationRepresentation.class);
     }
 
     @Override
     public PagedCollectionResource<OperationCollectionRepresentation> getOperations() throws SDKException {
-        String url = getDeviceControlRepresentation().getOperations().getSelf();
+        String url = getSelfUri();
         return new OperationCollectionImpl(restConnector, url, pageSize);
     }
 
-    private PagedCollectionResource<OperationCollectionRepresentation> getOperationsByStatus(OperationStatus status) throws SDKException {
-        String urlTemplate = getDeviceControlRepresentation().getOperationsByStatus();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(STATUS, status.toString());
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new OperationCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<OperationCollectionRepresentation> getOperationsByAgent(String agentId) throws SDKException {
-        String urlTemplate = getDeviceControlRepresentation().getOperationsByAgentId();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(AGENT_ID, agentId);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new OperationCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<OperationCollectionRepresentation> getOperationsByAgentAndStatus(String agentId, OperationStatus status)
-            throws SDKException {
-        String urlTemplate = getDeviceControlRepresentation().getOperationsByAgentIdAndStatus();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(AGENT_ID, agentId);
-        filter.put(STATUS, status.toString());
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new OperationCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<OperationCollectionRepresentation> getOperationsByDevice(String deviceId) throws SDKException {
-        String urlTemplate = getDeviceControlRepresentation().getOperationsByDeviceId();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(DEVICE_ID, deviceId);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new OperationCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<OperationCollectionRepresentation> getOperationsByDeviceAndStatus(String deviceId,
-            OperationStatus status) throws SDKException {
-        String urlTemplate = getDeviceControlRepresentation().getOperationsByDeviceIdAndStatus();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(DEVICE_ID, deviceId);
-        filter.put(STATUS, status.toString());
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new OperationCollectionImpl(restConnector, url, pageSize);
-    }
 
     @Override
     public OperationRepresentation create(OperationRepresentation operation) throws SDKException {
-        return restConnector.post(getDeviceControlRepresentation().getOperations().getSelf(), DeviceControlMediaType.OPERATION, operation);
+        return restConnector.post(getSelfUri(), DeviceControlMediaType.OPERATION, operation);
     }
 
     @Override
     public OperationRepresentation update(OperationRepresentation operation) throws SDKException {
-        String url = getDeviceControlRepresentation().getOperations().getSelf() + "/" + operation.getId().getValue();
+        String url = getSelfUri() + "/" + operation.getId().getValue();
         return restConnector.put(url, DeviceControlMediaType.OPERATION, prepareOperationForUpdate(operation));
+    }
+
+    private String getSelfUri() throws SDKException {
+        return getDeviceControlRepresentation().getOperations().getSelf();
     }
 
     private OperationRepresentation prepareOperationForUpdate(OperationRepresentation operation) {
@@ -171,27 +113,11 @@ public class DeviceControlApiImpl implements DeviceControlApi {
 
     @Override
     public PagedCollectionResource<OperationCollectionRepresentation> getOperationsByFilter(OperationFilter filter) throws SDKException {
-        OperationStatus status = filter.getStatus();
-        String device = filter.getDevice();
-        String agent = filter.getAgent();
-
-        if (status != null && agent != null && device != null) {
-            throw new IllegalArgumentException();
-        } else if (device != null && agent != null) {
-            throw new IllegalArgumentException();
-        } else if (status != null && agent != null) {
-            return getOperationsByAgentAndStatus(agent, status);
-        } else if (status != null && device != null) {
-            return getOperationsByDeviceAndStatus(device, status);
-        } else if (device != null) {
-            return getOperationsByDevice(device);
-        } else if (agent != null) {
-            return getOperationsByAgent(agent);
-        } else if (status != null) {
-            return getOperationsByStatus(status);
-        } else {
+        if (filter == null) {
             return getOperations();
         }
+        Map<String, String> params = filter.getQueryParams();
+        return new OperationCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
     }
 
     @Override

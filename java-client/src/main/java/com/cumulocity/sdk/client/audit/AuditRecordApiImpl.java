@@ -20,7 +20,6 @@
 
 package com.cumulocity.sdk.client.audit;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
@@ -31,40 +30,25 @@ import com.cumulocity.rest.representation.audit.AuditRecordsRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class AuditRecordApiImpl implements AuditRecordApi {
-
-    private static final String PARAMETER_APPLICATION = "application";
-
-    private static final String PARAMETER_USER = "user";
-
-    private static final String PARAMETER_TYPE = "type";
 
     private final String platformApiUrl;
 
     private final RestConnector restConnector;
 
-    private final TemplateUrlParser templateUrlParser;
-
     private final int pageSize;
 
     private AuditRecordsRepresentation auditRecordsRepresentation = null;
+    
+    private UrlProcessor urlProcessor;
 
-    @Deprecated
-    public AuditRecordApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl) {
+    public AuditRecordApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUrl, int pageSize) {
         this.restConnector = restConnector;
-        this.templateUrlParser = templateUrlParser;
-        this.platformApiUrl = platformApiUrl;
-        this.pageSize = PlatformParameters.DEFAULT_PAGE_SIZE;
-    }
-
-    public AuditRecordApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformApiUrl, int pageSize) {
-        this.restConnector = restConnector;
-        this.templateUrlParser = templateUrlParser;
+        this.urlProcessor = urlProcessor;
         this.platformApiUrl = platformApiUrl;
         this.pageSize = pageSize;
     }
@@ -84,111 +68,33 @@ public class AuditRecordApiImpl implements AuditRecordApi {
 
     @Override
     public AuditRecordRepresentation getAuditRecord(GId gid) throws SDKException {
-        String url = getAuditRecordsRepresentation().getAuditRecords().getSelf() + "/" + gid.getValue();
+        String url = getSelfUri() + "/" + gid.getValue();
         return restConnector.get(url, AuditMediaType.AUDIT_RECORD, AuditRecordRepresentation.class);
+    }
+
+    private String getSelfUri() throws SDKException {
+        return getAuditRecordsRepresentation().getAuditRecords().getSelf();
     }
 
     @Override
     public PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecords() throws SDKException {
-        String url = getAuditRecordsRepresentation().getAuditRecords().getSelf();
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByType(String type) throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForType();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_TYPE, type);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByUser(String user) throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForUser();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_USER, user);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByApplication(String application)
-            throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForApplication();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_APPLICATION, application);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByUserAndType(String user, String type)
-            throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForUserAndType();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_USER, user);
-        filter.put(PARAMETER_TYPE, type);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByUserAndApplication(String user, String application)
-            throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForUserAndApplication();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_USER, user);
-        filter.put(PARAMETER_APPLICATION, application);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByTypeAndApplication(String type, String application)
-            throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForTypeAndApplication();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_TYPE, type);
-        filter.put(PARAMETER_APPLICATION, application);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-        return new AuditRecordCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByTypeAndUserAndApplication(String user,
-            String type, String application) throws SDKException {
-        String urlTemplate = getAuditRecordsRepresentation().getAuditRecordsForTypeAndUserAndApplication();
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(PARAMETER_USER, user);
-        filter.put(PARAMETER_TYPE, type);
-        filter.put(PARAMETER_APPLICATION, application);
-        String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
+        String url = getSelfUri();
         return new AuditRecordCollectionImpl(restConnector, url, pageSize);
     }
 
     @Override
     public AuditRecordRepresentation create(AuditRecordRepresentation representation) throws SDKException {
-        return restConnector.post(getAuditRecordsRepresentation().getAuditRecords().getSelf(), AuditMediaType.AUDIT_RECORD, representation);
+        return restConnector.post(getSelfUri(), AuditMediaType.AUDIT_RECORD, representation);
     }
 
     @Override
     public PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByFilter(AuditRecordFilter filter)
             throws SDKException {
-
-        String application = filter.getApplication();
-        String type = filter.getType();
-        String user = filter.getUser();
-        if (user != null && type != null && application != null) {
-            return getAuditRecordsByTypeAndUserAndApplication(user, type, application);
-        } else if (user != null && application != null) {
-            return getAuditRecordsByUserAndApplication(user, application);
-        } else if (user != null && type != null) {
-            return getAuditRecordsByUserAndType(user, type);
-        } else if (application != null && type != null) {
-            return getAuditRecordsByTypeAndApplication(type, application);
-        } else if (user != null) {
-            return getAuditRecordsByUser(user);
-        } else if (type != null) {
-            return getAuditRecordsByType(type);
-        } else if (application != null) {
-            return getAuditRecordsByApplication(application);
-        } else {
+        if (filter == null) {
             return getAuditRecords();
         }
+        Map<String, String> params = filter.getQueryParams();
+        return new AuditRecordCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
     }
 
 }

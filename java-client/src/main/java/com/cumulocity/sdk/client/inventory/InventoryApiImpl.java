@@ -20,52 +20,35 @@
 
 package com.cumulocity.sdk.client.inventory;
 
-import static com.cumulocity.sdk.client.inventory.InventoryApiImpl.GetMOCollectionRequest.aGetMOCollectionRequest;
-
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
-import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class InventoryApiImpl implements InventoryApi {
-
-	private static final String TYPE = "type";
-
-	private static final String FRAGMENT_TYPE = "fragmentType";
-
-	private static final String IDS = "ids";
 
 	private final RestConnector restConnector;
 
 	private final String platformUrl;
 
-	private TemplateUrlParser templateUrlParser;
-
 	private final int pageSize;
 
 	private InventoryRepresentation inventoryRepresentation;
+	
+	private UrlProcessor urlProcessor;
 
-	@Deprecated
-	public InventoryApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl) {
+	public InventoryApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformUrl, int pageSize) {
 		this.restConnector = restConnector;
-		this.templateUrlParser = templateUrlParser;
-		this.platformUrl = platformUrl;
-		this.pageSize = PlatformParameters.DEFAULT_PAGE_SIZE;
-	}
-
-	public InventoryApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl, int pageSize) {
-		this.restConnector = restConnector;
-		this.templateUrlParser = templateUrlParser;
+        this.urlProcessor = urlProcessor;
 		this.platformUrl = platformUrl;
 		this.pageSize = pageSize;
 	}
@@ -85,76 +68,22 @@ public class InventoryApiImpl implements InventoryApi {
 	}
 
 	@Override
-	public ManagedObjectCollection getManagedObjects() throws SDKException {
-		return getManagedObjects(aGetMOCollectionRequest());
-	}
-
-	private ManagedObjectCollection getManagedObjects(GetMOCollectionRequest request) throws SDKException {
-		String url = getSelfUri();
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
+	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {
+	    String url = getSelfUri();
+	    return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
 	}
 
 	@Override
-	public ManagedObjectCollection getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
-		String type = filter.getType();
-		String fragmentType = filter.getFragmentType();
-		
-		if (type != null && fragmentType != null) {
-			throw new IllegalArgumentException();
-		} else if (type != null) {
-			return getManagedObjectsByType(type);
-		} else if (fragmentType != null) {
-			return getManagedObjectsByFragmentType(fragmentType);
-		} else {
-			return getManagedObjects();
-		}
-	}
-
-	@Override
-	public ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
-		if (ids == null || ids.size() == 0) {
-			return new EmptyManagedObjectCollection();
-		}
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForListOfIds();
-		Map<String, String> filter = Collections.singletonMap(IDS, createCommaSeparatedStringFromGids(ids));
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
+	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
+	    if (filter == null) {
+	        return getManagedObjects();
+	    }
+		Map<String, String> params = filter.getQueryParams();
+		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
 	}
 
 	protected String getSelfUri() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
-	}
-
-	private ManagedObjectCollection getManagedObjectsByType(String type) throws SDKException {
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForType();
-		Map<String, String> filter = Collections.singletonMap(TYPE, type);
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
-	private ManagedObjectCollection getManagedObjectsByFragmentType(String fragmentType) throws SDKException {
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForFragmentType();
-		Map<String, String> filter = Collections.singletonMap(FRAGMENT_TYPE, fragmentType);
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
-	private String createCommaSeparatedStringFromGids(List<GId> ids) {
-		boolean atLeastOneItemProcessed = false;
-		StringBuilder builder = new StringBuilder();
-
-		for (GId gid : ids) {
-			atLeastOneItemProcessed = true;
-			builder.append(gid.getValue());
-			builder.append(",");
-		}
-
-		// remove last comma if needed
-		if (atLeastOneItemProcessed) {
-			builder.deleteCharAt(builder.length() - 1);
-		}
-
-		return builder.toString();
 	}
 
 	private InventoryRepresentation getInventoryRepresentation() throws SDKException {
@@ -167,23 +96,5 @@ public class InventoryApiImpl implements InventoryApi {
 	private void createApiRepresentation() throws SDKException {
 		PlatformApiRepresentation platformApiRepresentation = restConnector.get(platformUrl, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
 		inventoryRepresentation = platformApiRepresentation.getInventory();
-	}
-
-	static class GetMOCollectionRequest {
-
-		private boolean withParents = false;
-
-		public static GetMOCollectionRequest aGetMOCollectionRequest() {
-			return new GetMOCollectionRequest();
-		}
-
-		public GetMOCollectionRequest withParents(boolean withParents) {
-			this.withParents = withParents;
-			return this;
-		}
-
-		public boolean isWithParents() {
-			return withParents;
-		}
 	}
 }

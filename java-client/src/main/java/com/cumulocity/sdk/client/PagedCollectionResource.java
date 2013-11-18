@@ -83,4 +83,6 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      */
     T getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
 
+    T get(QueryParam... queryParams) throws SDKException;
+
 }

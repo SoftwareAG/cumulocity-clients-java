@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -59,5 +60,4 @@ public class TemplateUrlParser {
     private String asPattern(String key) {
         return "\\{" + key + "\\}";
     }
-
 }

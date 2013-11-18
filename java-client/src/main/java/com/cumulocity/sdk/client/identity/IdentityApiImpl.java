@@ -32,7 +32,6 @@ import com.cumulocity.rest.representation.identity.IdentityRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.TemplateUrlParser;
@@ -41,7 +40,6 @@ public class IdentityApiImpl implements IdentityApi {
 
     private static final String GLOBAL_ID = "globalId";
 
-    // FIXME: there's a typo in the rest API
     private static final String EXTERNAL_ID = "externaId";
 
     private static final String TYPE = "type";
@@ -55,14 +53,6 @@ public class IdentityApiImpl implements IdentityApi {
     private final int pageSize;
 
     private IdentityRepresentation identityRepresentation;
-
-    @Deprecated
-    public IdentityApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl) {
-        this.restConnector = restConnector;
-        this.templateUrlParser = templateUrlParser;
-        this.platformUrl = platformUrl;
-        this.pageSize = PlatformParameters.DEFAULT_PAGE_SIZE;
-    }
 
     public IdentityApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl, int pageSize) {
         this.restConnector = restConnector;

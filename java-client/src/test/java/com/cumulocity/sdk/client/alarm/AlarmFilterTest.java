@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.is;
 import org.junit.Test;
 
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.model.idtype.GId;
 
 public class AlarmFilterTest {
 
@@ -34,15 +34,14 @@ public class AlarmFilterTest {
     @Test
     public void shouldHoldStatusAndSource() {
         // given
-        ManagedObjectRepresentation source = new ManagedObjectRepresentation();
         CumulocityAlarmStatuses status = CumulocityAlarmStatuses.ACKNOWLEDGED;
 
         // when
-        AlarmFilter filter = alarmFilter.bySource(source).byStatus(status);
+        AlarmFilter filter = alarmFilter.bySource(new GId("1")).byStatus(status);
 
         // then
-        assertThat(filter.getSource(), is(source));
-        assertThat(filter.getStatus(), is(status));
+        assertThat(filter.getSource(), is("1"));
+        assertThat(filter.getStatus(), is(status.toString()));
     }
 
 }

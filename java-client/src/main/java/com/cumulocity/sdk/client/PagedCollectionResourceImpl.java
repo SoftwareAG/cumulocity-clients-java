@@ -21,7 +21,6 @@
 package com.cumulocity.sdk.client;
 
 import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
-import static java.util.Collections.singletonMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +34,8 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
         PagedCollectionResource<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
+
+    private UrlProcessor urlProcessor = new UrlProcessor();
 
     protected int pageSize = 5;
 
@@ -68,7 +69,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
         params.put(PAGE_SIZE_KEY, String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize));
         params.put(PAGE_NUMBER_KEY, String.valueOf(pageNumber));
 
-        String url = replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
+        String url = urlProcessor.replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
 
         LOG.debug(" URL : " + url);
         return getCollection(url);
@@ -107,12 +108,22 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
 
     @Override
     public T get(int pageSize) throws SDKException {
-    	String urlToCall = replaceOrAddQueryParam(url, prepareGetParams(pageSize));
+    	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, prepareGetParams(pageSize));
+    	System.out.println(urlToCall);
     	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
     
+    @Override
+    public T get(QueryParam... queryParams) throws SDKException {
+        Map<String, String> params = prepareGetParams(pageSize);
+        for (QueryParam param : queryParams) {
+            params.put(param.getKey().getName(), param.getValue());
+        }
+        return get(params);
+    }
+    
     protected T get(Map<String, String> params) throws SDKException {
-    	String urlToCall = replaceOrAddQueryParam(url, params);
+    	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, params);
     	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
 
@@ -143,45 +154,5 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     @Override
     public int hashCode() {
         return getMediaType().hashCode() ^ getResponseClass().hashCode() ^ url.hashCode() ^ pageSize;
-    }
-
-    private String replaceOrAddQueryParam(String url, Map<String, String> newParams) throws SDKException {
-        String[] urlParts = url.split("\\?");
-        String partOfUrlWithoutQueryParams = urlParts[0];
-        String queryParamsString = (urlParts.length == 2) ? urlParts[1] : "";
-
-        Map<String, String> queryParams = parseQueryParams(queryParamsString);
-        queryParams.putAll(newParams);
-        return buildUrl(partOfUrlWithoutQueryParams, queryParams);
-    }
-
-    private String buildUrl(String urlBeginning, Map<String, String> queryParams) {
-        StringBuilder builder = new StringBuilder(urlBeginning);
-        if (queryParams.size() > 0) {
-            builder.append("?"); //add ? only if query params exist
-            boolean addingfirstPair = true; //this var is used only to make sure & after last pair is not added
-            for (Map.Entry<String, String> entry : queryParams.entrySet()) {
-                if (!addingfirstPair) {
-                    builder.append("&");
-                }
-                builder.append(entry.getKey()).append("=").append(entry.getValue());
-                addingfirstPair = false;
-            }
-        }
-
-        return builder.toString();
-    }
-
-    private Map<String, String> parseQueryParams(String queryParams) {
-        Map<String, String> result = new HashMap<String, String>();
-        String[] pairs = queryParams.split("&");
-        for (String pair : pairs) {
-            String[] items = pair.split("=");
-            if (items.length == 2) {
-                result.put(items[0], items[1]);
-            }
-        }
-
-        return result;
     }
 }
