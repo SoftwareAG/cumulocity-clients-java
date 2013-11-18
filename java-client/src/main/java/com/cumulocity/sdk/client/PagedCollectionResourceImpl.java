@@ -109,7 +109,6 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     @Override
     public T get(int pageSize) throws SDKException {
     	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, prepareGetParams(pageSize));
-    	System.out.println(urlToCall);
     	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
     }
     
