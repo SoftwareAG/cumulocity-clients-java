@@ -28,8 +28,6 @@ import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.rest.representation.operation.DeviceControlRepresentation;
 import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
@@ -40,37 +38,26 @@ import com.cumulocity.sdk.client.notification.Subscriber;
 
 public class DeviceControlApiImpl implements DeviceControlApi {
 
-    private final String platformApiUrl;
-
     private final RestConnector restConnector;
 
     private final int pageSize;
 
-    private DeviceControlRepresentation deviceControlRepresentation = null;
+    private DeviceControlRepresentation deviceControlRepresentation;
 
     private final PlatformParameters parameters;
     
     private UrlProcessor urlProcessor;
 
-    public DeviceControlApiImpl(PlatformParameters parameters, RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUrl, int pageSize) {
+    public DeviceControlApiImpl(PlatformParameters parameters, RestConnector restConnector, UrlProcessor urlProcessor, DeviceControlRepresentation deviceControlRepresentation, int pageSize) {
         this.parameters = parameters;
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-        this.platformApiUrl = platformApiUrl;
+        this.deviceControlRepresentation = deviceControlRepresentation;
         this.pageSize = pageSize;
     }
 
     private DeviceControlRepresentation getDeviceControlRepresentation() throws SDKException {
-        if (null == deviceControlRepresentation) {
-            createApiRepresentation();
-        }
         return deviceControlRepresentation;
-    }
-
-    private void createApiRepresentation() throws SDKException {
-        PlatformApiRepresentation platformApiRepresentation = restConnector.get(platformApiUrl, PlatformMediaType.PLATFORM_API,
-                PlatformApiRepresentation.class);
-        deviceControlRepresentation = platformApiRepresentation.getDeviceControl();
     }
 
     @Override

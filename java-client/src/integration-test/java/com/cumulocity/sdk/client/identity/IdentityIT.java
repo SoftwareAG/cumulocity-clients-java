@@ -48,7 +48,7 @@ public class IdentityIT extends JavaSdkITBase {
     private IdentityApi identity;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         identity = platform.getIdentityApi();
         input = new ArrayList<ExternalIDRepresentation>();
         result1 = new ArrayList<ExternalIDRepresentation>();

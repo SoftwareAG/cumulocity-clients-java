@@ -27,8 +27,6 @@ import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -36,36 +34,25 @@ import com.cumulocity.sdk.client.UrlProcessor;
 
 public class AlarmApiImpl implements AlarmApi {
 
-    private final String platformApiUri;
-
     private final RestConnector restConnector;
 
     private final int pageSize;
 
-    private AlarmsApiRepresentation alarmsApiRepresentation = null;
+    private AlarmsApiRepresentation alarmsApiRepresentation;
     
     private UrlProcessor urlProcessor;
 
-    public AlarmApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUri, int pageSize) {
+    public AlarmApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, AlarmsApiRepresentation alarmsApiRepresentation, int pageSize) {
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-        this.platformApiUri = platformApiUri;
+        this.alarmsApiRepresentation = alarmsApiRepresentation;
         this.pageSize = pageSize;
     }
 
     private AlarmsApiRepresentation getAlarmsApiRepresentation() throws SDKException {
-        if (null == alarmsApiRepresentation) {
-            createApiRepresentation();
-        }
         return alarmsApiRepresentation;
     }
     
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformApiUri,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-        alarmsApiRepresentation = platformApiRepresentation.getAlarm();
-    }
-
     @Override
     public AlarmRepresentation getAlarm(GId alarmId) throws SDKException {
         String url = getSelfUri() + "/" + alarmId.getValue();

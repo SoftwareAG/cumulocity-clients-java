@@ -36,8 +36,6 @@ import com.cumulocity.rest.representation.audit.AuditMediaType;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordsRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -48,8 +46,6 @@ public class AuditRecordApiImplTest {
     private static final String TEMPLATE_URL = "template_url";
 
     private static final String AUDIT_RECORDS_URL = "audit_records_url";
-
-    private static final String PLATFORM_API_URL = "path_to_platform_api";
 
     private static final int DEFAULT_PAGE_SIZE = 555;
 
@@ -72,15 +68,7 @@ public class AuditRecordApiImplTest {
         collectionRepresentation.setSelf(AUDIT_RECORDS_URL);
         auditRecordsApiRepresentation.setAuditRecords(collectionRepresentation);
 
-        auditRecordApi = new AuditRecordApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
-
-        when(restConnector.get(PLATFORM_API_URL, AuditMediaType.AUDIT_API, AuditRecordsRepresentation.class)).thenReturn(
-                auditRecordsApiRepresentation);
-        
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        platformApiRepresentation.setAudit(auditRecordsApiRepresentation);
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(
-                platformApiRepresentation);
+        auditRecordApi = new AuditRecordApiImpl(restConnector, urlProcessor, auditRecordsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test

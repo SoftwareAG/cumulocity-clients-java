@@ -38,8 +38,6 @@ import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepre
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -55,15 +53,11 @@ public class MeasurementApiImplTest {
 
     private static final String TYPE = "type1";
 
-    private static final String PLATFORM_API_URL = "platform_api_url";
-
     private static final int DEAFAULT_PAGE_SIZE = 11;
 
     private MeasurementApi measurementApi;
 
     private MeasurementsApiRepresentation measurementsApiRepresentation = new MeasurementsApiRepresentation();
-
-    private PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
 
     private MeasurementCollectionRepresentation measurementCollectionRepresentation = new MeasurementCollectionRepresentation();
 
@@ -78,14 +72,10 @@ public class MeasurementApiImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        measurementApi = new MeasurementApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
+        measurementApi = new MeasurementApiImpl(restConnector, urlProcessor, measurementsApiRepresentation, DEAFAULT_PAGE_SIZE);
         source.setId(new GId(SOURCE_GID));
         measurementCollectionRepresentation.setSelf(MEASUREMENT_COLLECTION_URL);
         measurementsApiRepresentation.setMeasurements(measurementCollectionRepresentation);
-        platformApiRepresentation.setMeasurement(measurementsApiRepresentation);
-        
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(
-                platformApiRepresentation);
     }
 
     @Test

@@ -25,14 +25,17 @@ import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentati
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
@@ -40,21 +43,12 @@ import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.CumulocityCredentials;
-import com.cumulocity.sdk.client.PlatformImpl;
-import com.cumulocity.sdk.client.common.ApplicationCreator;
-import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
-import com.cumulocity.sdk.client.common.TenantCreator;
-import com.cumulocity.sdk.client.inventory.InventoryIT;
+import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
-//TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
-public class AlarmIT {
+public class AlarmIT extends JavaSdkITBase {
 
     private static final int UNPROCESSABLE = 422;
-
-    private static ApplicationCreator applicationCreator;
-    private static TenantCreator tenantCreator;
-    protected static PlatformImpl platform;
 
     private AlarmApi alarmApi;
 
@@ -64,34 +58,8 @@ public class AlarmIT {
     private ManagedObjectRepresentation mo2;
     private ManagedObjectRepresentation mo3;
 
-    @BeforeClass
-    public static void createTenantWithApplication() throws Exception {
-        platform = createPlatform();
-
-    }
-
-    private static PlatformImpl createPlatform() throws IOException {
-        Properties cumulocityProps = new Properties();
-        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-
-        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        return new PlatformImpl(
-                p.get("cumulocity.host"),
-                CumulocityCredentials.create(p.get("cumulocity.tenant"),
-                p.get("cumulocity.user"),
-                p.get("cumulocity.password"),
-                p.get("cumulocity.applicationKey")),
-                5);
-    }
-
     @Before
     public void setup() throws Exception {
-        applicationCreator = new ApplicationCreator(platform);
-        applicationCreator.createApplication();
-
-        tenantCreator = new TenantCreator(platform, applicationCreator);
-        tenantCreator.createTenant();
-
         alarmApi = platform.getAlarmApi();
 
         mo1 = platform.getInventoryApi().create(aSampleMo().withName("MO" + 1).build());
@@ -100,9 +68,22 @@ public class AlarmIT {
     }
 
     @After
-    public void removeTenantAndApplication() throws Exception {
-        tenantCreator.removeTenant();
-        applicationCreator.removeApplication();
+    public void deleteManagedObjects() throws Exception {
+        List<ManagedObjectRepresentation> mosOn1stPage = getMOsFrom1stPage();
+        while (!mosOn1stPage.isEmpty()) {
+            deleteMOs(mosOn1stPage);
+            mosOn1stPage = getMOsFrom1stPage();
+        }
+    }
+    
+    private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
+        for (ManagedObjectRepresentation mo : mosOn1stPage) {
+            platform.getInventoryApi().getManagedObject(mo.getId()).delete();
+        }
+    }
+
+    private List<ManagedObjectRepresentation> getMOsFrom1stPage() throws SDKException {
+        return platform.getInventoryApi().getManagedObjects().get().getManagedObjects();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {

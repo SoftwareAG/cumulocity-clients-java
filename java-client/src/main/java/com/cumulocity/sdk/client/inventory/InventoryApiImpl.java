@@ -28,8 +28,6 @@ import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -39,18 +37,16 @@ public class InventoryApiImpl implements InventoryApi {
 
 	private final RestConnector restConnector;
 
-	private final String platformUrl;
-
 	private final int pageSize;
 
 	private InventoryRepresentation inventoryRepresentation;
 	
 	private UrlProcessor urlProcessor;
 
-	public InventoryApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformUrl, int pageSize) {
+	public InventoryApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, InventoryRepresentation inventoryRepresentation, int pageSize) {
 		this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-		this.platformUrl = platformUrl;
+        this.inventoryRepresentation = inventoryRepresentation;
 		this.pageSize = pageSize;
 	}
 
@@ -94,14 +90,6 @@ public class InventoryApiImpl implements InventoryApi {
 	}
 
 	private InventoryRepresentation getInventoryRepresentation() throws SDKException {
-		if (null == inventoryRepresentation) {
-			createApiRepresentation();
-		}
 		return inventoryRepresentation;
-	}
-
-	private void createApiRepresentation() throws SDKException {
-		PlatformApiRepresentation platformApiRepresentation = restConnector.get(platformUrl, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-		inventoryRepresentation = platformApiRepresentation.getInventory();
 	}
 }

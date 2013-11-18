@@ -29,8 +29,6 @@ import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresent
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -44,8 +42,6 @@ public class IdentityApiImpl implements IdentityApi {
 
     private static final String TYPE = "type";
 
-    private final String platformUrl;
-
     private final RestConnector restConnector;
 
     private TemplateUrlParser templateUrlParser;
@@ -54,26 +50,17 @@ public class IdentityApiImpl implements IdentityApi {
 
     private IdentityRepresentation identityRepresentation;
 
-    public IdentityApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl, int pageSize) {
+    public IdentityApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, IdentityRepresentation identityRepresentation, int pageSize) {
         this.restConnector = restConnector;
         this.templateUrlParser = templateUrlParser;
-        this.platformUrl = platformUrl;
+        this.identityRepresentation = identityRepresentation;
         this.pageSize = pageSize;
     }
 
     private IdentityRepresentation getIdentityRepresentation() throws SDKException {
-        if (null == identityRepresentation) {
-            createApiRepresentation();
-        }
         return identityRepresentation;
     }
     
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformUrl,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-        identityRepresentation = platformApiRepresentation.getIdentity();
-    }
-
     @Override
     public ExternalIDRepresentation getExternalId(ID extId) throws SDKException {
         if (extId == null || extId.getValue() == null || extId.getType() == null) {

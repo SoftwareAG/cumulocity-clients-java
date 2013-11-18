@@ -42,8 +42,6 @@ import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -52,8 +50,6 @@ import com.cumulocity.sdk.client.UrlProcessor;
 public class AlarmApiImplTest {
 
     private static final String ALARM_COLLECTION_URL = "/alarm/alarms";
-
-    private static final String PATH_TO_PLATFORM_API = "path_to_platforms";
 
     private static final int DEFAULT_PAGE_SIZE = 555;
 
@@ -71,17 +67,12 @@ public class AlarmApiImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        alarmApi = new AlarmApiImpl(restConnector, urlProcessor, PATH_TO_PLATFORM_API, DEFAULT_PAGE_SIZE);
 
         AlarmCollectionRepresentation alarmCollectionRepresentation = new AlarmCollectionRepresentation();
         alarmCollectionRepresentation.setSelf(ALARM_COLLECTION_URL);
         alarmsApiRepresentation.setAlarms(alarmCollectionRepresentation);
 
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        platformApiRepresentation.setAlarm(alarmsApiRepresentation);
-        when(restConnector.get(PATH_TO_PLATFORM_API, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(
-                platformApiRepresentation);
-
+        alarmApi = new AlarmApiImpl(restConnector, urlProcessor, alarmsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test

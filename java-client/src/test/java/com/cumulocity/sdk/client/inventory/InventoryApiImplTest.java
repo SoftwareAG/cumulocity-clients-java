@@ -40,8 +40,6 @@ import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -52,8 +50,6 @@ public class InventoryApiImplTest {
     private static final String TEMPLATE_URL = "template_url";
 
     private static final String INVENTORY_COLLECTION_URL = "inventory_collection_url";
-
-    private static final String PLATFORM_API_URL = "inventory_api_url";
 
     private static final int DEFAULT_PAGE_SIZE = 9;
 
@@ -73,15 +69,12 @@ public class InventoryApiImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        inventoryApiResource = new InventoryApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
 
         ManagedObjectReferenceCollectionRepresentation representation = new ManagedObjectReferenceCollectionRepresentation();
         representation.setSelf(INVENTORY_COLLECTION_URL);
         inventoryRepresentation.setManagedObjects(representation);
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        platformApiRepresentation.setInventory(inventoryRepresentation);
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(
-                platformApiRepresentation);
+       
+        inventoryApiResource = new InventoryApiImpl(restConnector, urlProcessor, inventoryRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test

@@ -41,8 +41,6 @@ import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -51,8 +49,6 @@ import com.cumulocity.sdk.client.TemplateUrlParser;
 public class IdentityApiImplTest {
 
     private static final String EXACT_URL = "exact_url";
-
-    private static final String PLATFORM_API_URL = "platform_api_url";
 
     private static final String TEMPLATE_URL = "template_url";
 
@@ -73,10 +69,7 @@ public class IdentityApiImplTest {
         MockitoAnnotations.initMocks(this);
 
         identityApiRep = new IdentityRepresentation();
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(platformApiRepresentation);
-        platformApiRepresentation.setIdentity(identityApiRep);
-        identityApiImpl = new IdentityApiImpl(restConnector, templateUrlParser, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
+        identityApiImpl = new IdentityApiImpl(restConnector, templateUrlParser, identityApiRep, DEFAULT_PAGE_SIZE);
     }
 
     @Test

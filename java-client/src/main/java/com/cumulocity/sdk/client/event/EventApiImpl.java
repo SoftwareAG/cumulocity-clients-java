@@ -27,8 +27,6 @@ import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -36,36 +34,25 @@ import com.cumulocity.sdk.client.UrlProcessor;
 
 public class EventApiImpl implements EventApi {
 
-    private final String platformApiUrl;
-
     private final RestConnector restConnector;
 
     private final int pageSize;
 
-    private EventsApiRepresentation eventsApiRepresentation = null;
+    private EventsApiRepresentation eventsApiRepresentation;
     
     private UrlProcessor urlProcessor;
 
-    public EventApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUrl, int pageSize) {
+    public EventApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, EventsApiRepresentation eventsApiRepresentation, int pageSize) {
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-        this.platformApiUrl = platformApiUrl;
+        this.eventsApiRepresentation = eventsApiRepresentation;
         this.pageSize = pageSize;
     }
 
     private EventsApiRepresentation getEventApiRepresentation() throws SDKException {
-        if (null == eventsApiRepresentation) {
-            createApiRepresentation();
-        }
         return eventsApiRepresentation;
     }
     
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformApiUrl,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-        eventsApiRepresentation = platformApiRepresentation.getEvent();
-    }
-
     @Override
     public EventRepresentation getEvent(GId eventId) throws SDKException {
         String url = getSelfUri() + "/" + eventId.getValue();

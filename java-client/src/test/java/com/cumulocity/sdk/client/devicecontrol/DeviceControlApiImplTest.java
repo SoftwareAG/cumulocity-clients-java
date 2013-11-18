@@ -46,8 +46,6 @@ import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.rest.representation.operation.DeviceControlRepresentation;
 import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -60,8 +58,6 @@ public class DeviceControlApiImplTest {
     private static final String DEVICE_CONTROL_COLLECTION_URL = "http://abcd.com/devicecontrol/operations";
 
     private static final String DEVICE_ID = "123ABC";
-
-    private static final String PLATFORM_API_URL = "platform_api_url";
 
     private static final int DEAFAULT_PAGE_SIZE = 7;
 
@@ -78,20 +74,14 @@ public class DeviceControlApiImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, PLATFORM_API_URL, DEAFAULT_PAGE_SIZE);
 
         OperationCollectionRepresentation ocr = new OperationCollectionRepresentation();
         ocr.setSelf(DEVICE_CONTROL_COLLECTION_URL);
         List<OperationRepresentation> opList = new LinkedList<OperationRepresentation>();
-        OperationRepresentation or = new OperationRepresentation();
-        opList.add(or);
         ocr.setOperations(opList);
         deviceControlApiRepresentation.setOperations(ocr);
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        platformApiRepresentation.setDeviceControl(deviceControlApiRepresentation);
-        
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class))
-                .thenReturn(platformApiRepresentation);
+
+        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, deviceControlApiRepresentation, DEAFAULT_PAGE_SIZE);
     }
 
     @Test

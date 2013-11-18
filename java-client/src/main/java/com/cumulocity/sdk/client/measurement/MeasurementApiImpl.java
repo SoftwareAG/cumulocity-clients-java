@@ -27,8 +27,6 @@ import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepre
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -38,34 +36,23 @@ public class MeasurementApiImpl implements MeasurementApi {
 
     private final RestConnector restConnector;
 
-    private final String platformUrl;
-
     private final int pageSize;
 
     private MeasurementsApiRepresentation measurementsApiRepresentation;
     
     private UrlProcessor urlProcessor;
 
-    public MeasurementApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformUrl, int pageSize) {
+    public MeasurementApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, MeasurementsApiRepresentation measurementsApiRepresentation, int pageSize) {
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-        this.platformUrl = platformUrl;
+        this.measurementsApiRepresentation = measurementsApiRepresentation;
         this.pageSize = pageSize;
     }
   
     private MeasurementsApiRepresentation getMeasurementApiRepresentation() throws SDKException {
-        if (null == measurementsApiRepresentation) {
-            createApiRepresentation();
-        }
         return measurementsApiRepresentation;
     }
     
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformUrl,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-        measurementsApiRepresentation = platformApiRepresentation.getMeasurement();
-    }
-
     @Override
     public MeasurementRepresentation getMeasurement(GId measurementId) throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf() + "/" + measurementId.getValue();

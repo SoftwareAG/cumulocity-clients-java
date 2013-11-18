@@ -30,18 +30,18 @@ import com.cumulocity.sdk.client.measurement.MeasurementApi;
 
 public interface Platform {
 
-    InventoryApi getInventoryApi();
+    InventoryApi getInventoryApi() throws SDKException;
 
-    IdentityApi getIdentityApi();
+    IdentityApi getIdentityApi() throws SDKException;
 
-    MeasurementApi getMeasurementApi();
+    MeasurementApi getMeasurementApi() throws SDKException;
 
-    DeviceControlApi getDeviceControlApi();
+    DeviceControlApi getDeviceControlApi() throws SDKException;
 
-    AlarmApi getAlarmApi();
+    AlarmApi getAlarmApi() throws SDKException;
 
-    EventApi getEventApi();
+    EventApi getEventApi() throws SDKException;
 
-    AuditRecordApi getAuditRecordApi();
+    AuditRecordApi getAuditRecordApi() throws SDKException;
 
 }

@@ -37,8 +37,6 @@ import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -49,8 +47,6 @@ public class EventApiImplTest {
     private static final String SOURCE_GID = "1";
 
     private static final String EVENTS_COLLECTION_URL = "event_collection_url";
-
-    private static final String PLATFORM_API_URL = "platform_api_url";
 
     EventApi eventApi;
 
@@ -71,14 +67,11 @@ public class EventApiImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        eventApi = new EventApiImpl(restConnector, urlProcessor, PLATFORM_API_URL, DEFAULT_PAGE_SIZE);
         EventCollectionRepresentation eventCollectionRepresentation = new EventCollectionRepresentation();
         eventCollectionRepresentation.setSelf(EVENTS_COLLECTION_URL);
         eventsApiRepresentation.setEvents(eventCollectionRepresentation);
 
-        PlatformApiRepresentation platformApiRepresentation = new PlatformApiRepresentation();
-        platformApiRepresentation.setEvent(eventsApiRepresentation);
-        when(restConnector.get(PLATFORM_API_URL, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class)).thenReturn(platformApiRepresentation);
+        eventApi = new EventApiImpl(restConnector, urlProcessor, eventsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test

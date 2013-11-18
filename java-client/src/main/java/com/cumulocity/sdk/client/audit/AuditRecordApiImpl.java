@@ -27,8 +27,6 @@ import com.cumulocity.rest.representation.audit.AuditMediaType;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordsRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -36,36 +34,25 @@ import com.cumulocity.sdk.client.UrlProcessor;
 
 public class AuditRecordApiImpl implements AuditRecordApi {
 
-    private final String platformApiUrl;
-
     private final RestConnector restConnector;
 
     private final int pageSize;
 
-    private AuditRecordsRepresentation auditRecordsRepresentation = null;
+    private AuditRecordsRepresentation auditRecordsRepresentation;
     
     private UrlProcessor urlProcessor;
 
-    public AuditRecordApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, String platformApiUrl, int pageSize) {
+    public AuditRecordApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, AuditRecordsRepresentation auditRecordsRepresentation, int pageSize) {
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
-        this.platformApiUrl = platformApiUrl;
+        this.auditRecordsRepresentation = auditRecordsRepresentation;
         this.pageSize = pageSize;
     }
 
     private AuditRecordsRepresentation getAuditRecordsRepresentation() throws SDKException {
-        if (null == auditRecordsRepresentation) {
-            createApiRepresentation();
-        }
         return auditRecordsRepresentation;
     }
     
-    private void createApiRepresentation() throws SDKException
-    {
-        PlatformApiRepresentation platformApiRepresentation =  restConnector.get(platformApiUrl,PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-        auditRecordsRepresentation = platformApiRepresentation.getAudit();
-    }
-
     @Override
     public AuditRecordRepresentation getAuditRecord(GId gid) throws SDKException {
         String url = getSelfUri() + "/" + gid.getValue();

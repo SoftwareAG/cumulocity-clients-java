@@ -62,7 +62,7 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         measurementApi = platform.getMeasurementApi();
         input = new ArrayList<MeasurementRepresentation>();
         result1 = new ArrayList<MeasurementRepresentation>();

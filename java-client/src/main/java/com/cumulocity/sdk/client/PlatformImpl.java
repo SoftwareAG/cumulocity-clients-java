@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
+import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmApiImpl;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
@@ -69,6 +71,8 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public static final String CUMULOCITY_PROXY_USER = "proxyUser";
 
     public static final String CUMULOCITY_PROXY_PASSWORD = "proxyPassword";
+
+    private PlatformApiRepresentation platformApiRepresentation;
 
     public PlatformImpl(String host, CumulocityCredentials credentials) {
         super(host, credentials);
@@ -178,42 +182,60 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     }
 
     @Override
-    public InventoryApi getInventoryApi() {
-        return new InventoryApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public InventoryApi getInventoryApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new InventoryApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getInventory(), getPageSize());
     }
 
     @Override
-    public IdentityApi getIdentityApi() {
-        return new IdentityApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public IdentityApi getIdentityApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new IdentityApiImpl(restConnector, new TemplateUrlParser(), getPlatformApi(restConnector).getIdentity(), getPageSize());
     }
 
     @Override
-    public MeasurementApi getMeasurementApi() {
-        return new MeasurementApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public MeasurementApi getMeasurementApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new MeasurementApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getMeasurement(), getPageSize());
       }
 
     @Override
-    public DeviceControlApi getDeviceControlApi() {
-        return new DeviceControlApiImpl(this, createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public DeviceControlApi getDeviceControlApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new DeviceControlApiImpl(this, restConnector, new UrlProcessor(), getPlatformApi(restConnector).getDeviceControl(), getPageSize());
     }
 
     @Override
-    public EventApi getEventApi() {
-        return new EventApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public EventApi getEventApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new EventApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getEvent(), getPageSize());
     }
 
     @Override
-    public AlarmApi getAlarmApi() {
-        return new AlarmApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public AlarmApi getAlarmApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new AlarmApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAlarm(), getPageSize());
     }
 
     @Override
-    public AuditRecordApi getAuditRecordApi() {
-        return new AuditRecordApiImpl(createRestConnector(), new UrlProcessor(), getHost() + PLATFORM_URL, getPageSize());
+    public AuditRecordApi getAuditRecordApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new AuditRecordApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAudit(), getPageSize());
     }
 
     private RestConnector createRestConnector() {
         return new RestConnector(this, new ResponseParser());
+    }
+    
+    private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
+        if (platformApiRepresentation == null) {
+            platformApiRepresentation = restConnector.get(platformUrl(), PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
+        }
+        return platformApiRepresentation;
+    }
+
+    private String platformUrl() {
+        return getHost() + PLATFORM_URL;
     }
 
 }
