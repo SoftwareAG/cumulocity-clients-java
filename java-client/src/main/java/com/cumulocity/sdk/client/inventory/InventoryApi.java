@@ -20,6 +20,8 @@
 
 package com.cumulocity.sdk.client.inventory;
 
+import java.util.List;
+
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -68,4 +70,14 @@ public interface InventoryApi {
      * @throws IllegalArgumentException if both {@code type} and {@code fragmentType} are specified in the filter
      */
     PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException;
+
+    /**
+     * Gets the managed objects from the platform based on the given ids
+     *
+     * @param ids the list of ids of the managed objects to search for
+     * @return collection of managed objects matched in order of the given ids
+     * @throws SDKException if the query failed
+     */
+    @Deprecated
+    PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByListOfIds(List<GId> ids) throws SDKException;
 }

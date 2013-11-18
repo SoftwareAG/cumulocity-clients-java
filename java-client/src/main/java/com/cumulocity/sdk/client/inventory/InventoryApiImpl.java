@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client.inventory;
 
+import java.util.List;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
@@ -81,6 +82,12 @@ public class InventoryApiImpl implements InventoryApi {
 		Map<String, String> params = filter.getQueryParams();
 		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
 	}
+	
+	@Override
+	@Deprecated
+    public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
+        return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
+    }
 
 	protected String getSelfUri() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
