@@ -27,6 +27,6 @@ import java.lang.annotation.Target;
 
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ParamName {
-    String value();
+public @interface ParamSource {
+    String value() default "";
 }

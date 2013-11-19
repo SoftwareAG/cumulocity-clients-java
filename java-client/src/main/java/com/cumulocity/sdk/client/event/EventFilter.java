@@ -27,7 +27,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.ParamName;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in event queries.
@@ -36,19 +36,19 @@ import com.cumulocity.sdk.client.ParamName;
  */
 public class EventFilter extends Filter {
 
-    @ParamName("fragmentType")
+    @ParamSource
     private String fragmentType;
 
-    @ParamName("dateFrom")
-    private String fromDate;
+    @ParamSource
+    private String dateFrom;
 
-    @ParamName("dateTo")
-    private String toDate;
+    @ParamSource
+    private String dateTo;
 
-    @ParamName("type")
+    @ParamSource
     private String type;
 
-    @ParamName("source")
+    @ParamSource
     private String source;
     
     /**
@@ -109,22 +109,22 @@ public class EventFilter extends Filter {
     }
 
     public EventFilter byDate(Date fromDate, Date toDate) {
-        this.fromDate = DateConverter.date2String(fromDate);
-        this.toDate = DateConverter.date2String(toDate);
+        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateTo = DateConverter.date2String(toDate);
         return this;
     }
 
     public EventFilter byFromDate(Date fromDate) {
-        this.fromDate = DateConverter.date2String(fromDate);
+        this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }
 
     public String getFromDate() {
-        return fromDate;
+        return dateFrom;
     }
 
     public String getToDate() {
-        return toDate;
+        return dateTo;
     }
 
 }

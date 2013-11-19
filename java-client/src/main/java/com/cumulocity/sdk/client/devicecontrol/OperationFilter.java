@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.devicecontrol;
 
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.ParamName;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in operation queries.
@@ -31,13 +31,13 @@ import com.cumulocity.sdk.client.ParamName;
  */
 public class OperationFilter extends Filter {
 
-    @ParamName("status")
+    @ParamSource
     private String status;
 
-    @ParamName("deviceId")
+    @ParamSource
     private String deviceId;
 
-    @ParamName("agentId")
+    @ParamSource
     private String agentId;
 
     /**

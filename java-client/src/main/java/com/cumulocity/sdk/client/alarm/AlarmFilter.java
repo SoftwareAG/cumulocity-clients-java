@@ -28,7 +28,7 @@ import com.cumulocity.model.event.CumulocitySeverities;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.ParamName;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in alarm queries.
@@ -37,22 +37,22 @@ import com.cumulocity.sdk.client.ParamName;
  */
 public class AlarmFilter extends Filter {
 
-    @ParamName("status")
+    @ParamSource
     private String status;
 
-    @ParamName("source")
+    @ParamSource
     private String source;
 
-    @ParamName("dateFrom")
-    private String fromDate;
+    @ParamSource
+    private String dateFrom;
 
-    @ParamName("dateTo")
-    private String toDate;
+    @ParamSource
+    private String dateTo;
     
-    @ParamName("severity")
+    @ParamSource
     private String severity;
     
-    @ParamName("resolved")
+    @ParamSource
     private String resolved;
 
     /**
@@ -132,8 +132,8 @@ public class AlarmFilter extends Filter {
      * @return the alarm filter with {@code fromDate} and {@code toDate} set.
      */
     public AlarmFilter byDate(Date fromDate, Date toDate) {
-        this.fromDate = DateConverter.date2String(fromDate);
-        this.toDate = DateConverter.date2String(toDate);
+        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateTo = DateConverter.date2String(toDate);
         return this;
     }
 
@@ -145,16 +145,16 @@ public class AlarmFilter extends Filter {
      * @return the alarm filter with {@code fromDate} set
      */
     public AlarmFilter byFromDate(Date fromDate) {
-        this.fromDate = DateConverter.date2String(fromDate);
+        this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }
     
     public String getFromDate() {
-        return fromDate;
+        return dateFrom;
     }
 
     public String getToDate() {
-        return toDate;
+        return dateTo;
     }
 
     public String getResolved() {
