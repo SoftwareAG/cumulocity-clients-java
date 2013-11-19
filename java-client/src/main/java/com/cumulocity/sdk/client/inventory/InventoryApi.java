@@ -35,6 +35,31 @@ import com.cumulocity.sdk.client.SDKException;
 public interface InventoryApi {
 
     /**
+     * Returns the Managed Object of the Resource.
+     *
+     * @return ManagedObjectRepresentation
+     * @throws SDKException
+     */
+    public ManagedObjectRepresentation get(GId id) throws SDKException;
+    
+    /**
+     * Deletes the Managed Object from the Cumulocity Server.
+     *
+     * @throws SDKException
+     */
+    public void delete(GId id) throws SDKException;
+
+    /**
+     * This update the ManagedObject for the operationCollection. Cannot update the ID.
+     *
+     * @param managedObjectRepresentation
+     * @return ManagedObjectRepresentation updated ManagedObject.
+     * @throws SDKException
+     */
+    public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
+
+    
+    /**
      * Gets managed object resource by id. To get the managed object representation you have to call {@code get()} on the returned resource.
      *
      * @param gid id of the managed object to search for

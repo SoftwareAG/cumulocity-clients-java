@@ -38,6 +38,7 @@ public interface ManagedObject {
      * @return ManagedObjectRepresentation
      * @throws SDKException
      */
+    @Deprecated
     public ManagedObjectRepresentation get() throws SDKException;
     
     /**
@@ -45,6 +46,7 @@ public interface ManagedObject {
      *
      * @throws SDKException
      */
+    @Deprecated
     public void delete() throws SDKException;
 
     /**
@@ -54,6 +56,7 @@ public interface ManagedObject {
      * @return ManagedObjectRepresentation updated ManagedObject.
      * @throws SDKException
      */
+    @Deprecated
     public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
 
     /**
@@ -74,16 +77,6 @@ public interface ManagedObject {
      * @throws SDKException
      */
     public PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException;
-
-    /**
-     * Returns all the child devices for the Managed Object. Max number of child devices limited to Short.MAX_VALUE = 32767
-     * This method is deprecated. Please use PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException;
-     *
-     * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
-     * @throws SDKException
-     */
-    @Deprecated()
-    public ManagedObjectReferenceCollectionRepresentation getAllChildDevices() throws SDKException;
 
     /**
      * Returns the child device with the given id. If it belongs to the ManagedObject.
@@ -111,16 +104,6 @@ public interface ManagedObject {
      */
     public ManagedObjectReferenceRepresentation addChildAssets(ManagedObjectReferenceRepresentation refrenceReprsentation)
             throws SDKException;
-
-    /**
-     * Returns all the child Assets for the Managed Object. Max number of child devices limited to Short.MAX_VALUE = 32767
-     * This method is deprecated. Please use PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildAssets() throws SDKException;
-     *
-     * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
-     * @throws SDKException
-     */
-    @Deprecated
-    public ManagedObjectReferenceCollectionRepresentation getAllChildAssets() throws SDKException;
 
     /**
      * Returns all the child Assets for the Managed Object  in paged collection form
