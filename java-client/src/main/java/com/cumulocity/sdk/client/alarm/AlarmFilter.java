@@ -28,7 +28,7 @@ import com.cumulocity.model.event.CumulocitySeverities;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.Name;
+import com.cumulocity.sdk.client.ParamName;
 
 /**
  * A filter to be used in alarm queries.
@@ -37,22 +37,22 @@ import com.cumulocity.sdk.client.Name;
  */
 public class AlarmFilter extends Filter {
 
-    @Name("status")
+    @ParamName("status")
     private String status;
 
-    @Name("source")
+    @ParamName("source")
     private String source;
 
-    @Name("dateFrom")
+    @ParamName("dateFrom")
     private String fromDate;
 
-    @Name("dateTo")
+    @ParamName("dateTo")
     private String toDate;
     
-    @Name("severity")
+    @ParamName("severity")
     private String severity;
     
-    @Name("resolved")
+    @ParamName("resolved")
     private String resolved;
 
     /**

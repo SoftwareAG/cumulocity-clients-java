@@ -26,7 +26,7 @@ import java.util.List;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.Name;
+import com.cumulocity.sdk.client.ParamName;
 
 /**
  * A filter to be used in managed object queries.
@@ -35,19 +35,19 @@ import com.cumulocity.sdk.client.Name;
  */
 public class InventoryFilter extends Filter {
 
-    @Name("fragmentType")
+    @ParamName("fragmentType")
     private String fragmentType;
 
-    @Name("type")
+    @ParamName("type")
     private String type;
     
-    @Name("owner")
+    @ParamName("owner")
     private String owner;
     
-    @Name("text")
+    @ParamName("text")
     private String text;
     
-    @Name("ids")
+    @ParamName("ids")
     private String ids;
 
     /**

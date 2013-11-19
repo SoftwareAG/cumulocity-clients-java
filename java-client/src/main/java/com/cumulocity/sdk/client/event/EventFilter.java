@@ -27,7 +27,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.Name;
+import com.cumulocity.sdk.client.ParamName;
 
 /**
  * A filter to be used in event queries.
@@ -36,19 +36,19 @@ import com.cumulocity.sdk.client.Name;
  */
 public class EventFilter extends Filter {
 
-    @Name("fragmentType")
+    @ParamName("fragmentType")
     private String fragmentType;
 
-    @Name("dateFrom")
+    @ParamName("dateFrom")
     private String fromDate;
 
-    @Name("dateTo")
+    @ParamName("dateTo")
     private String toDate;
 
-    @Name("type")
+    @ParamName("type")
     private String type;
 
-    @Name("source")
+    @ParamName("source")
     private String source;
     
     /**
