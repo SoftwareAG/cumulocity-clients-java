@@ -21,7 +21,9 @@
 package com.cumulocity.sdk.client.inventory;
 
 import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
+import static java.util.Arrays.asList;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.cumulocity.model.idtype.GId;
@@ -141,6 +143,17 @@ public class InventoryFilter extends Filter {
      */
     public InventoryFilter byIds(List<GId> ids) {
         this.ids = createCommaSeparatedStringFromGids(ids);
+        return this;
+    }
+    
+    /**
+     * Specifies the {@code ids} query parameter
+     *
+     * @param ids the ids of the managed object(s)
+     * @return the managed object filter with {@code ids} set
+     */
+    public InventoryFilter byIds(GId... ids) {
+        this.ids = createCommaSeparatedStringFromGids(asList(ids));
         return this;
     }
     

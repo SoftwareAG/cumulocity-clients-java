@@ -72,12 +72,17 @@ public class InventoryApiImpl implements InventoryApi {
 
 	@Override
 	public ManagedObject getManagedObject(GId globalId) throws SDKException {
-		if ((globalId == null) || (globalId.getValue() == null)) {
-			throw new SDKException("Cannot determine the Global ID Value");
-		}
-		String url = getMOCollectionUrl() + "/" + globalId.getValue();
-		return new ManagedObjectImpl(restConnector, url, pageSize);
+		return getManagedObjectApi(globalId);
 	}
+	
+	@Override
+    public ManagedObject getManagedObjectApi(GId globalId) throws SDKException {
+        if ((globalId == null) || (globalId.getValue() == null)) {
+            throw new SDKException("Cannot determine the Global ID Value");
+        }
+        String url = getMOCollectionUrl() + "/" + globalId.getValue();
+        return new ManagedObjectImpl(restConnector, url, pageSize);
+    }
 
 	@Override
 	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {

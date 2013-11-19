@@ -60,7 +60,13 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
 
     @Override
+    @Deprecated
     public void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException {
+        delete(measurement);
+    }
+    
+    @Override
+    public void delete(MeasurementRepresentation measurement) throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf() + "/" + measurement.getId().getValue();
         restConnector.delete(url);
     }

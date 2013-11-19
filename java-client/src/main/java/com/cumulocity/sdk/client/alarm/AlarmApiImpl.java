@@ -60,7 +60,13 @@ public class AlarmApiImpl implements AlarmApi {
     }
 
     @Override
+    @Deprecated
     public AlarmRepresentation updateAlarm(AlarmRepresentation alarmToUpdate) throws SDKException {
+        return update(alarmToUpdate);
+    }
+    
+    @Override
+    public AlarmRepresentation update(AlarmRepresentation alarmToUpdate) throws SDKException {
         String url = getSelfUri() + "/" + alarmToUpdate.getId().getValue();
         return restConnector.put(url, AlarmMediaType.ALARM, prepareForUpdate(alarmToUpdate));
     }

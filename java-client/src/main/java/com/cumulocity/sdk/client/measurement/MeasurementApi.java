@@ -56,7 +56,7 @@ public interface MeasurementApi {
      * @param measurement to be deleted
      * @throws SDKException if the measurement could not be deleted
      */
-    void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException;
+    void delete(MeasurementRepresentation measurement) throws SDKException;
 
     /**
      * Gets the all the measurement in the platform
@@ -74,4 +74,14 @@ public interface MeasurementApi {
      * @throws SDKException if the query failed
      */
     PagedCollectionResource<MeasurementCollectionRepresentation> getMeasurementsByFilter(MeasurementFilter filter) throws SDKException;
+    
+    /**
+     * Deletes measurement from the platform.
+     * The measurement to be deleted is identified by the id within the given measurement.
+     *
+     * @param measurement to be deleted
+     * @throws SDKException if the measurement could not be deleted
+     */
+    @Deprecated
+    void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException;
 }
