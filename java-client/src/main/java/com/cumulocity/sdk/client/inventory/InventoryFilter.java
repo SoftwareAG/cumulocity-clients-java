@@ -20,10 +20,11 @@
 
 package com.cumulocity.sdk.client.inventory;
 
+import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
+
 import java.util.List;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.Name;
 
@@ -56,7 +57,7 @@ public class InventoryFilter extends Filter {
      * @return the managed object filter with {@code fragmentType} set
      */
     public InventoryFilter byFragmentType(Class<?> fragmentClass) {
-        this.fragmentType = ExtensibilityConverter.classToStringRepresentation(fragmentClass);
+        this.fragmentType = classToStringRepresentation(fragmentClass);
         return this;
     }
 

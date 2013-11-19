@@ -27,20 +27,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Filter {
-    
+
+    public static String encode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 is not supported!?", e);
+        }
+    }
+
     public Map<String, String> getQueryParams() {
         Map<String, String> params = new HashMap<String, String>();
         Class clazz = getClass();
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
-            String value = (String)safelyGetFieldValue(field, this);
+            String value = (String) safelyGetFieldValue(field, this);
             if (value != null) {
                 params.put(field.getAnnotation(Name.class).value(), encode(value));
             }
         }
         return params;
     }
-    
+
     private Object safelyGetFieldValue(Field field, Filter filter) {
         try {
             return field.get(filter);
@@ -50,13 +58,4 @@ public abstract class Filter {
             throw new RuntimeException(e);
         }
     }
-    
-    public static String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 is unsupported???", e);
-        }
-    }
-
 }

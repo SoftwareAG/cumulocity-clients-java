@@ -21,7 +21,6 @@
 package com.cumulocity.sdk.client.inventory;
 
 import java.util.List;
-import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
@@ -66,17 +65,13 @@ public class InventoryApiImpl implements InventoryApi {
 
 	@Override
 	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {
-	    String url = getSelfUri();
-	    return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
+        return new ManagedObjectCollectionImpl(restConnector, getSelfUri(), pageSize);
 	}
 
 	@Override
 	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
-	    if (filter == null) {
-	        return getManagedObjects();
-	    }
-		Map<String, String> params = filter.getQueryParams();
-		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
+        String url = urlProcessor.replaceOrAddQueryParam(getSelfUri(), filter.getQueryParams());
+        return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
 	}
 	
 	@Override

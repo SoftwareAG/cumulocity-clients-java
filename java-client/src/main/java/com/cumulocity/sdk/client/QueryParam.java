@@ -21,9 +21,11 @@
 package com.cumulocity.sdk.client;
 
 public class QueryParam {
-    private Param key;
-    private String value;
-    
+
+    private final Param key;
+
+    private final String value;
+
     public QueryParam(Param key, String value) {
         this.key = key;
         this.value = value;

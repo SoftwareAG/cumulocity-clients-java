@@ -18,17 +18,19 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 package com.cumulocity.sdk.client.inventory;
 
 import com.cumulocity.sdk.client.Param;
 
 public enum InventoryParam implements Param {
-    WITH_PARENTS("withParents"), SKIP_CHILDREN_NAMES("skipChildrenNames");
-    
+
+    WITH_PARENTS("withParents"),
+
+    SKIP_CHILDREN_NAMES("skipChildrenNames");
+
     private String paramName;
 
-    InventoryParam(String paramName) {
+    private InventoryParam(String paramName) {
         this.paramName = paramName;
     }
 

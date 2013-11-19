@@ -43,6 +43,8 @@ import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
 
 public class PlatformImpl extends PlatformParameters implements Platform {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PlatformImpl.class);
+
     private static final String PLATFORM_URL = "platform";
 
     public static final String CLIENT_PARAMETERS = "platformParameters";
@@ -60,9 +62,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public static final String CUMOLOCITY_HOST = "cumolocityHost";
 
     public static final String CUMOLOCITY_APPLICATION_KEY = "applicationKey";
-
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(PlatformImpl.class);
 
     public static final String CUMOLOCITY_PROXY_HOST = "proxyHost";
 
@@ -108,11 +107,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     @Deprecated
     public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey, int pageSize) {
         super(getHostUrl(host, port), CumulocityCredentials.create(tenantId, user, password, applicationKey), pageSize);
-    }
-
-
-    public PlatformImpl() {
-        //empty constructor for spring based initialization
     }
 
     private static String getHostUrl(String host, int port) {

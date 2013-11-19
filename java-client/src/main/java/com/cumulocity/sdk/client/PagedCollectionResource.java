@@ -27,7 +27,7 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
     String PAGE_SIZE_KEY = "pageSize";
 
     String PAGE_NUMBER_KEY = "currentPage";
-    
+
 
     /**
      * The method returns the first page.
@@ -43,6 +43,8 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @throws SDKException
      */
     T get(int pageSize) throws SDKException;
+
+    T get(QueryParam... queryParams) throws SDKException;
 
     /**
      * The method returns the specified page number.
@@ -82,7 +84,5 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @throws SDKException
      */
     T getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException;
-
-    T get(QueryParam... queryParams) throws SDKException;
 
 }

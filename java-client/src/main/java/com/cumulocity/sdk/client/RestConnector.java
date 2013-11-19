@@ -65,6 +65,18 @@ public class RestConnector {
         this.client = client;
     }
 
+    public PlatformParameters getPlatformParameters() {
+        return platformParameters;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public ResponseParser getResponseParser() {
+        return responseParser;
+    }
+
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType,
             Class<T> responseType) throws SDKException {
          Builder builder = client.resource(path).accept(mediaType);
