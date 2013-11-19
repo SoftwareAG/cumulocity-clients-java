@@ -20,6 +20,8 @@
 
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
+
 public class PlatformParameters {
 
     public final static int DEFAULT_PAGE_SIZE = 5;
@@ -60,7 +62,7 @@ public class PlatformParameters {
         }
         this.host = host;
         this.tenantId = credentials.getTenantId();
-        this.user = credentials.getUser();
+        this.user = credentials.getUsername();
         this.password = credentials.getPassword();
         this.applicationKey = credentials.getApplicationKey();
     }

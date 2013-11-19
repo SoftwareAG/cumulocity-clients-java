@@ -22,22 +22,30 @@ package com.cumulocity.sdk.client.audit;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.CumulocityCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.ApplicationCreator;
@@ -71,7 +79,7 @@ public class AuditRecordIT {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                CumulocityCredentials.create(p.get("cumulocity.tenant"),
+               new CumulocityCredentials(p.get("cumulocity.tenant"),
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
                 p.get("cumulocity.applicationKey")),
