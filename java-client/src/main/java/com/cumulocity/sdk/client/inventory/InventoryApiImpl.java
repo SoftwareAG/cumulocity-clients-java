@@ -21,6 +21,7 @@
 package com.cumulocity.sdk.client.inventory;
 
 import java.util.List;
+import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
@@ -51,27 +52,46 @@ public class InventoryApiImpl implements InventoryApi {
 
 	@Override
 	public ManagedObjectRepresentation create(ManagedObjectRepresentation representation) throws SDKException {
-		return restConnector.post(getSelfUri(), InventoryMediaType.MANAGED_OBJECT, representation);
+		return restConnector.post(getMOCollectionUrl(), InventoryMediaType.MANAGED_OBJECT, representation);
 	}
+	
+	 @Override
+	 public ManagedObjectRepresentation get(GId id) throws SDKException {
+	     return restConnector.get(getMOCollectionUrl() + "/" + id.getValue(), InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
+	 }
+	 
+	 @Override
+	 public void delete(GId id) throws SDKException {
+	     restConnector.delete(getMOCollectionUrl() + "/" + id.getValue());
+	 }
+
+	 @Override
+	 public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException {
+	     return restConnector.put(getMOCollectionUrl() + "/" + managedObjectRepresentation.getId().getValue(), InventoryMediaType.MANAGED_OBJECT, managedObjectRepresentation);
+	 }
 
 	@Override
 	public ManagedObject getManagedObject(GId globalId) throws SDKException {
 		if ((globalId == null) || (globalId.getValue() == null)) {
 			throw new SDKException("Cannot determine the Global ID Value");
 		}
-		String url = getSelfUri() + "/" + globalId.getValue();
+		String url = getMOCollectionUrl() + "/" + globalId.getValue();
 		return new ManagedObjectImpl(restConnector, url, pageSize);
 	}
 
 	@Override
 	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {
-        return new ManagedObjectCollectionImpl(restConnector, getSelfUri(), pageSize);
+	    String url = getMOCollectionUrl();
+	    return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
 	}
 
 	@Override
 	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
-        String url = urlProcessor.replaceOrAddQueryParam(getSelfUri(), filter.getQueryParams());
-        return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
+	    if (filter == null) {
+	        return getManagedObjects();
+	    }
+		Map<String, String> params = filter.getQueryParams();
+		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getMOCollectionUrl(), params), pageSize);
 	}
 	
 	@Override
@@ -80,7 +100,7 @@ public class InventoryApiImpl implements InventoryApi {
         return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
     }
 
-	protected String getSelfUri() throws SDKException {
+	protected String getMOCollectionUrl() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
 	}
 
