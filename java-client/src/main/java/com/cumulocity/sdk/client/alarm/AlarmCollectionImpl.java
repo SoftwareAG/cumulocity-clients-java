@@ -37,11 +37,6 @@ public class AlarmCollectionImpl extends PagedCollectionResourceImpl<AlarmCollec
         return AlarmCollectionRepresentation.class;
     }
 
-    @Deprecated
-    public AlarmCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public AlarmCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }

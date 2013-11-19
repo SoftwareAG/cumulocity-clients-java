@@ -29,8 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
+import com.cumulocity.rest.representation.CumulocityMediaType;
 
-public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> extends GenericResourceImpl<T> implements
+public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> implements
         PagedCollectionResource<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
@@ -38,14 +39,18 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     private UrlProcessor urlProcessor = new UrlProcessor();
 
     protected int pageSize = 5;
+    
+    private final String url;
 
-    @Deprecated
-    public PagedCollectionResourceImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
+    protected final RestConnector restConnector;
+
+    protected abstract CumulocityMediaType getMediaType();
+
+    protected abstract Class<T> getResponseClass();
 
     public PagedCollectionResourceImpl(RestConnector restConnector, String url, int pageSize) {
-        super(restConnector, url);
+        this.restConnector = restConnector;
+        this.url = url;
         this.pageSize = pageSize;
     }
 
@@ -102,23 +107,17 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     }
 
     @Override
-    public T get() throws SDKException {
-        return get(pageSize);
+    public T get(QueryParam... queryParams) throws SDKException {
+        return get(pageSize, queryParams);
     }
 
     @Override
-    public T get(int pageSize) throws SDKException {
-    	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, prepareGetParams(pageSize));
-    	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
-    }
-    
-    @Override
-    public T get(QueryParam... queryParams) throws SDKException {
+    public T get(int pageSize, QueryParam... queryParams) throws SDKException {
         Map<String, String> params = prepareGetParams(pageSize);
         for (QueryParam param : queryParams) {
             params.put(param.getKey().getName(), param.getValue());
         }
-        return get(params);
+    	return get(params);
     }
     
     protected T get(Map<String, String> params) throws SDKException {

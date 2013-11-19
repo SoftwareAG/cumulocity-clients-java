@@ -30,11 +30,6 @@ import com.cumulocity.sdk.client.RestConnector;
 public class AuditRecordCollectionImpl extends PagedCollectionResourceImpl<AuditRecordCollectionRepresentation> implements
         PagedCollectionResource<AuditRecordCollectionRepresentation> {
 
-    @Deprecated
-    public AuditRecordCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public AuditRecordCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }

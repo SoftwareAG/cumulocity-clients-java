@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 
-public interface PagedCollectionResource<T extends BaseCollectionRepresentation> extends GenericResource<T> {
+public interface PagedCollectionResource<T extends BaseCollectionRepresentation> {
 
     String PAGE_SIZE_KEY = "pageSize";
 
@@ -32,8 +32,7 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
     /**
      * The method returns the first page.
      */
-    @Override
-    T get() throws SDKException;
+    T get(QueryParam... queryParams) throws SDKException;
 
     /**
      * The method returns the first page.
@@ -42,9 +41,7 @@ public interface PagedCollectionResource<T extends BaseCollectionRepresentation>
      * @return BaseCollectionRepresentation type of BaseCollectionRepresentation.
      * @throws SDKException
      */
-    T get(int pageSize) throws SDKException;
-
-    T get(QueryParam... queryParams) throws SDKException;
+    T get(int pageSize, QueryParam... queryParams) throws SDKException;
 
     /**
      * The method returns the specified page number.

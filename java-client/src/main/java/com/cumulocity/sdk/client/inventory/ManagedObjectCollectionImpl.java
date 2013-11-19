@@ -28,11 +28,6 @@ import com.cumulocity.sdk.client.RestConnector;
 
 public class ManagedObjectCollectionImpl extends PagedCollectionResourceImpl<ManagedObjectCollectionRepresentation> {
 	
-    @Deprecated
-    public ManagedObjectCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public ManagedObjectCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }
