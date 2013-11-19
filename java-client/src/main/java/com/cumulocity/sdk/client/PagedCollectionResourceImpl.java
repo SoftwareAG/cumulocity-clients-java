@@ -23,6 +23,7 @@ package com.cumulocity.sdk.client;
 import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -30,9 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.sdk.client.alarm.AlarmCollectionImpl;
 
 public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> implements
-        PagedCollectionResource<T> {
+        PagedCollectionResource<T>, Iterable<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
 
@@ -152,5 +154,37 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     @Override
     public int hashCode() {
         return getMediaType().hashCode() ^ getResponseClass().hashCode() ^ url.hashCode() ^ pageSize;
+    }
+    
+    @Override
+    public Iterator<T> iterator() {
+        return new MyIterator(this);
+    }
+    
+    public class MyIterator implements Iterator<T> {
+
+        private PagedCollectionResourceImpl<T> pagedCollectionResourceImpl;
+
+        public MyIterator(PagedCollectionResourceImpl<T> pagedCollectionResourceImpl) {
+            this.pagedCollectionResourceImpl = pagedCollectionResourceImpl;
+        }
+
+        @Override
+        public boolean hasNext() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public T next() {
+            return pagedCollectionResourceImpl.get();
+        }
+
+        @Override
+        public void remove() {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 }
