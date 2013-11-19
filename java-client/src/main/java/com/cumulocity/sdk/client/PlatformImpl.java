@@ -108,6 +108,10 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey, int pageSize) {
         super(getHostUrl(host, port), CumulocityCredentials.create(tenantId, user, password, applicationKey), pageSize);
     }
+    
+    public PlatformImpl() {
+        //empty constructor for spring based initialization
+    }
 
     private static String getHostUrl(String host, int port) {
         return "http://" + host + ":" + port;
