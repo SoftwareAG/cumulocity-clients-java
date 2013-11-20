@@ -31,10 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.sdk.client.alarm.AlarmCollectionImpl;
 
 public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> implements
-        PagedCollectionResource<T>, Iterable<T> {
+        PagedCollectionResource<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
 
@@ -158,33 +157,36 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     
     @Override
     public Iterator<T> iterator() {
-        return new MyIterator(this);
+        return new CollectionRepresentationIterator(this);
     }
     
-    public class MyIterator implements Iterator<T> {
+    public class CollectionRepresentationIterator implements Iterator<T> {
 
         private PagedCollectionResourceImpl<T> pagedCollectionResourceImpl;
+        private T lastPage;
 
-        public MyIterator(PagedCollectionResourceImpl<T> pagedCollectionResourceImpl) {
+        public CollectionRepresentationIterator(PagedCollectionResourceImpl<T> pagedCollectionResourceImpl) {
             this.pagedCollectionResourceImpl = pagedCollectionResourceImpl;
         }
 
         @Override
         public boolean hasNext() {
-            // TODO Auto-generated method stub
-            return false;
+            if (lastPage == null) {
+                lastPage = pagedCollectionResourceImpl.get();
+            } else {
+                lastPage = pagedCollectionResourceImpl.getNextPage(lastPage);
+            }
+            return lastPage != null;
         }
 
         @Override
         public T next() {
-            return pagedCollectionResourceImpl.get();
+            return lastPage;
         }
 
         @Override
         public void remove() {
-            // TODO Auto-generated method stub
-
+            throw new UnsupportedOperationException();
         }
-
     }
 }

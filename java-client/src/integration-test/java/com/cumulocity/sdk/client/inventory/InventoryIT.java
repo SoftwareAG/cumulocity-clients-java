@@ -428,7 +428,7 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         assertThat(typeBMos.getManagedObjects().size(), is(1));
     }
-
+    
     @Test
     public void bulkQuery() throws Exception {
         // Given

@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 
-public interface PagedCollectionResource<T extends BaseCollectionRepresentation> {
+public interface PagedCollectionResource<T extends BaseCollectionRepresentation> extends Iterable<T> {
 
     String PAGE_SIZE_KEY = "pageSize";
 

@@ -23,12 +23,14 @@ import static com.cumulocity.test.matchers.UrlMatcher.matchesUrl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
+import org.hamcrest.core.IsSame;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -321,6 +323,23 @@ public class PagedCollectionResourceImplTest {
 
         //Then
         assertThat(hashCode, is(expectedHashCode));
+    }
+    
+    @Test
+    public void shouldReturnFirstPageWhenIteratorUsed() throws Exception {
+        // Given
+        BaseCollectionRepresentation expectedRepresentation = new BaseCollectionRepresentation();
+        when(restConnector.get(URL + "?pageSize=" + PAGE_SIZE, MEDIA_TYPE, CLAZZ)).thenReturn(expectedRepresentation);
+        
+        // When
+        BaseCollectionRepresentation result = null;
+        for(BaseCollectionRepresentation page : target) {
+            result = page;
+        }
+        
+        // Then
+        assertThat(result, sameInstance(expectedRepresentation));
+        
     }
 
     private PagedCollectionResourceImpl<BaseCollectionRepresentation> createPagedCollectionResource(RestConnector restConnector,
