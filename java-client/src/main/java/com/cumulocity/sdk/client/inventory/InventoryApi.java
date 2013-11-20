@@ -40,14 +40,14 @@ public interface InventoryApi {
      * @return ManagedObjectRepresentation
      * @throws SDKException
      */
-    public ManagedObjectRepresentation get(GId id) throws SDKException;
+    ManagedObjectRepresentation get(GId id) throws SDKException;
     
     /**
      * Deletes the Managed Object from the Cumulocity Server.
      *
      * @throws SDKException
      */
-    public void delete(GId id) throws SDKException;
+    void delete(GId id) throws SDKException;
 
     /**
      * This update the ManagedObject for the operationCollection. Cannot update the ID.
@@ -56,7 +56,7 @@ public interface InventoryApi {
      * @return ManagedObjectRepresentation updated ManagedObject.
      * @throws SDKException
      */
-    public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
+    ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
 
     
     /**

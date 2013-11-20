@@ -39,7 +39,7 @@ public interface ManagedObject {
      * @throws SDKException
      */
     @Deprecated
-    public ManagedObjectRepresentation get() throws SDKException;
+    ManagedObjectRepresentation get() throws SDKException;
     
     /**
      * Deletes the Managed Object from the Cumulocity Server.
@@ -47,7 +47,7 @@ public interface ManagedObject {
      * @throws SDKException
      */
     @Deprecated
-    public void delete() throws SDKException;
+    void delete() throws SDKException;
 
     /**
      * This update the ManagedObject for the operationCollection. Cannot update the ID.
@@ -57,7 +57,7 @@ public interface ManagedObject {
      * @throws SDKException
      */
     @Deprecated
-    public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
+    ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
 
     /**
      * Adds a child device to the ManagedObject.
@@ -66,7 +66,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceRepresentation with the id of th child device.
      * @throws SDKException
      */
-    public ManagedObjectReferenceRepresentation addChildDevice(ManagedObjectReferenceRepresentation refrenceReprsentation)
+    ManagedObjectReferenceRepresentation addChildDevice(ManagedObjectReferenceRepresentation refrenceReprsentation)
             throws SDKException;
 
 
@@ -76,7 +76,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
      * @throws SDKException
      */
-    public PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException;
+    PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException;
 
     /**
      * Returns the child device with the given id. If it belongs to the ManagedObject.
@@ -85,7 +85,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceRepresentation of the child device.
      * @throws SDKException
      */
-    public ManagedObjectReferenceRepresentation getChildDevice(GId deviceId) throws SDKException;
+    ManagedObjectReferenceRepresentation getChildDevice(GId deviceId) throws SDKException;
 
     /**
      * Deletes the child device  and its relation to the managed object.
@@ -93,7 +93,7 @@ public interface ManagedObject {
      * @param deviceId
      * @throws SDKException
      */
-    public void deleteChildDevice(GId deviceId) throws SDKException;
+    void deleteChildDevice(GId deviceId) throws SDKException;
 
     /**
      * Adds a child device to the ManagedObject.
@@ -102,7 +102,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceRepresentation with the id of th child device.
      * @throws SDKException
      */
-    public ManagedObjectReferenceRepresentation addChildAssets(ManagedObjectReferenceRepresentation refrenceReprsentation)
+    ManagedObjectReferenceRepresentation addChildAssets(ManagedObjectReferenceRepresentation refrenceReprsentation)
             throws SDKException;
 
     /**
@@ -111,7 +111,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
      * @throws SDKException
      */
-    public PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildAssets() throws SDKException;
+    PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildAssets() throws SDKException;
 
     /**
      * Returns the child Asset with the given id. If it belongs to the ManagedObject.
@@ -120,7 +120,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceRepresentation of the child device.
      * @throws SDKException
      */
-    public ManagedObjectReferenceRepresentation getChildAsset(GId assetId) throws SDKException;
+    ManagedObjectReferenceRepresentation getChildAsset(GId assetId) throws SDKException;
 
     /**
      * Deletes the child Asset  and its relation to the managed object.
@@ -128,6 +128,6 @@ public interface ManagedObject {
      * @param assetId
      * @throws SDKException
      */
-    public void deleteChildAsset(GId assetId) throws SDKException;
+    void deleteChildAsset(GId assetId) throws SDKException;
 
 }

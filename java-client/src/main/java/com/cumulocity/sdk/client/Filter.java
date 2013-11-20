@@ -43,10 +43,17 @@ public abstract class Filter {
             field.setAccessible(true);
             String value = (String) safelyGetFieldValue(field, this);
             if (value != null) {
-                params.put(field.getAnnotation(ParamName.class).value(), encode(value));
+                params.put(getParamName(field), encode(value));
             }
         }
         return params;
+    }
+
+    private String getParamName(Field field) {
+        if (field.getAnnotation(ParamSource.class).value().isEmpty()) {
+            return field.getName();
+        }
+        return field.getAnnotation(ParamSource.class).value();
     }
 
     private Object safelyGetFieldValue(Field field, Filter filter) {

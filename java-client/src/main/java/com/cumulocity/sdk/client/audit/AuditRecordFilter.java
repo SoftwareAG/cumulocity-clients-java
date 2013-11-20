@@ -21,7 +21,7 @@
 package com.cumulocity.sdk.client.audit;
 
 import com.cumulocity.sdk.client.Filter;
-import com.cumulocity.sdk.client.ParamName;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in audit record queries.
@@ -30,13 +30,13 @@ import com.cumulocity.sdk.client.ParamName;
  */
 public class AuditRecordFilter extends Filter {
 
-    @ParamName("user")
+    @ParamSource
     private String user;
 
-    @ParamName("type")
+    @ParamSource
     private String type;
 
-    @ParamName("application")
+    @ParamSource
     private String application;
 
     /**

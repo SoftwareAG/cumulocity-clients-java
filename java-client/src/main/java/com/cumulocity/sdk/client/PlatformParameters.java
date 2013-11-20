@@ -21,6 +21,7 @@
 package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityLogin;
 
 public class PlatformParameters {
 
@@ -33,6 +34,8 @@ public class PlatformParameters {
     private String user;
 
     private String password;
+
+    private CumulocityLogin cumulocityLogin;
 
     private String proxyHost;
 
@@ -65,6 +68,7 @@ public class PlatformParameters {
         this.user = credentials.getUsername();
         this.password = credentials.getPassword();
         this.applicationKey = credentials.getApplicationKey();
+        this.cumulocityLogin = credentials.getLogin();
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, int pageSize) {
@@ -141,9 +145,6 @@ public class PlatformParameters {
     }
 
     public String getPrincipal() {
-        if (tenantId != null) {
-            return tenantId + "/" + user;
-        }
-        return user;
+        return cumulocityLogin.toLoginString();
     }
 }
