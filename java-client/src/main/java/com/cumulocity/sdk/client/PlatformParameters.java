@@ -147,4 +147,20 @@ public class PlatformParameters {
     public String getPrincipal() {
         return cumulocityLogin.toLoginString();
     }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
