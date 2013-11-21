@@ -38,7 +38,7 @@ public class OperationFilterTest {
         OperationFilter filter = new OperationFilter().byStatus(status).byDevice(deviceId).byAgent(agentId);
 
         //Then
-        assertThat(filter.getStatus(), is(status));
+        assertThat(filter.getStatus(), is(status.toString()));
         assertThat(filter.getDevice(), is(deviceId));
         assertThat(filter.getAgent(), is(agentId));
     }

@@ -21,31 +21,29 @@ package com.cumulocity.sdk.client.measurement;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 
 import java.util.Date;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.util.ExtensibilityConverter;
 
 public class MeasurementFilterTest {
 
     @Test
     public void shouldHoldTypeSourceDateAndFragmentType() throws Exception {
-        ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
-
         Date fromDate = new Date(0L);
         Date toDate = new Date(1L);
-        MeasurementFilter filter = new MeasurementFilter().byType("type").bySource(mo).byFragmentType(NonRelevantFragmentType.class).byDate(
+        MeasurementFilter filter = new MeasurementFilter().byType("type").bySource(new GId("1")).byFragmentType(NonRelevantFragmentType.class).byDate(
                 fromDate, toDate);
 
         assertThat(filter.getType(), is("type"));
-        assertThat(filter.getSource(), sameInstance(mo));
-        assertThat(filter.getFragmentType(), Matchers.<Object>equalTo(NonRelevantFragmentType.class));
-        assertThat(filter.getFromDate(), is(fromDate));
-        assertThat(filter.getToDate(), is(toDate));
+        assertThat(filter.getSource(), is("1"));
+        assertThat(filter.getFragmentType(), is(ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class)));
+        assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));
+        assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
     }
 
     private static class NonRelevantFragmentType {

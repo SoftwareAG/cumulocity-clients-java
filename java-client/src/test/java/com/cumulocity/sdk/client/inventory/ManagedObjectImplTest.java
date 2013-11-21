@@ -39,8 +39,6 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
-import static com.cumulocity.sdk.client.inventory.ManagedObjectImpl.PAGE_SIZE_PARAM_WITH_MAX_VALUE;
-
 public class ManagedObjectImplTest {
 
     private static final String MANAGED_OBJECT_URL = "path_to_managedobject";
@@ -139,11 +137,11 @@ public class ManagedObjectImplTest {
         //Given
         ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
         when(
-                restConnector.get(CHILD_DEVICES_URL+ PAGE_SIZE_PARAM_WITH_MAX_VALUE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
+                restConnector.get(CHILD_DEVICES_URL+ "?pageSize=" + DEFAULT_PAGE_SIZE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
                         ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
         // when 
-        ManagedObjectReferenceCollectionRepresentation result = managedObject.getAllChildDevices();
+        ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildDevices().get();
 
         // then
         assertThat(result, sameInstance(retrieved));
@@ -166,11 +164,11 @@ public class ManagedObjectImplTest {
         //Given 
         ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
         when(
-                restConnector.get(CHILD_ASSETS_URL+PAGE_SIZE_PARAM_WITH_MAX_VALUE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
+                restConnector.get(CHILD_ASSETS_URL+ "?pageSize=" +DEFAULT_PAGE_SIZE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
                         ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
         // when 
-        ManagedObjectReferenceCollectionRepresentation result = managedObject.getAllChildAssets();
+        ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildAssets().get();
 
         // then
         assertThat(result, sameInstance(retrieved));

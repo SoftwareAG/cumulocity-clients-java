@@ -20,18 +20,37 @@
 
 package com.cumulocity.sdk.client.inventory;
 
-import com.cumulocity.model.util.ExtensibilityConverter;
+import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
+import static java.util.Arrays.asList;
+
+import java.util.Arrays;
+import java.util.List;
+
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.sdk.client.Filter;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in managed object queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code InventoryFilter filter = new InventoryFilter().byType(type).byFragmentType(fragmentType);}
  */
-public class InventoryFilter {
+public class InventoryFilter extends Filter {
 
+    @ParamSource
     private String fragmentType;
 
+    @ParamSource
     private String type;
+    
+    @ParamSource
+    private String owner;
+    
+    @ParamSource
+    private String text;
+    
+    @ParamSource
+    private String ids;
 
     /**
      * Specifies the {@code fragmentType} query parameter
@@ -40,7 +59,7 @@ public class InventoryFilter {
      * @return the managed object filter with {@code fragmentType} set
      */
     public InventoryFilter byFragmentType(Class<?> fragmentClass) {
-        this.fragmentType = ExtensibilityConverter.classToStringRepresentation(fragmentClass);
+        this.fragmentType = classToStringRepresentation(fragmentClass);
         return this;
     }
 
@@ -56,6 +75,13 @@ public class InventoryFilter {
     }
 
     /**
+     * @return the {@code fragmentType} parameter of the query
+     */
+    public String getFragmentType() {
+        return fragmentType;
+    }
+
+    /**
      * Specifies the {@code type} query parameter
      *
      * @param type the type of the managed object(s)
@@ -67,17 +93,93 @@ public class InventoryFilter {
     }
 
     /**
-     * @return the {@code fragmentType} parameter of the query
-     */
-    public String getFragmentType() {
-        return fragmentType;
-    }
-
-    /**
      * @return the {@code type} parameter of the query
      */
     public String getType() {
         return type;
+    }
+    
+    /**
+     * Specifies the {@code owner} query parameter
+     *
+     * @param owner the owner of the managed object(s)
+     * @return the managed object filter with {@code owner} set
+     */
+    public InventoryFilter byOwner(String owner) {
+        this.owner = owner;
+        return this;
+    }
+
+    /**
+     * @return the {@code owner} parameter of the query
+     */
+    public String getOwner() {
+        return owner;
+    }
+    
+    /**
+     * Specifies the {@code text} query parameter
+     *
+     * @param text the text of the managed object(s)
+     * @return the managed object filter with {@code text} set
+     */
+    public InventoryFilter byText(String text) {
+        this.text = text;
+        return this;
+    }
+
+    /**
+     * @return the {@code text} parameter of the query
+     */
+    public String getText() {
+        return text;
+    }
+    
+    /**
+     * Specifies the {@code ids} query parameter
+     *
+     * @param ids the ids of the managed object(s)
+     * @return the managed object filter with {@code ids} set
+     */
+    public InventoryFilter byIds(List<GId> ids) {
+        this.ids = createCommaSeparatedStringFromGids(ids);
+        return this;
+    }
+    
+    /**
+     * Specifies the {@code ids} query parameter
+     *
+     * @param ids the ids of the managed object(s)
+     * @return the managed object filter with {@code ids} set
+     */
+    public InventoryFilter byIds(GId... ids) {
+        this.ids = createCommaSeparatedStringFromGids(asList(ids));
+        return this;
+    }
+    
+    private String createCommaSeparatedStringFromGids(List<GId> ids) {
+        boolean atLeastOneItemProcessed = false;
+        StringBuilder builder = new StringBuilder();
+
+        for (GId gid : ids) {
+            atLeastOneItemProcessed = true;
+            builder.append(gid.getValue());
+            builder.append(",");
+        }
+
+        // remove last comma if needed
+        if (atLeastOneItemProcessed) {
+            builder.deleteCharAt(builder.length() - 1);
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * @return the {@code ids} parameter of the query
+     */
+    public String getIds() {
+        return ids;
     }
 
 }

@@ -56,7 +56,7 @@ public class EventIT extends JavaSdkITBase {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         eventApi = platform.getEventApi();
         input = new ArrayList<EventRepresentation>();
         result = new ArrayList<EventRepresentation>();

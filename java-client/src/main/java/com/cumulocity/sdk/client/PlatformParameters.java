@@ -20,6 +20,9 @@
 
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityLogin;
+
 public class PlatformParameters {
 
     public final static int DEFAULT_PAGE_SIZE = 5;
@@ -31,6 +34,8 @@ public class PlatformParameters {
     private String user;
 
     private String password;
+
+    private CumulocityLogin cumulocityLogin;
 
     private String proxyHost;
 
@@ -50,23 +55,24 @@ public class PlatformParameters {
         //empty constructor for spring based initialization
     }
 
-    public PlatformParameters(String host, String tenantId, String user, String password, String applicationKey) {
-        setMandatoryFields(host, tenantId, user, password, applicationKey);
+    public PlatformParameters(String host, CumulocityCredentials credentials) {
+        setMandatoryFields(host, credentials);
     }
 
-    private void setMandatoryFields(String host, String tenantId, String user, String password, String applicationKey) {
+    private void setMandatoryFields(String host, CumulocityCredentials credentials) {
         if (host.charAt(host.length() - 1) != '/') {
             host = host + "/";
         }
         this.host = host;
-        this.tenantId = tenantId;
-        this.user = user;
-        this.password = password;
-        this.applicationKey = applicationKey;
+        this.tenantId = credentials.getTenantId();
+        this.user = credentials.getUsername();
+        this.password = credentials.getPassword();
+        this.applicationKey = credentials.getApplicationKey();
+        this.cumulocityLogin = credentials.getLogin();
     }
 
-    public PlatformParameters(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        setMandatoryFields(host, tenantId, user, password, applicationKey);
+    public PlatformParameters(String host, CumulocityCredentials credentials, int pageSize) {
+        setMandatoryFields(host, credentials);
         this.pageSize = pageSize;
     }
 
@@ -78,32 +84,16 @@ public class PlatformParameters {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
     public String getTenantId() {
         return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getUser() {
         return user;
     }
 
-    public void setUser(String user) {
-        this.user = user;
-    }
-
     public String getPassword() {
         return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getProxyHost() {
@@ -152,5 +142,25 @@ public class PlatformParameters {
 
     public boolean requireResponseBody() {
         return requireResponseBody;
+    }
+
+    public String getPrincipal() {
+        return cumulocityLogin.toLoginString();
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

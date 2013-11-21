@@ -20,7 +20,7 @@
 
 package com.cumulocity.sdk.client;
 
-public class SDKException extends Exception {
+public class SDKException extends RuntimeException {
 
     private static final long serialVersionUID = 2723464890693892731L;
 

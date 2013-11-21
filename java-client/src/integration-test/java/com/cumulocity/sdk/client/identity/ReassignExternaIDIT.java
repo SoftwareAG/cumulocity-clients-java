@@ -66,7 +66,7 @@ public class ReassignExternaIDIT extends JavaSdkITBase {
 
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         identity = platform.getIdentityApi();
         inventory = platform.getInventoryApi();
         platform.setRequireResponseBody(true);

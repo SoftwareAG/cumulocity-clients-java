@@ -20,170 +20,96 @@
 
 package com.cumulocity.sdk.client.inventory;
 
-import static com.cumulocity.sdk.client.inventory.InventoryApiImpl.GetMOCollectionRequest.aGetMOCollectionRequest;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
-import com.cumulocity.rest.representation.platform.PlatformMediaType;
-import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.TemplateUrlParser;
+import com.cumulocity.sdk.client.UrlProcessor;
 
 public class InventoryApiImpl implements InventoryApi {
 
-	private static final String TYPE = "type";
-
-	private static final String FRAGMENT_TYPE = "fragmentType";
-
-	private static final String IDS = "ids";
-
 	private final RestConnector restConnector;
-
-	private final String platformUrl;
-
-	private TemplateUrlParser templateUrlParser;
 
 	private final int pageSize;
 
 	private InventoryRepresentation inventoryRepresentation;
+	
+	private UrlProcessor urlProcessor;
 
-	@Deprecated
-	public InventoryApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl) {
+	public InventoryApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, InventoryRepresentation inventoryRepresentation, int pageSize) {
 		this.restConnector = restConnector;
-		this.templateUrlParser = templateUrlParser;
-		this.platformUrl = platformUrl;
-		this.pageSize = PlatformParameters.DEFAULT_PAGE_SIZE;
-	}
-
-	public InventoryApiImpl(RestConnector restConnector, TemplateUrlParser templateUrlParser, String platformUrl, int pageSize) {
-		this.restConnector = restConnector;
-		this.templateUrlParser = templateUrlParser;
-		this.platformUrl = platformUrl;
+        this.urlProcessor = urlProcessor;
+        this.inventoryRepresentation = inventoryRepresentation;
 		this.pageSize = pageSize;
 	}
 
 	@Override
 	public ManagedObjectRepresentation create(ManagedObjectRepresentation representation) throws SDKException {
-		return restConnector.post(getSelfUri(), InventoryMediaType.MANAGED_OBJECT, representation);
+		return restConnector.post(getMOCollectionUrl(), InventoryMediaType.MANAGED_OBJECT, representation);
 	}
+	
+	 @Override
+	 public ManagedObjectRepresentation get(GId id) throws SDKException {
+	     return restConnector.get(getMOCollectionUrl() + "/" + id.getValue(), InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
+	 }
+	 
+	 @Override
+	 public void delete(GId id) throws SDKException {
+	     restConnector.delete(getMOCollectionUrl() + "/" + id.getValue());
+	 }
+
+	 @Override
+	 public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException {
+	     return restConnector.put(getMOCollectionUrl() + "/" + managedObjectRepresentation.getId().getValue(), InventoryMediaType.MANAGED_OBJECT, managedObjectRepresentation);
+	 }
 
 	@Override
 	public ManagedObject getManagedObject(GId globalId) throws SDKException {
-		if ((globalId == null) || (globalId.getValue() == null)) {
-			throw new SDKException("Cannot determine the Global ID Value");
-		}
-		String url = getSelfUri() + "/" + globalId.getValue();
-		return new ManagedObjectImpl(restConnector, url, pageSize);
+		return getManagedObjectApi(globalId);
+	}
+	
+	@Override
+    public ManagedObject getManagedObjectApi(GId globalId) throws SDKException {
+        if ((globalId == null) || (globalId.getValue() == null)) {
+            throw new SDKException("Cannot determine the Global ID Value");
+        }
+        String url = getMOCollectionUrl() + "/" + globalId.getValue();
+        return new ManagedObjectImpl(restConnector, url, pageSize);
+    }
+
+	@Override
+	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {
+	    String url = getMOCollectionUrl();
+	    return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
 	}
 
 	@Override
-	public ManagedObjectCollection getManagedObjects() throws SDKException {
-		return getManagedObjects(aGetMOCollectionRequest());
+	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
+	    if (filter == null) {
+	        return getManagedObjects();
+	    }
+		Map<String, String> params = filter.getQueryParams();
+		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getMOCollectionUrl(), params), pageSize);
 	}
-
-	private ManagedObjectCollection getManagedObjects(GetMOCollectionRequest request) throws SDKException {
-		String url = getSelfUri();
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
+	
 	@Override
-	public ManagedObjectCollection getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
-		String type = filter.getType();
-		String fragmentType = filter.getFragmentType();
-		
-		if (type != null && fragmentType != null) {
-			throw new IllegalArgumentException();
-		} else if (type != null) {
-			return getManagedObjectsByType(type);
-		} else if (fragmentType != null) {
-			return getManagedObjectsByFragmentType(fragmentType);
-		} else {
-			return getManagedObjects();
-		}
-	}
+	@Deprecated
+    public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
+        return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
+    }
 
-	@Override
-	public ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
-		if (ids == null || ids.size() == 0) {
-			return new EmptyManagedObjectCollection();
-		}
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForListOfIds();
-		Map<String, String> filter = Collections.singletonMap(IDS, createCommaSeparatedStringFromGids(ids));
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
-	protected String getSelfUri() throws SDKException {
+	protected String getMOCollectionUrl() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
 	}
 
-	private ManagedObjectCollection getManagedObjectsByType(String type) throws SDKException {
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForType();
-		Map<String, String> filter = Collections.singletonMap(TYPE, type);
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
-	private ManagedObjectCollection getManagedObjectsByFragmentType(String fragmentType) throws SDKException {
-		String urlTemplate = getInventoryRepresentation().getManagedObjectsForFragmentType();
-		Map<String, String> filter = Collections.singletonMap(FRAGMENT_TYPE, fragmentType);
-		String url = templateUrlParser.replacePlaceholdersWithParams(urlTemplate, filter);
-		return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
-	}
-
-	private String createCommaSeparatedStringFromGids(List<GId> ids) {
-		boolean atLeastOneItemProcessed = false;
-		StringBuilder builder = new StringBuilder();
-
-		for (GId gid : ids) {
-			atLeastOneItemProcessed = true;
-			builder.append(gid.getValue());
-			builder.append(",");
-		}
-
-		// remove last comma if needed
-		if (atLeastOneItemProcessed) {
-			builder.deleteCharAt(builder.length() - 1);
-		}
-
-		return builder.toString();
-	}
-
 	private InventoryRepresentation getInventoryRepresentation() throws SDKException {
-		if (null == inventoryRepresentation) {
-			createApiRepresentation();
-		}
 		return inventoryRepresentation;
-	}
-
-	private void createApiRepresentation() throws SDKException {
-		PlatformApiRepresentation platformApiRepresentation = restConnector.get(platformUrl, PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
-		inventoryRepresentation = platformApiRepresentation.getInventory();
-	}
-
-	static class GetMOCollectionRequest {
-
-		private boolean withParents = false;
-
-		public static GetMOCollectionRequest aGetMOCollectionRequest() {
-			return new GetMOCollectionRequest();
-		}
-
-		public GetMOCollectionRequest withParents(boolean withParents) {
-			this.withParents = withParents;
-			return this;
-		}
-
-		public boolean isWithParents() {
-			return withParents;
-		}
 	}
 }

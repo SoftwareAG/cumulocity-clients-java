@@ -19,11 +19,14 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.cumulocity.sdk.client.RestConnector.X_CUMULOCITY_APPLICATION_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
@@ -51,8 +54,6 @@ public class RestConnectorTest {
 
     private static final String PATH = "path";
 
-    private static final String APP_KEY = "appKey";
-
     private CumulocityMediaType mediaType;
 
     @Mock
@@ -63,9 +64,6 @@ public class RestConnectorTest {
 
     @Mock
     private Builder typeBuilder;
-
-    @Mock
-    private Builder headerBuilder;
 
     private PlatformParameters clientParameters = new PlatformParameters();
 
@@ -86,7 +84,6 @@ public class RestConnectorTest {
     public void setup() {
         restConnector = new RestConnector(clientParameters, parser, client);
 
-        clientParameters.setApplicationKey(APP_KEY);
         when(client.resource(PATH)).thenReturn(webResource);
     }
 
@@ -94,8 +91,7 @@ public class RestConnectorTest {
     public void shouldRetrieveResource() throws Exception {
         // Given
         when(webResource.accept(mediaType)).thenReturn(typeBuilder);
-        when(typeBuilder.header(X_CUMULOCITY_APPLICATION_KEY, APP_KEY)).thenReturn(headerBuilder);
-        when(headerBuilder.get(ClientResponse.class)).thenReturn(response);
+        when(typeBuilder.get(ClientResponse.class)).thenReturn(response);
 
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         when(parser.parse(response, 200, BaseResourceRepresentation.class)).thenReturn(representation);
@@ -180,20 +176,19 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPosting(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(headerBuilder.post(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.post(ClientResponse.class, representation)).thenReturn(response);
     }
 
     private void returnResponseWhenSending() {
         when(webResource.type(mediaType)).thenReturn(typeBuilder);
         when(typeBuilder.accept(mediaType)).thenReturn(typeBuilder);
-        when(typeBuilder.header(X_CUMULOCITY_APPLICATION_KEY, APP_KEY)).thenReturn(headerBuilder);
     }
 
     @Test
     public void shouldDelete() throws Exception {
         // Given
-        when(webResource.header(X_CUMULOCITY_APPLICATION_KEY, APP_KEY)).thenReturn(headerBuilder);
-        when(headerBuilder.delete(ClientResponse.class)).thenReturn(response);
+        when(webResource.getRequestBuilder()).thenReturn(typeBuilder);
+        when(typeBuilder.delete(ClientResponse.class)).thenReturn(response);
 
         // When
         restConnector.delete(PATH);
@@ -219,7 +214,7 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPut(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(headerBuilder.put(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.put(ClientResponse.class, representation)).thenReturn(response);
     }
 
     @Test

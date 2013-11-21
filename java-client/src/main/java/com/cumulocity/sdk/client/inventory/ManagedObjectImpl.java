@@ -44,16 +44,19 @@ public class ManagedObjectImpl implements ManagedObject {
     }
 
     @Override
+    @Deprecated
     public ManagedObjectRepresentation get() throws SDKException {
         return restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
     }
     
     @Override
+    @Deprecated
     public void delete() throws SDKException {
         restConnector.delete(url);
     }
 
     @Override
+    @Deprecated
     public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException {
         return restConnector.put(url, InventoryMediaType.MANAGED_OBJECT, managedObjectRepresentation);
 
@@ -66,14 +69,6 @@ public class ManagedObjectImpl implements ManagedObject {
 
         return managedObjectRepresentation.getChildDevices().getSelf();
 
-    }
-
-    @Deprecated
-    @Override
-    public ManagedObjectReferenceCollectionRepresentation getAllChildDevices() throws SDKException {
-        ManagedObjectRepresentation managedObjectRepresentation = get();
-        return restConnector.get(createChildDevicePath(managedObjectRepresentation)+PAGE_SIZE_PARAM_WITH_MAX_VALUE,
-                InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION, ManagedObjectReferenceCollectionRepresentation.class);
     }
 
     @Override
@@ -120,14 +115,6 @@ public class ManagedObjectImpl implements ManagedObject {
             throw new SDKException("Unable to get the child device URL");
         }
         return managedObjectRepresentation.getChildAssets().getSelf();
-    }
-
-    @Override
-    @Deprecated
-    public ManagedObjectReferenceCollectionRepresentation getAllChildAssets() throws SDKException {
-        ManagedObjectRepresentation managedObjectRepresentation = get();
-        return restConnector.get(createChildAssetPath(managedObjectRepresentation) + PAGE_SIZE_PARAM_WITH_MAX_VALUE,
-                InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,ManagedObjectReferenceCollectionRepresentation.class);
     }
 
     @Override

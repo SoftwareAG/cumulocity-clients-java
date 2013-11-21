@@ -57,7 +57,7 @@ public interface AlarmApi {
      * @return the updated alarm
      * @throws SDKException if the alarm could not be updated
      */
-    AlarmRepresentation updateAlarm(AlarmRepresentation alarm) throws SDKException;
+    AlarmRepresentation update(AlarmRepresentation alarm) throws SDKException;
 
     /**
      * Gets all alarms from the platform
@@ -75,4 +75,15 @@ public interface AlarmApi {
      * @throws SDKException if the query failed
      */
     PagedCollectionResource<AlarmCollectionRepresentation> getAlarmsByFilter(AlarmFilter filter) throws SDKException;
+    
+    /**
+     * Updates an alarm in the platform.
+     * The alarm to be updated is identified by the id within the given alarm.
+     *
+     * @param alarm to be updated
+     * @return the updated alarm
+     * @throws SDKException if the alarm could not be updated
+     */
+    @Deprecated
+    AlarmRepresentation updateAlarm(AlarmRepresentation alarm) throws SDKException;
 }

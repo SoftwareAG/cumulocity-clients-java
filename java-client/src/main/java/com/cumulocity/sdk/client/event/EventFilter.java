@@ -22,25 +22,35 @@ package com.cumulocity.sdk.client.event;
 
 import java.util.Date;
 
+import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.Filter;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in event queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code EventFilter filter = new EventFilter().byType(type).bySource(source);}
  */
-public class EventFilter {
+public class EventFilter extends Filter {
 
-    private Class<?> fragmentType;
+    @ParamSource
+    private String fragmentType;
 
-    private Date fromDate;
+    @ParamSource
+    private String dateFrom;
 
-    private Date toDate;
+    @ParamSource
+    private String dateTo;
 
+    @ParamSource
     private String type;
 
-    private ManagedObjectRepresentation source;
-
+    @ParamSource
+    private String source;
+    
     /**
      * Specifies the {@code type} query parameter
      *
@@ -58,8 +68,20 @@ public class EventFilter {
      * @param source the managed object that generated the event(s)
      * @return the event filter with {@code source} set
      */
+    public EventFilter bySource(GId id) {
+        this.source = id.getValue();
+        return this;
+    }
+    
+    /**
+     * Specifies the {@code source} query parameter
+     *
+     * @param source the managed object that generated the event(s)
+     * @return the event filter with {@code source} set
+     */
+    @Deprecated
     public EventFilter bySource(ManagedObjectRepresentation source) {
-        this.source = source;
+        this.source = source.getId().getValue();
         return this;
     }
 
@@ -73,36 +95,36 @@ public class EventFilter {
     /**
      * @return the {@code source} parameter of the query
      */
-    public ManagedObjectRepresentation getSource() {
+    public String getSource() {
         return source;
     }
 
     public EventFilter byFragmentType(Class<?> fragmentType) {
-        this.fragmentType = fragmentType;
+        this.fragmentType = ExtensibilityConverter.classToStringRepresentation(fragmentType);
         return this;
     }
 
-    public Class<?> getFragmentType() {
+    public String getFragmentType() {
         return fragmentType;
     }
 
     public EventFilter byDate(Date fromDate, Date toDate) {
-        this.fromDate = fromDate;
-        this.toDate = toDate;
+        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateTo = DateConverter.date2String(toDate);
         return this;
     }
 
     public EventFilter byFromDate(Date fromDate) {
-        this.fromDate = fromDate;
+        this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }
 
-    public Date getFromDate() {
-        return fromDate;
+    public String getFromDate() {
+        return dateFrom;
     }
 
-    public Date getToDate() {
-        return toDate;
+    public String getToDate() {
+        return dateTo;
     }
 
 }

@@ -21,43 +21,48 @@
 package com.cumulocity.sdk.client;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-public class TemplateUrlParser {
+public abstract class Filter {
 
     public static String encode(String value) {
         try {
             return URLEncoder.encode(value, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 is unsupported???", e);
+            throw new RuntimeException("UTF-8 is not supported!?", e);
         }
     }
 
-    public String replacePlaceholdersWithParams(String template, Map<String, String> params) {
-        for (Entry<String, String> entry : params.entrySet()) {
-            template = replaceAll(template, asPattern(entry.getKey()), encode(entry.getValue()));
+    public Map<String, String> getQueryParams() {
+        Map<String, String> params = new HashMap<String, String>();
+        Class clazz = getClass();
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+            String value = (String) safelyGetFieldValue(field, this);
+            if (value != null) {
+                params.put(getParamName(field), encode(value));
+            }
         }
-        return template;
+        return params;
     }
 
-    private String replaceAll(String template, String key, String value) {
-        String[] tokens = template.split("\\?");
-        boolean hasQuery = tokens.length > 1;
-        return replaceAllInPath(tokens[0], key, value) + (hasQuery ? replaceAllInQuery(tokens[1], key, value) : "");
+    private String getParamName(Field field) {
+        if (field.getAnnotation(ParamSource.class).value().isEmpty()) {
+            return field.getName();
+        }
+        return field.getAnnotation(ParamSource.class).value();
     }
 
-    private String replaceAllInPath(String template, String key, String value) {
-        return template.replaceAll(key, value.replaceAll("\\+", "%20"));
-    }
-
-    private String replaceAllInQuery(String template, String key, String value) {
-        return "?" + template.replaceAll(key, value);
-    }
-
-    private String asPattern(String key) {
-        return "\\{" + key + "\\}";
+    private Object safelyGetFieldValue(Field field, Filter filter) {
+        try {
+            return field.get(filter);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

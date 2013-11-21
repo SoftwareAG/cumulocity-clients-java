@@ -22,30 +22,40 @@ package com.cumulocity.sdk.client.measurement;
 
 import java.util.Date;
 
+import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.Filter;
+import com.cumulocity.sdk.client.ParamSource;
 
 /**
  * A filter to be used in measurement queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code MeasurementFilter filter = new MeasurementFilter().byType(type).bySource(source);}
  */
-public class MeasurementFilter {
+public class MeasurementFilter extends Filter {
 
+    @ParamSource
+    private String fragmentType;
+
+    @ParamSource
+    private String dateFrom;
+
+    @ParamSource
+    private String dateTo;
+
+    @ParamSource
     private String type;
 
-    private ManagedObjectRepresentation source;
-
-    private Class<?> fragmentType;
-
-    private Date fromDate;
-
-    private Date toDate;
+    @ParamSource
+    private String source;
 
     /**
      * Specifies the {@code type} query parameter
      *
-     * @param type the type of the measurement(s)
-     * @return the measurement filter with {@code type} set
+     * @param type the type of the event(s)
+     * @return the event filter with {@code type} set
      */
     public MeasurementFilter byType(String type) {
         this.type = type;
@@ -55,35 +65,23 @@ public class MeasurementFilter {
     /**
      * Specifies the {@code source} query parameter
      *
-     * @param source the type of the measurement(s)
-     * @return the measurement filter with {@code source} set
+     * @param source the managed object that generated the event(s)
+     * @return the event filter with {@code source} set
      */
+    public MeasurementFilter bySource(GId id) {
+        this.source = id.getValue();
+        return this;
+    }
+    
+    /**
+     * Specifies the {@code source} query parameter
+     *
+     * @param source the managed object that generated the event(s)
+     * @return the event filter with {@code source} set
+     */
+    @Deprecated
     public MeasurementFilter bySource(ManagedObjectRepresentation source) {
-        this.source = source;
-        return this;
-    }
-
-    /**
-     * Specifies the {@code fragmentType} query parameter
-     *
-     * @param fragmentType the type of the measurement(s)
-     * @return the measurement filter with {@code fragment} set
-     */
-    public MeasurementFilter byFragmentType(Class<?> fragmentType) {
-        this.fragmentType = fragmentType;
-        return this;
-    }
-
-    /**
-     * Specifies the {@code fromDate} and {@code toDate} query parameters
-     *
-     * @param fromDate the lower bound of the date interval
-     * @param toDate   the upper bound of the date interval
-     * @return the measurement filter with {@code fromDate} and {@code toDate} set
-     */
-    public MeasurementFilter byDate(Date fromDate, Date toDate) {
-        this.fromDate = fromDate;
-        this.toDate = toDate;
+        this.source = source.getId().getValue();
         return this;
     }
 
@@ -97,28 +95,36 @@ public class MeasurementFilter {
     /**
      * @return the {@code source} parameter of the query
      */
-    public ManagedObjectRepresentation getSource() {
+    public String getSource() {
         return source;
     }
 
-    /**
-     * @return the {@code fragmentType} parameter of the query
-     */
-    public Class<?> getFragmentType() {
+    public MeasurementFilter byFragmentType(Class<?> fragmentType) {
+        this.fragmentType = ExtensibilityConverter.classToStringRepresentation(fragmentType);
+        return this;
+    }
+
+    public String getFragmentType() {
         return fragmentType;
     }
 
-    /**
-     * @return the {@code fromDate} parameter of the query
-     */
-    public Date getFromDate() {
-        return fromDate;
+    public MeasurementFilter byDate(Date fromDate, Date toDate) {
+        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateTo = DateConverter.date2String(toDate);
+        return this;
     }
 
-    /**
-     * @return the {@code toDate} parameter of the query
-     */
-    public Date getToDate() {
-        return toDate;
+    public MeasurementFilter byFromDate(Date fromDate) {
+        this.dateFrom = DateConverter.date2String(fromDate);
+        return this;
     }
+
+    public String getFromDate() {
+        return dateFrom;
+    }
+
+    public String getToDate() {
+        return dateTo;
+    }
+
 }

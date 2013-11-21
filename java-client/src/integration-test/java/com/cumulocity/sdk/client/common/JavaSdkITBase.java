@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
 
@@ -62,10 +63,10 @@ public class JavaSdkITBase {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                p.get("cumulocity.tenant"),
+                new CumulocityCredentials(p.get("cumulocity.tenant"),
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
-                p.get("cumulocity.applicationKey"));
+                p.get("cumulocity.applicationKey")));
     }
 
 }

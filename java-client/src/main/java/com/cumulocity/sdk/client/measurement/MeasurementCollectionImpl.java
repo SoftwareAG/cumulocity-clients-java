@@ -30,11 +30,6 @@ import com.cumulocity.sdk.client.RestConnector;
 public class MeasurementCollectionImpl extends PagedCollectionResourceImpl<MeasurementCollectionRepresentation> implements
         PagedCollectionResource<MeasurementCollectionRepresentation> {
 
-    @Deprecated
-    public MeasurementCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public MeasurementCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }

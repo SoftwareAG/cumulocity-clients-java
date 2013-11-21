@@ -30,11 +30,6 @@ import com.cumulocity.sdk.client.RestConnector;
 public class EventCollectionImpl extends PagedCollectionResourceImpl<EventCollectionRepresentation> implements
         PagedCollectionResource<EventCollectionRepresentation> {
 
-    @Deprecated
-    public EventCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public EventCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }

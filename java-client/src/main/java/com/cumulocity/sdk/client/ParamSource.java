@@ -20,11 +20,13 @@
 
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.representation.BaseResourceRepresentation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * Generic Cumulocity operationCollection representation
- */
-public interface GenericResource<T extends BaseResourceRepresentation> {
-    public T get() throws SDKException;
+@Target({ ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ParamSource {
+    String value() default "";
 }

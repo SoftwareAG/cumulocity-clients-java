@@ -23,7 +23,9 @@ package com.cumulocity.sdk.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
+import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmApiImpl;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
@@ -40,6 +42,8 @@ import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
 
 public class PlatformImpl extends PlatformParameters implements Platform {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PlatformImpl.class);
 
     private static final String PLATFORM_URL = "platform";
 
@@ -59,9 +63,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     public static final String CUMOLOCITY_APPLICATION_KEY = "applicationKey";
 
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(PlatformImpl.class);
-
     public static final String CUMOLOCITY_PROXY_HOST = "proxyHost";
 
     public static final String CUMULOCITY_PROXY_PORT = "proxyPort";
@@ -70,22 +71,44 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     public static final String CUMULOCITY_PROXY_PASSWORD = "proxyPassword";
 
+    private PlatformApiRepresentation platformApiRepresentation;
+
+    public PlatformImpl(String host, CumulocityCredentials credentials) {
+        super(host, credentials);
+    }
+
+    public PlatformImpl(String host, int port, CumulocityCredentials credentials) {
+        super(getHostUrl(host, port), credentials);
+    }
+
+    public PlatformImpl(String host, CumulocityCredentials credentials, int pageSize) {
+        super(host, credentials, pageSize);
+    }
+
+    public PlatformImpl(String host, int port, CumulocityCredentials credentials, int pageSize) {
+        super(getHostUrl(host, port), credentials, pageSize);
+    }
+    
+    @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey) {
-        super(host, tenantId, user, password, applicationKey);
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey));
     }
 
+    @Deprecated
     public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey) {
-        super(getHostUrl(host, port), tenantId, user, password, applicationKey);
+        super(getHostUrl(host, port), new CumulocityCredentials(tenantId, user, password,applicationKey));
     }
 
+    @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(host, tenantId, user, password, applicationKey, pageSize);
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
     }
 
+    @Deprecated
     public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(getHostUrl(host, port), tenantId, user, password, applicationKey, pageSize);
+        super(getHostUrl(host, port), new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
     }
-
+    
     public PlatformImpl() {
         //empty constructor for spring based initialization
     }
@@ -128,9 +151,9 @@ public class PlatformImpl extends PlatformParameters implements Platform {
             }
             if (System.getProperty(CUMULOCITY_PAGE_SIZE) != null) {
                 int pageSize = Integer.parseInt(System.getProperty(CUMULOCITY_PAGE_SIZE));
-                platform = new PlatformImpl(host, port, tenantId, user, password, applicationKey, pageSize);
+                platform = new PlatformImpl(host, port, new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
             } else {
-                platform = new PlatformImpl(host, port, tenantId, user, password, applicationKey);
+                platform = new PlatformImpl(host, port, new CumulocityCredentials(tenantId, user, password,applicationKey));
             }
             String proxyHost = System.getProperty(CUMOLOCITY_PROXY_HOST);
             int proxyPort = -1;
@@ -157,42 +180,60 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     }
 
     @Override
-    public InventoryApi getInventoryApi() {
-        return new InventoryApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public InventoryApi getInventoryApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new InventoryApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getInventory(), getPageSize());
     }
 
     @Override
-    public IdentityApi getIdentityApi() {
-        return new IdentityApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public IdentityApi getIdentityApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new IdentityApiImpl(restConnector, new TemplateUrlParser(), getPlatformApi(restConnector).getIdentity(), getPageSize());
     }
 
     @Override
-    public MeasurementApi getMeasurementApi() {
-        return new MeasurementApiImpl(createRestConnector(), new TemplateUrlParser(),getHost() + PLATFORM_URL, getPageSize());
+    public MeasurementApi getMeasurementApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new MeasurementApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getMeasurement(), getPageSize());
       }
 
     @Override
-    public DeviceControlApi getDeviceControlApi() {
-        return new DeviceControlApiImpl(this, createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public DeviceControlApi getDeviceControlApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new DeviceControlApiImpl(this, restConnector, new UrlProcessor(), getPlatformApi(restConnector).getDeviceControl(), getPageSize());
     }
 
     @Override
-    public EventApi getEventApi() {
-        return new EventApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public EventApi getEventApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new EventApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getEvent(), getPageSize());
     }
 
     @Override
-    public AlarmApi getAlarmApi() {
-        return new AlarmApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public AlarmApi getAlarmApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new AlarmApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAlarm(), getPageSize());
     }
 
     @Override
-    public AuditRecordApi getAuditRecordApi() {
-        return new AuditRecordApiImpl(createRestConnector(), new TemplateUrlParser(), getHost() + PLATFORM_URL, getPageSize());
+    public AuditRecordApi getAuditRecordApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new AuditRecordApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAudit(), getPageSize());
     }
 
     private RestConnector createRestConnector() {
         return new RestConnector(this, new ResponseParser());
+    }
+    
+    private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
+        if (platformApiRepresentation == null) {
+            platformApiRepresentation = restConnector.get(platformUrl(), PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
+        }
+        return platformApiRepresentation;
+    }
+
+    private String platformUrl() {
+        return getHost() + PLATFORM_URL;
     }
 
 }

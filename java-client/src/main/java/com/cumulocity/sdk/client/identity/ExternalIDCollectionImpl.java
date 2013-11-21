@@ -30,11 +30,6 @@ import com.cumulocity.sdk.client.RestConnector;
 public class ExternalIDCollectionImpl extends PagedCollectionResourceImpl<ExternalIDCollectionRepresentation> implements
         PagedCollectionResource<ExternalIDCollectionRepresentation> {
 
-    @Deprecated
-    public ExternalIDCollectionImpl(RestConnector restConnector, String url) {
-        super(restConnector, url);
-    }
-
     public ExternalIDCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
     }

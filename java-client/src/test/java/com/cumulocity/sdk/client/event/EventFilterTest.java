@@ -21,22 +21,21 @@ package com.cumulocity.sdk.client.event;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 
 import java.util.Date;
 
 import org.junit.Test;
 
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.idtype.GId;
 
 public class EventFilterTest {
 
     @Test
     public void shouldHoldTypeAndSource() throws Exception {
-        ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
-        EventFilter filter = new EventFilter().byType("type").bySource(mo);
+        EventFilter filter = new EventFilter().byType("type").bySource(new GId("1"));
         assertThat(filter.getType(), is("type"));
-        assertThat(filter.getSource(), sameInstance(mo));
+        assertThat(filter.getSource(), is("1"));
     }
     
     @Test
@@ -45,7 +44,7 @@ public class EventFilterTest {
         Date toDate = new Date(System.currentTimeMillis());
         EventFilter filter = new EventFilter().byFragmentType(Object.class).byDate(fromDate, toDate);
         assertThat(filter.getFragmentType(), is(Object.class));
-        assertThat(filter.getFromDate(), sameInstance(fromDate));
-        assertThat(filter.getToDate(), sameInstance(toDate));
+        assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));
+        assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
     }
 }

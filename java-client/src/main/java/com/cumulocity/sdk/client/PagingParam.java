@@ -20,30 +20,16 @@
 
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.representation.BaseResourceRepresentation;
-import com.cumulocity.rest.representation.CumulocityMediaType;
+public enum PagingParam implements Param {
+    WITH_TOTAL_PAGES("withTotalPages");
+    
+    private String paramName;
 
-public abstract class GenericResourceImpl<T extends BaseResourceRepresentation> implements GenericResource<T> {
-
-    @Deprecated
-    /**
-     * Don't use this field outside package. Scope of this field will be reduced.
-     */
-    public final String url;
-
-    protected final RestConnector restConnector;
-
-    protected abstract CumulocityMediaType getMediaType();
-
-    protected abstract Class<T> getResponseClass();
-
-    public GenericResourceImpl(RestConnector restConnector, String url) {
-        this.restConnector = restConnector;
-        this.url = url;
+    PagingParam(String paramName) {
+        this.paramName = paramName;
     }
 
-    @Override
-    public T get() throws SDKException {
-        return restConnector.get(url, getMediaType(), getResponseClass());
+    public String getName() {
+        return paramName;
     }
 }
