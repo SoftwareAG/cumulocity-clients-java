@@ -1,6 +1,7 @@
 package com.cumulocity.sdk.client;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
 
 import java.util.Map;
 
@@ -30,5 +31,12 @@ public class FilterTest {
         Map<String, String> queryParams = eventFilter.getQueryParams();
 
         assertThat(queryParams.get("dateFrom")).doesNotContain(":");
+    }
+    
+    @Test
+    public void shouldOverwriteFieldName() throws Exception {
+        Map<String, String> queryParams = new TestFilter().getQueryParams();
+        
+        assertThat(queryParams).includes(entry("type", "myType"));
     }
 }

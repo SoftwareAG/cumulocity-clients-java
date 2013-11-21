@@ -23,14 +23,12 @@ import static com.cumulocity.test.matchers.UrlMatcher.matchesUrl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import org.hamcrest.core.IsSame;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -326,7 +324,7 @@ public class PagedCollectionResourceImplTest {
     }
     
     @Test
-    public void shouldReturnFirstPageWhenIteratorUsed() throws Exception {
+    public void shouldReturnOnlyFirstPageWithIterator() throws Exception {
         // Given
         BaseCollectionRepresentation expectedRepresentation = new BaseCollectionRepresentation();
         when(restConnector.get(URL + "?pageSize=" + PAGE_SIZE, MEDIA_TYPE, CLAZZ)).thenReturn(expectedRepresentation);
@@ -340,6 +338,39 @@ public class PagedCollectionResourceImplTest {
         // Then
         assertThat(result, sameInstance(expectedRepresentation));
         
+    }
+    
+    @Test
+    public void shouldSecondPageWithIterator() throws Exception {
+        // Given
+        String firstPageUrl = URL + "?pageSize=" + PAGE_SIZE;
+        String secondPageUrl = firstPageUrl + "&currentPage=2";
+        BaseCollectionRepresentation pageOne = new BaseCollectionRepresentation();
+        pageOne.setNext(secondPageUrl);
+        BaseCollectionRepresentation pageTwo = new BaseCollectionRepresentation();
+        when(restConnector.get(firstPageUrl, MEDIA_TYPE, CLAZZ)).thenReturn(pageOne);
+        when(restConnector.get(secondPageUrl, MEDIA_TYPE, CLAZZ)).thenReturn(pageTwo);
+        
+        // When
+        BaseCollectionRepresentation result = null;
+        for(BaseCollectionRepresentation page : target) {
+            result = page;
+        }
+        
+        // Then
+        assertThat(result, sameInstance(pageTwo));
+    }
+    
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldThrowExceptionOnIteratorRemove() throws Exception {
+        // Given
+        BaseCollectionRepresentation expectedRepresentation = new BaseCollectionRepresentation();
+        when(restConnector.get(URL + "?pageSize=" + PAGE_SIZE, MEDIA_TYPE, CLAZZ)).thenReturn(expectedRepresentation);
+        
+        // When
+        for(BaseCollectionRepresentation page : target) {
+            target.iterator().remove();
+        }
     }
 
     private PagedCollectionResourceImpl<BaseCollectionRepresentation> createPagedCollectionResource(RestConnector restConnector,
