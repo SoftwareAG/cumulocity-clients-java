@@ -24,10 +24,8 @@ import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditMediaType;
-import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordsRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -64,7 +62,7 @@ public class AuditRecordApiImpl implements AuditRecordApi {
     }
 
     @Override
-    public PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecords() throws SDKException {
+    public AuditRecordCollection getAuditRecords() throws SDKException {
         String url = getSelfUri();
         return new AuditRecordCollectionImpl(restConnector, url, pageSize);
     }
@@ -75,7 +73,7 @@ public class AuditRecordApiImpl implements AuditRecordApi {
     }
 
     @Override
-    public PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByFilter(AuditRecordFilter filter)
+    public AuditRecordCollection getAuditRecordsByFilter(AuditRecordFilter filter)
             throws SDKException {
         if (filter == null) {
             return getAuditRecords();

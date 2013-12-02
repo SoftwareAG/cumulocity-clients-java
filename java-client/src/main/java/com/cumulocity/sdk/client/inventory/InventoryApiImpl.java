@@ -26,9 +26,7 @@ import java.util.Map;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -85,13 +83,13 @@ public class InventoryApiImpl implements InventoryApi {
     }
 
 	@Override
-	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjects() throws SDKException {
+	public ManagedObjectCollection getManagedObjects() throws SDKException {
 	    String url = getMOCollectionUrl();
 	    return new ManagedObjectCollectionImpl(restConnector, url, pageSize);
 	}
 
 	@Override
-	public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
+	public ManagedObjectCollection getManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
 	    if (filter == null) {
 	        return getManagedObjects();
 	    }
@@ -101,7 +99,7 @@ public class InventoryApiImpl implements InventoryApi {
 	
 	@Override
 	@Deprecated
-    public PagedCollectionResource<ManagedObjectCollectionRepresentation> getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
+    public ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
         return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
     }
 

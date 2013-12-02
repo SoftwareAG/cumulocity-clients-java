@@ -108,11 +108,11 @@ public class EventApiImplTest {
     @Test
     public void shouldRetrieveEventCollection() throws SDKException {
         //Given
-        PagedCollectionResource<EventCollectionRepresentation> expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
+        EventCollection expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<EventCollectionRepresentation> result = eventApi.getEvents();
+        EventCollection result = eventApi.getEvents();
 
         // Then
         assertThat(result, is(expected));
@@ -122,12 +122,12 @@ public class EventApiImplTest {
     public void shouldRetrieveEventCollectionByEmptyFilter() throws SDKException {
         //Given
         when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(EVENTS_COLLECTION_URL);
-        PagedCollectionResource<EventCollectionRepresentation> expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
+        EventCollection expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
         // When
         EventFilter filter = new EventFilter();
-        PagedCollectionResource<EventCollectionRepresentation> result = eventApi.getEventsByFilter(filter);
+        EventCollection result = eventApi.getEventsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));
@@ -142,7 +142,7 @@ public class EventApiImplTest {
         EventCollectionImpl expected = new EventCollectionImpl(restConnector, eventsByTypeUrl, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<EventCollectionRepresentation> result = eventApi.getEventsByFilter(filter);
+        EventCollection result = eventApi.getEventsByFilter(filter);
 
         // Then
         assertThat((EventCollectionImpl) result, is(expected));

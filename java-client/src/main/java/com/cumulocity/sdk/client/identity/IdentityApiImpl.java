@@ -25,11 +25,9 @@ import java.util.Map;
 
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.TemplateUrlParser;
@@ -85,7 +83,7 @@ public class IdentityApiImpl implements IdentityApi {
     }
 
     @Override
-    public PagedCollectionResource<ExternalIDCollectionRepresentation> getExternalIdsOfGlobalId(GId gid) throws SDKException {
+    public ExternalIDCollection getExternalIdsOfGlobalId(GId gid) throws SDKException {
         if (gid == null || gid.getValue() == null) {
             throw new SDKException("Cannot determine global id value");
         }

@@ -23,12 +23,13 @@ package com.cumulocity.sdk.client.measurement;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
-import com.cumulocity.sdk.client.PagedCollectionResource;
+import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class MeasurementCollectionImpl extends PagedCollectionResourceImpl<MeasurementCollectionRepresentation> implements
-        PagedCollectionResource<MeasurementCollectionRepresentation> {
+public class MeasurementCollectionImpl
+        extends PagedCollectionResourceImpl<MeasurementRepresentation, MeasurementCollectionRepresentation, PagedMeasurementCollectionRepresentation>
+        implements MeasurementCollection {
 
     public MeasurementCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -42,5 +43,10 @@ public class MeasurementCollectionImpl extends PagedCollectionResourceImpl<Measu
     @Override
     protected Class<MeasurementCollectionRepresentation> getResponseClass() {
         return MeasurementCollectionRepresentation.class;
+    }
+
+    @Override
+    protected PagedMeasurementCollectionRepresentation wrap(MeasurementCollectionRepresentation collection) {
+        return new PagedMeasurementCollectionRepresentation(collection, this);
     }
 }

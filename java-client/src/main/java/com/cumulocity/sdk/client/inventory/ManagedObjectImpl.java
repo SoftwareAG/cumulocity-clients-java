@@ -22,10 +22,8 @@ package com.cumulocity.sdk.client.inventory;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
-import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
@@ -72,7 +70,7 @@ public class ManagedObjectImpl implements ManagedObject {
     }
 
     @Override
-    public PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException {
+    public ManagedObjectReferenceCollection getChildDevices() throws SDKException {
         ManagedObjectRepresentation managedObjectRepresentation = get();
         String self = createChildDevicePath(managedObjectRepresentation);
         return new ManagedObjectReferenceCollectionImpl(restConnector,self, pageSize);
@@ -118,7 +116,7 @@ public class ManagedObjectImpl implements ManagedObject {
     }
 
     @Override
-    public PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildAssets() throws SDKException {
+    public ManagedObjectReferenceCollection getChildAssets() throws SDKException {
         ManagedObjectRepresentation managedObjectRepresentation = get();
         String self = createChildAssetPath(managedObjectRepresentation);
         return new ManagedObjectReferenceCollectionImpl(restConnector,self, pageSize);

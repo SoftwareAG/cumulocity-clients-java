@@ -23,11 +23,9 @@ package com.cumulocity.sdk.client.alarm;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -82,7 +80,7 @@ public class AlarmApiImpl implements AlarmApi {
     }
 
     @Override
-    public PagedCollectionResource<AlarmCollectionRepresentation> getAlarms() throws SDKException {
+    public AlarmCollection getAlarms() throws SDKException {
         String url = getSelfUri();
         return new AlarmCollectionImpl(restConnector, url, pageSize);
     }
@@ -97,7 +95,7 @@ public class AlarmApiImpl implements AlarmApi {
     }
 
     @Override
-    public PagedCollectionResource<AlarmCollectionRepresentation> getAlarmsByFilter(AlarmFilter filter) throws SDKException {
+    public AlarmCollection getAlarmsByFilter(AlarmFilter filter) throws SDKException {
         if (filter == null) {
             return getAlarms();
         }

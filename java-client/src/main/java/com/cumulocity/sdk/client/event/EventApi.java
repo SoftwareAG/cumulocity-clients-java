@@ -21,9 +21,7 @@
 package com.cumulocity.sdk.client.event;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -64,7 +62,7 @@ public interface EventApi {
      * @return collection of events with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<EventCollectionRepresentation> getEvents() throws SDKException;
+    EventCollection getEvents() throws SDKException;
 
     /**
      * Gets the events from the platform based on specified filter
@@ -73,5 +71,5 @@ public interface EventApi {
      * @return collection of events matched by the filter with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<EventCollectionRepresentation> getEventsByFilter(EventFilter filter) throws SDKException;
+    EventCollection getEventsByFilter(EventFilter filter) throws SDKException;
 }

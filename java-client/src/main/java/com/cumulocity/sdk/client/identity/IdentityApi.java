@@ -22,9 +22,7 @@ package com.cumulocity.sdk.client.identity;
 
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -58,7 +56,7 @@ public interface IdentityApi {
      * @return a collection of external ids with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<ExternalIDCollectionRepresentation> getExternalIdsOfGlobalId(GId gid) throws SDKException;
+    ExternalIDCollection getExternalIdsOfGlobalId(GId gid) throws SDKException;
 
     /**
      * Deletes between the external id and its global id in the platform.

@@ -21,9 +21,7 @@
 package com.cumulocity.sdk.client.measurement;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -64,7 +62,7 @@ public interface MeasurementApi {
      * @return collection of measurements with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<MeasurementCollectionRepresentation> getMeasurements() throws SDKException;
+    MeasurementCollection getMeasurements() throws SDKException;
 
     /**
      * Gets the measurements from the platform based on specified filter
@@ -73,7 +71,7 @@ public interface MeasurementApi {
      * @return collection of measurements matched by the filter with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<MeasurementCollectionRepresentation> getMeasurementsByFilter(MeasurementFilter filter) throws SDKException;
+    MeasurementCollection getMeasurementsByFilter(MeasurementFilter filter) throws SDKException;
     
     /**
      * Deletes measurement from the platform.

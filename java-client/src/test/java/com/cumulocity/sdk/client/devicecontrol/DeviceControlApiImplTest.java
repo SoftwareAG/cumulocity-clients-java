@@ -135,11 +135,11 @@ public class DeviceControlApiImplTest {
     @Test
     public void shouldGetOperations() throws Exception {
         //Given
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector,
+        OperationCollection expected = new OperationCollectionImpl(restConnector,
                 DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperations();
+        OperationCollection result = deviceControlApi.getOperations();
 
         // Then
         assertThat(result, is(expected));
@@ -149,12 +149,12 @@ public class DeviceControlApiImplTest {
     public void shouldGetOperationsByEmptyFilter() throws Exception {
         //Given
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(DEVICE_CONTROL_COLLECTION_URL);
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector,
+        OperationCollection expected = new OperationCollectionImpl(restConnector,
                 DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
         // When
         OperationFilter filter = new OperationFilter();
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
+        OperationCollection result = deviceControlApi.getOperationsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));
@@ -168,11 +168,11 @@ public class DeviceControlApiImplTest {
         String operationsByDeviceIdUrl = DEVICE_CONTROL_COLLECTION_URL + "?deviceId="+ DEVICE_ID;
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, filter.getQueryParams())).thenReturn(operationsByDeviceIdUrl);
 
-        PagedCollectionResource<OperationCollectionRepresentation> expected = new OperationCollectionImpl(restConnector, operationsByDeviceIdUrl,
+        OperationCollection expected = new OperationCollectionImpl(restConnector, operationsByDeviceIdUrl,
                 DEAFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<OperationCollectionRepresentation> result = deviceControlApi.getOperationsByFilter(filter);
+        OperationCollection result = deviceControlApi.getOperationsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));

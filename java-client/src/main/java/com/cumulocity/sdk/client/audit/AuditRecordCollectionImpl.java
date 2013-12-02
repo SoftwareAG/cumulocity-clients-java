@@ -23,12 +23,13 @@ package com.cumulocity.sdk.client.audit;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.audit.AuditMediaType;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
+import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class AuditRecordCollectionImpl extends PagedCollectionResourceImpl<AuditRecordCollectionRepresentation> implements
-        PagedCollectionResource<AuditRecordCollectionRepresentation> {
+public class AuditRecordCollectionImpl
+        extends PagedCollectionResourceImpl<AuditRecordRepresentation, AuditRecordCollectionRepresentation, PagedAuditCollectionRepresentation>
+        implements AuditRecordCollection {
 
     public AuditRecordCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -42,5 +43,10 @@ public class AuditRecordCollectionImpl extends PagedCollectionResourceImpl<Audit
     @Override
     protected Class<AuditRecordCollectionRepresentation> getResponseClass() {
         return AuditRecordCollectionRepresentation.class;
+    }
+
+    @Override
+    protected PagedAuditCollectionRepresentation wrap(AuditRecordCollectionRepresentation collection) {
+        return new PagedAuditCollectionRepresentation(collection, this);
     }
 }

@@ -21,10 +21,8 @@
 package com.cumulocity.sdk.client.inventory;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -76,7 +74,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
      * @throws SDKException
      */
-    PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildDevices() throws SDKException;
+    ManagedObjectReferenceCollection getChildDevices() throws SDKException;
 
     /**
      * Returns the child device with the given id. If it belongs to the ManagedObject.
@@ -111,7 +109,7 @@ public interface ManagedObject {
      * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
      * @throws SDKException
      */
-    PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> getChildAssets() throws SDKException;
+    ManagedObjectReferenceCollection getChildAssets() throws SDKException;
 
     /**
      * Returns the child Asset with the given id. If it belongs to the ManagedObject.
