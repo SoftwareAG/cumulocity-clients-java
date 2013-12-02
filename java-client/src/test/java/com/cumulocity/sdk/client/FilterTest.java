@@ -31,4 +31,27 @@ public class FilterTest {
 
         assertThat(queryParams.get("dateFrom")).doesNotContain(":");
     }
+    
+    @Test
+    public void shouldEncodeParamValueForMuliplyStatues() throws Exception {
+    	AlarmFilter alarmFilter = new AlarmFilter();
+    	
+    	Map<String, String> queryParams = alarmFilter.getQueryParams();
+    	
+    	assertThat(queryParams.get("status")).isNull();
+    	
+    	
+    	alarmFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.ACTIVE);
+    	
+    	queryParams = alarmFilter.getQueryParams();
+    	
+    	assertThat(queryParams.get("status")).isEqualTo("ACTIVE");
+    	
+    	
+    	alarmFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.ACTIVE, CumulocityAlarmStatuses.ACKNOWLEDGED);
+    	
+    	queryParams = alarmFilter.getQueryParams();
+    	
+    	assertThat(queryParams.get("status")).isEqualTo("ACTIVE%2CACKNOWLEDGED");
+    }
 }
