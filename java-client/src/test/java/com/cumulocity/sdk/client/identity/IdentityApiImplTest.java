@@ -36,12 +36,10 @@ import org.mockito.MockitoAnnotations;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.idtype.XtId;
-import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.TemplateUrlParser;
@@ -152,11 +150,11 @@ public class IdentityApiImplTest {
         identityApiRep.setExternalIdsOfGlobalId(TEMPLATE_URL);
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("globalId", "10"))).thenReturn(EXACT_URL);
 
-        PagedCollectionResource<ExternalIDCollectionRepresentation> expected = new ExternalIDCollectionImpl(restConnector, EXACT_URL,
+        ExternalIDCollection expected = new ExternalIDCollectionImpl(restConnector, EXACT_URL,
                 DEFAULT_PAGE_SIZE);
 
         // when
-        PagedCollectionResource<ExternalIDCollectionRepresentation> result = identityApiImpl.getExternalIdsOfGlobalId(gid);
+        ExternalIDCollection result = identityApiImpl.getExternalIdsOfGlobalId(gid);
 
         // then
         assertThat(result, is(expected));

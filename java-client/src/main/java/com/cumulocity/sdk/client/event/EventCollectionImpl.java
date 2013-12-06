@@ -23,12 +23,13 @@ package com.cumulocity.sdk.client.event;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventMediaType;
-import com.cumulocity.sdk.client.PagedCollectionResource;
+import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class EventCollectionImpl extends PagedCollectionResourceImpl<EventCollectionRepresentation> implements
-        PagedCollectionResource<EventCollectionRepresentation> {
+public class EventCollectionImpl
+        extends PagedCollectionResourceImpl<EventRepresentation, EventCollectionRepresentation, PagedEventCollectionRepresentation>
+        implements EventCollection {
 
     public EventCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -42,5 +43,10 @@ public class EventCollectionImpl extends PagedCollectionResourceImpl<EventCollec
     @Override
     protected Class<EventCollectionRepresentation> getResponseClass() {
         return EventCollectionRepresentation.class;
+    }
+
+    @Override
+    protected PagedEventCollectionRepresentation wrap(EventCollectionRepresentation collection) {
+        return new PagedEventCollectionRepresentation(collection, this);
     }
 }

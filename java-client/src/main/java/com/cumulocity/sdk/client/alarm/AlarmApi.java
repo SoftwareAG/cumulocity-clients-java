@@ -21,9 +21,7 @@
 package com.cumulocity.sdk.client.alarm;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -65,7 +63,7 @@ public interface AlarmApi {
      * @return collection of alarms with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<AlarmCollectionRepresentation> getAlarms() throws SDKException;
+    AlarmCollection getAlarms() throws SDKException;
 
     /**
      * Gets alarms from the platform based on the specified filter
@@ -74,7 +72,7 @@ public interface AlarmApi {
      * @return collection of alarms matched by the filter with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<AlarmCollectionRepresentation> getAlarmsByFilter(AlarmFilter filter) throws SDKException;
+    AlarmCollection getAlarmsByFilter(AlarmFilter filter) throws SDKException;
     
     /**
      * Updates an alarm in the platform.

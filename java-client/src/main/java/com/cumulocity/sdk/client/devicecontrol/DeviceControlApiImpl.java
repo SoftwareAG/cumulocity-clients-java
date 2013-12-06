@@ -26,9 +26,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.rest.representation.operation.DeviceControlRepresentation;
-import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -67,7 +65,7 @@ public class DeviceControlApiImpl implements DeviceControlApi {
     }
 
     @Override
-    public PagedCollectionResource<OperationCollectionRepresentation> getOperations() throws SDKException {
+    public OperationCollection getOperations() throws SDKException {
         String url = getSelfUri();
         return new OperationCollectionImpl(restConnector, url, pageSize);
     }
@@ -99,7 +97,7 @@ public class DeviceControlApiImpl implements DeviceControlApi {
     }
 
     @Override
-    public PagedCollectionResource<OperationCollectionRepresentation> getOperationsByFilter(OperationFilter filter) throws SDKException {
+    public OperationCollection getOperationsByFilter(OperationFilter filter) throws SDKException {
         if (filter == null) {
             return getOperations();
         }

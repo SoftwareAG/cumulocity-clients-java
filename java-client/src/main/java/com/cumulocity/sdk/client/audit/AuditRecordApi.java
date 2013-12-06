@@ -21,9 +21,7 @@
 package com.cumulocity.sdk.client.audit;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -55,7 +53,7 @@ public interface AuditRecordApi {
      * @return collection of audit records with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecords() throws SDKException;
+    AuditRecordCollection getAuditRecords() throws SDKException;
 
     /**
      * Gets audit records from the platform based on the specified filter
@@ -64,5 +62,5 @@ public interface AuditRecordApi {
      * @return collection of audit records matched by the filter with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<AuditRecordCollectionRepresentation> getAuditRecordsByFilter(AuditRecordFilter filter) throws SDKException;
+    AuditRecordCollection getAuditRecordsByFilter(AuditRecordFilter filter) throws SDKException;
 }

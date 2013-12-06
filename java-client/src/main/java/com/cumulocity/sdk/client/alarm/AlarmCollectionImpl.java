@@ -23,10 +23,18 @@ package com.cumulocity.sdk.client.alarm;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
+import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class AlarmCollectionImpl extends PagedCollectionResourceImpl<AlarmCollectionRepresentation> {
+public class AlarmCollectionImpl
+        extends PagedCollectionResourceImpl<AlarmRepresentation, AlarmCollectionRepresentation, PagedAlarmCollectionRepresentation>
+        implements AlarmCollection {
+
+    public AlarmCollectionImpl(RestConnector restConnector, String url, int pageSize) {
+        super(restConnector, url, pageSize);
+    }
+
     @Override
     protected CumulocityMediaType getMediaType() {
         return AlarmMediaType.ALARM_COLLECTION;
@@ -37,7 +45,8 @@ public class AlarmCollectionImpl extends PagedCollectionResourceImpl<AlarmCollec
         return AlarmCollectionRepresentation.class;
     }
 
-    public AlarmCollectionImpl(RestConnector restConnector, String url, int pageSize) {
-        super(restConnector, url, pageSize);
+    @Override
+    protected PagedAlarmCollectionRepresentation wrap(AlarmCollectionRepresentation collection) {
+        return new PagedAlarmCollectionRepresentation(collection, this);
     }
 }

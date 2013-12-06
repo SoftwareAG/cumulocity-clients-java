@@ -37,7 +37,6 @@ import org.mockito.MockitoAnnotations;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResource;
@@ -131,11 +130,11 @@ public class InventoryApiImplTest {
     @Test
     public void shouldGetMos() throws SDKException {
         // Given
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector,
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector,
                 INVENTORY_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjects();
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjects();
 
         // Then 
         assertThat(result, is(expected));
@@ -145,12 +144,12 @@ public class InventoryApiImplTest {
     public void shouldGetMosByEmptyFilter() throws SDKException {
         // Given
         when(urlProcessor.replaceOrAddQueryParam(INVENTORY_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(INVENTORY_COLLECTION_URL);
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector,
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector,
                 INVENTORY_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
         InventoryFilter filter = new InventoryFilter();
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));
@@ -164,10 +163,10 @@ public class InventoryApiImplTest {
         inventoryRepresentation.setManagedObjectsForType(TEMPLATE_URL);
         String moByTypeUrl = INVENTORY_COLLECTION_URL + "?type=" + myType;
         when(urlProcessor.replaceOrAddQueryParam(INVENTORY_COLLECTION_URL, filter.getQueryParams())).thenReturn(moByTypeUrl);
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> expected = new ManagedObjectCollectionImpl(restConnector, moByTypeUrl, DEFAULT_PAGE_SIZE);
+        ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, moByTypeUrl, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<ManagedObjectCollectionRepresentation> result = inventoryApiResource.getManagedObjectsByFilter(filter);
+        ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
         // Then 
         assertThat(result, is(expected));

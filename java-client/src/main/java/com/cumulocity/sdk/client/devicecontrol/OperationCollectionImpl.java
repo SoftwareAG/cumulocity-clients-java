@@ -23,12 +23,13 @@ package com.cumulocity.sdk.client.devicecontrol;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
+import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class OperationCollectionImpl extends PagedCollectionResourceImpl<OperationCollectionRepresentation> implements
-        PagedCollectionResource<OperationCollectionRepresentation> {
+public class OperationCollectionImpl
+        extends PagedCollectionResourceImpl<OperationRepresentation, OperationCollectionRepresentation, PagedOperationCollectionRepresentation>
+        implements OperationCollection {
 
     public OperationCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -44,4 +45,8 @@ public class OperationCollectionImpl extends PagedCollectionResourceImpl<Operati
         return OperationCollectionRepresentation.class;
     }
 
+    @Override
+    protected PagedOperationCollectionRepresentation wrap(OperationCollectionRepresentation collection) {
+        return new PagedOperationCollectionRepresentation(collection, this);
+    }
 }

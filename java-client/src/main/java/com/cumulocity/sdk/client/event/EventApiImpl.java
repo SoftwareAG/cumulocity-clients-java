@@ -23,11 +23,9 @@ package com.cumulocity.sdk.client.event;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -60,7 +58,7 @@ public class EventApiImpl implements EventApi {
     }
 
     @Override
-    public PagedCollectionResource<EventCollectionRepresentation> getEvents() throws SDKException {
+    public EventCollection getEvents() throws SDKException {
         String url = getSelfUri();
         return new EventCollectionImpl(restConnector, url, pageSize);
     }
@@ -77,7 +75,7 @@ public class EventApiImpl implements EventApi {
     }
 
     @Override
-    public PagedCollectionResource<EventCollectionRepresentation> getEventsByFilter(EventFilter filter) throws SDKException {
+    public EventCollection getEventsByFilter(EventFilter filter) throws SDKException {
         if (filter == null) {
             return getEvents();
         }

@@ -132,11 +132,11 @@ public class AlarmApiImplTest {
     @Test
     public void shouldRetrieveAlarmCollectionResource() throws SDKException {
         // Given
-        PagedCollectionResource<AlarmCollectionRepresentation> expected = new AlarmCollectionImpl(restConnector, ALARM_COLLECTION_URL,
+        AlarmCollection expected = new AlarmCollectionImpl(restConnector, ALARM_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
         //When
-        PagedCollectionResource<AlarmCollectionRepresentation> alarmCollection = alarmApi.getAlarms();
+        AlarmCollection alarmCollection = alarmApi.getAlarms();
 
         //Then
         assertThat(alarmCollection, is(expected));
@@ -166,7 +166,7 @@ public class AlarmApiImplTest {
         AlarmCollectionImpl expected = new AlarmCollectionImpl(restConnector, alarmsByStatusUrl, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<AlarmCollectionRepresentation> alarms = alarmApi.getAlarmsByFilter(alarmFilter);
+        AlarmCollection alarms = alarmApi.getAlarmsByFilter(alarmFilter);
 
         // Then
         assertThat((AlarmCollectionImpl) alarms, is(expected));
@@ -176,11 +176,11 @@ public class AlarmApiImplTest {
     public void shouldGetCollectionByEmptyFilter() throws Exception {
         // Given
         when(urlProcessor.replaceOrAddQueryParam(ALARM_COLLECTION_URL, Collections.<String,String>emptyMap())).thenReturn(ALARM_COLLECTION_URL);
-        PagedCollectionResource<AlarmCollectionRepresentation> expected = new AlarmCollectionImpl(restConnector, ALARM_COLLECTION_URL,
+        AlarmCollection expected = new AlarmCollectionImpl(restConnector, ALARM_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<AlarmCollectionRepresentation> alarms = alarmApi.getAlarmsByFilter(new AlarmFilter());
+        AlarmCollection alarms = alarmApi.getAlarmsByFilter(new AlarmFilter());
 
         // Then
         assertThat(alarms, is(expected));

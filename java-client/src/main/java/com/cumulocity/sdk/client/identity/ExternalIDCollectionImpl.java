@@ -22,13 +22,14 @@ package com.cumulocity.sdk.client.identity;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
+import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
 
-public class ExternalIDCollectionImpl extends PagedCollectionResourceImpl<ExternalIDCollectionRepresentation> implements
-        PagedCollectionResource<ExternalIDCollectionRepresentation> {
+public class ExternalIDCollectionImpl
+        extends PagedCollectionResourceImpl<ExternalIDRepresentation, ExternalIDCollectionRepresentation, PagedExternalIDCollectionRepresentation>
+        implements ExternalIDCollection {
 
     public ExternalIDCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -42,5 +43,10 @@ public class ExternalIDCollectionImpl extends PagedCollectionResourceImpl<Extern
     @Override
     protected Class<ExternalIDCollectionRepresentation> getResponseClass() {
         return ExternalIDCollectionRepresentation.class;
+    }
+
+    @Override
+    protected PagedExternalIDCollectionRepresentation wrap(ExternalIDCollectionRepresentation collection) {
+        return new PagedExternalIDCollectionRepresentation(collection, this);
     }
 }

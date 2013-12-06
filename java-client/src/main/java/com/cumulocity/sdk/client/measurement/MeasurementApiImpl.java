@@ -23,7 +23,6 @@ package com.cumulocity.sdk.client.measurement;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
@@ -72,7 +71,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
 
     @Override
-    public PagedCollectionResource<MeasurementCollectionRepresentation> getMeasurementsByFilter(MeasurementFilter filter)
+    public MeasurementCollection getMeasurementsByFilter(MeasurementFilter filter)
             throws SDKException {
         if (filter == null) {
             return getMeasurements();
@@ -82,7 +81,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
 
     @Override
-    public PagedCollectionResource<MeasurementCollectionRepresentation> getMeasurements() throws SDKException {
+    public MeasurementCollection getMeasurements() throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf();
         return new MeasurementCollectionImpl(restConnector, url, pageSize);
     }

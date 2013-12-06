@@ -25,15 +25,8 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRefe
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,8 +39,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import c8y.ThreePhaseElectricitySensor;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
@@ -57,6 +48,8 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+
+import c8y.ThreePhaseElectricitySensor;
 
 public class InventoryIT extends JavaSdkITBase {
 
@@ -332,14 +325,14 @@ public class InventoryIT extends JavaSdkITBase {
         }
 
         // When
-        PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> refCollection = inventory.getManagedObject(parent.getId()).getChildDevices();
+        ManagedObjectReferenceCollection refCollection = inventory.getManagedObject(parent.getId()).getChildDevices();
 
         // Then
         assertCollectionPaged(refCollection);
 
     }
 
-    private void assertCollectionPaged(PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> refCollection) throws SDKException {
+    private void assertCollectionPaged(ManagedObjectReferenceCollection refCollection) throws SDKException {
         assertThat(refCollection.get().getReferences().size(), is(platform.getPageSize()));
         assertThat(refCollection.get().getPageStatistics().getPageSize(), is(platform.getPageSize()));
         assertThat(refCollection.get().getPageStatistics().getCurrentPage(), is(1));
@@ -400,7 +393,7 @@ public class InventoryIT extends JavaSdkITBase {
         }
 
         // When
-        PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> refCollection = inventory.getManagedObject(parent.getId()).getChildAssets();
+        ManagedObjectReferenceCollection refCollection = inventory.getManagedObject(parent.getId()).getChildAssets();
 
         // Then
         assertCollectionPaged(refCollection);

@@ -114,11 +114,11 @@ public class MeasurementApiImplTest {
     @Test
     public void shouldReturnMeasurements() throws SDKException {
         // Given
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector,
+        MeasurementCollection expected = new MeasurementCollectionImpl(restConnector,
                 MEASUREMENT_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurements();
+        MeasurementCollection result = measurementApi.getMeasurements();
 
         // Then
         assertThat(result, is(expected));
@@ -128,11 +128,11 @@ public class MeasurementApiImplTest {
     public void shouldReturnMeasurementsByEmptyFilter() throws SDKException {
         // Given
         when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(MEASUREMENT_COLLECTION_URL);
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector,
+        MeasurementCollection expected = new MeasurementCollectionImpl(restConnector,
                 MEASUREMENT_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi
+        MeasurementCollection result = measurementApi
                 .getMeasurementsByFilter(new MeasurementFilter());
 
         // Then
@@ -147,11 +147,11 @@ public class MeasurementApiImplTest {
         String measurementsByTypeUrl = MEASUREMENT_COLLECTION_URL + "?type=" + TYPE;
         when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, filter.getQueryParams())).thenReturn(measurementsByTypeUrl);
 
-        PagedCollectionResource<MeasurementCollectionRepresentation> expected = new MeasurementCollectionImpl(restConnector, measurementsByTypeUrl,
+        MeasurementCollection expected = new MeasurementCollectionImpl(restConnector, measurementsByTypeUrl,
                 DEAFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<MeasurementCollectionRepresentation> result = measurementApi.getMeasurementsByFilter(filter);
+        MeasurementCollection result = measurementApi.getMeasurementsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));

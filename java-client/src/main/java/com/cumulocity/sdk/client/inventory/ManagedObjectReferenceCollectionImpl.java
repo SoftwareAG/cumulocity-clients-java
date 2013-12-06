@@ -22,13 +22,14 @@ package com.cumulocity.sdk.client.inventory;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
-import com.cumulocity.sdk.client.PagedCollectionResource;
+import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.sdk.client.PagedCollectionResourceImpl;
 import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.rest.representation.inventory.*;
 
-public class ManagedObjectReferenceCollectionImpl extends PagedCollectionResourceImpl<ManagedObjectReferenceCollectionRepresentation> implements
-        PagedCollectionResource<ManagedObjectReferenceCollectionRepresentation> {
+public class ManagedObjectReferenceCollectionImpl
+        extends PagedCollectionResourceImpl<ManagedObjectReferenceRepresentation, ManagedObjectReferenceCollectionRepresentation, PagedManagedObjectReferenceCollectionRepresentation>
+        implements ManagedObjectReferenceCollection {
 
     public ManagedObjectReferenceCollectionImpl(RestConnector restConnector, String url, int pageSize) {
         super(restConnector, url, pageSize);
@@ -42,5 +43,10 @@ public class ManagedObjectReferenceCollectionImpl extends PagedCollectionResourc
     @Override
     protected Class<ManagedObjectReferenceCollectionRepresentation> getResponseClass() {
         return ManagedObjectReferenceCollectionRepresentation.class;
+    }
+
+    @Override
+    protected PagedManagedObjectReferenceCollectionRepresentation wrap(ManagedObjectReferenceCollectionRepresentation collection) {
+        return new PagedManagedObjectReferenceCollectionRepresentation(collection, this);
     }
 }

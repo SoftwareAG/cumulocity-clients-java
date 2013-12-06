@@ -21,6 +21,7 @@
 package com.cumulocity.sdk.client.inventory;
 
 import com.cumulocity.sdk.client.Param;
+import com.cumulocity.sdk.client.QueryParam;
 
 public enum InventoryParam implements Param {
 
@@ -36,5 +37,21 @@ public enum InventoryParam implements Param {
 
     public String getName() {
         return paramName;
+    }
+
+    public static QueryParam withParents() {
+        return new QueryParam(WITH_PARENTS, Boolean.TRUE.toString());
+    }
+
+    public static QueryParam withoutParents() {
+        return new QueryParam(WITH_PARENTS, Boolean.FALSE.toString());
+    }
+
+    public static QueryParam withChildrenNames() {
+        return new QueryParam(SKIP_CHILDREN_NAMES, Boolean.FALSE.toString());
+    }
+
+    public static QueryParam withoutChildrenNames() {
+        return new QueryParam(SKIP_CHILDREN_NAMES, Boolean.TRUE.toString());
     }
 }

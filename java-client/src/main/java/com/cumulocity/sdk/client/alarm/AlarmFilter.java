@@ -84,9 +84,21 @@ public class AlarmFilter extends Filter {
      * @param status status of the alarm(s)
      * @return the alarm filter with {@code status} set
      */
-    public AlarmFilter byStatus(CumulocityAlarmStatuses status) {
-        this.status = status.toString();
+    public AlarmFilter byStatus(CumulocityAlarmStatuses... statuses) {
+    	if(statuses == null){
+    		this.status = null;
+    		return this;
+    	}
+    	StringBuilder tmp = new StringBuilder();
+		for (int index = 0; index <= statuses.length - 1; index++) {
+			tmp.append(statuses[index].toString());
+			if(index < statuses.length -1){
+				tmp.append(",");	
+			}
+		}
+		this.status = tmp.toString();
         return this;
+
     }
 
     /**

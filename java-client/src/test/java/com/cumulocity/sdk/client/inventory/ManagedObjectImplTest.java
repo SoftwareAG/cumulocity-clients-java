@@ -19,6 +19,8 @@
  */
 package com.cumulocity.sdk.client.inventory;
 
+import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE;
+import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.verify;
@@ -83,7 +85,7 @@ public class ManagedObjectImplTest {
         //Given 
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
         ManagedObjectReferenceRepresentation newChildDevice = new ManagedObjectReferenceRepresentation();
-        when(restConnector.post(CHILD_DEVICES_URL, InventoryMediaType.MANAGED_OBJECT_REFERENCE, newChildDevice)).thenReturn(created);
+        when(restConnector.post(CHILD_DEVICES_URL, MANAGED_OBJECT_REFERENCE, newChildDevice)).thenReturn(created);
 
         // when 
         ManagedObjectReferenceRepresentation result = managedObject.addChildDevice(newChildDevice);
@@ -97,9 +99,8 @@ public class ManagedObjectImplTest {
         //Given
         GId gid = new GId("deviceId");
         ManagedObjectReferenceRepresentation retrieved = new ManagedObjectReferenceRepresentation();
-        when(
-                restConnector.get(CHILD_DEVICES_URL + "/deviceId", InventoryMediaType.MANAGED_OBJECT_REFERENCE,
-                        ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
+        when(restConnector.get(CHILD_DEVICES_URL + "/deviceId", MANAGED_OBJECT_REFERENCE,
+                ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
 
         // when 
         ManagedObjectReferenceRepresentation result = managedObject.getChildDevice(gid);
@@ -135,16 +136,16 @@ public class ManagedObjectImplTest {
     @Test
     public void testGetAllChildDevice() throws SDKException {
         //Given
-        ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
-        when(
-                restConnector.get(CHILD_DEVICES_URL+ "?pageSize=" + DEFAULT_PAGE_SIZE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
-                        ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
+        ManagedObjectReferenceCollectionRepresentation retrieved =
+                new ManagedObjectReferenceCollectionRepresentation();
+        when(restConnector.get(CHILD_DEVICES_URL+ "?pageSize=" + DEFAULT_PAGE_SIZE, MANAGED_OBJECT_REFERENCE_COLLECTION,
+                ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
         // when 
         ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildDevices().get();
 
         // then
-        assertThat(result, sameInstance(retrieved));
+        assertThat(result.getReferences(), sameInstance(retrieved.getReferences()));
     }
 
     @Test
@@ -163,16 +164,14 @@ public class ManagedObjectImplTest {
     public void testGetAllChildAssets() throws Exception {
         //Given 
         ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
-        when(
-                restConnector.get(CHILD_ASSETS_URL+ "?pageSize=" +DEFAULT_PAGE_SIZE, InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION,
-                        ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
+        when(restConnector.get(CHILD_ASSETS_URL+ "?pageSize=" +DEFAULT_PAGE_SIZE, MANAGED_OBJECT_REFERENCE_COLLECTION,
+                ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
         // when 
         ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildAssets().get();
 
         // then
-        assertThat(result, sameInstance(retrieved));
-
+        assertThat(result.getReferences(), sameInstance(retrieved.getReferences()));
     }
 
     @Test
@@ -180,9 +179,8 @@ public class ManagedObjectImplTest {
         //Given
         GId gid = new GId("assetId");
         ManagedObjectReferenceRepresentation retrieved = new ManagedObjectReferenceRepresentation();
-        when(
-                restConnector.get(CHILD_ASSETS_URL + "/assetId", InventoryMediaType.MANAGED_OBJECT_REFERENCE,
-                        ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
+        when(restConnector.get(CHILD_ASSETS_URL + "/assetId", MANAGED_OBJECT_REFERENCE,
+                ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
 
         // when 
         ManagedObjectReferenceRepresentation result = managedObject.getChildAsset(gid);
@@ -208,7 +206,7 @@ public class ManagedObjectImplTest {
         //Given 
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
         ManagedObjectReferenceRepresentation newChildAsset = new ManagedObjectReferenceRepresentation();
-        when(restConnector.post(CHILD_ASSETS_URL, InventoryMediaType.MANAGED_OBJECT_REFERENCE, newChildAsset)).thenReturn(created);
+        when(restConnector.post(CHILD_ASSETS_URL, MANAGED_OBJECT_REFERENCE, newChildAsset)).thenReturn(created);
 
         // when 
         ManagedObjectReferenceRepresentation result = managedObject.addChildAssets(newChildAsset);

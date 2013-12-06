@@ -103,11 +103,11 @@ public class AuditRecordApiImplTest {
     @Test
     public void shouldReturnAuditRecords() throws Exception {
         // Given
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector,
+        AuditRecordCollection expected = new AuditRecordCollectionImpl(restConnector,
                 AUDIT_RECORDS_URL, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecords();
+        AuditRecordCollection result = auditRecordApi.getAuditRecords();
 
         // Then
         assertThat(result, is(expected));
@@ -117,11 +117,11 @@ public class AuditRecordApiImplTest {
     public void shouldReturnAuditRecordsByEmptyFilter() throws Exception {
         // Given
         when(urlProcessor.replaceOrAddQueryParam(AUDIT_RECORDS_URL, Collections.<String, String>emptyMap())).thenReturn(AUDIT_RECORDS_URL);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector,
+        AuditRecordCollection expected = new AuditRecordCollectionImpl(restConnector,
                 AUDIT_RECORDS_URL, DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi
+        AuditRecordCollection result = auditRecordApi
                 .getAuditRecordsByFilter(new AuditRecordFilter());
 
         // Then
@@ -136,11 +136,11 @@ public class AuditRecordApiImplTest {
         auditRecordsApiRepresentation.setAuditRecordsForType(TEMPLATE_URL);
         String auditsByTypeUrl = AUDIT_RECORDS_URL + "?type=" + myType;
         when(urlProcessor.replaceOrAddQueryParam(AUDIT_RECORDS_URL, filter.getQueryParams())).thenReturn(auditsByTypeUrl);
-        PagedCollectionResource<AuditRecordCollectionRepresentation> expected = new AuditRecordCollectionImpl(restConnector, auditsByTypeUrl,
+        AuditRecordCollection expected = new AuditRecordCollectionImpl(restConnector, auditsByTypeUrl,
                 DEFAULT_PAGE_SIZE);
 
         // When
-        PagedCollectionResource<AuditRecordCollectionRepresentation> result = auditRecordApi.getAuditRecordsByFilter(filter);
+        AuditRecordCollection result = auditRecordApi.getAuditRecordsByFilter(filter);
 
         // Then
         assertThat(result, is(expected));

@@ -21,13 +21,9 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.Subscriber;
-import com.cumulocity.sdk.client.notification.Subscription;
-import com.cumulocity.sdk.client.notification.SubscriptionListener;
 
 /**
  * API for creating, updating and retrieving operations from the platform.
@@ -68,7 +64,7 @@ public interface DeviceControlApi {
      * @return collection of operations with paging functionality
      * @throws SDKException if the query failed
      */
-    PagedCollectionResource<OperationCollectionRepresentation> getOperations() throws SDKException;
+    OperationCollection getOperations() throws SDKException;
 
     /**
      * Gets the operations from the platform based on specified filter. Queris based on [{@code status}, {@code deviceId}, {@code agentId}]
@@ -81,7 +77,7 @@ public interface DeviceControlApi {
      * @throws IllegalArgumentException in case of queries based on [{@code status}, {@code deviceId}, {@code agentId}] or [{@code
      *                                  deviceId}, {@code agentId}]
      */
-    PagedCollectionResource<OperationCollectionRepresentation> getOperationsByFilter(OperationFilter filter) throws SDKException;
+    OperationCollection getOperationsByFilter(OperationFilter filter) throws SDKException;
     
     /**
      * Gets the notifications subscriber, which allows to receive newly created operations for agent.

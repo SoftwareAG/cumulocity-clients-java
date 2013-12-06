@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 
-public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepresentation> implements
-        PagedCollectionResource<T> {
+public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRepresentation<T>, I extends C>
+        implements PagedCollectionResource<T, I> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
 
@@ -46,7 +46,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
 
     protected abstract CumulocityMediaType getMediaType();
 
-    protected abstract Class<T> getResponseClass();
+    protected abstract Class<C> getResponseClass();
 
     public PagedCollectionResourceImpl(RestConnector restConnector, String url, int pageSize) {
         this.restConnector = restConnector;
@@ -55,7 +55,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     }
 
     @Override
-    public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException {
+    public I getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber) throws SDKException {
         if (collectionRepresentation == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
@@ -64,7 +64,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     }
 
     @Override
-    public T getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException {
+    public I getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException {
 
         if (collectionRepresentation == null || collectionRepresentation.getSelf() == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
@@ -80,12 +80,14 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
         return getCollection(url);
     }
 
-    private T getCollection(String url) throws SDKException {
-        return restConnector.get(url, getMediaType(), getResponseClass());
+    protected I getCollection(String url) throws SDKException {
+        return wrap(restConnector.get(url, getMediaType(), getResponseClass()));
     }
 
+    protected abstract I wrap(C collection);
+
     @Override
-    public T getNextPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException {
+    public I getNextPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException {
         if (collectionRepresentation == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
@@ -96,7 +98,7 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     }
 
     @Override
-    public T getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException {
+    public I getPreviousPage(BaseCollectionRepresentation collectionRepresentation) throws SDKException {
         if (collectionRepresentation == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
@@ -107,12 +109,12 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     }
 
     @Override
-    public T get(QueryParam... queryParams) throws SDKException {
+    public I get(QueryParam... queryParams) throws SDKException {
         return get(pageSize, queryParams);
     }
 
     @Override
-    public T get(int pageSize, QueryParam... queryParams) throws SDKException {
+    public I get(int pageSize, QueryParam... queryParams) throws SDKException {
         Map<String, String> params = prepareGetParams(pageSize);
         for (QueryParam param : queryParams) {
             params.put(param.getKey().getName(), param.getValue());
@@ -120,9 +122,9 @@ public abstract class PagedCollectionResourceImpl<T extends BaseCollectionRepres
     	return get(params);
     }
     
-    protected T get(Map<String, String> params) throws SDKException {
+    protected I get(Map<String, String> params) throws SDKException {
     	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, params);
-    	return restConnector.get(urlToCall, getMediaType(), getResponseClass());
+    	return wrap(restConnector.get(urlToCall, getMediaType(), getResponseClass()));
     }
 
 	protected Map<String, String> prepareGetParams(int pageSize) {
