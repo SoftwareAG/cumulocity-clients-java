@@ -16,6 +16,8 @@ public class PagedAlarmCollectionRepresentation extends AlarmCollectionRepresent
         setAlarms(collection.getAlarms());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
         this.collectionResource = collectionResource;
     }
 

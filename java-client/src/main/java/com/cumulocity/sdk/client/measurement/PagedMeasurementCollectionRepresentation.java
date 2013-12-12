@@ -14,10 +14,12 @@ public class PagedMeasurementCollectionRepresentation extends MeasurementCollect
 
     public PagedMeasurementCollectionRepresentation(MeasurementCollectionRepresentation collection,
             PagedCollectionResource<MeasurementRepresentation, ? extends MeasurementCollectionRepresentation> collectionResource) {
-        this.collectionResource = collectionResource;
         setMeasurements(collection.getMeasurements());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
+        this.collectionResource = collectionResource;
     }
 
     @Override

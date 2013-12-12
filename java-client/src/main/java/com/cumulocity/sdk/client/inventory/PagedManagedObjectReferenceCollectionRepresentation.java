@@ -14,10 +14,12 @@ public class PagedManagedObjectReferenceCollectionRepresentation extends Managed
 
     public PagedManagedObjectReferenceCollectionRepresentation(ManagedObjectReferenceCollectionRepresentation collection,
             PagedCollectionResource<ManagedObjectReferenceRepresentation, ? extends ManagedObjectReferenceCollectionRepresentation> collectionResource) {
-        this.collectionResource = collectionResource;
         setReferences(collection.getReferences());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
+        this.collectionResource = collectionResource;
     }
 
     @Override
