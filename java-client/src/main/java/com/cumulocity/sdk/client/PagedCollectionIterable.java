@@ -1,7 +1,6 @@
 package com.cumulocity.sdk.client;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
 
@@ -35,7 +34,18 @@ public class PagedCollectionIterable<T, C extends BaseCollectionRepresentation<T
 
     @Override
     public boolean hasNext() {
-        return !reachedLimit() && (iterator.hasNext() || collection.getNext() != null);
+        if (reachedLimit()) {
+            return false;
+        }
+        if (iterator.hasNext()) {
+            return true;
+        }
+        if (collection.getNext() == null) {
+            return false;
+        }
+        collection = collectionResource.getNextPage(collection);
+        iterator = collection.iterator();
+        return iterator.hasNext();
     }
 
     public boolean reachedLimit() {
@@ -44,15 +54,8 @@ public class PagedCollectionIterable<T, C extends BaseCollectionRepresentation<T
 
     @Override
     public T next() {
-        if (iterator.hasNext()) {
-            counter++;
-            return iterator.next();
-        } if (collection.getNext() != null) {
-            collection = collectionResource.getNextPage(collection);
-            iterator = collection.iterator();
-            return next();
-        }
-        throw new NoSuchElementException("No more elements in PagedCollectionIterable!");
+        counter++;
+        return iterator.next();
     }
 
     @Override
