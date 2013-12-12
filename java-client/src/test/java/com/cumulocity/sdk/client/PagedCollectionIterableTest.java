@@ -1,9 +1,11 @@
 package com.cumulocity.sdk.client;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class PagedCollectionIterableTest {
 
 //    List<String> strings = asList("one", "two", "three", "four");
