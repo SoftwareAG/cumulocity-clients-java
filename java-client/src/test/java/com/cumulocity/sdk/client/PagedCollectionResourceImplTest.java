@@ -44,8 +44,7 @@ import com.sun.jersey.api.client.ClientResponse;
 
 public class PagedCollectionResourceImplTest {
 
-    private static final Class<TestCollectionRepresentation<Object>> CLAZZ =
-            (Class<TestCollectionRepresentation<Object>>) new TestCollectionRepresentation<Object>().getClass();
+    private static final Class<TestCollectionRepresentation> CLAZZ = TestCollectionRepresentation.class;
 
     private static final CumulocityMediaType MEDIA_TYPE = CumulocityMediaType.ERROR_MESSAGE;
 
@@ -56,7 +55,7 @@ public class PagedCollectionResourceImplTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    PagedCollectionResource<Object, TestCollectionRepresentation<Object>> target;
+    PagedCollectionResource<Object, TestCollectionRepresentation> target;
 
     @Mock
     ClientResponse clientResponse;
@@ -268,7 +267,7 @@ public class PagedCollectionResourceImplTest {
     @Test
     public void shouldEqualsIfPageSizeAndUrlAndMediaTypeAndRepresentationClassEqual() throws Exception {
         // Given
-        PagedCollectionResource<Object, TestCollectionRepresentation<Object>> equalObject = createPagedCollectionResource(
+        PagedCollectionResource<Object, TestCollectionRepresentation> equalObject = createPagedCollectionResource(
                 restConnector, URL, PAGE_SIZE, MEDIA_TYPE, CLAZZ);
 
         //When
@@ -282,7 +281,7 @@ public class PagedCollectionResourceImplTest {
     public void shouldNotEqualsIfAnyOfParamsIsDifferent() throws Exception {
         // Given
         String differentUrl = "differentUrl";
-        PagedCollectionResource<Object, TestCollectionRepresentation<Object>> equalObject = createPagedCollectionResource(restConnector, differentUrl,
+        PagedCollectionResource<Object, TestCollectionRepresentation> equalObject = createPagedCollectionResource(restConnector, differentUrl,
                 PAGE_SIZE, MEDIA_TYPE, CLAZZ);
 
         //When
@@ -324,16 +323,16 @@ public class PagedCollectionResourceImplTest {
         assertThat(hashCode, is(expectedHashCode));
     }
 
-    private PagedCollectionResource<Object, TestCollectionRepresentation<Object>> createPagedCollectionResource(RestConnector restConnector,
-            String url, int pageSize, final CumulocityMediaType mediaType, final Class<TestCollectionRepresentation<Object>> clazz) {
-        return new PagedCollectionResourceImpl<Object, TestCollectionRepresentation<Object>, TestCollectionRepresentation<Object>>(restConnector, url, pageSize) {
+    private PagedCollectionResource<Object, TestCollectionRepresentation> createPagedCollectionResource(RestConnector restConnector,
+            String url, int pageSize, final CumulocityMediaType mediaType, final Class<TestCollectionRepresentation> clazz) {
+        return new PagedCollectionResourceImpl<Object, TestCollectionRepresentation, TestCollectionRepresentation>(restConnector, url, pageSize) {
             @Override
             protected CumulocityMediaType getMediaType() {
                 return mediaType;
             }
 
             @Override
-            protected Class<TestCollectionRepresentation<Object>> getResponseClass() {
+            protected Class<TestCollectionRepresentation> getResponseClass() {
                 return clazz;
             }
 
