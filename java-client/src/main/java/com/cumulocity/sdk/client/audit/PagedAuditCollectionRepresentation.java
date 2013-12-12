@@ -14,10 +14,12 @@ public class PagedAuditCollectionRepresentation extends AuditRecordCollectionRep
 
     public PagedAuditCollectionRepresentation(AuditRecordCollectionRepresentation collection,
             PagedCollectionResource<AuditRecordRepresentation, ? extends AuditRecordCollectionRepresentation> collectionResource) {
-        this.collectionResource = collectionResource;
         setAuditRecords(collection.getAuditRecords());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
+        this.collectionResource = collectionResource;
     }
 
     @Override

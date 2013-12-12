@@ -17,6 +17,8 @@ public class PagedOperationCollectionRepresentation extends OperationCollectionR
         setOperations(collection.getOperations());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
         this.collectionResource = collectionResource;
     }
 
