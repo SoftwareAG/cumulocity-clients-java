@@ -5,6 +5,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,11 +20,17 @@ import com.cumulocity.rest.representation.TestCollectionRepresentation;
 @RunWith(MockitoJUnitRunner.class)
 public class PagedCollectionIterableTest {
 
-    List<String> strings = asList("one", "two", "three", "four");
+    TestCollectionRepresentation<String> firstPage = new TestCollectionRepresentation<String>()
+            .withContents(asList("one", "two", "three", "four")).withNext("more");
 
-    List<String> moreStrings = asList("five", "six", "seven", "eight");
+    TestCollectionRepresentation<String> secondPage = new TestCollectionRepresentation<String>()
+            .withContents(asList("five", "six", "seven", "eight")).withNext("evenMore");
 
-    List<String> evenMoreStrings = asList("nine", "ten", "eleven", "twelve");
+    TestCollectionRepresentation<String> thirdPage = new TestCollectionRepresentation<String>()
+            .withContents(asList("nine", "ten", "eleven", "twelve"));
+
+    TestCollectionRepresentation<String> fourthPage = new TestCollectionRepresentation<String>()
+            .withContents(Collections.<String>emptyList());
 
     @Mock
     PagedCollectionResource<String, TestCollectionRepresentation<String>> stringsResource;
@@ -32,24 +39,33 @@ public class PagedCollectionIterableTest {
 
     @Before
     public void setUp() throws Exception {
-
+        pagedStrings = new PagedCollectionIterable<String, TestCollectionRepresentation<String>>(
+                stringsResource, firstPage);
     }
 
     @Test
     public void shouldIterateOverAllPages() throws Exception {
-        TestCollectionRepresentation<String> firstPage = new TestCollectionRepresentation<String>()
-                .withContents(strings).withNext("more");
-        TestCollectionRepresentation<String> secondPage = new TestCollectionRepresentation<String>()
-                .withContents(moreStrings).withNext("evenMore");
-        TestCollectionRepresentation<String> thirdPage = new TestCollectionRepresentation<String>()
-                .withContents(evenMoreStrings);
-
-        pagedStrings = new PagedCollectionIterable<String, TestCollectionRepresentation<String>>(
-                stringsResource, firstPage);
-
         when(stringsResource.getNextPage(any(TestCollectionRepresentation.class)))
                 .thenReturn(secondPage, thirdPage, null);
 
+        List<String> result = new LinkedList<String>();
+        for (String s : pagedStrings) {
+            result.add(s);
+        }
+
+        assertThat(result).hasSize(12);
+        assertThat(result).containsSequence(
+                "one", "two", "three", "four",
+                "five", "six", "seven", "eight",
+                "nine", "ten", "eleven", "twelve");
+    }
+
+    @Test
+    public void shouldIterateOverAllPagesEvenEmpty() throws Exception {
+        thirdPage.withNext("empty");
+
+        when(stringsResource.getNextPage(any(TestCollectionRepresentation.class)))
+                .thenReturn(secondPage, thirdPage, fourthPage, null);
 
         List<String> result = new LinkedList<String>();
         for (String s : pagedStrings) {
