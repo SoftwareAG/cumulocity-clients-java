@@ -16,6 +16,8 @@ public class PagedEventCollectionRepresentation extends EventCollectionRepresent
         setEvents(collection.getEvents());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
         this.collectionResource = collectionResource;
     }
 

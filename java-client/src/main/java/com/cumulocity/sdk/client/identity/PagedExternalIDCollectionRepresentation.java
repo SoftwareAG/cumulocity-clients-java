@@ -18,6 +18,8 @@ public class PagedExternalIDCollectionRepresentation extends ExternalIDCollectio
         setExternalIds(collection.getExternalIds());
         setPageStatistics(collection.getPageStatistics());
         setSelf(collection.getSelf());
+        setNext(collection.getNext());
+        setPrev(collection.getPrev());
     }
 
     @Override
