@@ -24,6 +24,7 @@ import static com.cumulocity.rest.representation.builder.RestRepresentationObjec
 import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentation.ALARM_REPRESENTATION;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
+import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildrenNames;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -51,6 +52,8 @@ public class AlarmIT extends JavaSdkITBase {
     private static final int UNPROCESSABLE = 422;
 
     private AlarmApi alarmApi;
+    
+    private int t = 0;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -165,9 +168,28 @@ public class AlarmIT extends JavaSdkITBase {
         AlarmCollectionRepresentation alarms = alarmApi.getAlarms().get();
 
         // Then
-        assertThat(alarms.getAlarms().size(), is(1));
+        assertThat(alarms.getAlarms().size(), is(2));
     }
+    
+    @Test
+    public void shouldReturnAllAlarms2() throws Exception {
+        // Given
+        ManagedObjectRepresentation source = mo1;
+        
+        for (int i = 0; i<20 ; i++) {
+            alarmApi.create(aSampleAlarm(source));
+        }
 
+        int resultNumber = 0;
+        Iterable<AlarmRepresentation> pager = alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(source.getId())).get().allPages();
+        for (AlarmRepresentation alarm : pager) {
+            System.out.println(resultNumber);
+            resultNumber++;
+        }
+
+        assertThat(resultNumber, is(20));
+    }
+    
     @Test
     public void shouldReturnNoAlarmWithUnmatchedFilter() throws Exception {
         // Given
@@ -194,7 +216,7 @@ public class AlarmIT extends JavaSdkITBase {
 
         // Then
         List<AlarmRepresentation> alarms = bySource.getAlarms();
-        assertThat(alarms.size(), is(equalTo(1)));
+        assertThat(alarms.size(), is(equalTo(2)));
     }
 
     @Test
@@ -209,7 +231,7 @@ public class AlarmIT extends JavaSdkITBase {
 
         // Then
         List<AlarmRepresentation> alarms = bySource.getAlarms();
-        assertThat(alarms.size(), is(equalTo(1)));
+        assertThat(alarms.size(), is(equalTo(2)));
         assertThat(alarms.get(0).getSource().getId(), is(mo1.getId()));
     }
 
@@ -313,7 +335,7 @@ public class AlarmIT extends JavaSdkITBase {
 
     private AlarmRepresentation aSampleAlarm(ManagedObjectRepresentation source) {
         return anAlarmRepresentationLike(ALARM_REPRESENTATION)
-                .withType("com_nsn_bts_TrxFaulty")
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("ACTIVE")
                 .withSeverity("major")
                 .withSource(source)
