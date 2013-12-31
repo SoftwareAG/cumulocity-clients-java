@@ -46,7 +46,7 @@ public class ManagedObjectReferenceCollectionRepresentationConverterTest extends
 
         JSONObject outputJSON = toJson(new ManagedObjectReferenceCollectionRepresentation());
         
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
     
     @Test
@@ -57,7 +57,7 @@ public class ManagedObjectReferenceCollectionRepresentationConverterTest extends
         
         JSONObject outputJSON = toJson(representation);
         
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
     
     @Test

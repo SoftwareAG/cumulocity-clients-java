@@ -32,7 +32,6 @@ import java.util.Date;
 import org.junit.Test;
 
 import com.cumulocity.me.model.idtype.GId;
-import com.cumulocity.me.rest.convert.JSONObjectMatcher;
 import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentation;
@@ -115,8 +114,9 @@ public class ManagedObjectRepresentationConverterTest extends BaseManagedObjectC
         JSONObject expectedJSON = minimalJsonManagedObjectRepresentation().withProperty(PROP_LAST_UPDATED, stringDate).build();
 
         JSONObject outputJSON = toJson(representation);
-
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        System.out.println(outputJSON);
+        System.out.println(expectedJSON);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class ManagedObjectRepresentationConverterTest extends BaseManagedObjectC
 
         JSONObject outputJSON = toJson(representation);
         
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
 
     @Override
