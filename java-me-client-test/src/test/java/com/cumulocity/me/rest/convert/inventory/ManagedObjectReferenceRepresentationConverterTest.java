@@ -25,7 +25,6 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.Test;
 
-import com.cumulocity.me.rest.convert.JSONObjectMatcher;
 import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONObject;
 import com.cumulocity.me.rest.representation.inventory.ManagedObjectReferenceRepresentation;
@@ -46,7 +45,7 @@ public class ManagedObjectReferenceRepresentationConverterTest extends BaseManag
         
         JSONObject outputJSON = toJson(representation);
         
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
     
     @Test

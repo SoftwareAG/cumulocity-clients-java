@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import com.cumulocity.me.lang.ArrayList;
 import com.cumulocity.me.lang.List;
-import com.cumulocity.me.rest.convert.JSONObjectMatcher;
 import com.cumulocity.me.rest.convert.base.BaseRepresentationConverter;
 import com.cumulocity.me.rest.json.JSONArray;
 import com.cumulocity.me.rest.json.JSONObject;
@@ -46,7 +45,7 @@ public class ManagedObjectCollectionRepresentationConverterTest extends BaseMana
 
         JSONObject outputJSON = toJson(representation);
 
-        assertThat(JSONObjectMatcher.aJSONObjectLike(expectedJSON).matches(outputJSON)).isEqualTo(true);
+        assertThat(outputJSON.toString()).isEqualTo(expectedJSON.toString());
     }
 
     @Test
