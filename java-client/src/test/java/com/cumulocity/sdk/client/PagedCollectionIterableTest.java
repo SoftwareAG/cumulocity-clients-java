@@ -78,4 +78,22 @@ public class PagedCollectionIterableTest {
                 "five", "six", "seven", "eight",
                 "nine", "ten", "eleven", "twelve");
     }
+
+    @Test
+    public void shouldIterateOverPagesWithLimit() throws Exception {
+        pagedStrings = new PagedCollectionIterable<String, TestCollectionRepresentation<String>>(
+                stringsResource, firstPage, 6);
+        when(stringsResource.getNextPage(any(TestCollectionRepresentation.class)))
+                .thenReturn(secondPage, thirdPage, null);
+
+        List<String> result = new LinkedList<String>();
+        for (String s : pagedStrings) {
+            result.add(s);
+        }
+
+        assertThat(result).hasSize(6);
+        assertThat(result).containsSequence(
+                "one", "two", "three", "four",
+                "five", "six");
+    }
 }
