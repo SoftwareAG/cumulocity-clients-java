@@ -49,7 +49,7 @@ public class PagedCollectionIterable<T, C extends BaseCollectionRepresentation<T
     }
 
     public boolean reachedLimit() {
-        return limit > 0 && counter < limit;
+        return limit > 0 && counter >= limit;
     }
 
     @Override
