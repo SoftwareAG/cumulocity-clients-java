@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
+import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.identity.IdentityApi;
@@ -43,5 +44,7 @@ public interface Platform {
     EventApi getEventApi() throws SDKException;
 
     AuditRecordApi getAuditRecordApi() throws SDKException;
+    
+    CepApi getCepApi() throws SDKException;
 
 }
