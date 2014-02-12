@@ -17,34 +17,23 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.cumulocity.sdk.client.cep;
 
-package com.cumulocity.sdk.client;
+import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
-import com.cumulocity.sdk.client.alarm.AlarmApi;
-import com.cumulocity.sdk.client.audit.AuditRecordApi;
-import com.cumulocity.sdk.client.cep.CepApi;
-import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
-import com.cumulocity.sdk.client.event.EventApi;
-import com.cumulocity.sdk.client.identity.IdentityApi;
-import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.measurement.MeasurementApi;
+public class CepApiImpl implements CepApi {
 
-public interface Platform {
 
-    InventoryApi getInventoryApi() throws SDKException;
+    private final PlatformParameters platformParameters;
 
-    IdentityApi getIdentityApi() throws SDKException;
+    public CepApiImpl(PlatformParameters platformParameters) {
+        this.platformParameters = platformParameters;
+    }
 
-    MeasurementApi getMeasurementApi() throws SDKException;
-
-    DeviceControlApi getDeviceControlApi() throws SDKException;
-
-    AlarmApi getAlarmApi() throws SDKException;
-
-    EventApi getEventApi() throws SDKException;
-
-    AuditRecordApi getAuditRecordApi() throws SDKException;
-    
-    CepApi getCepApi() throws SDKException;
+    @Override
+    public CepCustomNotificationsSubscriber getCustomNotificationsSubscriber() {
+        return new CepCustomNotificationsSubscriber(platformParameters);
+    }
 
 }
