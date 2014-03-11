@@ -36,6 +36,8 @@ import com.cumulocity.sdk.client.SDKException;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
+    private static final int CONNECTED_STATE_TIMEOUT = 30;
+
     final PlatformParameters paramters;
 
     private String endpoint;
@@ -72,7 +74,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private BayeuxClient openSession(final BayeuxClient bayeuxClient) throws SDKException {
         bayeuxClient.handshake();
-        boolean handshake = bayeuxClient.waitFor(TimeUnit.SECONDS.toMillis(10), State.CONNECTED);
+        boolean handshake = bayeuxClient.waitFor(TimeUnit.SECONDS.toMillis(CONNECTED_STATE_TIMEOUT), State.CONNECTED);
         if (!handshake) {
             throw new SDKException("unable to connect to server");
         }

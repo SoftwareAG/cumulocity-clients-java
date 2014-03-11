@@ -19,6 +19,10 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
@@ -31,6 +35,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
     private final BayeuxSessionProvider bayeuxSessionProvider;
+
+    private final Collection<SubscriptionRecord> subscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
 
     private volatile ClientSession session;
 
@@ -48,20 +54,23 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-        synchronized (this) {
-            if (!isConnected()) {
-                start();
-            }
-        }
-
+        ensureConnection();
         final ClientSessionChannel channel = getChannel(object);
-        final MessageListenerAdapter<T> listener = new MessageListenerAdapter<T>(handler, channel, object);
+        final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
-
-        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(listener, handler, metaSubscribeChannel, channel));
+        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(new SubscriptionRecord(object, handler) , listener, metaSubscribeChannel, channel));
         channel.subscribe(listener);
 
         return listener.getSubscription();
+    }
+
+    private void ensureConnection() {
+        synchronized (this) {
+            if (!isConnected()) {
+                start();
+                session.getChannel(ClientSessionChannel.META_HANDSHAKE).addListener(new ReconnectListener());
+            }
+        }
     }
 
     private boolean isConnected() {
@@ -77,6 +86,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
     @Override
     public void disconnect() {
         if (isConnected()) {
+            subscriptions.clear();
             session.disconnect();
             session = null;
         }
@@ -94,19 +104,46 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         }
     }
 
-    private final class SubscriptionSuccessListener implements MessageListener {
-        private final MessageListenerAdapter<T> listener;
+    private final class ReconnectListener implements MessageListener {
+        @Override
+        public void onMessage(ClientSessionChannel channel, Message message) {
+            for (SubscriptionRecord subscribed : subscriptions) {
+                subscribe(subscribed.getId(), subscribed.getListener());
+            }
+        }
+    }
 
-        private final SubscriptionListener<T, Message> handler;
+    private final class UnsubscribeListener implements MessageListener {
+        private final SubscriptionRecord subscribed;
+
+        public UnsubscribeListener(SubscriptionRecord subscribed) {
+            this.subscribed = subscribed;
+        }
+
+        @Override
+        public void onMessage(ClientSessionChannel channel, Message message) {
+            if (subscriptionNameResolver.apply(subscribed.getId()).equals(message.get(Message.SUBSCRIPTION_FIELD))
+                    && message.isSuccessful()) {
+                subscribed.remove();
+            }
+        }
+    }
+
+    private final class SubscriptionSuccessListener implements MessageListener {
+
+        private final MessageListenerAdapter listener;
 
         private final ClientSessionChannel metaSubscribeChannel;
 
         private final ClientSessionChannel channel;
 
-        private SubscriptionSuccessListener(MessageListenerAdapter<T> listener, SubscriptionListener<T, Message> handler,
+        private final SubscriptionRecord subscription;
+
+
+        private SubscriptionSuccessListener( SubscriptionRecord subscribed, MessageListenerAdapter listener, 
                 ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
+            this.subscription = subscribed;
             this.listener = listener;
-            this.handler = handler;
             this.metaSubscribeChannel = subscribeChannel;
             this.channel = channel;
         }
@@ -114,14 +151,126 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
             try {
-                if (message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId()) && !message.isSuccessful()) {
-                    handler.onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
+                if (isSuccessfulySubscribed(message)) {
+                    subscription.getListener().onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
                             + " " + message.get(Message.ERROR_FIELD)));
+                } else {
+                    session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE).addListener(new UnsubscribeListener(subscription));
+                    subscriptions.add(subscription);
                 }
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
         }
+
+        private boolean isSuccessfulySubscribed(Message message) {
+            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId()) && !message.isSuccessful();
+        }
+    }
+
+    private class ChannelSubscription implements Subscription<T> {
+        private final MessageListener listener;
+
+        private final ClientSessionChannel channel;
+
+        private T object;
+
+        ChannelSubscription(MessageListener listener, ClientSessionChannel channel, T object) {
+            this.listener = listener;
+            this.channel = channel;
+            this.object = object;
+        }
+
+        @Override
+        public void unsubscribe() {
+            channel.unsubscribe(listener);
+        }
+
+        @Override
+        public T getObject() {
+            return object;
+        }
+    }
+
+    private final class MessageListenerAdapter implements MessageListener {
+        private final SubscriptionListener<T, Message> handler;
+
+        private final Subscription<T> subscription;
+
+        MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object) {
+            this.handler = handler;
+            subscription = createSubscription(channel, object);
+        }
+
+        protected ChannelSubscription createSubscription(ClientSessionChannel channel, T object) {
+            return new ChannelSubscription(this, channel, object);
+        }
+
+        @Override
+        public void onMessage(ClientSessionChannel channel, Message message) {
+            handler.onNotification(subscription, message);
+        }
+
+        public Subscription<T> getSubscription() {
+            return subscription;
+        }
+
+    }
+
+    private final class SubscriptionRecord {
+
+        private final T id;
+
+        private final SubscriptionListener<T, Message> listener;
+
+        public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener) {
+            this.id = id;
+            this.listener = listener;
+        }
+
+        public void remove() {
+            subscriptions.remove(this);
+        }
+
+        public T getId() {
+            return id;
+        }
+
+        public SubscriptionListener<T, Message> getListener() {
+            return listener;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((id == null) ? 0 : id.hashCode());
+            result = prime * result + ((listener == null) ? 0 : listener.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            SubscriptionRecord other = (SubscriptionRecord) obj;
+            if (id == null) {
+                if (other.id != null)
+                    return false;
+            } else if (!id.equals(other.id))
+                return false;
+            if (listener == null) {
+                if (other.listener != null)
+                    return false;
+            } else if (!listener.equals(other.listener))
+                return false;
+            return true;
+        }
+
     }
 
 }
