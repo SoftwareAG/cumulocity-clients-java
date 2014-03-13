@@ -55,7 +55,7 @@ public class CepApiImpl implements CepApi {
 
     @Override
     public CepModuleRepresentation create(Reader content) {
-        return restConnector.post(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content);
+        return restConnector.post(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content,CepModuleRepresentation.class);
     }
 
     private String cepModulesUrl() {
@@ -64,12 +64,12 @@ public class CepApiImpl implements CepApi {
 
     @Override
     public CepModuleRepresentation update(Reader content) {
-        return restConnector.put(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content);
+        return restConnector.put(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content,CepModuleRepresentation.class);
     }
 
     @Override
     public void delete(CepModuleRepresentation module) {
-        restConnector.delete(url+ "/" + module.getId());
+        restConnector.delete(cepModulesUrl()+ "/" + module.getId());
     }
 
 }

@@ -1,0 +1,8 @@
+module test_module;
+
+@Name('test1')
+insert into MyOffOnStream
+select * from measurement;
+
+@Name('test2')
+select id, count(*) from MyOffOnStream.win:time(1 hour) group by id;

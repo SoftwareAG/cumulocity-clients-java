@@ -2,7 +2,9 @@ package com.cumulocity.sdk.client.cep;
 
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 import java.io.Reader;
 
@@ -10,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
@@ -22,11 +23,13 @@ import com.cumulocity.sdk.client.UrlProcessor;
 @RunWith(MockitoJUnitRunner.class)
 public class CepApiImplTest {
 
+    private static final String ID = "5";
+
     private static final String TEMPLATE_URL = "template_url";
 
-    private static final String BASE_URL = "http://abcd.com";
+    private static final String BASE_URL = "http://abcd.com/";
 
-    private static final String CEP_MODULES_COLLECTION_URL = BASE_URL + "/cep/modules";
+    private static final String CEP_MODULES_COLLECTION_URL = BASE_URL + "cep/modules";
 
     private static final String CEP_MODULE_ID = "123ABC";
 
@@ -45,6 +48,7 @@ public class CepApiImplTest {
 
     @Before
     public void setup() throws Exception {
+        when(platformParameters.getHost()).thenReturn(BASE_URL);
         cepApi = new CepApiImpl(platformParameters, restConnector, urlProcessor, DEAFAULT_PAGE_SIZE);
     }
     
@@ -52,13 +56,48 @@ public class CepApiImplTest {
     public void shouldCreateCepModule() throws Exception {
         //Given
         CepModuleRepresentation created = new CepModuleRepresentation();
-
-        when((CepModuleRepresentation)restConnector.post(Mockito.eq(CEP_MODULES_COLLECTION_URL), Mockito.eq(DeviceControlMediaType.MULTIPART_FORM_DATA_TYPE), Mockito.any(Reader.class))).thenReturn(created);
+        when(restConnector.post(
+                eq(CEP_MODULES_COLLECTION_URL), 
+                eq(DeviceControlMediaType.MULTIPART_FORM_DATA_TYPE), 
+                any(Reader.class),
+                eq(CepModuleRepresentation.class)
+                )
+        )
+        .thenReturn(created);
 
         //when
-        CepModuleRepresentation result = cepApi.create(Mockito.mock(Reader.class));
+        CepModuleRepresentation result = cepApi.create(mock(Reader.class));
 
         // then 
         assertThat(result, sameInstance(created));
+    }
+    
+    @Test
+    public void shouldUpdateCepModule() throws Exception {
+        //Given
+        CepModuleRepresentation updated = new CepModuleRepresentation();
+        when(restConnector.put(
+                eq(CEP_MODULES_COLLECTION_URL), 
+                eq(DeviceControlMediaType.MULTIPART_FORM_DATA_TYPE),
+                any(Reader.class),
+                eq(CepModuleRepresentation.class))
+        ).thenReturn(updated);
+
+        //when
+        CepModuleRepresentation result = cepApi.update(mock(Reader.class));
+
+        // then 
+        assertThat(result, sameInstance(updated));
+    }
+    
+    @Test
+    public void shouldDeleteCepModule() throws Exception {
+        //Given
+        CepModuleRepresentation deleted = new CepModuleRepresentation();
+        deleted.setId(ID);
+        //when
+        cepApi.delete(deleted);
+        // then 
+        verify(restConnector).delete(CEP_MODULES_COLLECTION_URL+"/"+ID);
     }
 }

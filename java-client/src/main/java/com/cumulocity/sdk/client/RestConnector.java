@@ -32,7 +32,9 @@ import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
-import com.sun.jersey.api.client.*;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
@@ -95,8 +97,8 @@ public class RestConnector {
     
     
 
-    public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType,
-            Reader content) throws SDKException {
+    public <T extends ResourceRepresentation> T post(String path, MediaType mediaType,
+            Reader content, Class<T> responseClass) throws SDKException {
 
         
         WebResource.Builder builder = client.resource(path).type(mediaType);
@@ -104,17 +106,20 @@ public class RestConnector {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
-        return parseResponseWithoutId( new GenericType<T>(){}.getRawClass(), builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+        FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+        formDataMultiPart.field("file", "file");
+        
+        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
 
     }
 
-    public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, Reader content) {
+    public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, Reader content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
-        return parseResponseWithoutId(new GenericType<T>() {}.getRawClass(), builder.put(ClientResponse.class, content), OK.getStatusCode());
+        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
     }
 
 
@@ -124,9 +129,7 @@ public class RestConnector {
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
 
-    }
-    
-    
+    } 
 
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response,
             int responseCode) throws SDKException {
@@ -236,7 +239,5 @@ public class RestConnector {
         }
         return true;
     }
-
-    
 
 }
