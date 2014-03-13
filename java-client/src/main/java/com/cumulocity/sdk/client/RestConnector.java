@@ -20,9 +20,11 @@
 
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
+import static com.sun.jersey.api.client.ClientResponse.Status.*;
+
+import java.io.Reader;
+
+import javax.ws.rs.core.MediaType;
 
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
@@ -30,9 +32,7 @@ import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
@@ -92,6 +92,31 @@ public class RestConnector {
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
 
     }
+    
+    
+
+    public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType,
+            Reader content) throws SDKException {
+
+        
+        WebResource.Builder builder = client.resource(path).type(mediaType);
+        if (platformParameters.requireResponseBody()) {
+            builder.accept(mediaType);
+        }
+        builder = addApplicationKeyHeader(builder);
+        return parseResponseWithoutId( new GenericType<T>(){}.getRawClass(), builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+
+    }
+
+    public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, Reader content) {
+        WebResource.Builder builder = client.resource(path).type(mediaType);
+        if (platformParameters.requireResponseBody()) {
+            builder.accept(mediaType);
+        }
+        builder = addApplicationKeyHeader(builder);
+        return parseResponseWithoutId(new GenericType<T>() {}.getRawClass(), builder.put(ClientResponse.class, content), OK.getStatusCode());
+    }
+
 
     public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
@@ -100,10 +125,11 @@ public class RestConnector {
         return parseResponseWithId(representation, response, OK.getStatusCode());
 
     }
+    
+    
 
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response,
             int responseCode) throws SDKException {
-        
         @SuppressWarnings("unchecked")
         T repFromPlatform = responseParser.parse(response, responseCode, (Class<T>) representation.getClass());
         T repToReturn = isDefined(repFromPlatform) ? repFromPlatform : representation;
@@ -117,18 +143,20 @@ public class RestConnector {
         return repFromPlatform != null;
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
 
         ClientResponse response = httpPost(path, mediaType, representation);
-        return parseResponseWithoutId(representation, response, CREATED.getStatusCode());
+        return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
-        return parseResponseWithoutId(representation, response, OK.getStatusCode());
+        return (T) parseResponseWithoutId(representation.getClass(), response, OK.getStatusCode());
     }
     
     private Builder addApplicationKeyHeader(Builder builder) {
@@ -138,10 +166,8 @@ public class RestConnector {
         return builder;
     }
 
-    private <T extends ResourceRepresentation> T parseResponseWithoutId(T representation, ClientResponse response,
+    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response,
             int responseCode) throws SDKException {
-        @SuppressWarnings("unchecked")
-        Class<T> type = (Class<T>) representation.getClass();
         return responseParser.parse(response, responseCode, type);
     }
 
@@ -210,5 +236,7 @@ public class RestConnector {
         }
         return true;
     }
+
+    
 
 }

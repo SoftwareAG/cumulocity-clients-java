@@ -19,21 +19,57 @@
  */
 package com.cumulocity.sdk.client.cep;
 
+import java.io.Reader;
+
+import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
 public class CepApiImpl implements CepApi {
 
-
     private final PlatformParameters platformParameters;
 
-    public CepApiImpl(PlatformParameters platformParameters) {
+    private final RestConnector restConnector;
+
+    private final String url;
+
+    private final int pageSize;
+
+    private final UrlProcessor urlProcessor;
+
+    public CepApiImpl(PlatformParameters platformParameters, RestConnector restConnector, UrlProcessor urlProcessor, int pageSize) {
         this.platformParameters = platformParameters;
+        this.restConnector = restConnector;
+        this.urlProcessor = urlProcessor;
+        this.pageSize = pageSize;
+        this.url = platformParameters.getHost() + "cep";
     }
 
     @Override
     public CepCustomNotificationsSubscriber getCustomNotificationsSubscriber() {
         return new CepCustomNotificationsSubscriber(platformParameters);
+    }
+
+    @Override
+    public CepModuleRepresentation create(Reader content) {
+        return restConnector.post(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content);
+    }
+
+    private String cepModulesUrl() {
+        return url+"/modules";
+    }
+
+    @Override
+    public CepModuleRepresentation update(Reader content) {
+        return restConnector.put(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content);
+    }
+
+    @Override
+    public void delete(CepModuleRepresentation module) {
+        restConnector.delete(url+ "/" + module.getId());
     }
 
 }

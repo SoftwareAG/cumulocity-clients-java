@@ -19,6 +19,9 @@
  */
 package com.cumulocity.sdk.client.cep;
 
+import java.io.Reader;
+
+import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
@@ -55,4 +58,11 @@ public interface CepApi {
      * @throws SDKException
      */
     CepCustomNotificationsSubscriber getCustomNotificationsSubscriber();
+    
+    CepModuleRepresentation create(Reader content);
+    
+    CepModuleRepresentation update(Reader content);
+    
+    void delete(CepModuleRepresentation module);
+    
 }
