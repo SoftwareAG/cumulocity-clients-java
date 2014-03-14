@@ -42,12 +42,10 @@ public class CepApiImpl implements CepApi {
 
     private final int pageSize;
 
-    private final UrlProcessor urlProcessor;
 
-    public CepApiImpl(PlatformParameters platformParameters, RestConnector restConnector, UrlProcessor urlProcessor, int pageSize) {
+    public CepApiImpl(PlatformParameters platformParameters, RestConnector restConnector, int pageSize) {
         this.platformParameters = platformParameters;
         this.restConnector = restConnector;
-        this.urlProcessor = urlProcessor;
         this.pageSize = pageSize;
         this.url = platformParameters.getHost() + "cep";
     }

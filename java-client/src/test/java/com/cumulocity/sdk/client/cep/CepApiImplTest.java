@@ -45,13 +45,10 @@ public class CepApiImplTest {
     @Mock
     private PlatformParameters platformParameters;
 
-    @Mock
-    private UrlProcessor urlProcessor;
-
     @Before
     public void setup() throws Exception {
         when(platformParameters.getHost()).thenReturn(BASE_URL);
-        cepApi = new CepApiImpl(platformParameters, restConnector, urlProcessor, DEAFAULT_PAGE_SIZE);
+        cepApi = new CepApiImpl(platformParameters, restConnector, DEAFAULT_PAGE_SIZE);
     }
     
     @Test
