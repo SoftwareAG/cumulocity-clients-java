@@ -1,0 +1,9 @@
+module test_module;
+
+@Name('test1')
+insert into MyOffOnStream
+select m.payload from MeasurementCreated m;
+
+
+@Name('test2')
+select  count(*) from MyOffOnStream.win:time(1 hour) ;

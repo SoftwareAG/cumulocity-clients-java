@@ -19,7 +19,12 @@
  */
 package com.cumulocity.sdk.client.cep;
 
+import java.io.InputStream;
+import java.io.Reader;
+
+import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.alarm.AlarmCollection;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
 /**
@@ -55,4 +60,57 @@ public interface CepApi {
      * @throws SDKException
      */
     CepCustomNotificationsSubscriber getCustomNotificationsSubscriber();
+    
+    /**
+     * Gets an cep module by id
+     *
+     * @param id of the cep module to search for
+     * @return the cep module with the given id
+     * @throws SDKException if the cep module is not found or if the query failed
+     */
+    CepModuleRepresentation get(String id);
+    
+    /**
+     * Creates an cep module in the platform.
+     *
+     * @param content input stream to resource with cep module definition 
+     * @return the created cep module with the generated id
+     * @throws SDKException if the cep module could not be created
+     */
+    CepModuleRepresentation create(InputStream content);
+    
+
+    /**
+     * Updates an cep module in the platform.
+     * The cep module to be updated is identified by the id.
+     *
+     * @param id of cep module to update
+     * @param content input stream to resource with cep module definition 
+     * @return the updated cep module
+     * @throws SDKException if the cep module could not be updated
+     */
+    CepModuleRepresentation update(String id, InputStream content);
+
+    /**
+     * Gets all cep modules from the platform
+     *
+     * @return collection of cep modules with paging functionality
+     * @throws SDKException if the query failed
+     */
+    CepModuleCollection getModules();
+    
+    /**
+     * Deletes the cep module from the platform.
+     *
+     * @throws SDKException
+     */
+    void delete(CepModuleRepresentation module);
+    
+    /**
+     * Deletes the cep module from the platform.
+     *
+     * @throws SDKException
+     */
+    void delete(String id);
+    
 }

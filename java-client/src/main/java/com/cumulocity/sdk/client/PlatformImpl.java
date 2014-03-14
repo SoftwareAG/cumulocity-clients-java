@@ -225,7 +225,8 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     
     @Override
     public CepApi getCepApi() throws SDKException{
-        return new CepApiImpl(this);
+        RestConnector restConnector = createRestConnector();
+        return new CepApiImpl(this, restConnector, getPageSize());
     }
 
     private RestConnector createRestConnector() {
