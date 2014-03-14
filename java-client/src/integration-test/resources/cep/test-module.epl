@@ -2,7 +2,8 @@ module test_module;
 
 @Name('test1')
 insert into MyOffOnStream
-select * from measurement;
+select m.payload from MeasurementCreated m;
+
 
 @Name('test2')
-select id, count(*) from MyOffOnStream.win:time(1 hour) group by id;
+select  count(*) from MyOffOnStream.win:time(1 hour) ;

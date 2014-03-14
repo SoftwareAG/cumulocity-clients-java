@@ -19,9 +19,13 @@
  */
 package com.cumulocity.sdk.client.cep;
 
+import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
+
+import java.io.InputStream;
 import java.io.Reader;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.cep.CepMediaType;
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
@@ -54,22 +58,41 @@ public class CepApiImpl implements CepApi {
     }
 
     @Override
-    public CepModuleRepresentation create(Reader content) {
-        return restConnector.post(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content,CepModuleRepresentation.class);
+    public CepModuleRepresentation create(InputStream content) {
+        return restConnector.postStream(cepModulesUrl(), CEP_MODULE, content, CepModuleRepresentation.class);
     }
 
     private String cepModulesUrl() {
-        return url+"/modules";
+        return url + "/modules";
     }
 
     @Override
-    public CepModuleRepresentation update(Reader content) {
-        return restConnector.put(cepModulesUrl(), CumulocityMediaType.MULTIPART_FORM_DATA_TYPE, content,CepModuleRepresentation.class);
+    public CepModuleRepresentation update(String id, InputStream content) {
+        return restConnector.putStream(cepModuleUrl(id), CEP_MODULE, content, CepModuleRepresentation.class);
+    }
+
+    private String cepModuleUrl(String id) {
+        return cepModulesUrl()+"/"+ id;
     }
 
     @Override
     public void delete(CepModuleRepresentation module) {
-        restConnector.delete(cepModulesUrl()+ "/" + module.getId());
+        delete(module.getId());
+    }
+    
+    @Override
+    public void delete(String id) {
+        restConnector.delete(cepModuleUrl(id));
+    }
+
+    @Override
+    public CepModuleRepresentation get(String id) {
+        return restConnector.get(cepModuleUrl(id),CEP_MODULE, CepModuleRepresentation.class);
+    }
+
+    @Override
+    public CepModuleCollection getModules() {
+        return new CepModuleCollectionImpl(restConnector, cepModulesUrl(), pageSize);
     }
 
 }

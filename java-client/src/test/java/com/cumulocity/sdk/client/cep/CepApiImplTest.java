@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+import java.io.InputStream;
 import java.io.Reader;
 
 import org.junit.Before;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.cumulocity.rest.representation.cep.CepMediaType;
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.sdk.client.PlatformParameters;
@@ -56,17 +58,17 @@ public class CepApiImplTest {
     public void shouldCreateCepModule() throws Exception {
         //Given
         CepModuleRepresentation created = new CepModuleRepresentation();
-        when(restConnector.post(
+        when(restConnector.postStream(
                 eq(CEP_MODULES_COLLECTION_URL), 
-                eq(DeviceControlMediaType.MULTIPART_FORM_DATA_TYPE), 
-                any(Reader.class),
+                eq(CepMediaType.CEP_MODULE),
+                any(InputStream.class),
                 eq(CepModuleRepresentation.class)
                 )
         )
         .thenReturn(created);
 
         //when
-        CepModuleRepresentation result = cepApi.create(mock(Reader.class));
+        CepModuleRepresentation result = cepApi.create(mock(InputStream.class));
 
         // then 
         assertThat(result, sameInstance(created));
@@ -76,15 +78,15 @@ public class CepApiImplTest {
     public void shouldUpdateCepModule() throws Exception {
         //Given
         CepModuleRepresentation updated = new CepModuleRepresentation();
-        when(restConnector.put(
-                eq(CEP_MODULES_COLLECTION_URL), 
-                eq(DeviceControlMediaType.MULTIPART_FORM_DATA_TYPE),
-                any(Reader.class),
+        when(restConnector.putStream(
+                eq(CEP_MODULES_COLLECTION_URL+"/"+ID), 
+                eq(CepMediaType.CEP_MODULE),
+                any(InputStream.class),
                 eq(CepModuleRepresentation.class))
         ).thenReturn(updated);
 
         //when
-        CepModuleRepresentation result = cepApi.update(mock(Reader.class));
+        CepModuleRepresentation result = cepApi.update(ID, mock(InputStream.class));
 
         // then 
         assertThat(result, sameInstance(updated));

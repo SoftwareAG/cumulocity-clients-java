@@ -21,8 +21,9 @@
 package com.cumulocity.sdk.client;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
-import java.io.Reader;
+import java.io.InputStream;
 
 import javax.ws.rs.core.MediaType;
 
@@ -37,9 +38,12 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.multipart.FormDataBodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
 public class RestConnector {
     
@@ -97,31 +101,30 @@ public class RestConnector {
     
     
 
-    public <T extends ResourceRepresentation> T post(String path, MediaType mediaType,
-            Reader content, Class<T> responseClass) throws SDKException {
-
-        
-        WebResource.Builder builder = client.resource(path).type(mediaType);
+    public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
+            Class<T> responseClass) throws SDKException {
+        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
+        builder = addApplicationKeyHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
-        builder = addApplicationKeyHeader(builder);
-        FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
-        formDataMultiPart.field("file", "file");
-        
-        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+        FormDataMultiPart form = new FormDataMultiPart();
+        form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
 
     }
 
-    public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, Reader content, Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(mediaType);
+    public <T extends ResourceRepresentation> T putStream(String path, CumulocityMediaType mediaType, InputStream content,
+            Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
+        builder = addApplicationKeyHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
-        builder = addApplicationKeyHeader(builder);
-        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
+        FormDataMultiPart form = new FormDataMultiPart();
+        form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
     }
-
 
     public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
@@ -226,6 +229,7 @@ public class RestConnector {
         Client client = ApacheHttpClient.create(config);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new LoggingFilter());
         
         return client;
     }
