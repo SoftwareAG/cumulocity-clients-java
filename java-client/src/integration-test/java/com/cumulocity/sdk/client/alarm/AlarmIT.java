@@ -231,7 +231,7 @@ public class AlarmIT extends JavaSdkITBase {
 
         // Then
         List<AlarmRepresentation> alarms = bySource.getAlarms();
-        assertThat(alarms.size(), is(equalTo(2)));
+        assertThat(alarms.size(), is(equalTo(1)));
         assertThat(alarms.get(0).getSource().getId(), is(mo1.getId()));
     }
 
