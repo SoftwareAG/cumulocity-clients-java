@@ -33,10 +33,12 @@ public class JavaSdkITBase {
     private static ApplicationCreator applicationCreator;
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
+    protected static PlatformImpl bootstrapPlatform;
 
     @BeforeClass
     public static void createTenantWithApplication() throws Exception {
         platform = createPlatform();
+        bootstrapPlatform = createBootstrapPlatform();
 
         applicationCreator = new ApplicationCreator(platform);
         applicationCreator.createApplication();
@@ -67,6 +69,19 @@ public class JavaSdkITBase {
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
                 p.get("cumulocity.applicationKey")));
+    }
+    
+    private static PlatformImpl createBootstrapPlatform() throws IOException {
+        Properties cumulocityProps = new Properties();
+        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
+        
+        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
+        return new PlatformImpl(
+                p.get("cumulocity.host"),
+                new CumulocityCredentials(p.get("cumulocity.tenant"),
+                        p.get("cumulocity.bootstrap.user"),
+                        p.get("cumulocity.bootstrap.password"),
+                        p.get("cumulocity.applicationKey")));
     }
 
 }

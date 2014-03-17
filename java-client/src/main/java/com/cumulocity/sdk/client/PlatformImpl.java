@@ -234,7 +234,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     @Override
     public DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException {
     	RestConnector restConnector = createRestConnector();
-	    return new DeviceCredentialsApiImpl(restConnector);
+	    return new DeviceCredentialsApiImpl(this, restConnector);
     }
 
 	private RestConnector createRestConnector() {

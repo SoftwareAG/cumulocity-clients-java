@@ -19,23 +19,23 @@
  */
 package com.cumulocity.sdk.client.devicecontrol;
 
+import static com.cumulocity.rest.representation.operation.DeviceControlMediaType.NEW_DEVICE_REQUEST;
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
 import com.cumulocity.rest.representation.devicebootstrap.NewDeviceRequestRepresentation;
-import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.sdk.client.ResponseParser;
 import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.sdk.client.common.HttpClientFactory;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 
 public class DeviceCredentialsIT extends JavaSdkITBase {
 
-    private static final String NEW_DEVICE_REQUEST_URI = "devicecontrol/newDeviceRequests";
+    private static final String DEVICE_ID = "2000";
+    private String newDeviceRequestUri;
+    private String newDeviceRequestsUri;
     
     private DeviceCredentialsApiImpl deviceCredentialsResource;
     private ResponseParser responseParser;
@@ -43,54 +43,51 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
     
     @Before
     public void setUp() throws Exception {
-        deviceCredentialsResource = (DeviceCredentialsApiImpl) platform.getDeviceCredentialsApi();
+        deviceCredentialsResource = (DeviceCredentialsApiImpl) bootstrapPlatform.getDeviceCredentialsApi();
         responseParser = new ResponseParser();
         restConnector = new RestConnector(platform, responseParser);
+        newDeviceRequestsUri = platform.getHost() + "devicecontrol/newDeviceRequests";
+        newDeviceRequestUri = newDeviceRequestsUri + "/" + DEVICE_ID;
     }
 
     @Test
-    @Ignore
-    public void hello() throws Exception {
-        createNewDeviceRequest("2000");
-        NewDeviceRequestRepresentation newDeviceRequest = getNewDeviceRequest("2000");
-        System.out.println(newDeviceRequest);
-        deviceCredentialsResource.hello("2000");
+    public void shouldNewDeviceRequestTransposeToPendingAcceptanceOnHello() throws Exception {
+        createNewDeviceRequest();
+        NewDeviceRequestRepresentation newDeviceRequest = getNewDeviceRequest();
+        assertThat(newDeviceRequest.getStatus()).isEqualTo("WAITING_FOR_CONNECTION");
+        
+        deviceCredentialsResource.hello(DEVICE_ID);
+        
+        newDeviceRequest = getNewDeviceRequest();
+        assertThat(newDeviceRequest.getStatus()).isEqualTo("PENDING_ACCEPTANCE");
     }
     
-    public void createNewDeviceRequest(String deviceId) {
+    @Test
+    public void shouldReturnCredentialsIfDeviceAccepted() throws Exception {
+        createNewDeviceRequest();
+        deviceCredentialsResource.hello(DEVICE_ID);
+        acceptNewDeviceRequest();
+        
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.getCredentials(DEVICE_ID);
+        
+        assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
+        assertThat(credentials.getUsername()).isEqualTo("device_" + DEVICE_ID);
+        assertThat(credentials.getPassword()).isNotEmpty();
+    }
+    
+    private void createNewDeviceRequest() {
         NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
-        representation.setId(deviceId);
-        String path = platform.getHost() + NEW_DEVICE_REQUEST_URI;
-        System.out.println("create new device request PATH = " + path);
-        restConnector.post(path, DeviceControlMediaType.NEW_DEVICE_REQUEST, representation);
+        representation.setId(DEVICE_ID);
+        restConnector.post(newDeviceRequestsUri, NEW_DEVICE_REQUEST, representation);
     }
     
-    public NewDeviceRequestRepresentation getNewDeviceRequest(String deviceId) {
-        Client httpClient = new HttpClientFactory().createClient();
-        try {
-            return getNewDeviceRequest(httpClient, deviceId);
-        } finally {
-            httpClient.destroy();
-        }
+    private void acceptNewDeviceRequest() {
+        NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
+        representation.setStatus("ACCEPTED");
+        restConnector.put(newDeviceRequestUri, NEW_DEVICE_REQUEST, representation);
     }
     
-    //    private ClientResponse postNewDeviceRequest(Client httpClient, String deviceId) {
-//        String host = platform.getHost();
-//        WebResource.Builder resource = httpClient
-//        .resource(host + NEW_DEVICE_REQUEST_URI)
-//        .type(DeviceControlMediaType.NEW_DEVICE_REQUEST);
-//        String json = "{ \"id\": \"" + deviceId + "\"}";
-//        return resource.post(ClientResponse.class, json);
-//    }
-    
-    private NewDeviceRequestRepresentation getNewDeviceRequest(Client httpClient, String deviceId) {
-        String host = platform.getHost();
-        WebResource.Builder resource = httpClient
-                .resource(host + NEW_DEVICE_REQUEST_URI + "/" + deviceId)
-                .type(DeviceControlMediaType.NEW_DEVICE_REQUEST);
-        ClientResponse clientResponse = resource.get(ClientResponse.class);
-        return responseParser.parse(clientResponse, 200, NewDeviceRequestRepresentation.class);
+    private NewDeviceRequestRepresentation getNewDeviceRequest() {
+        return restConnector.get(newDeviceRequestUri, NEW_DEVICE_REQUEST, NewDeviceRequestRepresentation.class);
     }
-
-
 }
