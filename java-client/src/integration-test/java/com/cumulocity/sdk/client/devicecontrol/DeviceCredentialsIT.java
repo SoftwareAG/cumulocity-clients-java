@@ -68,7 +68,7 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
         deviceCredentialsResource.hello(DEVICE_ID);
         acceptNewDeviceRequest();
         
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.getCredentials(DEVICE_ID);
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(DEVICE_ID);
         
         assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
         assertThat(credentials.getUsername()).isEqualTo("device_" + DEVICE_ID);

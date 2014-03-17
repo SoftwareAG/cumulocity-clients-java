@@ -6,6 +6,6 @@ public interface DeviceCredentialsApi {
 	
 	void hello(String deviceId);
 	
-	DeviceCredentialsRepresentation getCredentials(String deviceId);
+	DeviceCredentialsRepresentation pollCredentials(String deviceId);
 
 }
