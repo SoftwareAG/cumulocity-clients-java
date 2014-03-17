@@ -37,8 +37,8 @@ public class JavaSdkITBase {
 
     @BeforeClass
     public static void createTenantWithApplication() throws Exception {
-        platform = createPlatform();
-        bootstrapPlatform = createBootstrapPlatform();
+        platform = createPlatform(false);
+        bootstrapPlatform = createPlatform(true);
 
         applicationCreator = new ApplicationCreator(platform);
         applicationCreator.createApplication();
@@ -58,30 +58,18 @@ public class JavaSdkITBase {
         }
     }
 
-    private static PlatformImpl createPlatform() throws IOException {
-        Properties cumulocityProps = new Properties();
-        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-
-        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        return new PlatformImpl(
-                p.get("cumulocity.host"),
-                new CumulocityCredentials(p.get("cumulocity.tenant"),
-                p.get("cumulocity.user"),
-                p.get("cumulocity.password"),
-                p.get("cumulocity.applicationKey")));
-    }
-    
-    private static PlatformImpl createBootstrapPlatform() throws IOException {
+    private static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
         Properties cumulocityProps = new Properties();
         cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
         
+        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user"; 
+        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password"; 
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
                 new CumulocityCredentials(p.get("cumulocity.tenant"),
-                        p.get("cumulocity.bootstrap.user"),
-                        p.get("cumulocity.bootstrap.password"),
+                        p.get(userKey),
+                        p.get(userPassword),
                         p.get("cumulocity.applicationKey")));
     }
-
 }

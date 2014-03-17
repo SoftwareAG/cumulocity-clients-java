@@ -22,6 +22,9 @@ package com.cumulocity.sdk.client.devicecontrol;
 import static com.cumulocity.rest.representation.operation.DeviceControlMediaType.NEW_DEVICE_REQUEST;
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,61 +36,87 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 public class DeviceCredentialsIT extends JavaSdkITBase {
 
-    private static final String DEVICE_ID = "2000";
-    private String newDeviceRequestUri;
-    private String newDeviceRequestsUri;
-    
     private DeviceCredentialsApiImpl deviceCredentialsResource;
     private ResponseParser responseParser;
     private RestConnector restConnector;
-    
+
     @Before
     public void setUp() throws Exception {
         deviceCredentialsResource = (DeviceCredentialsApiImpl) bootstrapPlatform.getDeviceCredentialsApi();
         responseParser = new ResponseParser();
         restConnector = new RestConnector(platform, responseParser);
-        newDeviceRequestsUri = platform.getHost() + "devicecontrol/newDeviceRequests";
-        newDeviceRequestUri = newDeviceRequestsUri + "/" + DEVICE_ID;
+    }
+    
+    @Test
+    public void shouldNewDeviceRequestTransposeToPendingAcceptanceOnHello() throws Exception {
+        final String deviceId = "1000";
+        createNewDeviceRequest(deviceId);
+        NewDeviceRequestRepresentation newDeviceRequest = getNewDeviceRequest(deviceId);
+        assertThat(newDeviceRequest.getStatus()).isEqualTo("WAITING_FOR_CONNECTION");
+
+        deviceCredentialsResource.hello(deviceId);
+
+        newDeviceRequest = getNewDeviceRequest(deviceId);
+        assertThat(newDeviceRequest.getStatus()).isEqualTo("PENDING_ACCEPTANCE");
     }
 
     @Test
-    public void shouldNewDeviceRequestTransposeToPendingAcceptanceOnHello() throws Exception {
-        createNewDeviceRequest();
-        NewDeviceRequestRepresentation newDeviceRequest = getNewDeviceRequest();
-        assertThat(newDeviceRequest.getStatus()).isEqualTo("WAITING_FOR_CONNECTION");
-        
-        deviceCredentialsResource.hello(DEVICE_ID);
-        
-        newDeviceRequest = getNewDeviceRequest();
-        assertThat(newDeviceRequest.getStatus()).isEqualTo("PENDING_ACCEPTANCE");
-    }
-    
-    @Test
     public void shouldReturnCredentialsIfDeviceAccepted() throws Exception {
-        createNewDeviceRequest();
-        deviceCredentialsResource.hello(DEVICE_ID);
-        acceptNewDeviceRequest();
-        
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(DEVICE_ID);
-        
+        final String deviceId = "2000";
+        createNewDeviceRequest(deviceId);
+        deviceCredentialsResource.hello(deviceId);
+        acceptNewDeviceRequest(deviceId);
+
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId);
+
         assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
-        assertThat(credentials.getUsername()).isEqualTo("device_" + DEVICE_ID);
+        assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
         assertThat(credentials.getPassword()).isNotEmpty();
     }
-    
-    private void createNewDeviceRequest() {
-        NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
-        representation.setId(DEVICE_ID);
-        restConnector.post(newDeviceRequestsUri, NEW_DEVICE_REQUEST, representation);
+
+    @Test
+    public void shouldPollCredentialsUntilDeviceAccepted() throws Exception {
+        final String deviceId = "3000";
+        createNewDeviceRequest(deviceId);
+        deviceCredentialsResource.hello(deviceId);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                acceptNewDeviceRequest(deviceId);
+            }
+        }, DeviceCredentialsApiImpl.POLL_INTERVAL * 2);
+
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId);
+        assertThat(credentials).isNotNull();
+        assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
+        assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
+        assertThat(credentials.getPassword()).isNotEmpty();
+
     }
-    
-    private void acceptNewDeviceRequest() {
+
+    private void createNewDeviceRequest(String deviceId) {
+        NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
+        representation.setId(deviceId);
+        restConnector.post(newDeviceRequestsUri(), NEW_DEVICE_REQUEST, representation);
+    }
+
+    private void acceptNewDeviceRequest(String deviceId) {
         NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
         representation.setStatus("ACCEPTED");
-        restConnector.put(newDeviceRequestUri, NEW_DEVICE_REQUEST, representation);
+        restConnector.put(newDeviceRequestUri(deviceId), NEW_DEVICE_REQUEST, representation);
+    }
+
+    private NewDeviceRequestRepresentation getNewDeviceRequest(String deviceId) {
+        return restConnector.get(newDeviceRequestUri(deviceId), NEW_DEVICE_REQUEST, NewDeviceRequestRepresentation.class);
     }
     
-    private NewDeviceRequestRepresentation getNewDeviceRequest() {
-        return restConnector.get(newDeviceRequestUri, NEW_DEVICE_REQUEST, NewDeviceRequestRepresentation.class);
+    private String newDeviceRequestsUri() {
+        return platform.getHost() + "devicecontrol/newDeviceRequests";
+    }
+    
+    private String newDeviceRequestUri(String deviceId) {
+        return newDeviceRequestsUri() + "/" + deviceId;
     }
 }

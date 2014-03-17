@@ -12,8 +12,7 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
     
     public static final long POLL_INTERVAL = 5 * 1000;
     public static final long POLL_TIMEOUT = 60 * 60 * 1000;
-
-    static final String DEVICE_CREDENTIALS_URI = "devicecontrol/deviceCredentials";
+    public static final String DEVICE_CREDENTIALS_URI = "devicecontrol/deviceCredentials";
 
     private final RestConnector restConnector;
     private final String url;

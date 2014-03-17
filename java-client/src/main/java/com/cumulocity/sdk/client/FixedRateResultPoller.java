@@ -18,9 +18,12 @@ public class FixedRateResultPoller<K> extends FixedRatePoller {
 
     private PriorityBlockingQueue<K> results;
     private long pollTimeout;
+    private long pollInterval;
+    private Exception lastException;
 
     public FixedRateResultPoller(GetResultTask<K> task, long pollInterval, long pollTimeout) {
         super(new ScheduledThreadPoolExecutor(1), pollInterval);
+        this.pollInterval = pollInterval;
         this.pollTimeout = pollTimeout;
         this.results = aQueue();
         setPollingTask(wrapAsRunnable(task));
@@ -29,7 +32,11 @@ public class FixedRateResultPoller<K> extends FixedRatePoller {
     public K startAndPoll() {
         start();
         try {
-            return results.poll(pollTimeout, TimeUnit.MICROSECONDS);
+            K result = results.poll(pollTimeout, TimeUnit.MILLISECONDS);
+            if(result == null && lastException != null) { 
+                LOG.error("Timeout occured, last exception: " + lastException);
+            }
+            return result;
         } catch (InterruptedException e) {
             throw new SDKException("Error polling data", e);
         } finally {
@@ -59,8 +66,18 @@ public class FixedRateResultPoller<K> extends FixedRatePoller {
                 results.add(result);                        
             }
         } catch (Exception ex) {
-            LOG.error("STH", ex);
+            lastException = ex;
+            LOG.info("Polling with wrong result: " + digest(ex.getMessage()));
+            LOG.info("Try again in " + pollInterval / 1000 + " seconds.");
         }
+    }
+
+    private static String digest(String message) {
+        if (message == null || message.length() < 200) {
+            return message;
+        } else {
+            return message.substring(0, Math.min(message.length() - 1, 200));
+        } 
     }
 
     private PriorityBlockingQueue<K> aQueue() {
