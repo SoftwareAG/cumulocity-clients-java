@@ -10,8 +10,6 @@ import com.cumulocity.sdk.client.RestConnector;
 
 public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
     
-    public static final long POLL_INTERVAL = 5 * 1000;
-    public static final long POLL_TIMEOUT = 60 * 60 * 1000;
     public static final String DEVICE_CREDENTIALS_URI = "devicecontrol/deviceCredentials";
 
     private final RestConnector restConnector;
@@ -25,16 +23,16 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
     @Override
     public void hello(final String deviceId) {
         DeviceCredentialsRepresentation representation = new DeviceCredentialsRepresentation();
-        representation.setDeviceId(deviceId);
+        representation.setId(deviceId);
         restConnector.post(url, DEVICE_CREDENTIALS, representation);
     }
-
+    
     @Override
-    public DeviceCredentialsRepresentation pollCredentials(final String deviceId) {
-        return aPoller(deviceId).startAndPoll();
+    public DeviceCredentialsRepresentation pollCredentials(String deviceId, int interval, int timeout) {
+        return aPoller(deviceId, interval, timeout).startAndPoll();
     }
 
-    private FixedRateResultPoller<DeviceCredentialsRepresentation> aPoller(final String deviceId) {
+    private FixedRateResultPoller<DeviceCredentialsRepresentation> aPoller(final String deviceId, int interval, int timeout) {
         GetResultTask<DeviceCredentialsRepresentation> pollingTask = new GetResultTask<DeviceCredentialsRepresentation>() {
 
             @Override
@@ -43,6 +41,6 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
             }
             
         };
-        return new FixedRateResultPoller<DeviceCredentialsRepresentation>(pollingTask, POLL_INTERVAL, POLL_TIMEOUT);
+        return new FixedRateResultPoller<DeviceCredentialsRepresentation>(pollingTask, interval * 1000, timeout * 1000);
     }
 }

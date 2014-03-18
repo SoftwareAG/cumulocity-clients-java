@@ -63,11 +63,12 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
     @Test
     public void shouldReturnCredentialsIfDeviceAccepted() throws Exception {
         final String deviceId = "2000";
+        final int pollInterval = 2;
         createNewDeviceRequest(deviceId);
         deviceCredentialsResource.hello(deviceId);
         acceptNewDeviceRequest(deviceId);
 
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId);
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollInterval, 100);
 
         assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
         assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
@@ -77,6 +78,7 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
     @Test
     public void shouldPollCredentialsUntilDeviceAccepted() throws Exception {
         final String deviceId = "3000";
+        final int pollInterval = 2;
         createNewDeviceRequest(deviceId);
         deviceCredentialsResource.hello(deviceId);
         Timer timer = new Timer();
@@ -86,9 +88,9 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
             public void run() {
                 acceptNewDeviceRequest(deviceId);
             }
-        }, DeviceCredentialsApiImpl.POLL_INTERVAL * 2);
+        }, pollInterval * 2);
 
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId);
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollInterval, 100);
         assertThat(credentials).isNotNull();
         assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
         assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
