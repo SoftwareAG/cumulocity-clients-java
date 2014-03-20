@@ -19,21 +19,78 @@
  */
 package com.cumulocity.sdk.client.cep;
 
+import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
+
+import java.io.InputStream;
+import java.io.Reader;
+
+import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.cep.CepMediaType;
+import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
 public class CepApiImpl implements CepApi {
 
-
     private final PlatformParameters platformParameters;
 
-    public CepApiImpl(PlatformParameters platformParameters) {
+    private final RestConnector restConnector;
+
+    private final String url;
+
+    private final int pageSize;
+
+
+    public CepApiImpl(PlatformParameters platformParameters, RestConnector restConnector, int pageSize) {
         this.platformParameters = platformParameters;
+        this.restConnector = restConnector;
+        this.pageSize = pageSize;
+        this.url = platformParameters.getHost() + "cep";
     }
 
     @Override
     public CepCustomNotificationsSubscriber getCustomNotificationsSubscriber() {
         return new CepCustomNotificationsSubscriber(platformParameters);
+    }
+
+    @Override
+    public CepModuleRepresentation create(InputStream content) {
+        return restConnector.postStream(cepModulesUrl(), CEP_MODULE, content, CepModuleRepresentation.class);
+    }
+
+    private String cepModulesUrl() {
+        return url + "/modules";
+    }
+
+    @Override
+    public CepModuleRepresentation update(String id, InputStream content) {
+        return restConnector.putStream(cepModuleUrl(id), CEP_MODULE, content, CepModuleRepresentation.class);
+    }
+
+    private String cepModuleUrl(String id) {
+        return cepModulesUrl()+"/"+ id;
+    }
+
+    @Override
+    public void delete(CepModuleRepresentation module) {
+        delete(module.getId());
+    }
+    
+    @Override
+    public void delete(String id) {
+        restConnector.delete(cepModuleUrl(id));
+    }
+
+    @Override
+    public CepModuleRepresentation get(String id) {
+        return restConnector.get(cepModuleUrl(id),CEP_MODULE, CepModuleRepresentation.class);
+    }
+
+    @Override
+    public CepModuleCollection getModules() {
+        return new CepModuleCollectionImpl(restConnector, cepModulesUrl(), pageSize);
     }
 
 }
