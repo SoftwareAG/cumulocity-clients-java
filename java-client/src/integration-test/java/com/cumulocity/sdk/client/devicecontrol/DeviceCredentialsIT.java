@@ -25,6 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,6 +48,13 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
         restConnector = new RestConnector(platform, responseParser);
     }
     
+    @After
+    public void cleanUp() throws Exception {
+        deleteNewDeviceRequest("1000");
+        deleteNewDeviceRequest("2000");
+        deleteNewDeviceRequest("3000");        
+    }
+
     @Test
     public void shouldNewDeviceRequestTransposeToPendingAcceptanceOnHello() throws Exception {
         final String deviceId = "1000";
@@ -104,6 +112,14 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
         restConnector.post(newDeviceRequestsUri(), NEW_DEVICE_REQUEST, representation);
     }
 
+    private void deleteNewDeviceRequest(String deviceId) {
+        try {
+            restConnector.delete(newDeviceRequestUri(deviceId));
+        } catch (Exception ex) {
+            // do nothing
+        }
+    }
+
     private void acceptNewDeviceRequest(String deviceId) {
         NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
         representation.setStatus("ACCEPTED");
@@ -113,11 +129,11 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
     private NewDeviceRequestRepresentation getNewDeviceRequest(String deviceId) {
         return restConnector.get(newDeviceRequestUri(deviceId), NEW_DEVICE_REQUEST, NewDeviceRequestRepresentation.class);
     }
-    
+
     private String newDeviceRequestsUri() {
         return platform.getHost() + "devicecontrol/newDeviceRequests";
     }
-    
+
     private String newDeviceRequestUri(String deviceId) {
         return newDeviceRequestsUri() + "/" + deviceId;
     }
