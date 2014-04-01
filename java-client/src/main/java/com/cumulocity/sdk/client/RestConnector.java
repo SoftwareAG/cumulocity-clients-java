@@ -232,7 +232,6 @@ public class RestConnector {
         Client client = ApacheHttpClient.create(config);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
-        client.addFilter(new LoggingFilter());
         
         return client;
     }
