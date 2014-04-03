@@ -26,5 +26,5 @@ public interface DeviceCredentialsApi {
 	 * 
 	 */
 	DeviceCredentialsRepresentation pollCredentials(String deviceId, int interval, int timeout);
-
+	
 }

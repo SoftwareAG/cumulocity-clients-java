@@ -54,6 +54,8 @@ public class RestConnector {
         CumulocityJSONMessageBodyReader.class,
         ErrorMessageRepresentationReader.class
     };
+
+    private static final int READ_TIMEOUT_IN_MILLIS = 180000;
     
     private final PlatformParameters platformParameters;
     
@@ -225,11 +227,11 @@ public class RestConnector {
         for (Class<?> c : PROVIDERS_CLASSES) {
             config.getClasses().add(c);
         }
+        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
 
         Client client = ApacheHttpClient.create(config);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
-        client.addFilter(new LoggingFilter());
         
         return client;
     }

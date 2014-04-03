@@ -42,7 +42,6 @@ import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -74,7 +73,7 @@ public class AlarmApiImplTest {
 
         alarmApi = new AlarmApiImpl(restConnector, urlProcessor, alarmsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
-
+    
     @Test
     public void shouldRetrieveAlarmRep() throws SDKException {
         //Given 

@@ -20,7 +20,6 @@
 package com.cumulocity.sdk.client.notification;
 
 import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.cometd.bayeux.Message;
@@ -151,20 +150,25 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
             try {
+                if(!isSubscriptionToChannel(message)) return;
                 if (isSuccessfulySubscribed(message)) {
-                    subscription.getListener().onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
-                            + " " + message.get(Message.ERROR_FIELD)));
-                } else {
                     session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE).addListener(new UnsubscribeListener(subscription));
                     subscriptions.add(subscription);
+                } else {
+                    subscription.getListener().onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
+                            + " " + message.get(Message.ERROR_FIELD)));
                 }
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
         }
 
+        private boolean isSubscriptionToChannel(Message message) {
+            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId());
+        }
+
         private boolean isSuccessfulySubscribed(Message message) {
-            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId()) && !message.isSuccessful();
+            return  message.isSuccessful();
         }
     }
 
