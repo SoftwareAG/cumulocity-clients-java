@@ -66,6 +66,16 @@ public interface ManagedObject {
      */
     ManagedObjectReferenceRepresentation addChildDevice(ManagedObjectReferenceRepresentation refrenceReprsentation)
             throws SDKException;
+    
+    /**
+     * Adds a child device to the ManagedObject.
+     *
+     * @param refrenceReprsentation
+     * @return ManagedObjectReferenceRepresentation with the id of th child device.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceRepresentation addChildDevice(GId childId)
+            throws SDKException;
 
 
     /**
@@ -94,13 +104,23 @@ public interface ManagedObject {
     void deleteChildDevice(GId deviceId) throws SDKException;
 
     /**
-     * Adds a child device to the ManagedObject.
+     * Adds a child asset to the ManagedObject.
      *
      * @param refrenceReprsentation
      * @return ManagedObjectReferenceRepresentation with the id of th child device.
      * @throws SDKException
      */
     ManagedObjectReferenceRepresentation addChildAssets(ManagedObjectReferenceRepresentation refrenceReprsentation)
+            throws SDKException;
+    
+    /**
+     * Adds a child asset to the ManagedObject.
+     *
+     * @param refrenceReprsentation
+     * @return ManagedObjectReferenceRepresentation with the id of th child device.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceRepresentation addChildAssets(GId childId)
             throws SDKException;
 
     /**
