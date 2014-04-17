@@ -23,10 +23,10 @@ package com.cumulocity.sdk.client.devicecontrol.autopoll;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.cumulocity.model.operation.OperationStatus;
-import com.cumulocity.sdk.client.FixedRatePoller;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.OperationFilter;
+import com.cumulocity.sdk.client.polling.FixedRatePoller;
 
 /**
  * This class is an implementation of OperationsPollerInterface, its responsibility is to poll device control REST API for

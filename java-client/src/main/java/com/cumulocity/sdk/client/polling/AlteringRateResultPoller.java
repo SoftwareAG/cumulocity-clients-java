@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.client;
+package com.cumulocity.sdk.client.polling;
 
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -8,31 +8,58 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FixedRateResultPoller<K> extends FixedRatePoller {
+import com.cumulocity.sdk.client.SDKException;
+
+public class AlteringRateResultPoller<K> implements ResultPoller<K> {
     
-    private static final Logger LOG = LoggerFactory.getLogger(FixedRateResultPoller.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AlteringRateResultPoller.class);
     
     public static interface GetResultTask<K> {
         K tryGetResult();        
     }
 
-    private PriorityBlockingQueue<K> results;
-    private long pollTimeout;
-    private long pollInterval;
+    private final PriorityBlockingQueue<K> results;
+    private final PollingStrategy pollingStrategy;
+    private final ScheduledThreadPoolExecutor pollingExecutor;
+    private final Runnable pollingTask;
     private Exception lastException;
 
-    public FixedRateResultPoller(GetResultTask<K> task, long pollInterval, long pollTimeout) {
-        super(new ScheduledThreadPoolExecutor(1), pollInterval);
-        this.pollInterval = pollInterval;
-        this.pollTimeout = pollTimeout;
+    public AlteringRateResultPoller(GetResultTask<K> task, PollingStrategy strategy) {
+        this.pollingStrategy = strategy;
+        this.pollingExecutor = new ScheduledThreadPoolExecutor(1);
         this.results = aQueue();
-        setPollingTask(wrapAsRunnable(task));
+        this.pollingTask = wrapAsRunnable(task);
     }
     
+    @Override
+    public boolean start() {
+        if (pollingTask == null) {
+            LOG.error("Poller start requested without pollingTask being set");
+            return false;
+        }
+
+        scheduleNextTaskExecution();
+        return true;
+    }
+
+    private void scheduleNextTaskExecution() {  
+        if(!pollingStrategy.isEmpty()) {
+            pollingExecutor.schedule(pollingTask, pollingStrategy.popNext(), TimeUnit.MILLISECONDS);
+        }
+        
+    }
+
+    @Override
+    public void stop() {
+        //shutdown operationsPollingExecutor if it's running or if it's no shutting down just now
+        pollingExecutor.shutdown();
+    }
+            
+    @Override    
     public K startAndPoll() {
         start();
         try {
-            K result = results.poll(pollTimeout, TimeUnit.MILLISECONDS);
+            K result = waitForResult();
             if(result == null && lastException != null) { 
                 LOG.error("Timeout occured, last exception: " + lastException);
             }
@@ -42,6 +69,14 @@ public class FixedRateResultPoller<K> extends FixedRatePoller {
         } finally {
             results.clear();
             stop();
+        }
+    }
+
+    private K waitForResult() throws InterruptedException {
+        if(pollingStrategy.getTimeout() == null) {
+            return results.take();                
+        } else {
+            return results.poll(pollingStrategy.getTimeout(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -62,13 +97,18 @@ public class FixedRateResultPoller<K> extends FixedRatePoller {
         }
         try {
             K result = task.tryGetResult();
-            if(result != null) {
+            if(result == null) {
+                scheduleNextTaskExecution();
+            } else {
                 results.add(result);                        
             }
         } catch (Exception ex) {
             lastException = ex;
             LOG.info("Polling with wrong result: " + digest(ex.getMessage()));
-            LOG.info("Try again in " + pollInterval / 1000 + " seconds.");
+            if(!pollingStrategy.isEmpty()) {
+                LOG.info("Try again in " + pollingStrategy.peakNext() / 1000 + " seconds.");
+            }
+            scheduleNextTaskExecution();
         }
     }
 
