@@ -25,8 +25,15 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRefe
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,17 +46,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import c8y.ThreePhaseElectricitySensor;
+
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-
-import c8y.ThreePhaseElectricitySensor;
 
 public class InventoryIT extends JavaSdkITBase {
 
@@ -285,13 +291,11 @@ public class InventoryIT extends JavaSdkITBase {
 
         ManagedObjectReferenceRepresentation childRef1 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
                 child1).build();
-        ManagedObjectReferenceRepresentation childRef2 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
-                child2).build();
 
         // When
         ManagedObject parentMo = inventory.getManagedObject(parent.getId());
         parentMo.addChildDevice(childRef1);
-        parentMo.addChildDevice(childRef2);
+        parentMo.addChildDevice(child2.getId());
 
         // Then
         ManagedObjectReferenceCollectionRepresentation refCollection = inventory.getManagedObject(
@@ -354,13 +358,11 @@ public class InventoryIT extends JavaSdkITBase {
 
         ManagedObjectReferenceRepresentation childRef1 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
                 child1).build();
-        ManagedObjectReferenceRepresentation childRef2 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
-                child2).build();
 
         // When
         ManagedObject parentMo = inventory.getManagedObject(parent.getId());
         parentMo.addChildAssets(childRef1);
-        parentMo.addChildAssets(childRef2);
+        parentMo.addChildAssets(child2.getId());
 
         // Then
         ManagedObjectReferenceCollectionRepresentation refCollection = inventory.getManagedObject(
