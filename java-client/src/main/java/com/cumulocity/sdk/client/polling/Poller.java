@@ -18,22 +18,22 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.cumulocity.sdk.client.measurement.autopoll;
-
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import com.cumulocity.sdk.client.polling.FixedRatePoller;
+package com.cumulocity.sdk.client.polling;
 
 /**
- * Starts a regular poller that adds measurement operation requests to the
- * operations queue at a regular interval. Note: this only adds the request -
- * processing the request must be handled by a concrete OperationProcessor.
+ * This interface provides methods for controlling polling tasks. It can be used for any task that needs
+ * to be run according to some schedule.
  */
-public class MeasurementFixedRatePoller extends FixedRatePoller {
+public interface Poller {
+    /**
+     * Starts poller
+     *
+     * @return true if the poller was successfully started
+     */
+    boolean start();
 
-    public MeasurementFixedRatePoller(long periodInterval) {
-        super(new ScheduledThreadPoolExecutor(1), periodInterval);
-        setPollingTask(new MeasurementRequestTask());
-    }
-
+    /**
+     * Stops poller after finishing all started jobs
+     */
+    void stop();
 }

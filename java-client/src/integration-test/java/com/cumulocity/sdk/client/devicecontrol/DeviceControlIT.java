@@ -42,7 +42,6 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepres
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.FixedRatePoller;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationsByAgentAndStatusPollerImpl;
@@ -50,6 +49,7 @@ import com.cumulocity.sdk.client.devicecontrol.notification.OperationNotificatio
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.Subscription;
 import com.cumulocity.sdk.client.notification.SubscriptionListener;
+import com.cumulocity.sdk.client.polling.FixedRatePoller;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
