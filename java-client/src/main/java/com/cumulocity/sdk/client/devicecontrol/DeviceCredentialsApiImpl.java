@@ -31,7 +31,7 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
 
     @Override
     public DeviceCredentialsRepresentation pollCredentials(String deviceId, int interval, int timeout) {
-        PollingStrategy pollingStrategy = new PollingStrategy(true, (long) timeout, SECONDS, (long) interval);
+        PollingStrategy pollingStrategy = new PollingStrategy((long) timeout, SECONDS, (long) interval);
         return pollCredentials(deviceId, pollingStrategy);
     }
     

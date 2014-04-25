@@ -1,7 +1,6 @@
 package com.cumulocity.sdk.client.polling;
 
-import java.util.Comparator;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -18,16 +17,16 @@ public class AlteringRateResultPoller<K> implements ResultPoller<K> {
         K tryGetResult();        
     }
 
-    private final PriorityBlockingQueue<K> results;
     private final PollingStrategy pollingStrategy;
     private final ScheduledThreadPoolExecutor pollingExecutor;
     private final Runnable pollingTask;
+    private CountDownLatch latch;
+    private volatile K result;
     private Exception lastException;
 
     public AlteringRateResultPoller(GetResultTask<K> task, PollingStrategy strategy) {
         this.pollingStrategy = strategy;
         this.pollingExecutor = new ScheduledThreadPoolExecutor(1);
-        this.results = aQueue();
         this.pollingTask = wrapAsRunnable(task);
     }
     
@@ -57,9 +56,10 @@ public class AlteringRateResultPoller<K> implements ResultPoller<K> {
             
     @Override    
     public K startAndPoll() {
+        latch = new CountDownLatch(1);
         start();
         try {
-            K result = waitForResult();
+            waitForResult();
             if(result == null && lastException != null) { 
                 LOG.error("Timeout occured, last exception: " + lastException);
             }
@@ -67,16 +67,15 @@ public class AlteringRateResultPoller<K> implements ResultPoller<K> {
         } catch (InterruptedException e) {
             throw new SDKException("Error polling data", e);
         } finally {
-            results.clear();
             stop();
         }
     }
 
-    private K waitForResult() throws InterruptedException {
+    private void waitForResult() throws InterruptedException {
         if(pollingStrategy.getTimeout() == null) {
-            return results.take();                
+            latch.await();                
         } else {
-            return results.poll(pollingStrategy.getTimeout(), TimeUnit.MILLISECONDS);
+            latch.await(pollingStrategy.getTimeout(), TimeUnit.MILLISECONDS);                
         }
     }
 
@@ -92,15 +91,15 @@ public class AlteringRateResultPoller<K> implements ResultPoller<K> {
     }
     
     private void appendResult(final GetResultTask<K> task) {
-        if(!results.isEmpty()) {
+        if(result != null) {
             return;
         }
         try {
-            K result = task.tryGetResult();
+            result = task.tryGetResult();
             if(result == null) {
                 scheduleNextTaskExecution();
             } else {
-                results.add(result);                        
+                latch.countDown();                        
             }
         } catch (Exception ex) {
             lastException = ex;
@@ -118,14 +117,5 @@ public class AlteringRateResultPoller<K> implements ResultPoller<K> {
         } else {
             return message.substring(0, Math.min(message.length() - 1, 200));
         } 
-    }
-
-    private PriorityBlockingQueue<K> aQueue() {
-        return new PriorityBlockingQueue<K>(1, new Comparator<K>() {
-            @Override
-            public int compare(K o1, K o2) {
-                return 0;
-            }
-        });
     }
 }

@@ -2,6 +2,7 @@ package com.cumulocity.sdk.client.polling;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -9,16 +10,21 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.collect.FluentIterable;
 
 public class PollingStrategy {
+    
+    private static final Long POLL_CREDENTIALS_TIMEOUT = 3600L * 24;
+    private static final Long[] POLL_INTERVALS = new Long[] { 5L, 10L, 20L, 40L, 80L, 160L, 320L, 640L, 1280L, 2560L, 3600L };
 
     private final List<Long> pollIntervals;
-    private final boolean repeatLast;
+    private boolean repeatLast = true;
     private final Long last;
     private int index;
     private final TimeUnit timeUnit;
     private final Long timeout;
         
-    public PollingStrategy(boolean repeatLast, Long timeout, TimeUnit timeUnit, List<Long> pollIntervals) {
-        this.repeatLast = repeatLast;
+    public PollingStrategy() {
+        this(POLL_CREDENTIALS_TIMEOUT, SECONDS, POLL_INTERVALS);
+    }
+    public PollingStrategy(Long timeout, TimeUnit timeUnit, List<Long> pollIntervals) {
         this.timeout = timeout;
         this.pollIntervals = pollIntervals;
         this.timeUnit = timeUnit;
@@ -26,8 +32,8 @@ public class PollingStrategy {
         this.last = FluentIterable.from(pollIntervals).last().orNull();
     }
     
-    public PollingStrategy(boolean repeatLast, Long timeout, TimeUnit timeUnit, Long... pollIntervals) {
-        this(repeatLast, timeout, timeUnit, asList(pollIntervals));
+    public PollingStrategy(Long timeout, TimeUnit timeUnit, Long... pollIntervals) {
+        this(timeout, timeUnit, asList(pollIntervals));
     }
     
     private Long forIndex(int index) {
@@ -52,7 +58,7 @@ public class PollingStrategy {
     
     /**
      * get and remove next polling interval 
-     * @return interval in milliseconds
+     * @return interval
      */
     public Long popNext() {
         Long result = peakNext();
@@ -63,10 +69,19 @@ public class PollingStrategy {
     }
     
     /**
-     * @return timeout in niliseconds
+     * @return timeout
      */
     public Long getTimeout() {
         return asMiliseconds(timeout);
+    }
+    
+
+    public boolean isRepeatLast() {
+        return repeatLast;
+    }
+
+    public void setRepeatLast(boolean repeatLast) {
+        this.repeatLast = repeatLast;
     }
 
     private Long asMiliseconds(Long result) {        
