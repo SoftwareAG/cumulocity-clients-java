@@ -7,8 +7,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.FluentIterable;
-
 public class PollingStrategy {
     
     private static final Long POLL_CREDENTIALS_TIMEOUT = 3600L * 24;
@@ -29,7 +27,7 @@ public class PollingStrategy {
         this.pollIntervals = pollIntervals;
         this.timeUnit = timeUnit;
         this.index = -1;
-        this.last = FluentIterable.from(pollIntervals).last().orNull();
+        this.last = pollIntervals.isEmpty() ? null : pollIntervals.get(pollIntervals.size() - 1);
     }
     
     public PollingStrategy(Long timeout, TimeUnit timeUnit, Long... pollIntervals) {
