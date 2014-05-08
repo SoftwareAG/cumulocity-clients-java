@@ -19,25 +19,46 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import java.io.IOException;
 import java.util.Map;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.security.Authentication;
+import org.eclipse.jetty.client.security.BasicAuthentication;
+import org.eclipse.jetty.client.security.SimpleRealmResolver;
 
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.SDKException;
 
 class CumulocityLongPollingTransport extends LongPollingTransport {
-    private final String applicationKey;
 
-    CumulocityLongPollingTransport(Map<String, Object> options, HttpClient httpClient, String applicationKey) {
+    private PlatformParameters paramters;
+
+    private final Authentication authentication;
+
+    CumulocityLongPollingTransport(Map<String, Object> options, HttpClient httpClient, PlatformParameters paramters) {
         super(options, httpClient);
-        this.applicationKey = applicationKey;
+        this.paramters = paramters;
+        try {
+            this.authentication = new BasicAuthentication(new PlatformPropertiesRealm(paramters));
+        } catch (IOException e) {
+            throw new SDKException("authentication failed", e);
+        }
     }
 
     @Override
     protected void customize(ContentExchange exchange) {
         super.customize(exchange);
-        exchange.addRequestHeader(RestConnector.X_CUMULOCITY_APPLICATION_KEY, applicationKey);
+        exchange.addRequestHeader(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
+        try {
+            authentication.setCredentials(exchange);
+        } catch (IOException e) {
+            throw new SDKException("authentication failed", e);
+        }
     }
 }

@@ -18,13 +18,14 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.cumulocity.sdk.client;
+package com.cumulocity.sdk.client.polling;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * A poller that triggers tasks to execute at a fixed rate.<br>

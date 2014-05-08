@@ -91,8 +91,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private LongPollingTransport createTransport(final HttpClient httpClient) {
-        final String applicationKey = paramters.getApplicationKey();
-        LongPollingTransport transport = new CumulocityLongPollingTransport(createTransportOptions(), httpClient, applicationKey);
+        LongPollingTransport transport = new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters);
         if (!httpClient.isStarted()) {
             try {
                 httpClient.start();

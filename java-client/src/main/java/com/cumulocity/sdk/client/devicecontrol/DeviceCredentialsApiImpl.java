@@ -1,15 +1,17 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import static com.cumulocity.rest.representation.operation.DeviceControlMediaType.DEVICE_CREDENTIALS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
-import com.cumulocity.sdk.client.FixedRateResultPoller;
-import com.cumulocity.sdk.client.FixedRateResultPoller.GetResultTask;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.polling.AlteringRateResultPoller;
+import com.cumulocity.sdk.client.polling.AlteringRateResultPoller.GetResultTask;
+import com.cumulocity.sdk.client.polling.PollingStrategy;
 
 public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
-    
+
     public static final String DEVICE_CREDENTIALS_URI = "devicecontrol/deviceCredentials";
 
     private final RestConnector restConnector;
@@ -26,21 +28,27 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
         representation.setId(deviceId);
         restConnector.post(url, DEVICE_CREDENTIALS, representation);
     }
-    
+
     @Override
     public DeviceCredentialsRepresentation pollCredentials(String deviceId, int interval, int timeout) {
-        return aPoller(deviceId, interval, timeout).startAndPoll();
+        PollingStrategy pollingStrategy = new PollingStrategy((long) timeout, SECONDS, (long) interval);
+        return pollCredentials(deviceId, pollingStrategy);
+    }
+    
+    @Override
+    public DeviceCredentialsRepresentation pollCredentials(String deviceId, PollingStrategy pollingStrategy) {
+        return aPoller(deviceId, pollingStrategy).startAndPoll();
     }
 
-    private FixedRateResultPoller<DeviceCredentialsRepresentation> aPoller(final String deviceId, int interval, int timeout) {
+    private AlteringRateResultPoller<DeviceCredentialsRepresentation> aPoller(final String deviceId, PollingStrategy pollingStrategy) {
         GetResultTask<DeviceCredentialsRepresentation> pollingTask = new GetResultTask<DeviceCredentialsRepresentation>() {
 
             @Override
             public DeviceCredentialsRepresentation tryGetResult() {
                 return restConnector.get(url + "/" + deviceId, DEVICE_CREDENTIALS, DeviceCredentialsRepresentation.class);
             }
-            
+
         };
-        return new FixedRateResultPoller<DeviceCredentialsRepresentation>(pollingTask, interval * 1000, timeout * 1000);
+        return new AlteringRateResultPoller<DeviceCredentialsRepresentation>(pollingTask, pollingStrategy);
     }
 }
