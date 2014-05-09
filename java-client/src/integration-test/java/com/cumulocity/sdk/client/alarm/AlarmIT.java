@@ -24,7 +24,6 @@ import static com.cumulocity.rest.representation.builder.RestRepresentationObjec
 import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentation.ALARM_REPRESENTATION;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
-import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildrenNames;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
