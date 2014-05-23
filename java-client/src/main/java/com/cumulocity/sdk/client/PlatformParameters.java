@@ -24,8 +24,7 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
 import com.cumulocity.sdk.client.buffering.BufferProcessor;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
-import com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider;
-import com.cumulocity.sdk.client.buffering.MemoryBasedPersistentProvider;
+import com.cumulocity.sdk.client.buffering.DefaultBufferingConfiguration;
 import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class PlatformParameters {
@@ -62,8 +61,8 @@ public class PlatformParameters {
         //empty constructor for spring based initialization
     }
 
-    public PlatformParameters(String host, CumulocityCredentials credentials) {
-        this(host, credentials, DEFAULT_PAGE_SIZE);
+    public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
+        this(host, credentials, clientConfiguration, DEFAULT_PAGE_SIZE);
     }
 
     private void setMandatoryFields(String host, CumulocityCredentials credentials) {
@@ -78,9 +77,12 @@ public class PlatformParameters {
         this.cumulocityLogin = credentials.getLogin();
     }
 
-    public PlatformParameters(String host, CumulocityCredentials credentials, int pageSize) {
+    public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
         setMandatoryFields(host, credentials);
-        PersistentProvider persistentProvider = new FileBasedPersistentProvider("/tmp/");
+        if (clientConfiguration == null) {
+            clientConfiguration = new ClientConfiguration(new DefaultBufferingConfiguration());
+        }
+        PersistentProvider persistentProvider = clientConfiguration.getBufferingConfiguration().getPersistentProvider();
         bufferRequestService = new BufferRequestService(persistentProvider);
         new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector()).startProcessing();
         this.pageSize = pageSize;

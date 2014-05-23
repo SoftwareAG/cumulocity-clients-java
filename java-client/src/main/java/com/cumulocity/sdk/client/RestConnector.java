@@ -66,15 +66,12 @@ public class RestConnector {
     
     private final ResponseParser responseParser;
 
-    private final BufferRequestService bufferRequestService;
-
     public RestConnector(PlatformParameters platformParameters, ResponseParser responseParser) {
         this(platformParameters, responseParser, createClient(platformParameters));
     }
     
     protected RestConnector(PlatformParameters platformParameters, ResponseParser responseParser, Client client) {
         this.platformParameters = platformParameters;
-        this.bufferRequestService = platformParameters.getBufferRequestService();
         this.responseParser = responseParser;
         this.client = client;
     }
@@ -149,6 +146,7 @@ public class RestConnector {
     
     public <T extends ResourceRepresentation> Object postWithBuffer(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
+        BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
         long requestId = bufferRequestService.create(new HTTPPostRequest(path, mediaType, representation));
         return bufferRequestService.getResponse(requestId);
     }

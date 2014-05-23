@@ -20,11 +20,7 @@
 
 package com.cumulocity.sdk.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
@@ -33,10 +29,10 @@ import com.cumulocity.sdk.client.audit.AuditRecordApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApiImpl;
 import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.cep.CepApiImpl;
-import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
-import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApiImpl;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApiImpl;
+import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
+import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApiImpl;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.event.EventApiImpl;
 import com.cumulocity.sdk.client.identity.IdentityApi;
@@ -47,8 +43,6 @@ import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
 
 public class PlatformImpl extends PlatformParameters implements Platform {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PlatformImpl.class);
 
     private static final String PLATFORM_URL = "platform";
 
@@ -79,54 +73,39 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     private PlatformApiRepresentation platformApiRepresentation;
 
     public PlatformImpl(String host, CumulocityCredentials credentials) {
-        super(host, credentials);
+        super(host, credentials, null);
+    }
+    
+    public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
+        super(host, credentials, clientConfiguration);
     }
 
     public PlatformImpl(String host, int port, CumulocityCredentials credentials) {
-        super(getHostUrl(host, port), credentials);
+        super(getHostUrl(host, port), credentials, null);
     }
 
     public PlatformImpl(String host, CumulocityCredentials credentials, int pageSize) {
-        super(host, credentials, pageSize);
+        super(host, credentials, null, pageSize);
+    }
+    
+    public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
+        super(host, credentials, clientConfiguration, pageSize);
     }
 
     public PlatformImpl(String host, int port, CumulocityCredentials credentials, int pageSize) {
-        super(getHostUrl(host, port), credentials, pageSize);
-    }
-    
-    public static void main(String[] args) throws InterruptedException {
-        PlatformImpl platformImpl = new PlatformImpl("http://localhost:8181", "management", "admin", "Pyi1bo1r", null);
-        InventoryApi inventoryApi = platformImpl.getInventoryApi();
-        
-        int i = 0;
-        while(true) {
-            ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
-            managedObject.setName("name" + i++);
-            inventoryApi.create(managedObject);
-            Thread.sleep(1000);
-        }
+        super(getHostUrl(host, port), credentials, null, pageSize);
     }
     
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey));
-    }
-
-    @Deprecated
-    public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey) {
-        super(getHostUrl(host, port), new CumulocityCredentials(tenantId, user, password,applicationKey));
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), null);
     }
 
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), null, pageSize);
     }
 
-    @Deprecated
-    public PlatformImpl(String host, int port, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(getHostUrl(host, port), new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
-    }
-    
     public PlatformImpl() {
         //empty constructor for spring based initialization
     }
@@ -134,7 +113,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     private static String getHostUrl(String host, int port) {
         return "http://" + host + ":" + port;
     }
-
+    
     /**
      * This static method creates the Platform from the system parameters.
      * <p/>

@@ -29,7 +29,6 @@ public class BufferProcessor {
             public void run() {
                 while (true) {
                     ProcessingRequest processingRequest = persistentProvider.poll();
-                    System.out.println("Processing request: " + processingRequest.getId() + " ," + processingRequest.getRequest().getPath());
                     service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getRequest()));
                 }
             }
@@ -42,7 +41,7 @@ public class BufferProcessor {
                         result.setResponse(response);
                         return result;
                     } catch (SDKException e) {
-                        if (e.getHttpStatus() != 503) {
+                        if (e.getHttpStatus() <= 500) {
                             result.setException(e);
                             return result;
                         }
