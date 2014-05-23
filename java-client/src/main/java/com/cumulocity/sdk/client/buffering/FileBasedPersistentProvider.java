@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.io.IOUtils;
 
 
-public class FileBasedPersistentProvider implements PersistentProvider {
+public class FileBasedPersistentProvider extends PersistentProvider {
     
     private static final int MAX_QUEUE_SIZE = 10;
     
@@ -33,9 +33,10 @@ public class FileBasedPersistentProvider implements PersistentProvider {
 
     private File newRequests;
     
-    public FileBasedPersistentProvider(String pathToFiles) {
-        this.newRequestsTemp = new File(pathToFiles + "new-requests-temp/");
-        this.newRequests = new File(pathToFiles + "new-requests/");
+    public FileBasedPersistentProvider() {
+        String userHome = System.getProperty("user.home");
+        this.newRequestsTemp = new File(userHome + "/.cumulocity/new-requests-temp/");
+        this.newRequests = new File(userHome + "/.cumulocity/new-requests/");
         
         this.newRequestsTemp.mkdir();
         this.newRequests.mkdir();
@@ -43,6 +44,10 @@ public class FileBasedPersistentProvider implements PersistentProvider {
     
     @Override
     public long offer(HTTPPostRequest request) {
+        if (newRequests.listFiles().length >= bufferLimit) {
+            throw new IllegalStateException("Queue is full");
+        }
+        
         long requestId = counter.getAndIncrement();
         String filename = getFilename(request, requestId);
         writeToFile(request.toCsvString(), new File(newRequestsTemp, filename));

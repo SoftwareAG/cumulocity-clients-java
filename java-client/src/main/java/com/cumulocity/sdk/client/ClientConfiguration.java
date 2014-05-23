@@ -1,16 +1,22 @@
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.sdk.client.buffering.BufferingConfiguration;
+import com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider;
+import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class ClientConfiguration {
+
+    private PersistentProvider persistentProvider;
+
+    public ClientConfiguration() {
+        this.persistentProvider = new FileBasedPersistentProvider();
+    }
     
-    private final BufferingConfiguration bufferingConfiguration;
-
-    public ClientConfiguration(BufferingConfiguration configuration) {
-        this.bufferingConfiguration = configuration;
+    public ClientConfiguration(PersistentProvider persistentProvider) {
+        this.persistentProvider = persistentProvider;
     }
 
-    public BufferingConfiguration getBufferingConfiguration() {
-        return bufferingConfiguration;
+    public PersistentProvider getPersistentProvider() {
+        return persistentProvider;
     }
+
 }

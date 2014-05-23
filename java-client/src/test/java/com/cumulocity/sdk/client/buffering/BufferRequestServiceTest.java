@@ -9,10 +9,11 @@ import com.cumulocity.sdk.client.SDKException;
 
 public class BufferRequestServiceTest {
 
-    BufferRequestService bufferRequestService = new BufferRequestService(new MemoryBasedPersistentProvider());
+    private static final long QUEUE_CAPACITY = 5;
+    BufferRequestService bufferRequestService = new BufferRequestService(new MemoryBasedPersistentProvider(QUEUE_CAPACITY));
 
     @Test
-    public void shouldReturnId() {
+    public void shouldReturnNextId() {
         assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(1);
         assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(2);
         assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(3);
@@ -36,5 +37,12 @@ public class BufferRequestServiceTest {
         bufferRequestService.addResponse(requestId, result);
         
         bufferRequestService.getResponse(requestId);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowExceptionWhenQueueIsFull() {
+        for (int i = 0; i < QUEUE_CAPACITY + 1; i++) {
+            bufferRequestService.create(new HTTPPostRequest());
+        }
     }
 }

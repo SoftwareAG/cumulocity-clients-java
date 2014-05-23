@@ -5,13 +5,24 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class MemoryBasedPersistentProvider implements PersistentProvider {
+public class MemoryBasedPersistentProvider extends PersistentProvider {
 
     private final AtomicLong counter = new AtomicLong(1);
     private final BlockingQueue<ProcessingRequest> requestQueue = new LinkedBlockingQueue<ProcessingRequest>();
     
+    public MemoryBasedPersistentProvider() {
+    }
+    
+    public MemoryBasedPersistentProvider(long bufferLimit) {
+        super(bufferLimit);
+    }
+    
     @Override
     public long offer(HTTPPostRequest request) {
+        if (requestQueue.size() >= bufferLimit) {
+            throw new IllegalStateException("Queue is full");
+        }
+        
         try {
             long requestId = counter.getAndIncrement();
             requestQueue.put(new ProcessingRequest(requestId, request));

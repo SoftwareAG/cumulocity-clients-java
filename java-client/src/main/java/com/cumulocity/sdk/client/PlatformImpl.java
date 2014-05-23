@@ -75,17 +75,18 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public PlatformImpl(String host, CumulocityCredentials credentials) {
         super(host, credentials, null);
     }
+    //client configuration bezargumentowy z defautlowymi ustawieniami
     
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
         super(host, credentials, clientConfiguration);
     }
 
     public PlatformImpl(String host, int port, CumulocityCredentials credentials) {
-        super(getHostUrl(host, port), credentials, null);
+        super(getHostUrl(host, port), credentials, new ClientConfiguration());
     }
 
     public PlatformImpl(String host, CumulocityCredentials credentials, int pageSize) {
-        super(host, credentials, null, pageSize);
+        super(host, credentials, new ClientConfiguration(), pageSize);
     }
     
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
@@ -93,17 +94,17 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     }
 
     public PlatformImpl(String host, int port, CumulocityCredentials credentials, int pageSize) {
-        super(getHostUrl(host, port), credentials, null, pageSize);
+        super(getHostUrl(host, port), credentials, new ClientConfiguration(), pageSize);
     }
     
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), null);
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), new ClientConfiguration());
     }
 
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), null, pageSize);
+        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), new ClientConfiguration(), pageSize);
     }
 
     public PlatformImpl() {

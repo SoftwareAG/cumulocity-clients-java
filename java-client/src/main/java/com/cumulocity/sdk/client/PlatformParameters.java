@@ -24,7 +24,6 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
 import com.cumulocity.sdk.client.buffering.BufferProcessor;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
-import com.cumulocity.sdk.client.buffering.DefaultBufferingConfiguration;
 import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class PlatformParameters {
@@ -79,10 +78,7 @@ public class PlatformParameters {
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
         setMandatoryFields(host, credentials);
-        if (clientConfiguration == null) {
-            clientConfiguration = new ClientConfiguration(new DefaultBufferingConfiguration());
-        }
-        PersistentProvider persistentProvider = clientConfiguration.getBufferingConfiguration().getPersistentProvider();
+        PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
         bufferRequestService = new BufferRequestService(persistentProvider);
         new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector()).startProcessing();
         this.pageSize = pageSize;
