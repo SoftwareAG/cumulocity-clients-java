@@ -20,12 +20,17 @@
 
 package com.cumulocity.sdk.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParser {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
 
     public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
             Class<T> type) throws SDKException {
@@ -45,9 +50,21 @@ public class ResponseParser {
         String errorMessage = "Http status code: " + status;
 
         if (response.hasEntity()) {
-            errorMessage += "\n" + response.getEntity(ErrorMessageRepresentation.class);
+            ErrorMessageRepresentation errorRepresentation = getErrorRepresentation(response);
+            if (errorRepresentation != null) {
+                errorMessage += "\n" + errorRepresentation;
+            }
         }
         return errorMessage;
+    }
+
+    private ErrorMessageRepresentation getErrorRepresentation(ClientResponse response) {
+        try {
+            return response.getEntity(ErrorMessageRepresentation.class);
+        } catch (Exception e) {
+            LOG.error("Failed to parse error message", e);
+            return null;
+        }
     }
 
     public GId parseIdFromLocation(ClientResponse response) {

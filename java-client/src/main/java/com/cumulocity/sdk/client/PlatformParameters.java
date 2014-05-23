@@ -22,6 +22,11 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
+import com.cumulocity.sdk.client.buffering.BufferProcessor;
+import com.cumulocity.sdk.client.buffering.BufferRequestService;
+import com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider;
+import com.cumulocity.sdk.client.buffering.MemoryBasedPersistentProvider;
+import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class PlatformParameters {
 
@@ -50,13 +55,15 @@ public class PlatformParameters {
     private boolean requireResponseBody = true;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
+
+    private BufferRequestService bufferRequestService;
     
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials) {
-        setMandatoryFields(host, credentials);
+        this(host, credentials, DEFAULT_PAGE_SIZE);
     }
 
     private void setMandatoryFields(String host, CumulocityCredentials credentials) {
@@ -73,9 +80,16 @@ public class PlatformParameters {
 
     public PlatformParameters(String host, CumulocityCredentials credentials, int pageSize) {
         setMandatoryFields(host, credentials);
+        PersistentProvider persistentProvider = new FileBasedPersistentProvider("/tmp/");
+        bufferRequestService = new BufferRequestService(persistentProvider);
+        new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector()).startProcessing();
         this.pageSize = pageSize;
     }
-
+    
+    protected RestConnector createRestConnector() {
+        return new RestConnector(this, new ResponseParser());
+    }
+    
     public int getPageSize() {
         return pageSize;
     }
@@ -162,5 +176,9 @@ public class PlatformParameters {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public BufferRequestService getBufferRequestService() {
+        return bufferRequestService;
     }
 }

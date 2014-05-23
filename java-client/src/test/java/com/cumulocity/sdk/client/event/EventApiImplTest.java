@@ -37,7 +37,6 @@ import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -153,7 +152,7 @@ public class EventApiImplTest {
         // Given
         EventRepresentation eventRepresentation = new EventRepresentation();
         EventRepresentation created = new EventRepresentation();
-        when(restConnector.post(EVENTS_COLLECTION_URL, EventMediaType.EVENT, eventRepresentation)).thenReturn(created);
+        when(restConnector.postWithBuffer(EVENTS_COLLECTION_URL, EventMediaType.EVENT, eventRepresentation)).thenReturn(created);
 
         // When
         EventRepresentation result = eventApi.create(eventRepresentation);

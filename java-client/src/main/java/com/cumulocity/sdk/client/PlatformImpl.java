@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
@@ -91,6 +92,19 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     public PlatformImpl(String host, int port, CumulocityCredentials credentials, int pageSize) {
         super(getHostUrl(host, port), credentials, pageSize);
+    }
+    
+    public static void main(String[] args) throws InterruptedException {
+        PlatformImpl platformImpl = new PlatformImpl("http://localhost:8181", "management", "admin", "Pyi1bo1r", null);
+        InventoryApi inventoryApi = platformImpl.getInventoryApi();
+        
+        int i = 0;
+        while(true) {
+            ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
+            managedObject.setName("name" + i++);
+            inventoryApi.create(managedObject);
+            Thread.sleep(1000);
+        }
     }
     
     @Deprecated
@@ -237,10 +251,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 	    return new DeviceCredentialsApiImpl(this, restConnector);
     }
 
-	private RestConnector createRestConnector() {
-        return new RestConnector(this, new ResponseParser());
-    }
-    
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
         if (platformApiRepresentation == null) {
             platformApiRepresentation = restConnector.get(platformUrl(), PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);

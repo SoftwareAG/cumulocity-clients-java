@@ -65,7 +65,7 @@ public class EventApiImpl implements EventApi {
 
     @Override
     public EventRepresentation create(EventRepresentation representation) throws SDKException {
-        return restConnector.post(getSelfUri(), EventMediaType.EVENT, representation);
+        return (EventRepresentation) restConnector.postWithBuffer(getSelfUri(), EventMediaType.EVENT, representation);
     }
 
     @Override

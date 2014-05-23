@@ -91,7 +91,7 @@ public class AlarmApiImpl implements AlarmApi {
 
     @Override
     public AlarmRepresentation create(AlarmRepresentation representation) throws SDKException {
-        return restConnector.post(getSelfUri(), AlarmMediaType.ALARM, representation);
+        return (AlarmRepresentation) restConnector.postWithBuffer(getSelfUri(), AlarmMediaType.ALARM, representation);
     }
 
     @Override

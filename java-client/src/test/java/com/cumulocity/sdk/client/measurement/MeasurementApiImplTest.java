@@ -38,7 +38,6 @@ import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepre
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -162,7 +161,7 @@ public class MeasurementApiImplTest {
         //Given
         MeasurementRepresentation measurement = new MeasurementRepresentation();
         MeasurementRepresentation created = new MeasurementRepresentation();
-        when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT, measurement)).thenReturn(created);
+        when(restConnector.postWithBuffer(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT, measurement)).thenReturn(created);
 
         // When
         MeasurementRepresentation result = measurementApi.create(measurement);
