@@ -75,7 +75,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public PlatformImpl(String host, CumulocityCredentials credentials) {
         super(host, credentials, null);
     }
-    //client configuration bezargumentowy z defautlowymi ustawieniami
     
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
         super(host, credentials, clientConfiguration);

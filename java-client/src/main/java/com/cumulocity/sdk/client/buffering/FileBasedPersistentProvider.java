@@ -33,10 +33,9 @@ public class FileBasedPersistentProvider extends PersistentProvider {
 
     private File newRequests;
     
-    public FileBasedPersistentProvider() {
-        String userHome = System.getProperty("user.home");
-        this.newRequestsTemp = new File(userHome + "/.cumulocity/new-requests-temp/");
-        this.newRequests = new File(userHome + "/.cumulocity/new-requests/");
+    public FileBasedPersistentProvider(String filePath) {
+        this.newRequestsTemp = new File(filePath + "/.cumulocity/new-requests-temp/");
+        this.newRequests = new File(filePath + "/.cumulocity/new-requests/");
         
         this.newRequestsTemp.mkdir();
         this.newRequests.mkdir();

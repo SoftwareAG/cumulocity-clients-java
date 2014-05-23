@@ -1,6 +1,6 @@
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider;
+import com.cumulocity.sdk.client.buffering.MemoryBasedPersistentProvider;
 import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class ClientConfiguration {
@@ -8,7 +8,7 @@ public class ClientConfiguration {
     private PersistentProvider persistentProvider;
 
     public ClientConfiguration() {
-        this.persistentProvider = new FileBasedPersistentProvider();
+        this.persistentProvider = new MemoryBasedPersistentProvider();
     }
     
     public ClientConfiguration(PersistentProvider persistentProvider) {
