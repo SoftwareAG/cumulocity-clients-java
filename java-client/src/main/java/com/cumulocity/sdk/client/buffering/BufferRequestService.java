@@ -5,11 +5,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.cumulocity.sdk.client.SDKException;
 
 public class BufferRequestService {
     
+    private final AtomicLong counter = new AtomicLong(1);
     private static int MAX_WAIT_FOR_RESPONSE = 120;
     private final PersistentProvider persistentProvider;
     private final ConcurrentMap<Long, BlockingQueue<Result>> responses = new ConcurrentHashMap<Long, BlockingQueue<Result>>();
@@ -19,7 +21,8 @@ public class BufferRequestService {
     }
     
     public long create(HTTPPostRequest request) {
-        long requestId = persistentProvider.offer(request);
+        long requestId = counter.getAndIncrement();
+        persistentProvider.offer(new ProcessingRequest(requestId, request));
         responses.put(requestId, new LinkedBlockingQueue<Result>());
         return requestId;
     }

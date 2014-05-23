@@ -16,7 +16,7 @@ public class ProcessingRequest {
         return id;
     }
 
-    public HTTPPostRequest getRequest() {
+    public HTTPPostRequest getEntity() {
         return request;
     }
 
