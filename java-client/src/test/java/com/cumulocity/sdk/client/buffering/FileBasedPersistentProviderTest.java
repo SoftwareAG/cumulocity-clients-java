@@ -6,6 +6,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.File;
 
+import javax.ws.rs.HttpMethod;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +50,7 @@ public class FileBasedPersistentProviderTest {
     
     @Test
     public void shouldPersistRequestToFile() throws Exception {
-        HTTPPostRequest request = new HTTPPostRequest("test", AlarmMediaType.ALARM, new AlarmRepresentation());
+        BufferedRequest request = BufferedRequest.create(HttpMethod.POST, "test", AlarmMediaType.ALARM, new AlarmRepresentation());
         
         long requestId = persistentProvider.offer(request);
         
@@ -58,7 +60,7 @@ public class FileBasedPersistentProviderTest {
     
     @Test
     public void shouldNotCreateAFileWhenQueueIsFull() throws Exception {
-        HTTPPostRequest request = new HTTPPostRequest("test", AlarmMediaType.ALARM, new AlarmRepresentation());
+        BufferedRequest request = BufferedRequest.create(HttpMethod.POST, "test", AlarmMediaType.ALARM, new AlarmRepresentation());
         persistentProvider = new FileBasedPersistentProvider(1, pathToTempFolder);
         
         expectedException.expect(IllegalStateException.class);
@@ -70,7 +72,7 @@ public class FileBasedPersistentProviderTest {
     
     @Test
     public void shouldReturnRequestFromQueue() throws Exception {
-        HTTPPostRequest request = new HTTPPostRequest("test", AlarmMediaType.ALARM, new AlarmRepresentation());
+        BufferedRequest request = BufferedRequest.create(HttpMethod.POST, "test", AlarmMediaType.ALARM, new AlarmRepresentation());
         long requestId = persistentProvider.offer(request);
         
         ProcessingRequest result = persistentProvider.poll();

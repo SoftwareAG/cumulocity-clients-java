@@ -3,6 +3,8 @@ package com.cumulocity.sdk.client.buffering;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.ws.rs.HttpMethod;
+
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
@@ -33,11 +35,11 @@ public class BufferProcessor {
                 }
             }
 
-            private Result sendRequest(HTTPPostRequest httpPostRequest) {
+            private Result sendRequest(BufferedRequest httpPostRequest) {
                 Result result = new Result();
                 while (true) {
                     try {
-                        Object response = restConnector.post(httpPostRequest.getPath(), httpPostRequest.getMediaType(), httpPostRequest.getRepresentation());
+                        Object response = doSendRequest(httpPostRequest);
                         result.setResponse(response);
                         return result;
                     } catch (SDKException e) {
@@ -49,6 +51,17 @@ public class BufferProcessor {
                         result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
                         return result;
                     }
+                }
+            }
+
+            private Object doSendRequest(BufferedRequest httpPostRequest) {
+                String method = httpPostRequest.getMethod();
+                if (method == HttpMethod.POST) {
+                    return restConnector.post(httpPostRequest.getPath(), httpPostRequest.getMediaType(), httpPostRequest.getRepresentation());
+                } else if (method == HttpMethod.PUT) {
+                    return restConnector.put(httpPostRequest.getPath(), httpPostRequest.getMediaType(), httpPostRequest.getRepresentation());
+                } else {
+                    throw new IllegalArgumentException("This method is not supported in buffering processor: " + method);
                 }
             }
         });

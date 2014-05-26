@@ -18,7 +18,7 @@ public class BufferRequestService {
         this.persistentProvider = persistentProvider;
     }
     
-    public long create(HTTPPostRequest request) {
+    public long create(BufferedRequest request) {
         long requestId = persistentProvider.offer(request);
         responses.put(requestId, new LinkedBlockingQueue<Result>());
         return requestId;

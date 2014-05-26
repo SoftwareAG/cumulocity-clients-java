@@ -67,7 +67,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
     }
 
     @Override
-    public long offer(HTTPPostRequest request) {
+    public long offer(BufferedRequest request) {
         if (newRequests.listFiles().length >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }
@@ -80,7 +80,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
         return requestId;
     }
 
-    private String getFilename(HTTPPostRequest request, long requestId) {
+    private String getFilename(BufferedRequest request, long requestId) {
         return requestId + "";
     }
 

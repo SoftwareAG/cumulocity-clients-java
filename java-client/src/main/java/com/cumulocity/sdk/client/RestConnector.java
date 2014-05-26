@@ -27,6 +27,7 @@ import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 import java.io.InputStream;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
@@ -36,7 +37,7 @@ import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
-import com.cumulocity.sdk.client.buffering.HTTPPostRequest;
+import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -146,8 +147,17 @@ public class RestConnector {
     
     public <T extends ResourceRepresentation> Object postWithBuffer(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
+        return requestWithBuffer(HttpMethod.POST, path, mediaType, representation);
+    }
+    
+    public <T extends ResourceRepresentation> Object putWithBuffer(String path, CumulocityMediaType mediaType,
+            T representation) throws SDKException {
+        return requestWithBuffer(HttpMethod.PUT, path, mediaType, representation);
+    }
+
+    private <T extends ResourceRepresentation> Object requestWithBuffer(String method, String path, CumulocityMediaType mediaType, T representation) {
         BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
-        long requestId = bufferRequestService.create(new HTTPPostRequest(path, mediaType, representation));
+        long requestId = bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
         return bufferRequestService.getResponse(requestId);
     }
 

@@ -5,9 +5,9 @@ public class ProcessingRequest {
 
     private final long id;
 
-    private final HTTPPostRequest request;
+    private final BufferedRequest request;
 
-    public ProcessingRequest(long id, HTTPPostRequest request) {
+    public ProcessingRequest(long id, BufferedRequest request) {
         this.id = id;
         this.request = request;
     }
@@ -16,11 +16,11 @@ public class ProcessingRequest {
         return id;
     }
 
-    public HTTPPostRequest getRequest() {
+    public BufferedRequest getRequest() {
         return request;
     }
 
     public static ProcessingRequest parse(String name, String content) {
-        return new ProcessingRequest(Long.parseLong(name), HTTPPostRequest.parseCsvString(content));
+        return new ProcessingRequest(Long.parseLong(name), BufferedRequest.parseCsvString(content));
     }
 }

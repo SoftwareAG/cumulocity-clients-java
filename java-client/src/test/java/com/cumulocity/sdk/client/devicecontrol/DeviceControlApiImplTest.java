@@ -46,7 +46,6 @@ import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
 import com.cumulocity.rest.representation.operation.DeviceControlRepresentation;
 import com.cumulocity.rest.representation.operation.OperationCollectionRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -122,7 +121,7 @@ public class DeviceControlApiImplTest {
         op.setId(new GId("myId"));
         op.setCreationTime(new Date());
         OperationRepresentation updated = new OperationRepresentation();
-        when(restConnector.put(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
+        when(restConnector.putWithBuffer(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
                 argThat(hasOnlyUpdateFields(op)))).thenReturn(updated);
 
         //when

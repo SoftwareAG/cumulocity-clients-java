@@ -18,7 +18,7 @@ public class MemoryBasedPersistentProvider extends PersistentProvider {
     }
     
     @Override
-    public long offer(HTTPPostRequest request) {
+    public long offer(BufferedRequest request) {
         if (requestQueue.size() >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }

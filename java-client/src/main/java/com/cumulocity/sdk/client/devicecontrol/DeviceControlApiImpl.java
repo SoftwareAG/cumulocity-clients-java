@@ -79,7 +79,7 @@ public class DeviceControlApiImpl implements DeviceControlApi {
     @Override
     public OperationRepresentation update(OperationRepresentation operation) throws SDKException {
         String url = getSelfUri() + "/" + operation.getId().getValue();
-        return restConnector.put(url, DeviceControlMediaType.OPERATION, prepareOperationForUpdate(operation));
+        return (OperationRepresentation) restConnector.putWithBuffer(url, DeviceControlMediaType.OPERATION, prepareOperationForUpdate(operation));
     }
 
     private String getSelfUri() throws SDKException {

@@ -14,14 +14,14 @@ public class BufferRequestServiceTest {
 
     @Test
     public void shouldReturnNextId() {
-        assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(1);
-        assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(2);
-        assertThat(bufferRequestService.create(new HTTPPostRequest())).isEqualTo(3);
+        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(1);
+        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(2);
+        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(3);
     }
     
     @Test
     public void shouldReturnResponse() {
-        long requestId = bufferRequestService.create(new HTTPPostRequest());
+        long requestId = bufferRequestService.create(new BufferedRequest());
         Result result = new Result();
         result.setResponse(new ManagedObjectRepresentation());
         bufferRequestService.addResponse(requestId, result);
@@ -31,7 +31,7 @@ public class BufferRequestServiceTest {
     
     @Test(expected = SDKException.class)
     public void shouldThrowException() {
-        long requestId = bufferRequestService.create(new HTTPPostRequest());
+        long requestId = bufferRequestService.create(new BufferedRequest());
         Result result = new Result();
         result.setException(new SDKException(""));
         bufferRequestService.addResponse(requestId, result);
@@ -42,7 +42,7 @@ public class BufferRequestServiceTest {
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenQueueIsFull() {
         for (int i = 0; i < QUEUE_CAPACITY + 1; i++) {
-            bufferRequestService.create(new HTTPPostRequest());
+            bufferRequestService.create(new BufferedRequest());
         }
     }
 }

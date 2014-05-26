@@ -2,6 +2,8 @@ package com.cumulocity.sdk.client.buffering;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import javax.ws.rs.HttpMethod;
+
 import org.junit.Test;
 
 import com.cumulocity.model.idtype.GId;
@@ -17,25 +19,25 @@ public class HTTPPostRequestTest {
 
     @Test
     public void shouldParseEventRepresentationRequest() {
-        String csvString = new HTTPPostRequest("http://test.cumulocity.com/event/events", EventMediaType.EVENT, eventRepresentation())
+        String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/event/events", EventMediaType.EVENT, eventRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E");
     }
     
     @Test
     public void shouldParseAlarmRepresentationRequest() {
-        String csvString = new HTTPPostRequest("http://test.cumulocity.com/alarm/alarms", AlarmMediaType.ALARM, alarmRepresentation())
+        String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/alarm/alarms", AlarmMediaType.ALARM, alarmRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A");
     }
     
     @Test
     public void shouldParseCsvStringToAlarmRepresentation() {
-        String csvString = "http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A";
+        String csvString = "POST##http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A";
         
-        HTTPPostRequest request = HTTPPostRequest.parseCsvString(csvString);
+        BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
         assertThat(request.getPath()).isEqualTo("http://test.cumulocity.com/alarm/alarms");
         assertThat(request.getMediaType()).isEqualTo(AlarmMediaType.ALARM);
@@ -45,9 +47,9 @@ public class HTTPPostRequestTest {
     
     @Test
     public void shouldParseCsvStringToEventRepresentation() {
-        String csvString = "http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E";
+        String csvString = "POST##http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E";
         
-        HTTPPostRequest request = HTTPPostRequest.parseCsvString(csvString);
+        BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
         assertThat(request.getPath()).isEqualTo("http://test.cumulocity.com/event/events");
         assertThat(request.getMediaType()).isEqualTo(EventMediaType.EVENT);
