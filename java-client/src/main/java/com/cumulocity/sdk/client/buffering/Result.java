@@ -1,16 +1,15 @@
 package com.cumulocity.sdk.client.buffering;
 
-import com.cumulocity.sdk.client.SDKException;
 
 public class Result {
 
-    private SDKException exception;
+    private RuntimeException exception;
     private Object response;
     
-    public SDKException getException() {
+    public RuntimeException getException() {
         return exception;
     }
-    public void setException(SDKException exception) {
+    public void setException(RuntimeException exception) {
         this.exception = exception;
     }
     public Object getResponse() {

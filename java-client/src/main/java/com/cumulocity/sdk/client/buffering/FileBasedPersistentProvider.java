@@ -21,9 +21,13 @@ import org.apache.commons.io.IOUtils;
 
 public class FileBasedPersistentProvider extends PersistentProvider {
     
+    protected static final String NEW_REQUESTS_PATH = "/new-requests/";
+
+    protected static final String NEW_REQUESTS_TEMP_PATH = "/new-requests-temp/";
+
     private static final int MAX_QUEUE_SIZE = 10;
     
-    private final AtomicLong counter = new AtomicLong(1);
+    protected final AtomicLong counter = new AtomicLong(1);
     
     private Queue<ProcessingRequest> requests = new LinkedList<ProcessingRequest>();
     
@@ -34,13 +38,34 @@ public class FileBasedPersistentProvider extends PersistentProvider {
     private File newRequests;
     
     public FileBasedPersistentProvider(String filePath) {
-        this.newRequestsTemp = new File(filePath + "/.cumulocity/new-requests-temp/");
-        this.newRequests = new File(filePath + "/.cumulocity/new-requests/");
-        
-        this.newRequestsTemp.mkdir();
-        this.newRequests.mkdir();
+        this(DEFAULT_BUFFER_LIMIT, filePath);
     }
     
+    public FileBasedPersistentProvider(long bufferLimit, String filePath) {
+        super(bufferLimit);
+        this.newRequestsTemp = new File(filePath + NEW_REQUESTS_TEMP_PATH);
+        this.newRequests = new File(filePath + NEW_REQUESTS_PATH);
+        
+        setup();
+    }
+    
+    private void setup() {
+        newRequestsTemp.mkdir();
+        if (newRequests.exists()) {
+            initRequestIdCounter();
+        } else {
+            newRequests.mkdir();
+        }
+    }
+
+    private void initRequestIdCounter() {
+        File[] incomingFiles = getIncomingFilesSorted();
+        if (incomingFiles.length > 0) {
+            Long lastRequestID = Long.valueOf(incomingFiles[incomingFiles.length-1].getName());
+            counter.set(lastRequestID + 10);
+        }
+    }
+
     @Override
     public long offer(HTTPPostRequest request) {
         if (newRequests.listFiles().length >= bufferLimit) {
@@ -82,7 +107,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
     }
 
     private void readFilesToQueue() {
-        File[] files = getIncomingFile();
+        File[] files = getIncomingFilesSorted();
         for (File file : files) {
             requests.add(readFromFile(file));
             file.delete();
@@ -92,7 +117,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
         }
     }
     
-    public ProcessingRequest readFromFile(File file) {
+    private ProcessingRequest readFromFile(File file) {
         FileInputStream stream = null;
         try {
             stream = openInputStream(file);
@@ -105,7 +130,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
         }
     }
     
-    private File[] getIncomingFile() {
+    private File[] getIncomingFilesSorted() {
         File[] files = newRequests.listFiles();
         Arrays.sort(files, new Comparator<File>() {
 
@@ -129,7 +154,7 @@ public class FileBasedPersistentProvider extends PersistentProvider {
         }
     }
     
-    public boolean moveFile(String filename, File fromQueue, File toQueue) {
+    private boolean moveFile(String filename, File fromQueue, File toQueue) {
         File from = new File(fromQueue, filename);
         File to = new File(toQueue, filename);
         return from.renameTo(to);

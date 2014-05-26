@@ -46,7 +46,8 @@ public class BufferProcessor {
                             return result;
                         }
                     } catch (Exception e) {
-                        // do nothing, continue sending
+                        result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
+                        return result;
                     }
                 }
             }

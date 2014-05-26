@@ -3,7 +3,7 @@ package com.cumulocity.sdk.client.buffering;
 
 public abstract class PersistentProvider {
     
-    private static final long DEFAULT_BUFFER_LIMIT = 10000;
+    protected static final long DEFAULT_BUFFER_LIMIT = 10000;
     
     protected long bufferLimit = DEFAULT_BUFFER_LIMIT;
     

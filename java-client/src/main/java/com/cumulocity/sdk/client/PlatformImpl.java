@@ -73,7 +73,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     private PlatformApiRepresentation platformApiRepresentation;
 
     public PlatformImpl(String host, CumulocityCredentials credentials) {
-        super(host, credentials, null);
+        super(host, credentials, new ClientConfiguration());
     }
     
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
