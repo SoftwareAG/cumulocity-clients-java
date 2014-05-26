@@ -2,7 +2,6 @@ package com.cumulocity.sdk.client.buffering;
 
 import com.cumulocity.sdk.client.SDKException;
 
-
 public class Result {
 
     private SDKException exception;

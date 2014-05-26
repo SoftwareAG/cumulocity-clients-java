@@ -29,7 +29,7 @@ public class BufferProcessor {
             public void run() {
                 while (true) {
                     ProcessingRequest processingRequest = persistentProvider.poll();
-                    service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getEntity()));
+                    service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getRequest()));
                 }
             }
 
@@ -45,6 +45,8 @@ public class BufferProcessor {
                             result.setException(e);
                             return result;
                         }
+                    } catch (Exception e) {
+                        // do nothing, continue sending
                     }
                 }
             }

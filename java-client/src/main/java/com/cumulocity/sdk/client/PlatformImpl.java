@@ -71,9 +71,9 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public static final String CUMULOCITY_PROXY_PASSWORD = "proxyPassword";
 
     private PlatformApiRepresentation platformApiRepresentation;
-    
+
     public PlatformImpl(String host, CumulocityCredentials credentials) {
-        super(host, credentials, new ClientConfiguration());
+        super(host, credentials, null);
     }
     
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {

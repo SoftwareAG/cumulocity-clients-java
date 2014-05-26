@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
 
@@ -21,6 +22,8 @@ import org.apache.commons.io.IOUtils;
 public class FileBasedPersistentProvider extends PersistentProvider {
     
     private static final int MAX_QUEUE_SIZE = 10;
+    
+    private final AtomicLong counter = new AtomicLong(1);
     
     private Queue<ProcessingRequest> requests = new LinkedList<ProcessingRequest>();
     
@@ -39,15 +42,21 @@ public class FileBasedPersistentProvider extends PersistentProvider {
     }
     
     @Override
-    public void offer(ProcessingRequest request) {
+    public long offer(HTTPPostRequest request) {
         if (newRequests.listFiles().length >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }
         
-        String filename = request.getId() + "";
-        writeToFile(request.getEntity().toCsvString(), new File(newRequestsTemp, filename));
+        long requestId = counter.getAndIncrement();
+        String filename = getFilename(request, requestId);
+        writeToFile(request.toCsvString(), new File(newRequestsTemp, filename));
         moveFile(filename, newRequestsTemp, newRequests);
         latch.countDown();
+        return requestId;
+    }
+
+    private String getFilename(HTTPPostRequest request, long requestId) {
+        return requestId + "";
     }
 
     @Override

@@ -2,10 +2,12 @@ package com.cumulocity.sdk.client.buffering;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class MemoryBasedPersistentProvider extends PersistentProvider {
 
+    private final AtomicLong counter = new AtomicLong(1);
     private final BlockingQueue<ProcessingRequest> requestQueue = new LinkedBlockingQueue<ProcessingRequest>();
     
     public MemoryBasedPersistentProvider() {
@@ -16,13 +18,15 @@ public class MemoryBasedPersistentProvider extends PersistentProvider {
     }
     
     @Override
-    public void offer(ProcessingRequest request) {
+    public long offer(HTTPPostRequest request) {
         if (requestQueue.size() >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }
         
         try {
-            requestQueue.put(request);
+            long requestId = counter.getAndIncrement();
+            requestQueue.put(new ProcessingRequest(requestId, request));
+            return requestId;
         } catch (InterruptedException e) {
             throw new RuntimeException("", e);
         }
