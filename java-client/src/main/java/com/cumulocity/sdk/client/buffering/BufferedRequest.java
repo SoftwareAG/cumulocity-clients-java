@@ -17,6 +17,7 @@ import com.cumulocity.rest.representation.operation.OperationRepresentation;
 
 public class BufferedRequest {
     
+    private static final String SEPARATOR = "##";
     private static final Map<String, CumulocityMediaType> toMediaTypeMappings = new HashMap<String, CumulocityMediaType>(); 
     private static final Map<CumulocityMediaType, String> fromMediaTypeMappings = new HashMap<CumulocityMediaType, String>();
     
@@ -83,12 +84,12 @@ public class BufferedRequest {
     }
     
     public static BufferedRequest parseCsvString(String content) {
-        String[] parts = content.split("##", 5);
+        String[] parts = content.split(SEPARATOR, 5);
         return new BufferedRequest(parts[0], parts[1], toMediaTypeMappings.get(parts[2]), JSONBase.fromJSON(parts[4], toClassMappings.get(parts[3])));
     }
     
     public String toCsvString() {
-        return method + "##" + path + "##" + fromMediaTypeMappings.get(mediaType) + "##"
-                + fromClassMappings.get(representation.getClass()) + "##" + JSONBase.getJSONGenerator().forValue(representation);
+        return method + SEPARATOR + path + SEPARATOR + fromMediaTypeMappings.get(mediaType) + SEPARATOR
+                + fromClassMappings.get(representation.getClass()) + SEPARATOR + JSONBase.getJSONGenerator().forValue(representation);
     }
 }
