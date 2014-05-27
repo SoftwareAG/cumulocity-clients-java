@@ -35,10 +35,10 @@ public class BufferRequestService {
     public Object getResponse(long requestId) throws SDKException {
         try {
             Result result = responses.get(requestId).poll(MAX_WAIT_FOR_RESPONSE, TimeUnit.SECONDS);
+            responses.remove(requestId);
             if (result == null) {
                 return result;
             }
-            responses.remove(requestId);
             if (result.getException() != null) {
                 throw result.getException();
             }

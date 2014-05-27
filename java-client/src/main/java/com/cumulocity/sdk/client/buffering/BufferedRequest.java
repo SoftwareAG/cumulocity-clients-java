@@ -83,12 +83,12 @@ public class BufferedRequest {
     }
     
     public static BufferedRequest parseCsvString(String content) {
-        String[] parts = content.split("##");
-        return new BufferedRequest(parts[0], parts[1], toMediaTypeMappings.get(parts[2]), JSONBase.fromJSON(parts[3], toClassMappings.get(parts[4])));
+        String[] parts = content.split("##", 5);
+        return new BufferedRequest(parts[0], parts[1], toMediaTypeMappings.get(parts[2]), JSONBase.fromJSON(parts[4], toClassMappings.get(parts[3])));
     }
     
     public String toCsvString() {
         return method + "##" + path + "##" + fromMediaTypeMappings.get(mediaType) + "##"
-                + JSONBase.getJSONGenerator().forValue(representation) + "##" + fromClassMappings.get(representation.getClass());
+                + fromClassMappings.get(representation.getClass()) + "##" + JSONBase.getJSONGenerator().forValue(representation);
     }
 }

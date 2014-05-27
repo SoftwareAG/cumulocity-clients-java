@@ -15,14 +15,14 @@ import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 
-public class HTTPPostRequestTest {
+public class BufferedRequestTest {
 
     @Test
     public void shouldParseEventRepresentationRequest() {
         String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/event/events", EventMediaType.EVENT, eventRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/event/events##E##E##{\"source\":{\"id\":\"1\"},\"text\":\"text##\"}");
     }
     
     @Test
@@ -30,43 +30,43 @@ public class HTTPPostRequestTest {
         String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/alarm/alarms", AlarmMediaType.ALARM, alarmRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"source\":{\"id\":\"1\"},\"text\":\"text\"}");
     }
     
     @Test
     public void shouldParseCsvStringToAlarmRepresentation() {
-        String csvString = "POST##http://test.cumulocity.com/alarm/alarms##A##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##A";
+        String csvString = "POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"source\":{\"id\":\"1\"},\"text\":\"text\"}";
         
         BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
         assertThat(request.getPath()).isEqualTo("http://test.cumulocity.com/alarm/alarms");
         assertThat(request.getMediaType()).isEqualTo(AlarmMediaType.ALARM);
         assertThat(request.getRepresentation().getClass()).isEqualTo(AlarmRepresentation.class);
-        assertThat(((AlarmRepresentation)request.getRepresentation()).getText()).isEqualTo("text#");
+        assertThat(((AlarmRepresentation)request.getRepresentation()).getText()).isEqualTo("text");
     }
     
     @Test
     public void shouldParseCsvStringToEventRepresentation() {
-        String csvString = "POST##http://test.cumulocity.com/event/events##E##{\"source\":{\"id\":\"1\"},\"text\":\"text#\"}##E";
+        String csvString = "POST##http://test.cumulocity.com/event/events##E##E##{\"source\":{\"id\":\"1\"},\"text\":\"text##\"}";
         
         BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
         assertThat(request.getPath()).isEqualTo("http://test.cumulocity.com/event/events");
         assertThat(request.getMediaType()).isEqualTo(EventMediaType.EVENT);
         assertThat(request.getRepresentation().getClass()).isEqualTo(EventRepresentation.class);
-        assertThat(((EventRepresentation)request.getRepresentation()).getText()).isEqualTo("text#");
+        assertThat(((EventRepresentation)request.getRepresentation()).getText()).isEqualTo("text##");
     }
 
     private EventRepresentation eventRepresentation() {
         return new EventRepresentationBuilder()
-            .withText("text#")
+            .withText("text##")
             .withSource(source())
             .build();
     }
     
     private AlarmRepresentation alarmRepresentation() {
         return new AlarmRepresentationBuilder()
-            .withText("text#")
+            .withText("text")
             .withSource(source())
             .build();
     }

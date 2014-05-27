@@ -9,7 +9,7 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
 public class BufferProcessor {
-
+    
     private ExecutorService executor;
 
     private PersistentProvider persistentProvider;
