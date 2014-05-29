@@ -157,36 +157,39 @@ public class AlarmIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReturnAllAlarms() throws Exception {
-        // Given
-        ManagedObjectRepresentation source = mo1;
-        alarmApi.create(aSampleAlarm(source));
-        alarmApi.create(aSampleAlarm(source));
-
-        // When
-        AlarmCollectionRepresentation alarms = alarmApi.getAlarms().get();
-
-        // Then
-        assertThat(alarms.getAlarms().size(), is(2));
-    }
-    
-    @Test
-    public void shouldReturnAllAlarms2() throws Exception {
+    public void shouldReturnAllCreatedAlarms() throws Exception {
         // Given
         ManagedObjectRepresentation source = mo1;
         
-        for (int i = 0; i<20 ; i++) {
+        for (int i = 0; i<10 ; i++) {
             alarmApi.create(aSampleAlarm(source));
         }
 
         int resultNumber = 0;
         Iterable<AlarmRepresentation> pager = alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(source.getId())).get().allPages();
         for (AlarmRepresentation alarm : pager) {
-            System.out.println(resultNumber);
             resultNumber++;
         }
 
-        assertThat(resultNumber, is(20));
+        assertThat(resultNumber, is(10));
+    }
+    
+    @Test
+    public void shouldReturnAllCreatedAsyncAlarms() throws Exception {
+        // Given
+        ManagedObjectRepresentation source = mo1;
+        
+        for (int i = 0; i<10 ; i++) {
+            alarmApi.createAsync(aSampleAlarm(source)).get();
+        }
+
+        int resultNumber = 0;
+        Iterable<AlarmRepresentation> pager = alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(source.getId())).get().allPages();
+        for (AlarmRepresentation alarm : pager) {
+            resultNumber++;
+        }
+
+        assertThat(resultNumber, is(10));
     }
     
     @Test

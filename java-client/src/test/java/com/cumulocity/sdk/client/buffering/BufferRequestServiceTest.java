@@ -9,34 +9,28 @@ import com.cumulocity.sdk.client.SDKException;
 
 public class BufferRequestServiceTest {
 
+    private static final int REQUEST_ID = 1;
     private static final long QUEUE_CAPACITY = 5;
-    BufferRequestService bufferRequestService = new BufferRequestService(new MemoryBasedPersistentProvider(QUEUE_CAPACITY));
+    BufferRequestService bufferRequestService = new BufferRequestService(new TestPersistentProvider(QUEUE_CAPACITY));
 
     @Test
-    public void shouldReturnNextId() {
-        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(1);
-        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(2);
-        assertThat(bufferRequestService.create(new BufferedRequest())).isEqualTo(3);
-    }
-    
-    @Test
     public void shouldReturnResponse() {
-        long requestId = bufferRequestService.create(new BufferedRequest());
+        Future future = bufferRequestService.create(new BufferedRequest());
         Result result = new Result();
         result.setResponse(new ManagedObjectRepresentation());
-        bufferRequestService.addResponse(requestId, result);
+        bufferRequestService.addResponse(REQUEST_ID, result);
         
-        assertThat(bufferRequestService.getResponse(requestId)).isInstanceOf(ManagedObjectRepresentation.class);
+        assertThat(future.get()).isInstanceOf(ManagedObjectRepresentation.class);
     }
     
     @Test(expected = SDKException.class)
     public void shouldThrowException() {
-        long requestId = bufferRequestService.create(new BufferedRequest());
+        Future future = bufferRequestService.create(new BufferedRequest());
         Result result = new Result();
         result.setException(new SDKException(""));
-        bufferRequestService.addResponse(requestId, result);
+        bufferRequestService.addResponse(REQUEST_ID, result);
         
-        bufferRequestService.getResponse(requestId);
+        future.get();
     }
     
     @Test(expected = IllegalStateException.class)
@@ -44,5 +38,29 @@ public class BufferRequestServiceTest {
         for (int i = 0; i < QUEUE_CAPACITY + 1; i++) {
             bufferRequestService.create(new BufferedRequest());
         }
+    }
+    
+    public class TestPersistentProvider extends MemoryBasedPersistentProvider {
+        
+        public TestPersistentProvider(long bufferLimit) {
+            super(bufferLimit);
+        }
+
+        @Override
+        public long generateId() {
+            return REQUEST_ID;
+        }
+
+        @Override
+        public void offer(ProcessingRequest request) {
+            super.offer(request);
+
+        }
+
+        @Override
+        public ProcessingRequest poll() {
+            return super.poll();
+        }
+
     }
 }

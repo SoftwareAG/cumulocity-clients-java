@@ -29,6 +29,7 @@ import com.cumulocity.rest.representation.event.EventsApiRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import com.cumulocity.sdk.client.buffering.Future;
 
 public class EventApiImpl implements EventApi {
 
@@ -65,7 +66,12 @@ public class EventApiImpl implements EventApi {
 
     @Override
     public EventRepresentation create(EventRepresentation representation) throws SDKException {
-        return (EventRepresentation) restConnector.postWithBuffer(getSelfUri(), EventMediaType.EVENT, representation);
+        return restConnector.post(getSelfUri(), EventMediaType.EVENT, representation);
+    }
+    
+    @Override
+    public Future createAsync(EventRepresentation representation) throws SDKException {
+        return restConnector.postAsync(getSelfUri(), EventMediaType.EVENT, representation);
     }
 
     @Override

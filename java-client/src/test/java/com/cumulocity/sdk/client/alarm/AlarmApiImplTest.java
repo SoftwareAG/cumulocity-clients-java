@@ -146,7 +146,7 @@ public class AlarmApiImplTest {
         //Given
         AlarmRepresentation alarmRepresentation = new AlarmRepresentation();
         AlarmRepresentation created = new AlarmRepresentation();
-        when(restConnector.postWithBuffer(ALARM_COLLECTION_URL, AlarmMediaType.ALARM, alarmRepresentation)).thenReturn(created);
+        when(restConnector.post(ALARM_COLLECTION_URL, AlarmMediaType.ALARM, alarmRepresentation)).thenReturn(created);
 
         // When 
         AlarmRepresentation result = alarmApi.create(alarmRepresentation);

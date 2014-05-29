@@ -152,7 +152,7 @@ public class EventApiImplTest {
         // Given
         EventRepresentation eventRepresentation = new EventRepresentation();
         EventRepresentation created = new EventRepresentation();
-        when(restConnector.postWithBuffer(EVENTS_COLLECTION_URL, EventMediaType.EVENT, eventRepresentation)).thenReturn(created);
+        when(restConnector.post(EVENTS_COLLECTION_URL, EventMediaType.EVENT, eventRepresentation)).thenReturn(created);
 
         // When
         EventRepresentation result = eventApi.create(eventRepresentation);

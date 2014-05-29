@@ -23,6 +23,7 @@ package com.cumulocity.sdk.client.event;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.buffering.Future;
 
 /**
  * API for creating, deleting and retrieving events from the platform.
@@ -47,6 +48,15 @@ public interface EventApi {
      */
     EventRepresentation create(EventRepresentation event) throws SDKException;
 
+    /**
+     * Creates event in the platform. Immediate response is available through the Future object. 
+     * In case of lost connection, buffers data in persistence provider. 
+     *
+      * @param event event to be created
+     * @return the created event with the generated id
+     * @throws SDKException if the event could not be created
+     */
+    Future createAsync(EventRepresentation event) throws SDKException;
     /**
      * Deletes event from the platform.
      * The event to be deleted is identified by the id within the given event.

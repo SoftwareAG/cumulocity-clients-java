@@ -121,7 +121,7 @@ public class DeviceControlApiImplTest {
         op.setId(new GId("myId"));
         op.setCreationTime(new Date());
         OperationRepresentation updated = new OperationRepresentation();
-        when(restConnector.putWithBuffer(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
+        when(restConnector.put(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
                 argThat(hasOnlyUpdateFields(op)))).thenReturn(updated);
 
         //when
