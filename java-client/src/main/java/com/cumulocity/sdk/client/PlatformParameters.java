@@ -55,6 +55,8 @@ public class PlatformParameters {
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private BufferRequestService bufferRequestService;
+
+    private BufferProcessor bufferProcessor;
     
     public PlatformParameters() {
         //empty constructor for spring based initialization
@@ -80,7 +82,8 @@ public class PlatformParameters {
         setMandatoryFields(host, credentials);
         PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
         bufferRequestService = new BufferRequestService(persistentProvider);
-        new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector()).startProcessing();
+        bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector());
+        bufferProcessor.startProcessing();
         this.pageSize = pageSize;
     }
     
