@@ -26,10 +26,10 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import com.cumulocity.sdk.client.buffering.Future;
 
 public class MeasurementApiImpl implements MeasurementApi {
 
@@ -89,6 +89,11 @@ public class MeasurementApiImpl implements MeasurementApi {
     @Override
     public MeasurementRepresentation create(MeasurementRepresentation measurementRepresentation) throws SDKException {
           return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
+    }
+    
+    @Override
+    public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
+          return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 
     protected String getSelfUri() throws SDKException {

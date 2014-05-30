@@ -30,7 +30,6 @@ import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
 
 public class JavaSdkITBase {
-    private static ApplicationCreator applicationCreator;
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
     protected static PlatformImpl bootstrapPlatform;
@@ -40,22 +39,14 @@ public class JavaSdkITBase {
         platform = createPlatform(false);
         bootstrapPlatform = createPlatform(true);
 
-        applicationCreator = new ApplicationCreator(platform);
-        applicationCreator.createApplication();
-
-        tenantCreator = new TenantCreator(platform, applicationCreator);
+        tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
     }
 
     @AfterClass
     public static void removeTenantAndApplication() throws Exception {
-        try {
-            tenantCreator = new TenantCreator(platform, applicationCreator);
-            tenantCreator.removeTenant();
-        } finally {
-            applicationCreator = new ApplicationCreator(platform);
-            applicationCreator.removeApplication();
-        }
+        tenantCreator = new TenantCreator(platform);
+        tenantCreator.removeTenant();
     }
 
     private static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
@@ -70,6 +61,6 @@ public class JavaSdkITBase {
                 new CumulocityCredentials(p.get("cumulocity.tenant"),
                         p.get(userKey),
                         p.get(userPassword),
-                        p.get("cumulocity.applicationKey")));
+                        null));
     }
 }

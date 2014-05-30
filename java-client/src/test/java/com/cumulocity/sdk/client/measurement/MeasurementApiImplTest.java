@@ -38,7 +38,6 @@ import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepre
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;

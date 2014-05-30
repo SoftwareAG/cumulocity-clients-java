@@ -48,7 +48,6 @@ import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBui
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.common.ApplicationCreator;
 import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
@@ -62,7 +61,6 @@ public class AuditRecordIT {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<ManagedObjectRepresentation>();
 
-    private static ApplicationCreator applicationCreator;
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
 
@@ -82,16 +80,13 @@ public class AuditRecordIT {
                new CumulocityCredentials(p.get("cumulocity.tenant"),
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
-                p.get("cumulocity.applicationKey")),
+                null),
                 5);
     }
 
     @Before
     public void setup() throws Exception {
-        applicationCreator = new ApplicationCreator(platform);
-        applicationCreator.createApplication();
-
-        tenantCreator = new TenantCreator(platform, applicationCreator);
+        tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
 
         auditRecordsApi = platform.getAuditRecordApi();
@@ -111,7 +106,6 @@ public class AuditRecordIT {
     @After
     public void removeTenantAndApplication() throws Exception {
         tenantCreator.removeTenant();
-        applicationCreator.removeApplication();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {

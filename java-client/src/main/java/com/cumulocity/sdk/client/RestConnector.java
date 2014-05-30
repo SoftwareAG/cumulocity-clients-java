@@ -20,11 +20,14 @@
 
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
+import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
+import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 import java.io.InputStream;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
@@ -33,12 +36,14 @@ import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
+import com.cumulocity.sdk.client.buffering.BufferRequestService;
+import com.cumulocity.sdk.client.buffering.BufferedRequest;
+import com.cumulocity.sdk.client.buffering.Future;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
@@ -93,16 +98,6 @@ public class RestConnector {
         return responseParser.parse(response, OK.getStatusCode(), responseType);
     }
 
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
-
-        ClientResponse response = httpPost(path, mediaType, representation);
-        return parseResponseWithId(representation, response, CREATED.getStatusCode());
-
-    }
-    
-    
-
     public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
             Class<T> responseClass) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
@@ -150,13 +145,33 @@ public class RestConnector {
     private <T extends ResourceRepresentationWithId> boolean isDefined(T repFromPlatform) {
         return repFromPlatform != null;
     }
+    
+    public <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType,
+            T representation) throws SDKException {
+        return sendAsyncRequest(HttpMethod.POST, path, mediaType, representation);
+    }
+    
+    public <T extends ResourceRepresentation> Future putAsync(String path, CumulocityMediaType mediaType,
+            T representation) throws SDKException {
+        return sendAsyncRequest(HttpMethod.PUT, path, mediaType, representation);
+    }
+
+    private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType, T representation) {
+        BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
+        return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
+    }
 
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
-
         ClientResponse response = httpPost(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
+    }
+    
+    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType,
+            T representation) throws SDKException {
+        ClientResponse response = httpPost(path, mediaType, representation);
+        return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
 
     @SuppressWarnings("unchecked")
@@ -181,7 +196,6 @@ public class RestConnector {
 
     private <T extends ResourceRepresentation> ClientResponse httpPost(String path,
             CumulocityMediaType mediaType, T representation) {
-        
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
@@ -190,7 +204,7 @@ public class RestConnector {
         return builder.post(ClientResponse.class,
                 representation);
     }
-
+    
     private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType,
             T representation) {
         

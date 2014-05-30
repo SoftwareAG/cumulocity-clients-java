@@ -22,6 +22,9 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
+import com.cumulocity.sdk.client.buffering.BufferProcessor;
+import com.cumulocity.sdk.client.buffering.BufferRequestService;
+import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
 public class PlatformParameters {
 
@@ -50,13 +53,17 @@ public class PlatformParameters {
     private boolean requireResponseBody = true;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
+
+    private BufferRequestService bufferRequestService;
+
+    private BufferProcessor bufferProcessor;
     
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
 
-    public PlatformParameters(String host, CumulocityCredentials credentials) {
-        setMandatoryFields(host, credentials);
+    public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
+        this(host, credentials, clientConfiguration, DEFAULT_PAGE_SIZE);
     }
 
     private void setMandatoryFields(String host, CumulocityCredentials credentials) {
@@ -71,11 +78,19 @@ public class PlatformParameters {
         this.cumulocityLogin = credentials.getLogin();
     }
 
-    public PlatformParameters(String host, CumulocityCredentials credentials, int pageSize) {
+    public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
         setMandatoryFields(host, credentials);
+        PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
+        bufferRequestService = new BufferRequestService(persistentProvider);
+        bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector());
+        bufferProcessor.startProcessing();
         this.pageSize = pageSize;
     }
-
+    
+    protected RestConnector createRestConnector() {
+        return new RestConnector(this, new ResponseParser());
+    }
+    
     public int getPageSize() {
         return pageSize;
     }
@@ -162,5 +177,9 @@ public class PlatformParameters {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public BufferRequestService getBufferRequestService() {
+        return bufferRequestService;
     }
 }

@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.is;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.cumulocity.rest.representation.application.ApplicationMediaType;
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.sun.jersey.api.client.Client;
@@ -37,12 +36,9 @@ public class TenantCreator {
 
     private final PlatformImpl platform;
 
-    private final ApplicationCreator applicationCreator;
-
     @Autowired
-    public TenantCreator(PlatformImpl platform, ApplicationCreator applicationCreator) {
+    public TenantCreator(PlatformImpl platform) {
         this.platform = platform;
-        this.applicationCreator = applicationCreator;
     }
 
     public void createTenant() {
@@ -57,9 +53,6 @@ public class TenantCreator {
     private void createTenant(Client httpClient) {
         ClientResponse tr = postNewTenant(httpClient);
         assertThat(tr.getStatus(), is(201));
-
-        ClientResponse atr = addApplicationToTenant(httpClient);
-        assertThat(atr.getStatus(), is(201));
     }
 
     public void removeTenant() {
@@ -88,16 +81,6 @@ public class TenantCreator {
                 "\"adminPass\": \"" + platform.getPassword() + "\" " +
                 "}";
         return resource.post(ClientResponse.class, tenantJson);
-    }
-
-    private ClientResponse addApplicationToTenant(Client httpClient) {
-        String host = platform.getHost();
-        String tenantId = platform.getTenantId();
-        WebResource.Builder resource = httpClient.resource(host + TENANT_URI + "/" + tenantId + "/applications").type(
-                ApplicationMediaType.APPLICATION_REFERENCE);
-        String applicationJson = "{ \"application\": " +
-                "{ \"self\": \"" + host + "application/applications/" + applicationCreator.getApplicationId() + "\" } }";
-        return resource.post(ClientResponse.class, applicationJson);
     }
 
     private ClientResponse deleteTenant(Client httpClient) {

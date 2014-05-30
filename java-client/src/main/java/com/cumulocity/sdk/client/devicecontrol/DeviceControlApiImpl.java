@@ -31,6 +31,7 @@ import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import com.cumulocity.sdk.client.buffering.Future;
 import com.cumulocity.sdk.client.devicecontrol.notification.OperationNotificationSubscriber;
 import com.cumulocity.sdk.client.notification.Subscriber;
 
@@ -80,6 +81,12 @@ public class DeviceControlApiImpl implements DeviceControlApi {
     public OperationRepresentation update(OperationRepresentation operation) throws SDKException {
         String url = getSelfUri() + "/" + operation.getId().getValue();
         return restConnector.put(url, DeviceControlMediaType.OPERATION, prepareOperationForUpdate(operation));
+    }
+    
+    @Override
+    public Future updateAsync(OperationRepresentation operation) throws SDKException {
+        String url = getSelfUri() + "/" + operation.getId().getValue();
+        return restConnector.putAsync(url, DeviceControlMediaType.OPERATION, prepareOperationForUpdate(operation));
     }
 
     private String getSelfUri() throws SDKException {

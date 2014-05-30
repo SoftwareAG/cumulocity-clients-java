@@ -22,6 +22,12 @@ package c8y;
 
 import java.util.ArrayList;
 
+/**
+ * This fragment is already unnecessary, because supported measurements are discovered 
+ * basing on existing measurements for given device.
+ *
+ */
+@Deprecated
 public class SupportedMeasurements extends ArrayList<String> {
 	private static final long serialVersionUID = -688399695283135514L;
 }

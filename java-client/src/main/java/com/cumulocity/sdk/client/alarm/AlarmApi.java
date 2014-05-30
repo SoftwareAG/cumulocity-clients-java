@@ -23,6 +23,7 @@ package com.cumulocity.sdk.client.alarm;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.buffering.Future;
 
 /**
  * API for creating, updating and retrieving alarms from the platform.
@@ -47,6 +48,16 @@ public interface AlarmApi {
      */
     AlarmRepresentation create(AlarmRepresentation alarm) throws SDKException;
 
+    /**
+     * Creates an alarm in the platform. Immediate response is available through the Future object. 
+     * In case of lost connection, buffers data in persistence provider. 
+     *
+     * @param alarm alarm to be created
+     * @return the created alarm with the generated id
+     * @throws SDKException if the alarm could not be created
+     */
+    Future createAsync(AlarmRepresentation alarm) throws SDKException;
+    
     /**
      * Updates an alarm in the platform.
      * The alarm to be updated is identified by the id within the given alarm.
