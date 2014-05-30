@@ -38,6 +38,7 @@ import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
+import com.cumulocity.sdk.client.buffering.Future;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -145,20 +146,19 @@ public class RestConnector {
         return repFromPlatform != null;
     }
     
-    public <T extends ResourceRepresentation> Object postWithBuffer(String path, CumulocityMediaType mediaType,
+    public <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
-        return requestWithBuffer(HttpMethod.POST, path, mediaType, representation);
+        return sendAsyncRequest(HttpMethod.POST, path, mediaType, representation);
     }
     
-    public <T extends ResourceRepresentation> Object putWithBuffer(String path, CumulocityMediaType mediaType,
+    public <T extends ResourceRepresentation> Future putAsync(String path, CumulocityMediaType mediaType,
             T representation) throws SDKException {
-        return requestWithBuffer(HttpMethod.PUT, path, mediaType, representation);
+        return sendAsyncRequest(HttpMethod.PUT, path, mediaType, representation);
     }
 
-    private <T extends ResourceRepresentation> Object requestWithBuffer(String method, String path, CumulocityMediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType, T representation) {
         BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
-        long requestId = bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
-        return bufferRequestService.getResponse(requestId);
+        return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
     }
 
     @SuppressWarnings("unchecked")

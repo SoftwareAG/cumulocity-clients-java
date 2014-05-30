@@ -52,9 +52,8 @@ public class FileBasedPersistentProviderTest {
     public void shouldPersistRequestToFile() throws Exception {
         BufferedRequest request = BufferedRequest.create(HttpMethod.POST, "test", AlarmMediaType.ALARM, new AlarmRepresentation());
         
-        long requestId = persistentProvider.offer(request);
+        persistentProvider.offer(new ProcessingRequest(1 ,request));
         
-        assertThat(requestId).isEqualTo(1);
         assertThat(new File(pathToTempFolder + NEW_REQUESTS_PATH + "1")).exists();
     }
     
@@ -66,18 +65,18 @@ public class FileBasedPersistentProviderTest {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("Queue is full");
         
-        persistentProvider.offer(request);
-        persistentProvider.offer(request);
+        persistentProvider.offer(new ProcessingRequest(1 ,request));
+        persistentProvider.offer(new ProcessingRequest(2 ,request));
     }
     
     @Test
     public void shouldReturnRequestFromQueue() throws Exception {
         BufferedRequest request = BufferedRequest.create(HttpMethod.POST, "test", AlarmMediaType.ALARM, new AlarmRepresentation());
-        long requestId = persistentProvider.offer(request);
+        persistentProvider.offer(new ProcessingRequest(1 ,request));
         
         ProcessingRequest result = persistentProvider.poll();
         
-        assertThat(result.getId()).isEqualTo(requestId);
-        assertThat(result.getRequest().getRepresentation()).isInstanceOf(AlarmRepresentation.class);
+        assertThat(result.getId()).isEqualTo(1);
+        assertThat(result.getEntity().getRepresentation()).isInstanceOf(AlarmRepresentation.class);
     }
 }

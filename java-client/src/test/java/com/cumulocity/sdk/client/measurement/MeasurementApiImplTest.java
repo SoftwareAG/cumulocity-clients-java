@@ -161,7 +161,7 @@ public class MeasurementApiImplTest {
         //Given
         MeasurementRepresentation measurement = new MeasurementRepresentation();
         MeasurementRepresentation created = new MeasurementRepresentation();
-        when(restConnector.postWithBuffer(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT, measurement)).thenReturn(created);
+        when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT, measurement)).thenReturn(created);
 
         // When
         MeasurementRepresentation result = measurementApi.create(measurement);

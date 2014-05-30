@@ -14,7 +14,9 @@ public abstract class PersistentProvider {
         this.bufferLimit = bufferLimit;
     }
     
-    public abstract long offer(BufferedRequest request);
+    public abstract long generateId();
+    
+    public abstract void offer(ProcessingRequest request);
     
     public abstract ProcessingRequest poll();
 

@@ -23,6 +23,7 @@ package com.cumulocity.sdk.client.measurement;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.buffering.Future;
 
 /**
  * API for creating, deleting and retrieving measurements from the platform.
@@ -46,6 +47,16 @@ public interface MeasurementApi {
      * @throws SDKException if the measurement could not be created
      */
     MeasurementRepresentation create(MeasurementRepresentation measurement) throws SDKException;
+    
+    /**
+     * Creates measurement in the platform. Immediate response is available through the Future object. 
+     * In case of lost connection, buffers data in persistence provider. 
+     *
+     * @param measurement measurement to be created
+     * @return the created measurement with the generated id
+     * @throws SDKException if the measurement could not be created
+     */
+    Future createAsync(MeasurementRepresentation measurement) throws SDKException;
 
     /**
      * Deletes measurement from the platform.

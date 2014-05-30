@@ -1,14 +1,23 @@
 package com.cumulocity.sdk.client.buffering;
 
+import static com.cumulocity.sdk.client.ResponseParser.NO_ERROR_REPRESENTATION;
+
+import java.net.ConnectException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.ws.rs.HttpMethod;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.sun.jersey.api.client.ClientHandlerException;
 
 public class BufferProcessor {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(BufferProcessor.class);
     
     private ExecutorService executor;
 
@@ -31,7 +40,7 @@ public class BufferProcessor {
             public void run() {
                 while (true) {
                     ProcessingRequest processingRequest = persistentProvider.poll();
-                    service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getRequest()));
+                    service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getEntity()));
                 }
             }
 
@@ -43,14 +52,42 @@ public class BufferProcessor {
                         result.setResponse(response);
                         return result;
                     } catch (SDKException e) {
-                        if (e.getHttpStatus() <= 500) {
+                        if (e.getHttpStatus() <= 500 && !NO_ERROR_REPRESENTATION.equals(e.getMessage())) {
                             result.setException(e);
+                            return result;
+                        }
+                        //platform is down
+                        LOG.warn("Couldn't connect to platform. Waiting..." + e.getMessage());
+                        waitForPlatform();
+                    } catch (ClientHandlerException e) {
+                        if (e.getCause() != null && e.getCause() instanceof ConnectException) {
+                            //lack of connection
+                            LOG.warn("Couldn't connect to platform. Waiting..." + e.getMessage());
+                            waitForConnection();
+                        } else {
+                            result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
                             return result;
                         }
                     } catch (Exception e) {
                         result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
                         return result;
                     }
+                }
+            }
+            
+            private void waitForPlatform() {
+                try {
+                    Thread.sleep(5*60*1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("", e);
+                }
+            }
+
+            private void waitForConnection() {
+                try {
+                    Thread.sleep(30*1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("", e);
                 }
             }
 

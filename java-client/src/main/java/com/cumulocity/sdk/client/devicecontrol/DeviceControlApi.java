@@ -23,6 +23,7 @@ package com.cumulocity.sdk.client.devicecontrol;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.buffering.Future;
 import com.cumulocity.sdk.client.notification.Subscriber;
 
 /**
@@ -57,6 +58,16 @@ public interface DeviceControlApi {
      * @throws SDKException if the operation could not be updated
      */
     OperationRepresentation update(OperationRepresentation operation) throws SDKException;
+    
+    /**
+     * Updates operation in the platform. Immediate response is available through the Future object. 
+     * In case of lost connection, buffers data in persistence provider. 
+     *
+     * @param operation to be updated
+     * @return the updated operation
+     * @throws SDKException if the operation could not be updated
+     */
+    Future updateAsync(OperationRepresentation operation) throws SDKException;
 
     /**
      * Gets the all the operation in the platform

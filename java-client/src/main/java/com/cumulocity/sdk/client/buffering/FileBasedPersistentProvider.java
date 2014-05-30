@@ -65,22 +65,25 @@ public class FileBasedPersistentProvider extends PersistentProvider {
             counter.set(lastRequestID + 10);
         }
     }
+    
+    @Override
+    public long generateId() {
+        return counter.getAndIncrement();
+    }
 
     @Override
-    public long offer(BufferedRequest request) {
+    public void offer(ProcessingRequest request) {
         if (newRequests.listFiles().length >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }
         
-        long requestId = counter.getAndIncrement();
-        String filename = getFilename(request, requestId);
-        writeToFile(request.toCsvString(), new File(newRequestsTemp, filename));
+        String filename = getFilename(request.getId());
+        writeToFile(request.getEntity().toCsvString(), new File(newRequestsTemp, filename));
         moveFile(filename, newRequestsTemp, newRequests);
         latch.countDown();
-        return requestId;
     }
 
-    private String getFilename(BufferedRequest request, long requestId) {
+    private String getFilename(long requestId) {
         return requestId + "";
     }
 

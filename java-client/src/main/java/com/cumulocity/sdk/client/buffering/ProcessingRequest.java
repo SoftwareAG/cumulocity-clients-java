@@ -16,7 +16,7 @@ public class ProcessingRequest {
         return id;
     }
 
-    public BufferedRequest getRequest() {
+    public BufferedRequest getEntity() {
         return request;
     }
 

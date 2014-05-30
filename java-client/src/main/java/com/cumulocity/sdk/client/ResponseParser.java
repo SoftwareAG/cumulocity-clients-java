@@ -30,6 +30,7 @@ import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParser {
     
+    public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
 
     public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
@@ -51,9 +52,10 @@ public class ResponseParser {
 
         if (response.hasEntity()) {
             ErrorMessageRepresentation errorRepresentation = getErrorRepresentation(response);
-            if (errorRepresentation != null) {
-                errorMessage += "\n" + errorRepresentation;
+            if (errorRepresentation == null) {
+                return NO_ERROR_REPRESENTATION;
             }
+            errorMessage += "\n" + errorRepresentation;
         }
         return errorMessage;
     }
@@ -62,7 +64,7 @@ public class ResponseParser {
         try {
             return response.getEntity(ErrorMessageRepresentation.class);
         } catch (Exception e) {
-            LOG.error("Failed to parse error message", e);
+            LOG.error(NO_ERROR_REPRESENTATION, e);
             return null;
         }
     }

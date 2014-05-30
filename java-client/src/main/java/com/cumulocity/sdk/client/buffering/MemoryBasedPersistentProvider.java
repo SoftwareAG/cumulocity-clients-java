@@ -18,15 +18,18 @@ public class MemoryBasedPersistentProvider extends PersistentProvider {
     }
     
     @Override
-    public long offer(BufferedRequest request) {
+    public long generateId() {
+        return counter.getAndIncrement();
+    }
+    
+    @Override
+    public void offer(ProcessingRequest request) {
         if (requestQueue.size() >= bufferLimit) {
             throw new IllegalStateException("Queue is full");
         }
         
         try {
-            long requestId = counter.getAndIncrement();
-            requestQueue.put(new ProcessingRequest(requestId, request));
-            return requestId;
+            requestQueue.put(request);
         } catch (InterruptedException e) {
             throw new RuntimeException("", e);
         }
