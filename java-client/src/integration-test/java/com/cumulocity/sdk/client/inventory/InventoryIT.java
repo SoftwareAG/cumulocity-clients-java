@@ -42,6 +42,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -247,6 +248,7 @@ public class InventoryIT extends JavaSdkITBase {
     }
 
     @Test
+    @Ignore
     public void tryToUpdateNonExistentManagedObject() throws Exception {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().build();
