@@ -104,4 +104,8 @@ public class BufferProcessor {
         });
     }
 
+    public void shutdown() {
+        executor.shutdownNow();
+    }
+
 }
