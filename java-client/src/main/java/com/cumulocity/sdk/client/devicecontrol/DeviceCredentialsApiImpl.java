@@ -23,13 +23,6 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
     }
 
     @Override
-    public void hello(final String deviceId) {
-        DeviceCredentialsRepresentation representation = new DeviceCredentialsRepresentation();
-        representation.setId(deviceId);
-        restConnector.post(url, DEVICE_CREDENTIALS, representation);
-    }
-
-    @Override
     public DeviceCredentialsRepresentation pollCredentials(String deviceId, int interval, int timeout) {
         PollingStrategy pollingStrategy = new PollingStrategy((long) timeout, SECONDS, (long) interval);
         return pollCredentials(deviceId, pollingStrategy);
@@ -41,11 +34,13 @@ public class DeviceCredentialsApiImpl implements DeviceCredentialsApi {
     }
 
     private AlteringRateResultPoller<DeviceCredentialsRepresentation> aPoller(final String deviceId, PollingStrategy pollingStrategy) {
+        final DeviceCredentialsRepresentation representation = new DeviceCredentialsRepresentation();
+        representation.setId(deviceId);
         GetResultTask<DeviceCredentialsRepresentation> pollingTask = new GetResultTask<DeviceCredentialsRepresentation>() {
 
             @Override
             public DeviceCredentialsRepresentation tryGetResult() {
-                return restConnector.get(url + "/" + deviceId, DEVICE_CREDENTIALS, DeviceCredentialsRepresentation.class);
+                return restConnector.post(url, DEVICE_CREDENTIALS, representation);
             }
 
         };
