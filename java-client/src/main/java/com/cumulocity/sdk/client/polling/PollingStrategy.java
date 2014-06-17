@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 public class PollingStrategy {
     
-    private static final Long POLL_CREDENTIALS_TIMEOUT = 3600L * 24;
-    private static final Long[] POLL_INTERVALS = new Long[] { 5L, 10L, 20L, 40L, 80L, 160L, 320L, 640L, 1280L, 2560L, 3600L };
+    public static final Long DEFAULT_POLL_CREDENTIALS_TIMEOUT = 3600L * 24;
+    public static final Long[] DEFAULT_POLL_INTERVALS = new Long[] { 5L, 10L, 20L, 40L, 80L, 160L, 320L, 640L, 1280L, 2560L, 3600L };
 
     private final List<Long> pollIntervals;
     private boolean repeatLast = true;
@@ -20,8 +20,13 @@ public class PollingStrategy {
     private final Long timeout;
         
     public PollingStrategy() {
-        this(POLL_CREDENTIALS_TIMEOUT, SECONDS, POLL_INTERVALS);
+        this(DEFAULT_POLL_CREDENTIALS_TIMEOUT, SECONDS, DEFAULT_POLL_INTERVALS);
     }
+    
+    public PollingStrategy(TimeUnit timeUnit, List<Long> pollIntervals) {
+        this(null, timeUnit, pollIntervals);
+    }
+    
     public PollingStrategy(Long timeout, TimeUnit timeUnit, List<Long> pollIntervals) {
         this.timeout = timeout;
         this.pollIntervals = pollIntervals;
