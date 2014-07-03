@@ -12,13 +12,6 @@ import com.cumulocity.sdk.client.polling.PollingStrategy;
 public interface DeviceCredentialsApi {
 	
 	/**
-	 * Device register as connected
-	 * 
-	 * @param deviceId
-	 */
-	void hello(String deviceId);
-	
-	/**
 	 * Device poll credentials
 	 * 
 	 * @param deviceId

@@ -25,7 +25,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,47 +47,11 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
         restConnector = new RestConnector(platform, responseParser);
     }
     
-    @After
-    public void cleanUp() throws Exception {
-        deleteNewDeviceRequest("1000");
-        deleteNewDeviceRequest("2000");
-        deleteNewDeviceRequest("3000");        
-    }
-
-    @Test
-    public void shouldNewDeviceRequestTransposeToPendingAcceptanceOnHello() throws Exception {
-        final String deviceId = "1000";
-        createNewDeviceRequest(deviceId);
-        NewDeviceRequestRepresentation newDeviceRequest = getNewDeviceRequest(deviceId);
-        assertThat(newDeviceRequest.getStatus()).isEqualTo("WAITING_FOR_CONNECTION");
-
-        deviceCredentialsResource.hello(deviceId);
-
-        newDeviceRequest = getNewDeviceRequest(deviceId);
-        assertThat(newDeviceRequest.getStatus()).isEqualTo("PENDING_ACCEPTANCE");
-    }
-
-    @Test
-    public void shouldReturnCredentialsIfDeviceAccepted() throws Exception {
-        final String deviceId = "2000";
-        final int pollInterval = 2;
-        createNewDeviceRequest(deviceId);
-        deviceCredentialsResource.hello(deviceId);
-        acceptNewDeviceRequest(deviceId);
-
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollInterval, 100);
-
-        assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
-        assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
-        assertThat(credentials.getPassword()).isNotEmpty();
-    }
-
     @Test
     public void shouldPollCredentialsUntilDeviceAccepted() throws Exception {
         final String deviceId = "3000";
-        final int pollInterval = 2;
+        final int pollIntervalInSeconds = 2;
         createNewDeviceRequest(deviceId);
-        deviceCredentialsResource.hello(deviceId);
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
 
@@ -96,9 +59,9 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
             public void run() {
                 acceptNewDeviceRequest(deviceId);
             }
-        }, pollInterval * 2);
+        }, pollIntervalInSeconds * 2 * 1000);
 
-        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollInterval, 100);
+        DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollIntervalInSeconds, 100);
         assertThat(credentials).isNotNull();
         assertThat(credentials.getTenantId()).isEqualTo(platform.getTenantId());
         assertThat(credentials.getUsername()).isEqualTo("device_" + deviceId);
@@ -112,22 +75,10 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
         restConnector.post(newDeviceRequestsUri(), NEW_DEVICE_REQUEST, representation);
     }
 
-    private void deleteNewDeviceRequest(String deviceId) {
-        try {
-            restConnector.delete(newDeviceRequestUri(deviceId));
-        } catch (Exception ex) {
-            // do nothing
-        }
-    }
-
     private void acceptNewDeviceRequest(String deviceId) {
         NewDeviceRequestRepresentation representation = new NewDeviceRequestRepresentation();
         representation.setStatus("ACCEPTED");
         restConnector.put(newDeviceRequestUri(deviceId), NEW_DEVICE_REQUEST, representation);
-    }
-
-    private NewDeviceRequestRepresentation getNewDeviceRequest(String deviceId) {
-        return restConnector.get(newDeviceRequestUri(deviceId), NEW_DEVICE_REQUEST, NewDeviceRequestRepresentation.class);
     }
 
     private String newDeviceRequestsUri() {

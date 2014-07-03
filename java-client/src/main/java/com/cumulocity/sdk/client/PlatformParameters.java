@@ -26,6 +26,12 @@ import com.cumulocity.sdk.client.buffering.BufferProcessor;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.PersistentProvider;
 
+/**
+ *  Keeps credentials and client configuration.
+ *  Creates processor responsible for handling buffered requests.
+ *  Important to call close() method on shutdown to finish processing.
+ *
+ */
 public class PlatformParameters {
 
     public final static int DEFAULT_PAGE_SIZE = 5;
@@ -49,7 +55,7 @@ public class PlatformParameters {
     private String proxyUserId;
 
     private String proxyPassword;
-    
+
     private boolean requireResponseBody = true;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
@@ -57,7 +63,7 @@ public class PlatformParameters {
     private BufferRequestService bufferRequestService;
 
     private BufferProcessor bufferProcessor;
-    
+
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -86,11 +92,11 @@ public class PlatformParameters {
         bufferProcessor.startProcessing();
         this.pageSize = pageSize;
     }
-    
+
     protected RestConnector createRestConnector() {
         return new RestConnector(this, new ResponseParser());
     }
-    
+
     public int getPageSize() {
         return pageSize;
     }
@@ -182,4 +188,9 @@ public class PlatformParameters {
     public BufferRequestService getBufferRequestService() {
         return bufferRequestService;
     }
+
+    public void close() {
+        bufferProcessor.shutdown();
+    }
+
 }
