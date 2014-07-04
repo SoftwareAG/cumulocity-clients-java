@@ -155,7 +155,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
-        <dependency>
+	 <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
         </dependency>
@@ -167,10 +167,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.shared-components</groupId>
-			<artifactId>test-utils</artifactId>
-		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -242,12 +238,6 @@
 				<artifactId>common-rest</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 				<classifier>tests</classifier>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.shared-components</groupId>
-				<artifactId>test-utils</artifactId>
-				<version>${cumulocity.shared-components.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<!-- TEST DEPENDENCIES END -->
