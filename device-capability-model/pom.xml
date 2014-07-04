@@ -25,13 +25,6 @@
             <artifactId>jsr311-api</artifactId>
 		</dependency>
 
-		<!-- Testing -->
-		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>core-model</artifactId>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
 	</dependencies>
 
 	<build>
