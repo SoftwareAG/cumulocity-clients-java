@@ -11,7 +11,7 @@ public class AliasTest {
 
     @Test
     public void checkIfAliasesAreCorrect() throws Exception {
-        AliasMapClassFinder aliasMapClassFinder = new AliasMapClassFinder("ANY");
+        AliasMapClassFinder aliasMapClassFinder = new AliasMapClassFinder();
         for (Entry<String, String> aliasAndClass : aliasMapClassFinder.alias2ClassName.entrySet()) {
             checkAlias(aliasAndClass.getKey(), aliasAndClass.getValue());
         }

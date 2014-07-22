@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>5.7.0</version>
+		<version>5.8.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>5.7.1-SNAPSHOT</version>
+	<version>5.8.1-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -28,8 +28,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>5.7.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>5.7.0</cumulocity.shared-components.version>
+		<cumulocity.model.version>5.8.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>5.8.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
@@ -155,7 +155,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
-        <dependency>
+	 <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
         </dependency>
@@ -167,10 +167,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.shared-components</groupId>
-			<artifactId>test-utils</artifactId>
-		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -242,12 +238,6 @@
 				<artifactId>common-rest</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 				<classifier>tests</classifier>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.shared-components</groupId>
-				<artifactId>test-utils</artifactId>
-				<version>${cumulocity.shared-components.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<!-- TEST DEPENDENCIES END -->
