@@ -22,7 +22,11 @@ package c8y;
 
 import java.math.BigDecimal;
 
-public class Position {
+import org.svenson.AbstractDynamicProperties;
+
+public class Position extends AbstractDynamicProperties {
+	private static final long serialVersionUID = -8365376637780307348L;
+
 	public BigDecimal getLat() {
 		return lat;
 	}
