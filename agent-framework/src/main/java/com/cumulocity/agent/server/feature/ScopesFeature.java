@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.config;
+package com.cumulocity.agent.server.feature;
 
 import static com.cumulocity.agent.server.context.Scopes.CONTEXT_SCOPE;
 import static com.cumulocity.agent.server.context.Scopes.DEVICE_SCOPE;
@@ -15,7 +15,7 @@ import com.cumulocity.agent.server.context.DeviceScopeContainerRegistry;
 import com.google.common.collect.ImmutableMap;
 
 @Configuration
-public class ScopesConfiguration {
+public class ScopesFeature {
     
     @Bean
     @Autowired

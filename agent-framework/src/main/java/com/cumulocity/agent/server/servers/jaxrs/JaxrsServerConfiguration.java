@@ -1,20 +1,18 @@
-package com.cumulocity.agent.server.config;
+package com.cumulocity.agent.server.servers.jaxrs;
 
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.*;
 
+import com.cumulocity.agent.server.config.CommonConfiguration;
 import com.cumulocity.agent.server.context.*;
-import com.cumulocity.agent.server.servers.JaxrsServer;
+import com.cumulocity.agent.server.feature.ScopesFeature;
 
 @Configuration
 @ComponentScan(basePackageClasses = JaxrsServer.class)
-@Import({CommonConfiguration.class, ScopesConfiguration.class})
+@Import({CommonConfiguration.class, ScopesFeature.class})
 public class JaxrsServerConfiguration {
 
     @Bean

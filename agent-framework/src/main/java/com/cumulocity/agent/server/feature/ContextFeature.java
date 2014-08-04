@@ -1,12 +1,14 @@
-package com.cumulocity.agent.server.config;
+package com.cumulocity.agent.server.feature;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import com.cumulocity.agent.server.context.*;
 
 @Configuration
-public class ContextConfiguration {
+@Import(ScopesFeature.class)
+public class ContextFeature {
 
     @Bean
     public DeviceContextService contextService() {

@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.servers;
+package com.cumulocity.agent.server.servers.jaxrs;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -43,12 +43,12 @@ public class JaxrsServer implements Server {
         @Override
         protected void doStart() {
             server = HttpServer.createSimpleServer(null, new InetSocketAddress(host, port));
-            
-            server.getListener("grizzly").getTransport().setWorkerThreadPoolConfig(ThreadPoolConfig.defaultConfig()
-                    .setPoolName("Grizzly-worker")
-                    .setCorePoolSize(10)
-                    .setMaxPoolSize(100));
-                        
+
+            server.getListener("grizzly")
+                    .getTransport()
+                    .setWorkerThreadPoolConfig(
+                            ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10).setMaxPoolSize(100));
+
             WebappContext context = new WebappContext(applicationId, "/" + applicationId);
             resourceConfig.registerClasses(RequestContextFilter.class, JacksonFeature.class, MultiPartFeature.class);
             resourceConfig.getClasses();

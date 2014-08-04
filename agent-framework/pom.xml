@@ -15,6 +15,7 @@
 		<netty.version>4.0.20.Final</netty.version>
 		<grizzly.version>2.3.16</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
+		<spring.version>4.0.6.RELEASE</spring.version>
 	</properties>
 	<licenses>
 		<license>
@@ -65,6 +66,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			 <dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-framework-bom</artifactId>
+	            <version>${spring.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
 			
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -112,6 +120,10 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring3</artifactId>
 		</dependency>
@@ -155,11 +167,6 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
         	<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
         	<artifactId>guava</artifactId>

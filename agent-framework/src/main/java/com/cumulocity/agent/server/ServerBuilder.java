@@ -11,8 +11,8 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 
+import com.cumulocity.agent.server.config.CommonConfiguration;
 import com.cumulocity.agent.server.config.PropertiesFactoryBean;
-import com.cumulocity.agent.server.config.ServerConfiguration;
 
 public class ServerBuilder {
 
@@ -25,6 +25,8 @@ public class ServerBuilder {
     private final String applicationId;
 
     private final Set<String> configurations = new LinkedHashSet<String>();
+    
+    private final Set<Class<?>> features = new LinkedHashSet<Class<?>>();
 
     protected InetSocketAddress address() {
         return address;
@@ -63,15 +65,24 @@ public class ServerBuilder {
         configurations.add(resource);
         return this;
     }
+    
+    public ServerBuilder enable(Class<?> feature) {
+        features.add(feature);
+        return this;
+    }
+    
+    public BinaryServerBuilder binary() {
+        return new BinaryServerBuilder(this);
+    }
 
-    public RestServerBuilder jazxrs() {
+    public RestServerBuilder jaxrs() {
         return new RestServerBuilder(this);
     }
 
     protected ConfigurableApplicationContext getContext() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
-        applicationContext.register(ServerConfiguration.class);
+        applicationContext.register(CommonConfiguration.class);
         final Properties configuration = new Properties();
         configuration.setProperty("server.host", address().getHostString());
         configuration.setProperty("server.port", String.valueOf(address().getPort()));
@@ -81,6 +92,9 @@ public class ServerBuilder {
         for (String resource : configurations) {
             applicationContext.getEnvironment().getPropertySources()
                     .addLast(new PropertiesPropertySource(resource, loadResource(applicationContext, resource)));
+        }
+        if(!features.isEmpty()) {
+            applicationContext.register(features.toArray(new Class[features.size()-1]));
         }
 
         applicationContext.refresh();

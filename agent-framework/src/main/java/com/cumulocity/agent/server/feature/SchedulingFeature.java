@@ -1,6 +1,5 @@
-package com.cumulocity.agent.server.config;
+package com.cumulocity.agent.server.feature;
 
-import static java.lang.Boolean.getBoolean;
 import static org.springframework.scheduling.support.TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER;
 
 import java.util.concurrent.Executor;
@@ -24,16 +23,12 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 @Configuration
 @EnableAsync
 @EnableScheduling
-public class SchedulingConfiguration {
+public class SchedulingFeature {
 
     public static final String PROP_POOL_SIZE = "scheduler.pool.size";
 
     public static final int DEFAULT_POOL_SIZE = 10;
 
-    public static boolean isEnabled() {
-        // add -Dno-async=true to disable scheduling and async execution
-        return !getBoolean("no-async");
-    }
 
     @Bean
     @Autowired

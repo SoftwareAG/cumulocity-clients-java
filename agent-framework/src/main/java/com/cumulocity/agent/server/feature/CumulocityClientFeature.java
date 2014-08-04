@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.config;
+package com.cumulocity.agent.server.feature;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
 
 @Configuration
-public class CumulocityClientConfiguration {
+public class CumulocityClientFeature {
 
     public static final String C8Y_HOST_PROP = "C8Y.baseURL";
 

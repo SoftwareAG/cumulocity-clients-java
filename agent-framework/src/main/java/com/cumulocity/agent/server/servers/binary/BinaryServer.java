@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.servers;
+package com.cumulocity.agent.server.servers.binary;
 
 import static com.google.common.base.Throwables.propagate;
 

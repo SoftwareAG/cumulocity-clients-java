@@ -6,7 +6,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import com.cumulocity.agent.server.config.JaxrsServerConfiguration;
+import com.cumulocity.agent.server.servers.jaxrs.JaxrsServerConfiguration;
 
 public class RestServerBuilder extends SpringServerBuilder<RestServerBuilder> {
 
