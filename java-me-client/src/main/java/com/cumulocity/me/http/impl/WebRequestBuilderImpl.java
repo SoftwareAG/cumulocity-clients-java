@@ -54,7 +54,9 @@ public class WebRequestBuilderImpl implements WebRequestBuilder {
     }
     
     public WebRequestBuilder header(String name, Object value) {
-        headers.put(name, value);
+        if (name != null && value != null) {
+            headers.put(name, value);
+        }
         return this;
     }
     
