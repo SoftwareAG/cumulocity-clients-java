@@ -1,13 +1,76 @@
 package com.cumulocity.agent.server.protocol;
 
-import org.glassfish.grizzly.Buffer;
-import org.glassfish.grizzly.Transformer;
-import org.glassfish.grizzly.filterchain.AbstractCodecFilter;
+import java.io.IOException;
 
-public class ProtocolFilter<T> extends AbstractCodecFilter<Buffer, T> {
+import org.glassfish.grizzly.*;
+import org.glassfish.grizzly.filterchain.*;
 
-    public ProtocolFilter(Transformer<Buffer, T> decoder, Transformer<T, Buffer> encoder) {
-        super(decoder, encoder);
+public class ProtocolFilter<T, K> extends BaseFilter{
+
+    private final Transformer<Buffer, T> decoder;
+
+    private final Transformer<K, Buffer> encoder;
+
+    public ProtocolFilter(Transformer<Buffer, T> decoder, Transformer<K, Buffer> encoder) {
+        this.decoder = decoder;
+        this.encoder = encoder;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public NextAction handleRead(FilterChainContext ctx) throws IOException {
+        final Connection connection = ctx.getConnection();
+        final Buffer message = (Buffer) ctx.getMessage();
+
+        final TransformationResult<Buffer, T> result = decoder.transform(connection, message);
+
+        switch (result.getStatus()) {
+        case COMPLETE:
+            final Buffer remainder = result.getExternalRemainder();
+            final boolean hasRemaining = decoder.hasInputRemaining(connection, remainder);
+            decoder.release(connection);
+            ctx.setMessage(result.getMessage());
+            if (hasRemaining) {
+                return ctx.getInvokeAction(remainder);
+            } else {
+                return ctx.getInvokeAction();
+            }
+        case INCOMPLETE:
+            return ctx.getStopAction(message);
+        case ERROR:
+            throw new TransformationException(getClass().getName() + " transformation error: (" + result.getErrorCode() + ") "
+                    + result.getErrorDescription());
+        }
+
+        return ctx.getInvokeAction();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public NextAction handleWrite(FilterChainContext ctx) throws IOException {
+        final Connection connection = ctx.getConnection();
+        final K message = (K) ctx.getMessage();
+
+        final TransformationResult<K, Buffer> result = encoder.transform(connection, message);
+
+        switch (result.getStatus()) {
+        case COMPLETE:
+            ctx.setMessage(result.getMessage());
+            final K remainder = result.getExternalRemainder();
+            final boolean hasRemaining = encoder.hasInputRemaining(connection, remainder);
+            encoder.release(connection);
+            if (hasRemaining) {
+                return ctx.getInvokeAction(remainder);
+            } else {
+                return ctx.getInvokeAction();
+            }
+        case INCOMPLETE:
+            return ctx.getStopAction(message);
+        case ERROR:
+            throw new TransformationException(getClass().getName() + " transformation error: (" + result.getErrorCode() + ") "
+                    + result.getErrorDescription());
+        }
+
+        return ctx.getInvokeAction();
+    }
 }
