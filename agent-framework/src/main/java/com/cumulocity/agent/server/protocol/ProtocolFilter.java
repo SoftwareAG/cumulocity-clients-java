@@ -4,8 +4,11 @@ import java.io.IOException;
 
 import org.glassfish.grizzly.*;
 import org.glassfish.grizzly.filterchain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ProtocolFilter<T, K> extends BaseFilter{
+public class ProtocolFilter<T, K> extends BaseFilter {
+    private static final Logger log = LoggerFactory.getLogger(ProtocolFilter.class);
 
     private final Transformer<Buffer, T> decoder;
 
@@ -14,6 +17,12 @@ public class ProtocolFilter<T, K> extends BaseFilter{
     public ProtocolFilter(Transformer<Buffer, T> decoder, Transformer<K, Buffer> encoder) {
         this.decoder = decoder;
         this.encoder = encoder;
+    }
+
+    @Override
+    public NextAction handleConnect(FilterChainContext ctx) throws IOException {
+        log.debug("new connection {}", ctx.getAddress());
+        return super.handleConnect(ctx);
     }
 
     @Override

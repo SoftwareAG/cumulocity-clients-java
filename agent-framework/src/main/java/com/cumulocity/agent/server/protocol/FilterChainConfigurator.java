@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
+import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class FilterChainConfigurator implements BinaryServerConfigurator {
     @Override
     public void configure(TCPNIOTransportBuilder server) {
         final FilterChainBuilder chain = FilterChainBuilder.stateless();
+        chain.add(new TransportFilter());
         chain.addAll(filters);
         server.setProcessor(chain.build());
     }
