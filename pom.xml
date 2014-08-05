@@ -175,10 +175,10 @@
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 			<!-- COMPILE DEPENDENCIES START -->
 			 <dependency>
-			<groupId>com.nsn.cumulocity.clients-java</groupId>
-			<artifactId>java-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+			    <groupId>com.nsn.cumulocity.clients-java</groupId>
+			    <artifactId>java-client</artifactId>
+			    <version>${project.version}</version>
+		    </dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>core-model</artifactId>
