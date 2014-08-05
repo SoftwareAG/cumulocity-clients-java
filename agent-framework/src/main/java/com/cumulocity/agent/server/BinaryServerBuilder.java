@@ -7,6 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.cumulocity.agent.server.servers.binary.BinaryServerConfiguration;
 
+
 public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder> {
 
     private final ServerBuilder builder;
