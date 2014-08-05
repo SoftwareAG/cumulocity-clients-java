@@ -1,10 +1,6 @@
 package com.cumulocity.agent.server.protocol;
 
-import java.util.List;
-
-import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
-import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,19 +10,17 @@ import com.cumulocity.agent.server.servers.binary.BinaryServerConfigurator;
 @Component
 public class FilterChainConfigurator implements BinaryServerConfigurator {
 
-    private final List<Filter> filters;
+
+    private final FilterChainBuilder filters;
 
     @Autowired
-    public FilterChainConfigurator(List<Filter> filters) {
+    public FilterChainConfigurator(FilterChainBuilder filters) {
         this.filters = filters;
     }
 
     @Override
     public void configure(TCPNIOTransportBuilder server) {
-        final FilterChainBuilder chain = FilterChainBuilder.stateless();
-        chain.add(new TransportFilter());
-        chain.addAll(filters);
-        server.setProcessor(chain.build());
+        server.setProcessor(filters.build());
     }
 
 }
