@@ -2,8 +2,13 @@ package com.cumulocity.agent.server.protocol;
 
 import java.io.IOException;
 
-import org.glassfish.grizzly.*;
-import org.glassfish.grizzly.filterchain.*;
+import org.glassfish.grizzly.Buffer;
+import org.glassfish.grizzly.Connection;
+import org.glassfish.grizzly.TransformationException;
+import org.glassfish.grizzly.TransformationResult;
+import org.glassfish.grizzly.filterchain.BaseFilter;
+import org.glassfish.grizzly.filterchain.FilterChainContext;
+import org.glassfish.grizzly.filterchain.NextAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +19,12 @@ public class ProtocolFilter<T, K> extends BaseFilter {
 
     private final Transformer<K, Buffer> encoder;
 
-    public ProtocolFilter(Transformer<Buffer, T> decoder, Transformer<K, Buffer> encoder) {
+    private final ProtocolExceptionHandler exceptionHandler;
+
+    public ProtocolFilter(Transformer<Buffer, T> decoder, Transformer<K, Buffer> encoder, ProtocolExceptionHandler exceptionHandler) {
         this.decoder = decoder;
         this.encoder = encoder;
+        this.exceptionHandler = exceptionHandler;
     }
 
     @Override
@@ -28,27 +36,44 @@ public class ProtocolFilter<T, K> extends BaseFilter {
     @Override
     @SuppressWarnings("unchecked")
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
-        final Connection connection = ctx.getConnection();
-        final Buffer message = (Buffer) ctx.getMessage();
-
-        final TransformationResult<Buffer, T> result = decoder.transform(connection, message);
-
-        switch (result.getStatus()) {
-        case COMPLETE:
-            final Buffer remainder = result.getExternalRemainder();
-            final boolean hasRemaining = decoder.hasInputRemaining(connection, remainder);
-            decoder.release(connection);
-            ctx.setMessage(result.getMessage());
-            if (hasRemaining) {
-                return ctx.getInvokeAction(remainder);
-            } else {
-                return ctx.getInvokeAction();
+        return handle(decoder, ctx, new ExceptionCallback() {
+            @Override
+            public NextAction call(FilterChainContext ctx, Throwable cause) {
+                return exceptionHandler.onReadException(ctx, cause);
             }
-        case INCOMPLETE:
-            return ctx.getStopAction(message);
-        case ERROR:
-            throw new TransformationException(getClass().getName() + " transformation error: (" + result.getErrorCode() + ") "
-                    + result.getErrorDescription());
+        });
+    }
+
+    private <I, O> NextAction handle(Transformer<I, O> transformer, FilterChainContext ctx, ExceptionCallback callback) {
+        final Connection connection = ctx.getConnection();
+        final I message = (I) ctx.getMessage();
+        TransformationResult<I, O> result = null;
+        try {
+            result = transformer.transform(connection, message);
+            switch (result.getStatus()) {
+            case COMPLETE:
+                final I remainder = result.getExternalRemainder();
+                final boolean hasRemaining = transformer.hasInputRemaining(connection, remainder);
+                transformer.release(connection);
+                ctx.setMessage(result.getMessage());
+                if (hasRemaining) {
+                    return ctx.getInvokeAction(remainder);
+                } else {
+                    return ctx.getInvokeAction();
+                }
+            case INCOMPLETE:
+                return ctx.getStopAction(message);
+            case ERROR:
+                return callback.call(ctx,
+                        new TransformationException(getClass().getName() + " transformation error: (" + result.getErrorCode() + ") "
+                                + result.getErrorDescription()));
+            }
+        } catch (Throwable ex) {
+            return callback.call(ctx, ex);
+        } finally {
+            if (result != null) {
+                result.recycle();
+            }
         }
 
         return ctx.getInvokeAction();
@@ -57,30 +82,15 @@ public class ProtocolFilter<T, K> extends BaseFilter {
     @Override
     @SuppressWarnings("unchecked")
     public NextAction handleWrite(FilterChainContext ctx) throws IOException {
-        final Connection connection = ctx.getConnection();
-        final K message = (K) ctx.getMessage();
-
-        final TransformationResult<K, Buffer> result = encoder.transform(connection, message);
-
-        switch (result.getStatus()) {
-        case COMPLETE:
-            ctx.setMessage(result.getMessage());
-            final K remainder = result.getExternalRemainder();
-            final boolean hasRemaining = encoder.hasInputRemaining(connection, remainder);
-            encoder.release(connection);
-            if (hasRemaining) {
-                return ctx.getInvokeAction(remainder);
-            } else {
-                return ctx.getInvokeAction();
+        return handle(encoder, ctx, new ExceptionCallback() {
+            @Override
+            public NextAction call(FilterChainContext ctx, Throwable cause) {
+                return exceptionHandler.onWriteException(ctx, cause);
             }
-        case INCOMPLETE:
-            return ctx.getStopAction(message);
-        case ERROR:
-            throw new TransformationException(getClass().getName() + " transformation error: (" + result.getErrorCode() + ") "
-                    + result.getErrorDescription());
-        }
-
-        return ctx.getInvokeAction();
+        });
     }
 
+    interface ExceptionCallback {
+        NextAction call(FilterChainContext ctx, Throwable cause);
+    }
 }
