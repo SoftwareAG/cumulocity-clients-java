@@ -7,12 +7,14 @@ import java.util.List;
 
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.cumulocity.agent.server.Server;
+import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
@@ -40,6 +42,8 @@ public class BinaryServer implements Server {
 
             builder.setName(applicationId);
 
+            builder.setWorkerThreadPoolConfig(
+                            ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10).setMaxPoolSize(100));
             for (BinaryServerConfigurator configurator : configurators) {
                 configurator.configure(builder);
             }

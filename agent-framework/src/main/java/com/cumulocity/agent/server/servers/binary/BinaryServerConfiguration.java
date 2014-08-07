@@ -4,7 +4,6 @@ import static org.glassfish.grizzly.filterchain.FilterChainBuilder.stateless;
 
 import java.util.List;
 
-import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.springframework.beans.factory.annotation.Autowired;
