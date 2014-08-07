@@ -28,7 +28,7 @@ public class BinaryServerConfiguration {
 
     @Bean
     @Autowired
-    public FilterChainBuilder chain(List<Filter> filters) {
-        return stateless().addFirst(new TransportFilter()).addAll(filters);
+    public FilterChainBuilder chain(FiltersProvider filters) {
+        return stateless().addFirst(new TransportFilter()).addAll(filters.get());
     }
 }
