@@ -1,6 +1,9 @@
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.cumulocity.me.sdk.SmartPlatform;
+import com.cumulocity.me.sdk.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
@@ -8,18 +11,29 @@ import com.cumulocity.me.smartrest.client.impl.SmartRow;
 
 
 
-public class FirstTest {
 
-    private static String XID = "j2me_test_template4";
+
+public class FirstTest {
+    
+    //private static Logger LOG = LoggerFactory.getLogger(FirstTest.class);;
+    
+    private static String XID = "j2me_test_template6";
     
     private static String templateString =  "10,100,GET,/inventory/managedObjects/&&,,,&&,,\n" +
                                               "10,101,GET,/inventory/managedObjects/,,,,,\n" +
                                               "11,200,,,\"$.name\"\n" +
-                                              "11,201,managedObjects,,\"$.name\",\"$.id\"";     
+                                              "11,201,managedObjects,,\"$.name\",\"$.id\"";
+    
+    private SmartPlatform platform;
+    
+    @Before
+    public void createPlatform() {
+        platform = new SmartPlatform("http://mtmtest:8181", XID, "management", "admin", "Pyi1bo1r");
+        platform.registerTemplates(templateString);
+    }
+    
     @Test
     public void test() {
-        SmartPlatform platform = new SmartPlatform("http://mtmtest:8181", XID, "Basic bWFuYWdlbWVudC9hZG1pbjpQeWkxYm8xcg==");
-        System.out.println(platform.registerTemplates(templateString));
         String body = "101";
         SmartRequest request = new SmartRequestImpl(body.getBytes());
         SmartResponse resp = platform.request(request);
@@ -29,10 +43,26 @@ public class FirstTest {
         }
     }
     
+    @Test
+    public void testAsync() throws InterruptedException {
+        SmartResponseEvaluator eval = new SmartResponseEvaluator() {
+            public void evaluate(SmartResponse response) {
+                SmartRow[] rows = response.getDataRows();
+                for (SmartRow row : rows) {
+                    smartRowLogger(row);
+                }
+            }
+        };
+        String body = "101";
+        SmartRequest request = new SmartRequestImpl(body.getBytes());
+        platform.requestAsync(request, eval);
+        Thread.sleep(2000);
+    }
+    
     private void smartRowLogger(SmartRow row) {
-        System.out.println("message id: " + row.getMessageId());
-        System.out.println("row number: " + row.getRowNumber());
-        System.out.println("data: " + joinArray(row.getData()));
+        System.out.println("message id: " + row.getMessageId() + "\n" +
+                "row number: " + row.getRowNumber() + "\n" +
+                "data: " + joinArray(row.getData()));
     }
     
     private String joinArray(String[] array) {

@@ -2,9 +2,10 @@ package com.cumulocity.me.sdk;
 
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
+import com.cumulocity.me.smartrest.client.impl.SmartRequestAsyncRunner;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestConnector;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
-import com.cumulocity.me.util.StringUtils;
+import com.cumulocity.me.util.Base64;
 
 public class SmartPlatform {
 
@@ -22,16 +23,22 @@ public class SmartPlatform {
         this.connector = new SmartRequestConnector(this);
     }
     
-    public SmartPlatform(String host, String xid, String authorization) {
+    public SmartPlatform(String host, String xid, String tenant, String username, String password) {
         this.host = host;
         this.xid = xid;
-        this.authorization = authorization;
+        this.authorization = "Basic " + Base64.encode(tenant + "/" + username + ":" + password);
         this.connector = new SmartRequestConnector(this);
     }
     
     public SmartResponse request(SmartRequest request) {
+        SmartResponse response = connector.executeRequest(request);
         connector.close();
-        return connector.executeRequest(request);
+        return response;
+    }
+    
+    public void requestAsync(final SmartRequest request, final SmartResponseEvaluator evaluator) {
+        SmartRequestAsyncRunner runner = new SmartRequestAsyncRunner(connector, request, evaluator);
+        runner.start();
     }
     
     public void bootstrap() {
@@ -52,11 +59,12 @@ public class SmartPlatform {
         } else {
             this.xid = String.valueOf(respCheckRegistration.getDataRows()[0].getRowNumber());
         } 
+        connector.close();
         return xid;
     }
     
     public void subscribe() {
-        // TODO
+
     }
     
     public String getAuthorization() {
