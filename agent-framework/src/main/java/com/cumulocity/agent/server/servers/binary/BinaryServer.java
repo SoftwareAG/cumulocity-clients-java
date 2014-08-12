@@ -10,15 +10,19 @@ import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import com.cumulocity.agent.server.Server;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
-public class BinaryServer implements Server {
+public class BinaryServer implements Server, ApplicationContextAware {
     private static final Logger log = LoggerFactory.getLogger(BinaryServer.class);
 
     @Value("${server.host:0.0.0.0}")
@@ -29,6 +33,8 @@ public class BinaryServer implements Server {
 
     @Value("${server.id}")
     private String applicationId;
+
+    private ApplicationContext context;
 
     private final List<BinaryServerConfigurator> configurators;
 
@@ -42,8 +48,8 @@ public class BinaryServer implements Server {
 
             builder.setName(applicationId);
 
-            builder.setWorkerThreadPoolConfig(
-                            ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10).setMaxPoolSize(100));
+            builder.setWorkerThreadPoolConfig(ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10)
+                    .setMaxPoolSize(100));
             for (BinaryServerConfigurator configurator : configurators) {
                 configurator.configure(builder);
             }
@@ -55,6 +61,8 @@ public class BinaryServer implements Server {
                 server.start();
                 log.info("stared server on {}:{}", host, port);
             } catch (IOException e) {
+                ((AbstractApplicationContext) context).close();
+                server.shutdown();
                 throw propagate(e);
             }
         }
@@ -84,6 +92,11 @@ public class BinaryServer implements Server {
     public void stop() {
         service.stopAsync();
         service.awaitTerminated();
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 
 }
