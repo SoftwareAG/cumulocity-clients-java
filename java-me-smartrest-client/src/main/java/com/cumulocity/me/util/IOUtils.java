@@ -55,67 +55,36 @@ public abstract class IOUtils {
         } catch (IOException e) {
         }
     }
-
-    public static final byte[] readData(int inputLength, InputStream inputStream) {
-        if (inputLength < 0 || inputStream == null) {
-            return null;
-        }
-
-        final int maxNumberOfAttempts = 10;
-        final int nextAttemptTimeout = 500;
-        int bytesCount = 0;
+    
+    public static String[] readData(InputStream input) {
+        final int maxNumberOfAttempts = 3;
+        final int nextAttemptTimeout = 250;
         int consecutiveFailedAttemptsCount = 0;
-
+        StringBuffer line = new StringBuffer();
         try {
-            byte[] data = new byte[inputLength];
             
-            int len = BUFF_SIZE;
-            int read = 0;
-
             do {
-                do {
-                    if (len > (inputLength - bytesCount)) {
-                        len = (inputLength - bytesCount);
-                    }
-
-                    read = inputStream.read(data, bytesCount, len);
-                    if (read > 0) {
-                        consecutiveFailedAttemptsCount = 0;
-                        bytesCount += read;
-                    }
-                } while (read == len && bytesCount < inputLength);
-
-                if (bytesCount < inputLength && consecutiveFailedAttemptsCount < maxNumberOfAttempts) {
+                int c;
+                while ((c = input.read()) != -1) {
+                    consecutiveFailedAttemptsCount = 0;
+                    line.append((char)c);
+                }
+                if (consecutiveFailedAttemptsCount < maxNumberOfAttempts) {
                     consecutiveFailedAttemptsCount++;
                     Thread.sleep(nextAttemptTimeout);
                 } else {
                     break;
                 }
-            } while (true);
-
-            return data;
-        } catch (IOException e) {
+            } while(true);
+            
+            return StringUtils.split(line.toString(), "\n");
+        } catch(IOException e) {
             throw new SDKException("I/O error!", e);
         } catch (InterruptedException e) {
             throw new SDKException("Interrupted!", e);
-        } finally {
-            if (bytesCount < inputLength) {
-                throw new SDKException("Received only " + bytesCount + " of " + inputLength + " expected bytes!");
-            }
-        }
-    }
-    
-    public static String[] readData(Reader reader) throws IOException {
-        StringBuffer line = new StringBuffer();
-        int c = reader.read();
-
-        while (c != -1) {
-            line.append((char)c);
-            c = reader.read();
         }
         
-
-        return StringUtils.split(line.toString(), "\n");
+        
     }
 
     public static final void writeData(byte[] input, OutputStream output) {

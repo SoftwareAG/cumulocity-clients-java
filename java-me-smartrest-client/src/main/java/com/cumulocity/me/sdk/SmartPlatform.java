@@ -30,13 +30,13 @@ public class SmartPlatform {
         this.connector = new SmartRequestConnector(this);
     }
     
-    public SmartResponse request(SmartRequest request) {
+    public SmartResponse request(final SmartRequest request) {
         SmartResponse response = connector.executeRequest(request);
         connector.close();
         return response;
     }
     
-    public void requestAsync(final SmartRequest request, final SmartResponseEvaluator evaluator) {
+    public void requestAsync(final SmartRequest request, SmartResponseEvaluator evaluator) {
         SmartRequestAsyncRunner runner = new SmartRequestAsyncRunner(connector, request, evaluator);
         runner.start();
     }
@@ -48,6 +48,7 @@ public class SmartPlatform {
     public String registerTemplates(String templateString) {
         SmartResponse respCheckRegistration = connector.executeRequest();
         int codeCheck = respCheckRegistration.getDataRows()[0].getMessageId();
+        System.out.println("check " + codeCheck);
         if (codeCheck != 20) {
             SmartRequest request = new SmartRequestImpl(templateString.getBytes());
             SmartResponse respRegister = connector.executeRequest(request);

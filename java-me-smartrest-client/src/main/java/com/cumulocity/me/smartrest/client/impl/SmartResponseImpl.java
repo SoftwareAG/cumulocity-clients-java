@@ -41,7 +41,7 @@ public class SmartResponseImpl implements SmartResponse {
         if (!isSuccessful()) {
             return null;
         }
-        String[] responseLines = IOUtils.readData(new InputStreamReader(connection.openInputStream()));
+        String[] responseLines = IOUtils.readData(connection.openInputStream());
         SmartRow[] parsedLines = new SmartRow[responseLines.length];
         for (int i = 0; i < responseLines.length; i++) {
             parsedLines[i] = new SmartRow(responseLines[i]);

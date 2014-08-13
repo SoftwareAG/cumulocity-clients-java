@@ -9,15 +9,13 @@ import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
 
-
-
-
-
 public class FirstTest {
     
-    //private static Logger LOG = LoggerFactory.getLogger(FirstTest.class);;
+    private static String TENANT = "management";
+    private static String USERNAME = "admin";
+    private static String PASSWORD = "";
     
-    private static String XID = "j2me_test_template6";
+    private static String XID = "j2me_test_template8";
     
     private static String templateString =  "10,100,GET,/inventory/managedObjects/&&,,,&&,,\n" +
                                               "10,101,GET,/inventory/managedObjects/,,,,,\n" +
@@ -26,9 +24,11 @@ public class FirstTest {
     
     private SmartPlatform platform;
     
+    
+    
     @Before
     public void createPlatform() {
-        platform = new SmartPlatform("http://mtmtest:8181", XID, "management", "admin", "Pyi1bo1r");
+        platform = new SmartPlatform("http://mtmtest:8181", XID, TENANT, USERNAME, PASSWORD);
         platform.registerTemplates(templateString);
     }
     

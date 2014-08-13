@@ -37,8 +37,25 @@ public class SmartRequestConnector {
             throw new SDKException(e.getMessage(), e);
         }
     }
-
+    
+    public SmartResponse executeRequest(SmartRequest request, int mode, boolean timeout) {
+        try {
+            return openConnection(mode, timeout)
+                .writeCommand()
+                .writeHeaders()
+                .writeBody(request)
+                .buildResponse();
+        } catch (IOException e) {
+            throw new SDKException(e.getMessage(), e);
+        }
+    }
+    
     private SmartRequestConnector openConnection() throws IOException {
+        connection = (HttpConnection) Connector.open(smartPlatform.getHost() + SMARTREST_API_PATH);
+        return this;
+    }
+    
+    private SmartRequestConnector openConnection(int mode, boolean timeout) throws IOException {
         connection = (HttpConnection) Connector.open(smartPlatform.getHost() + SMARTREST_API_PATH);
         return this;
     }
