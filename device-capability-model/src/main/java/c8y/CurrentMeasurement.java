@@ -21,7 +21,7 @@ public class CurrentMeasurement {
 	}
 	
 	@JSONProperty(ignore = true)
-	public BigDecimal getCurrentVallue() {
+	public BigDecimal getCurrentValue() {
 		return current == null ? null : current.getValue();
 	}
 	

@@ -20,7 +20,7 @@ public class MoistureMeasurement {
 	}
 	
 	@JSONProperty(ignore = true)
-	public BigDecimal getMoisutreValue(){
+	public BigDecimal getMoistureValue(){
 		return moisture==null?null:moisture.getValue();
 	}
 	
