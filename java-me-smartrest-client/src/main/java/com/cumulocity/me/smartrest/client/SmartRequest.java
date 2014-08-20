@@ -1,6 +1,8 @@
 package com.cumulocity.me.smartrest.client;
 
 public interface SmartRequest {
-
-    byte[] getData();
+    
+    String getPath();
+    
+    String getData();
 }

@@ -20,6 +20,8 @@
 
 package com.cumulocity.me.sdk;
 
+import com.cumulocity.me.smartrest.client.impl.SmartRow;
+
 public class SDKException extends RuntimeException {
 
     private static final long serialVersionUID = -7264072363017210113L;
@@ -41,6 +43,10 @@ public class SDKException extends RuntimeException {
 
     public int getHttpStatus() {
         return httpStatusCode;
+    }
+    
+    public SDKException(SmartRow row) {
+        super(row.getMessageId() + "," + row.getRowNumber() + "," + row.getData()[0]);
     }
 
 }

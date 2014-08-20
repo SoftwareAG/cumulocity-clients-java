@@ -1,27 +1,28 @@
 package com.cumulocity.me.smartrest.client.impl;
 
 import com.cumulocity.me.sdk.SmartResponseEvaluator;
+import com.cumulocity.me.smartrest.client.SmartConnection;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 
 public class SmartRequestAsyncRunner implements Runnable {
 
-    private SmartRequestConnector connector;
+    private SmartConnection connection;
     
     private SmartRequest request;
     
     private SmartResponseEvaluator evaluator;
     
-    public SmartRequestAsyncRunner(SmartRequestConnector connector, SmartRequest request, 
+    public SmartRequestAsyncRunner(SmartConnection connection, SmartRequest request, 
             SmartResponseEvaluator evaluator) {
-        this.connector = connector;
+        this.connection = connection;
         this.request = request;
         this.evaluator = evaluator;
     }
     
     public void run() {
-        SmartResponse response = connector.executeRequest(request);
-        connector.close();
+        SmartResponse response = connection.executeRequest(request);
+        connection.closeConnection();
         evaluator.evaluate(response);
     }
 
