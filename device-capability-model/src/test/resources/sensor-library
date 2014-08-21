@@ -59,7 +59,8 @@
 "c8y_Position": {
   "alt": 67,
   "lng": 6.15173,
-  "lat": 51.211977
+  "lat": 51.211977,
+  "address": "Schiessstrasse 43"
 }
 ,
 "c8y_Relay" : 

@@ -7,11 +7,16 @@
 		<version>5.10.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>java-client</artifactId>
+	<artifactId>agent-framework</artifactId>
 	<packaging>jar</packaging>
-	<name>Cumulocity :: Clients Java :: Java Client</name>
+	<name>Cumulocity :: Clients Java :: Agent Framework</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
-
+	<properties>
+		<netty.version>4.0.20.Final</netty.version>
+		<grizzly.version>2.3.16</grizzly.version>
+		<glassfish.jersey.version>2.11</glassfish.jersey.version>
+		<spring.version>4.0.6.RELEASE</spring.version>
+	</properties>
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -41,70 +46,107 @@
 	<organization>
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
-
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>17.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.grizzly</groupId>
+				<artifactId>grizzly-http-servlet-server</artifactId>
+				<version>${grizzly.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey</groupId>
+				<artifactId>jersey-bom</artifactId>
+				<version>${glassfish.jersey.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			 <dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-framework-bom</artifactId>
+	            <version>${spring.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+			
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>1.9.5</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.easytesting</groupId>
+				<artifactId>fest-assert</artifactId>
+				<version>1.4</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>1.1.2</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
-        <dependency>
-            <groupId>com.nsn.cumulocity.shared-components</groupId>
-            <artifactId>common-notification</artifactId>
-        </dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.shared-components</groupId>
-			<artifactId>common-rest</artifactId>
+       <dependency>
+			<groupId>com.nsn.cumulocity.clients-java</groupId>
+			<artifactId>java-client</artifactId>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.cxf</groupId>
-					<artifactId>cxf-bundle-jaxrs</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>com.springsource.javax.validation</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-lang</groupId>
-					<artifactId>commons-lang</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.nsn.cumulocity.shared-components</groupId>
-					<artifactId>common-exception</artifactId>
-				</exclusion>
-				<exclusion>
-                 	<groupId>com.nsn.cumulocity.shared-components</groupId>
-                	 <artifactId>common-spring</artifactId>
-                </exclusion>
-				<exclusion>
-				    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-				    <groupId>org.apache.cxf</groupId>
-				</exclusion>
-				<exclusion>
-				    <artifactId>cxf-rt-transports-http-jetty</artifactId>
-				    <groupId>org.apache.cxf</groupId>
+					<artifactId>jsr311-api</artifactId>
+					<groupId>javax.ws.rs</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>rest-representation</artifactId>
+			<artifactId>device-capability-model</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>jsr311-api</artifactId>
+					<groupId>javax.ws.rs</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-			<artifactId>jersey-apache-client</artifactId>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-            <artifactId>jersey-multipart</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-client</artifactId>
-        </dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
+			<groupId>org.glassfish.jersey.ext</groupId>
+			<artifactId>jersey-spring3</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>provided</scope>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-grizzly2-servlet</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.grizzly</groupId>
+			<artifactId>grizzly-http-servlet-server</artifactId>
 		</dependency>
 
 		<!-- Testing -->
@@ -117,6 +159,16 @@
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>model-test-tools</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
@@ -131,14 +183,14 @@
 			<classifier>tests</classifier>
 		</dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
         	<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
         	<artifactId>guava</artifactId>
         	<scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>ch.qos.logback</groupId>
+        	<artifactId>logback-classic</artifactId>
+        	<version>1.1.2</version>
         </dependency>
 	</dependencies>
 
@@ -163,11 +215,11 @@
 				<configuration>
 					<instructions>
 						<Export-Package>
-							com.cumulocity.sdk.client.*,
+							com.cumulocity.agent.*,
 							!*
 						</Export-Package>
 						<Import-Package>
-							!com.cumulocity.sdk.client.*,
+							!com.cumulocity.agent.*,
 							*
 						</Import-Package>
 					</instructions>
@@ -184,43 +236,6 @@
 					</execution>
 
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-dependencies-sources</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!--List of artifacts that will be included to javadoc generation -->
-					<artifactItems>
-						<artifactItem>
-							<groupId>com.nsn.cumulocity.model</groupId>
-							<artifactId>core-model</artifactId>
-							<version>${cumulocity.model.version}</version>
-							<type>jar</type>
-							<classifier>sources</classifier>
-							<overWrite>true</overWrite>
-							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
-						</artifactItem>
-						<artifactItem>
-							<groupId>com.nsn.cumulocity.model</groupId>
-							<artifactId>rest-representation</artifactId>
-							<version>${cumulocity.model.version}</version>
-							<type>jar</type>
-							<classifier>sources</classifier>
-							<overWrite>true</overWrite>
-							<outputDirectory>${project.build.directory}/dependenciesSources</outputDirectory>
-						</artifactItem>
-					</artifactItems>
-					<!-- other configurations here -->
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -248,24 +263,6 @@
 								<source>${basedir}/src/integration-test/resources</source>
 							</sources>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<id>all-deps</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
