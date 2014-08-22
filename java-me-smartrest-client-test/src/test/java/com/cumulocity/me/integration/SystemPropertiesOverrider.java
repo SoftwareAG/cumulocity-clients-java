@@ -17,48 +17,19 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.cumulocity.me.integration;
 
-package com.cumulocity.me.sdk;
+import java.util.Map;
 
-import com.cumulocity.me.smartrest.client.impl.SmartRow;
+public class SystemPropertiesOverrider {
+    private final Map<Object, Object> properties;
 
-public class SDKException extends RuntimeException {
-
-    private static final long serialVersionUID = -7264072363017210113L;
-    
-    private int httpStatusCode = -1;
-    
-    public SDKException(String string) {
-        super(string);
+    public SystemPropertiesOverrider(Map<Object, Object> properties) {
+        this.properties = properties;
     }
 
-    public SDKException(String string, Throwable t) {
-        super(string + "\n" + t.getMessage());
+    public String get(String key) {
+        String system = System.getProperty(key);
+        return system != null ? system : (String) properties.get(key);
     }
-
-    public SDKException(int httpStatusCode, String string) {
-        super(string);
-        this.httpStatusCode = httpStatusCode;
-    }
-
-    public int getHttpStatus() {
-        return httpStatusCode;
-    }
-    
-    public SDKException(SmartRow row) {
-        super(row.toString());
-    }
-    
-    public SDKException(SmartRow[] rows) {
-        super(createErrorFromMultipleRows(rows));
-    }
-    
-    private static String createErrorFromMultipleRows(SmartRow[] rows) {
-        String exceptions = rows[0].toString();
-        for (int i = 1; i < rows.length; i++) {
-            exceptions = "\n" + rows[i].toString();
-        }
-        return exceptions;
-    }
-
 }

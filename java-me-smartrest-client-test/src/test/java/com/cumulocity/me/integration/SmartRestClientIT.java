@@ -1,40 +1,43 @@
+package com.cumulocity.me.integration;
+
+import java.io.IOException;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.cumulocity.me.sdk.SmartPlatform;
-import com.cumulocity.me.sdk.SmartResponseEvaluator;
-import com.cumulocity.me.smartrest.client.SmartConnection;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
+import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
 
-public class FirstTest {
-    
-    private static String TENANT = "management";
-    private static String USERNAME = "admin";
-    private static String PASSWORD = "Pyi1bo1r";
-    
-    private static String XID = "j2me_test_template8";
+public class SmartRestClientIT {
     
     private static String templateString =  "10,100,GET,/inventory/managedObjects/&&,,,&&,,\n" +
                                               "10,101,GET,/inventory/managedObjects/,,,,,\n" +
                                               "11,200,,,\"$.name\"\n" +
                                               "11,201,managedObjects,,\"$.name\",\"$.id\"\n" +
                                               "11,202,,,\"$.name\",\"$.id\"";
-    
-    private SmartConnection connection;
-    
     private SmartPlatform platform;
     
     
     
     @Before
-    public void createPlatform() {
-        connection = new SmartHttpConnection("http://mtmtest:8181", TENANT, USERNAME, PASSWORD, XID);
-        platform = new SmartPlatform(connection);
+    public void createPlatform() throws IOException {
+        Properties cumulocityProps = new Properties();
+        cumulocityProps.load(SmartRestClientIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
+
+        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
+        platform =  new SmartPlatform(new SmartHttpConnection(
+                p.get("cumulocity.host"),
+                p.get("cumulocity.tenant"),
+                p.get("cumulocity.user"),
+                p.get("cumulocity.password"),
+                p.get("cumulocity.xid")));
+        
         platform.registerTemplates(templateString);
     }
     
@@ -68,7 +71,11 @@ public class FirstTest {
     @Test
     public void testDevicePush() {
         platform.listenToPushData("/cep/realtime/", new String[]{"/managedobjects/*"});
+        platform.unsubscribePushChannels("/cep/realtime/", new String[]{"/managedobjects/*"});
+        platform.stopListentoPushData("/cep/realtime/");
     }
+    
+    
     
     private void smartRowLogger(SmartRow row) {
         System.out.println("message id: " + row.getMessageId() + "\n" +

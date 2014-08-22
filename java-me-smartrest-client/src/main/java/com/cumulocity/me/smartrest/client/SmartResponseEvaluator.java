@@ -1,6 +1,5 @@
-package com.cumulocity.me.sdk;
+package com.cumulocity.me.smartrest.client;
 
-import com.cumulocity.me.smartrest.client.SmartResponse;
 
 public interface SmartResponseEvaluator {
 

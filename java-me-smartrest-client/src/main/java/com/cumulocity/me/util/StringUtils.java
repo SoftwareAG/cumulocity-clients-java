@@ -68,6 +68,8 @@ public abstract class StringUtils {
                 if (token.length() > 0) {
                     tokens.addElement(token.toString());
                     token.setLength(0);
+                } else {
+                    tokens.addElement("");
                 }
             } else {
                 token.append(chars[i]);

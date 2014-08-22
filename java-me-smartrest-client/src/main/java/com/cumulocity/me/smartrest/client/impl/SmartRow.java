@@ -20,16 +20,20 @@ public class SmartRow {
         String[] values = StringUtils.split(row, ",");
         if (values.length == 1) {
             this.messageId = 0;
-            this.rowNumber = 1;
+            this.rowNumber = -1;
             this.data = values;
         } else if (values.length == 2) {
             this.messageId = Integer.parseInt(values[0]);
-            this.rowNumber = 1;
+            this.rowNumber = -1;
             this.data = new String[]{values[1]};
         } else {
             this.messageId = Integer.parseInt(values[0]);
-            this.rowNumber = Integer.parseInt(values[1]);
-            this.data = new String[values.length -2];
+            if (!values[1].equals("")) {
+                this.rowNumber = Integer.parseInt(values[1]);
+            } else {
+                this.rowNumber = -1;
+            }
+            this.data = new String[values.length - 2];
             System.arraycopy(values, 2, this.data, 0, values.length -2);
         }
     }
@@ -46,4 +50,15 @@ public class SmartRow {
         return data;
     }
 
+    public String toString() {
+        String row = messageId + "," + rowNumber;
+        if (data == null || data.length == 0) {
+            return row;
+        }
+        row = row + "," + data[0];
+        for (int i = 1; i < data.length; i++) {
+            row = row + "," + data[i];
+        }
+        return row;
+    }
 }

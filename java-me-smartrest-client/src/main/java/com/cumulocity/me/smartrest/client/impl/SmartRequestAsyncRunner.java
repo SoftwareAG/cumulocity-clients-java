@@ -1,9 +1,9 @@
 package com.cumulocity.me.smartrest.client.impl;
 
-import com.cumulocity.me.sdk.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.SmartConnection;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
+import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 
 public class SmartRequestAsyncRunner implements Runnable {
 
@@ -22,17 +22,15 @@ public class SmartRequestAsyncRunner implements Runnable {
     
     public void run() {
         SmartResponse response = connection.executeRequest(request);
-        connection.closeConnection();
         evaluator.evaluate(response);
     }
 
     public void start() {
         Thread thread = new Thread(this);
         try {
-          thread.start();
+            thread.start();
         } catch (Exception error) {
         }
     }
-
 
 }

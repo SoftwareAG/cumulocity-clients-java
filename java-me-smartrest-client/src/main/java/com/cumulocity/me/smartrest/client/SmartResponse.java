@@ -6,6 +6,8 @@ public interface SmartResponse {
 
     boolean isSuccessful();
     
+    boolean isTimeout();
+    
     int getStatus();
     
     String getMessage();

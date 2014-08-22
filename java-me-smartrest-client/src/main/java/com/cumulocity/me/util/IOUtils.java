@@ -55,19 +55,36 @@ public abstract class IOUtils {
         } catch (IOException e) {
         }
     }
+
+    public static final void writeData(byte[] input, OutputStream output) {
+        if (input == null) {
+            return;
+        }
+        try {
+            output.write(input);
+        } catch (IOException e) {
+            throw new SDKException("I/O error!", e);
+        }
+    }
     
-    public static String[] readData(InputStream input) {
+    public static String readData(InputStream input) {
         final int maxNumberOfAttempts = 3;
         final int nextAttemptTimeout = 250;
         int consecutiveFailedAttemptsCount = 0;
+        boolean lookForHeartbeat = true;
         StringBuffer line = new StringBuffer();
         try {
             
             do {
                 int c;
                 while ((c = input.read()) != -1) {
-                    consecutiveFailedAttemptsCount = 0;
-                    line.append((char)c);
+                    if (lookForHeartbeat) {
+                        lookForHeartbeat = isHeartbeat(c);
+                    }
+                    if (!lookForHeartbeat) {
+                        consecutiveFailedAttemptsCount = 0;
+                        line.append((char)c);
+                    }
                 }
                 if (consecutiveFailedAttemptsCount < maxNumberOfAttempts) {
                     consecutiveFailedAttemptsCount++;
@@ -77,25 +94,19 @@ public abstract class IOUtils {
                 }
             } while(true);
             
-            return StringUtils.split(line.toString(), "\n");
+            return line.toString();
         } catch(IOException e) {
             throw new SDKException("I/O error!", e);
         } catch (InterruptedException e) {
             throw new SDKException("Interrupted!", e);
+        } finally {
+            IOUtils.closeQuietly(input);
+            input = null;
         }
-        
-        
     }
-
-    public static final void writeData(byte[] input, OutputStream output) {
-        if (input == null) {
-            return;
-        }
-        try {
-            output.write(input);
-            output.flush();
-        } catch (IOException e) {
-            throw new SDKException("I/O error!", e);
-        }
+    
+    public static boolean isHeartbeat(int c) {
+        System.out.println("->" + (char)c + "<-");
+        return c == 32;
     }
 }
