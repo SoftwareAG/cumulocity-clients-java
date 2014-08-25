@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.cumulocity.agent.server.Server;
 import com.cumulocity.agent.server.config.CommonConfiguration;
 
 @Configuration
@@ -21,7 +22,7 @@ public class BinaryServerConfiguration {
 
     @Bean
     @Autowired
-    public BinaryServer server(List<BinaryServerConfigurator> configurators) {
+    public Server server(List<BinaryServerConfigurator> configurators) {
         return new BinaryServer(configurators);
     }
 

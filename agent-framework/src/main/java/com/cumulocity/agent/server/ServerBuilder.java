@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -56,7 +55,7 @@ public class ServerBuilder {
     }
 
     private static void configureLogger(String id) {
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("etc", id, "logback.xml"),
+        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, "logback.xml"),
                 Paths.get(System.getProperty("user.home"), "." + id, "logback.xml"));
 
         for (Path path : logbackConfig) {
@@ -124,7 +123,7 @@ public class ServerBuilder {
         return new RestServerBuilder(this);
     }
 
-    protected ConfigurableApplicationContext getContext() {
+    protected AnnotationConfigApplicationContext getContext() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
         applicationContext.register(CommonConfiguration.class);
@@ -141,7 +140,6 @@ public class ServerBuilder {
         if (!features.isEmpty()) {
             applicationContext.register(features.toArray(new Class[features.size() - 1]));
         }
-
         applicationContext.refresh();
 
         return applicationContext;
