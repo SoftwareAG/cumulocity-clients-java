@@ -22,7 +22,6 @@ package com.cumulocity.me.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 
 import javax.microedition.io.Connection;
 
@@ -106,7 +105,6 @@ public abstract class IOUtils {
     }
     
     public static boolean isHeartbeat(int c) {
-        System.out.println("->" + (char)c + "<-");
         return c == 32;
     }
 }

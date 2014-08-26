@@ -1,13 +1,7 @@
 package com.cumulocity.me.smartrest.client.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import javax.microedition.io.HttpConnection;
-
 import com.cumulocity.me.smartrest.client.SmartResponse;
-import com.cumulocity.me.util.IOUtils;
 import com.cumulocity.me.util.StringUtils;
 
 public class SmartResponseImpl implements SmartResponse {

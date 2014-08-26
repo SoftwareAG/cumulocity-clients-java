@@ -17,6 +17,8 @@ public interface SmartConnection {
     
     SmartResponse executeRequest(SmartRequest request);
     
+    void executeRequestAsync(SmartRequest request, SmartResponseEvaluator evaluator);
+    
     void closeConnection();
 
 }

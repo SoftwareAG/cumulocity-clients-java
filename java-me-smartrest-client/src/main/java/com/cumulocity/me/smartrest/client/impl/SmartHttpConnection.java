@@ -2,6 +2,7 @@ package com.cumulocity.me.smartrest.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
@@ -9,6 +10,7 @@ import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
+import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.IOUtils;
 
@@ -127,6 +129,11 @@ public class SmartHttpConnection implements SmartConnection {
             IOUtils.closeQuietly(input);
             IOUtils.closeQuietly(connection);
         }
+    }
+    
+    public void executeRequestAsync(SmartRequest request, SmartResponseEvaluator evaluator) {
+        SmartRequestAsyncRunner runner = new SmartRequestAsyncRunner(this, request, evaluator);
+        runner.start();
     }
     
     public void closeConnection() {
