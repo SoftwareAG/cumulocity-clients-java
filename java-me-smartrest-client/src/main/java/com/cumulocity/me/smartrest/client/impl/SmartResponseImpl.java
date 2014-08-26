@@ -26,6 +26,10 @@ public class SmartResponseImpl implements SmartResponse {
         this.dataRows = dataRows;
     }
     
+    public SmartRow getRow(int index) {
+        return dataRows[index];
+    }
+    
     public boolean isSuccessful() {
         return status < 300;
     }
@@ -53,7 +57,7 @@ public class SmartResponseImpl implements SmartResponse {
         }
         SmartRow[] parsedLines = new SmartRow[input.length];
         for (int i = 0; i < input.length; i++) {
-            parsedLines[i] = new SmartRow(input[i]);
+            parsedLines[i] = SmartRow.create(input[i]);
         }
         return parsedLines;
     }

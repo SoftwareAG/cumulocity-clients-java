@@ -9,33 +9,37 @@ public class SmartRow {
     private final int rowNumber;
     
     private final String[] data;
+    
+    public static SmartRow create(String row) {
+        int messageId;
+        int rowNumber;
+        String[] data;
+        String[] values = StringUtils.split(row, ",");
+        if (values.length == 1) {
+            messageId = 0;
+            rowNumber = -1;
+            data = values;
+        } else if (values.length == 2) {
+            messageId = Integer.parseInt(values[0]);
+            rowNumber = -1;
+            data = new String[]{values[1]};
+        } else {
+            messageId = Integer.parseInt(values[0]);
+            if (!values[1].equals("")) {
+                rowNumber = Integer.parseInt(values[1]);
+            } else {
+                rowNumber = -1;
+            }
+            data = new String[values.length - 2];
+            System.arraycopy(values, 2, data, 0, values.length -2);
+        }
+        return new SmartRow(messageId, rowNumber, data);
+    }
 
     public SmartRow(int messageId, int rowNumber, String[] data) {
         this.messageId = messageId;
         this.rowNumber = rowNumber;
         this.data = data;
-    }
-    
-    public SmartRow(String row) {
-        String[] values = StringUtils.split(row, ",");
-        if (values.length == 1) {
-            this.messageId = 0;
-            this.rowNumber = -1;
-            this.data = values;
-        } else if (values.length == 2) {
-            this.messageId = Integer.parseInt(values[0]);
-            this.rowNumber = -1;
-            this.data = new String[]{values[1]};
-        } else {
-            this.messageId = Integer.parseInt(values[0]);
-            if (!values[1].equals("")) {
-                this.rowNumber = Integer.parseInt(values[1]);
-            } else {
-                this.rowNumber = -1;
-            }
-            this.data = new String[values.length - 2];
-            System.arraycopy(values, 2, this.data, 0, values.length -2);
-        }
     }
     
     public int getMessageId() {
@@ -48,6 +52,10 @@ public class SmartRow {
 
     public String[] getData() {
         return data;
+    }
+    
+    public String getData(int index) {
+        return data[index];
     }
 
     public String toString() {

@@ -27,7 +27,8 @@ public class SmartCometClient {
     
     private boolean fixedSettings = false;
     
-    private long timeout;
+    private volatile SmartLongPolling longPolling;
+    
     private long interval;
     // 0: do nothing; 1: do handshake; 2: do connect
     private int reconnectAdvice;
@@ -37,7 +38,6 @@ public class SmartCometClient {
         this.clientId = null;
         this.evaluator = evaluator;
         this.connection = connection;
-        this.timeout = 60000;
         this.interval = 0;
         this.reconnectAdvice = 2;
     }
@@ -46,7 +46,6 @@ public class SmartCometClient {
         this.clientId = null;
         this.evaluator = evaluator;
         this.connection = connection;
-        this.timeout = timeout;
         this.interval = interval;
         this.reconnectAdvice = 2;
     }
@@ -55,17 +54,18 @@ public class SmartCometClient {
         if (path == null || channels == null || channels.length == 0) {
             throw new SDKException("Either there was no path or channel specified to listen to");
         }
-        this.path = path;
-        if (clientId == null) {
-            clientId = handshake();
+        if (longPolling == null) {
+            this.path = path;
+            if (clientId == null) {
+                clientId = handshake();
+            }
+            this.channels = channels;
+            subscribe();
+            longPolling = new SmartLongPolling(this);
+            longPolling.start();      
+        } else {
+            throw new SDKException("SmartCometClient already started");
         }
-        this.channels = channels;
-        System.out.println("before subscribe");
-        subscribe();
-        System.out.println("before");
-        SmartLongPolling longPolling = new SmartLongPolling(this);
-        longPolling.start();      
-        System.out.println("after");
     }
 
     public void stopListenTo() {
@@ -79,30 +79,36 @@ public class SmartCometClient {
         disconnect();
     }
     
-    public String handshake() {
+    protected String handshake() {
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
         SmartRow[] responseLines = response.getDataRows();
         SmartRow responseLine = extractAdvice(responseLines)[0];
         if (responseLine.getMessageId() == 0) {
-            this.clientId = responseLine.getData()[0];
+            this.clientId = responseLine.getData(0);
         } else {
             throw new SDKException(responseLine);
         }
         return clientId;
     }
        
-    public void subscribe() {
+    protected void subscribe() {
         SmartRequestImpl request = new SmartRequestImpl(path, buildSubscriptionBody(channels, SMARTREST_SUBSCRIBE_CODE));
-        executeWithoutResponse(request);
+        final SmartResponse response = connection.executeRequest(request);
+        if (response == null || response.isTimeout()) {
+            return;
+        } else if (!response.isSuccessful()){
+            return;
+        }
+        extractAdvice(response.getDataRows());
     }
     
-    public void unsubscribe() {
+    protected void unsubscribe() {
         SmartRequestImpl request = new SmartRequestImpl(path, buildSubscriptionBody(channels, SMARTREST_UNSUBSCRIBE_CODE));
         executeWithoutResponse(request);
     }
    
-    public void connect() {
+    protected void connect() {
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
         final SmartResponse response = connection.executeRequest(request);
         if (response == null || response.isTimeout()) {
@@ -117,16 +123,16 @@ public class SmartCometClient {
             }
         });
         thread.start();
+        connection.closeConnection();
         
     }
     
-    public void useFixedSettings(long timeout, long interval) {
-        this.timeout = timeout;
+    public void useFixedSettings(long interval) {
         this.interval = interval;
         this.fixedSettings = true;
     }
     
-    public void cleanUp() {
+    protected void cleanUp() {
         this.connection.closeConnection();
     }
     
@@ -136,10 +142,6 @@ public class SmartCometClient {
 
     public String[] getChannels() {
         return channels;
-    }
-    
-    public long getTimeout() {
-        return timeout;
     }
 
     public long getInterval() {
@@ -197,14 +199,10 @@ public class SmartCometClient {
     }
     
     private void setAdvice(SmartRow adviceRow) {
-        String timeout;
         String interval;
         String reconnectAdvice;
         String[] data = adviceRow.getData();
         if (!fixedSettings) {
-            if (!(timeout = data[0]).equals("")) {
-                this.timeout = Long.parseLong(timeout);
-            }
             if (!(interval = data[1]).equals("")) {
                 this.interval = Long.parseLong(interval);
             }

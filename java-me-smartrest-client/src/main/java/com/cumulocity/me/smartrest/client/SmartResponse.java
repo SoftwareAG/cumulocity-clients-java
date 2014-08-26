@@ -13,4 +13,6 @@ public interface SmartResponse {
     String getMessage();
     
     SmartRow[] getDataRows();
+    
+    SmartRow getRow(int index);
 }

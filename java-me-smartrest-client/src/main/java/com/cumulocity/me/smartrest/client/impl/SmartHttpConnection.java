@@ -19,11 +19,9 @@ public class SmartHttpConnection implements SmartConnection {
     private final String host;
     private String authorization; 
     private String xid;
-    private String params;
-    private int mode;
+    private String params = null;
+    private int mode = -1;
     private boolean timeout;
-    private boolean useParams;
-    private boolean useMode;
     private boolean isRegistered;
     private HttpConnection connection;
     private InputStream input;
@@ -32,8 +30,6 @@ public class SmartHttpConnection implements SmartConnection {
         this.host = host;
         this.xid = xid;
         this.authorization = SmartConnection.DEVICEBOOTSTRAP_AUTHENTICATION;
-        this.useParams = false;
-        this.useMode = false;
         this.isRegistered = false;
     }
     
@@ -41,8 +37,6 @@ public class SmartHttpConnection implements SmartConnection {
         this.host = host;
         this.xid = xid;
         this.authorization = authorization;
-        this.useParams = false;
-        this.useMode = false;
         this.isRegistered = true;
     }
     
@@ -51,21 +45,17 @@ public class SmartHttpConnection implements SmartConnection {
         this.host = host;
         this.xid = xid;
         this.authorization = "Basic " + Base64.encode(tenant + "/" + username + ":" + password);
-        this.useParams = false;
-        this.useMode = false;
         this.isRegistered = true;
 
     }
     
     public void setupConnection(String params) {
         this.params = params;
-        this.useParams = true;
     }
     
     public void setupConnection(int mode, boolean timeout) {
         this.mode = mode;
         this.timeout = timeout;
-        this.useMode = true;
     }
     
     public String bootstrap(String id) {
@@ -79,7 +69,7 @@ public class SmartHttpConnection implements SmartConnection {
             }
             response = executeRequest(new SmartRequestImpl(SmartConnection.BOOTSTRAP_REQUEST_CODE, id));
             if (response != null) {
-                responseRow = response.getDataRows()[0];
+                responseRow = response.getRow(0);
             }
         } while(response == null || responseRow == null || responseRow.getMessageId() != SmartConnection.BOOTSTRAP_RESPONSE_CODE);
         String[] data = responseRow.getData();
@@ -96,7 +86,7 @@ public class SmartHttpConnection implements SmartConnection {
         if (respCheckRegistration == null) {
             throw new SDKException("Could not connect to server");
         }
-        int codeCheck = respCheckRegistration.getDataRows()[0].getMessageId();
+        int codeCheck = respCheckRegistration.getRow(0).getMessageId();
         if (codeCheck != 20) {
             SmartRequest request = new SmartRequestImpl(SmartConnection.SMARTREST_API_PATH, templates);
             SmartResponse respRegister = executeRequest(request);
@@ -104,14 +94,14 @@ public class SmartHttpConnection implements SmartConnection {
                 throw new SDKException("Could not connect to server");
             }
             if (respRegister.isSuccessful()) {
-                int codeRegister = respRegister.getDataRows()[0].getMessageId();
+                int codeRegister = respRegister.getRow(0).getMessageId();
                 if (codeRegister != 20) {
-                    throw new SDKException(codeRegister, respRegister.getDataRows()[0].getData()[0]);
+                    throw new SDKException(codeRegister, respRegister.getRow(0).getData(0));
                 }
-                xid = String.valueOf(respRegister.getDataRows()[0].getData()[0]);
+                xid = String.valueOf(respRegister.getRow(0).getData(0));
             }
         } else {
-            xid = String.valueOf(respCheckRegistration.getDataRows()[0].getData()[0]);
+            xid = String.valueOf(respCheckRegistration.getRow(0).getData(0));
         } 
         return xid;
     }
@@ -143,10 +133,10 @@ public class SmartHttpConnection implements SmartConnection {
     
     private SmartHttpConnection openConnection(String path) throws IOException {
         String url = host + path;
-        if (useParams) {
+        if (params != null) {
             url = url + params;    
         }
-        if (useMode) {
+        if (mode != -1) {
             connection = (HttpConnection) Connector.open(url, mode, timeout);
         } else {
             connection = (HttpConnection) Connector.open(url);

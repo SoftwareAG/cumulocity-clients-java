@@ -1,6 +1,6 @@
 package com.cumulocity.me.smartrest.client.impl;
 
-public class SmartLongPolling extends Thread {
+class SmartLongPolling extends Thread {
 
     private SmartCometClient client;
 
@@ -18,19 +18,19 @@ public class SmartLongPolling extends Thread {
     
     private class LongPollingRunner implements Runnable {
         public void run() {
-            do {
+            longpolling:
                 do {
-                    try {
-                        Thread.sleep(client.getInterval());
-                    } catch (InterruptedException e) {
-                        continue;
-                    }
-                    client.connect();
-                    client.cleanUp();
-                } while(client.getReconnectAdvice() == 2);
-                client.handshake();
-                client.subscribe();
-            } while(client.getReconnectAdvice() == 1);
+                    do {
+                        try {
+                            Thread.sleep(client.getInterval());
+                        } catch (InterruptedException e) {
+                            break longpolling;
+                        }
+                        client.connect();
+                    } while(client.getReconnectAdvice() == 2);
+                    client.handshake();
+                    client.subscribe();
+                } while(client.getReconnectAdvice() == 1);
         }
     }
 }

@@ -26,7 +26,7 @@
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
 		<module>java-me-smartrest-client</module>
-		<module>java-me-client-smartrest-test</module>
+		<module>java-me-smartrest-client-test</module>
 		<module>agent-framework</module>
 	</modules>
 
