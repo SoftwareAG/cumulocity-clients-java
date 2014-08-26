@@ -25,6 +25,8 @@
 		<module>java-client</module>
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
+		<module>java-me-smartrest-client</module>
+		<module>java-me-smartrest-client-test</module>
 		<module>agent-framework</module>
 	</modules>
 
@@ -197,6 +199,11 @@
 			<dependency>
 				<groupId>com.nsn.cumulocity.sdk.me</groupId>
 				<artifactId>java-me-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.sdk.me</groupId>
+				<artifactId>java-me-smartrest-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
             <dependency>
