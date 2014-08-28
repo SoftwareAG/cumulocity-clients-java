@@ -13,7 +13,7 @@
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<properties>
 		<netty.version>4.0.20.Final</netty.version>
-		<grizzly.version>2.3.16</grizzly.version>
+		<grizzly.version>2.3.14</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
 		<spring.version>4.0.6.RELEASE</spring.version>
 	</properties>

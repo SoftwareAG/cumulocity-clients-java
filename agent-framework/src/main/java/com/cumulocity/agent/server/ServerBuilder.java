@@ -47,16 +47,15 @@ public class ServerBuilder {
 
             @Override
             public ServerBuilder application(String id) {
-                configureLogger(id);
                 return new ServerBuilder(address, id);
             }
 
         };
     }
 
-    private static void configureLogger(String id) {
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, "logback.xml"),
-                Paths.get(System.getProperty("user.home"), "." + id, "logback.xml"));
+    private static void configureLogger(String id, String config) {
+        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, config + ".xml"),
+                Paths.get(System.getProperty("user.home"), "." + id, config + ".xml"));
 
         for (Path path : logbackConfig) {
             if (searchLoggerConfiguration(path)) {
@@ -93,6 +92,11 @@ public class ServerBuilder {
     private ServerBuilder(InetSocketAddress address, String id) {
         this.address = address;
         this.applicationId = id;
+    }
+
+    public ServerBuilder logging(String config) {
+        configureLogger(applicationId, config);
+        return this;
     }
 
     /**

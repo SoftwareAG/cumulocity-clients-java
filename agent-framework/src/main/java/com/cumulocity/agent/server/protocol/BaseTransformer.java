@@ -8,7 +8,7 @@ import org.glassfish.grizzly.memory.MemoryManager;
 
 public abstract class BaseTransformer<I, O> implements Transformer<I, O> {
 
-    protected final AttributeBuilder attributeBuilder = Grizzly.DEFAULT_ATTRIBUTE_BUILDER;
+    protected final AttributeBuilder attributeBuilder = AttributeBuilder.DEFAULT_ATTRIBUTE_BUILDER;
 
     protected MemoryManager obtainMemoryManager(AttributeStorage storage) {
 
