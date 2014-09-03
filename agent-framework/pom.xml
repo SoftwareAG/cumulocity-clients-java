@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>5.10.1-SNAPSHOT</version>
+		<version>5.11.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>agent-framework</artifactId>
@@ -13,7 +13,7 @@
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<properties>
 		<netty.version>4.0.20.Final</netty.version>
-		<grizzly.version>2.3.16</grizzly.version>
+		<grizzly.version>2.3.14</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
 		<spring.version>4.0.6.RELEASE</spring.version>
 	</properties>
@@ -60,6 +60,11 @@
 				<version>${grizzly.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.glassfish.grizzly</groupId>
+				<artifactId>grizzly-framework</artifactId>
+				<version>${grizzly.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.glassfish.jersey</groupId>
 				<artifactId>jersey-bom</artifactId>
 				<version>${glassfish.jersey.version}</version>
@@ -97,6 +102,7 @@
 				<artifactId>logback-core</artifactId>
 				<version>1.1.2</version>
 			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -147,6 +153,10 @@
 		<dependency>
 			<groupId>org.glassfish.grizzly</groupId>
 			<artifactId>grizzly-http-servlet-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.grizzly</groupId>
+			<artifactId>grizzly-framework</artifactId>
 		</dependency>
 
 		<!-- Testing -->

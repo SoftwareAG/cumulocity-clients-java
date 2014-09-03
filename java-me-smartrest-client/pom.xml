@@ -1,16 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
+  	<modelVersion>4.0.0</modelVersion>
+  
+  	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
 		<version>5.11.1-SNAPSHOT</version>
 	</parent>
-
-	<groupId>com.nsn.cumulocity.sdk.me</groupId>
-	<artifactId>java-me-client</artifactId>
-	<name>Cumulocity :: Clients Java :: Java ME Client</name>
+	
+  	<groupId>com.nsn.cumulocity.sdk.me</groupId>
+  	<artifactId>java-me-smartrest-client</artifactId>
+  	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<properties>
@@ -58,11 +57,6 @@
 			<artifactId>midpapi20</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>net.sf.microlog</groupId>
-			<artifactId>microlog-logger-core</artifactId>
-			<version>2.3.2</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -97,5 +91,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	
+	
 </project>

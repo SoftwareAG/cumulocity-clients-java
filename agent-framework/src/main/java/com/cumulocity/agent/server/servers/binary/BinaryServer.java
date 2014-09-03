@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.cumulocity.agent.server.Server;
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
@@ -42,8 +41,8 @@ public class BinaryServer implements Server {
 
             builder.setName(applicationId);
 
-            builder.setWorkerThreadPoolConfig(
-                            ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10).setMaxPoolSize(100));
+            builder.setWorkerThreadPoolConfig(ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10)
+                    .setMaxPoolSize(100));
             for (BinaryServerConfigurator configurator : configurators) {
                 configurator.configure(builder);
             }
@@ -55,6 +54,7 @@ public class BinaryServer implements Server {
                 server.start();
                 log.info("stared server on {}:{}", host, port);
             } catch (IOException e) {
+                server.shutdown();
                 throw propagate(e);
             }
         }

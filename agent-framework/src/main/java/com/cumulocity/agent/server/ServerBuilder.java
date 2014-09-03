@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -48,16 +47,15 @@ public class ServerBuilder {
 
             @Override
             public ServerBuilder application(String id) {
-                configureLogger(id);
                 return new ServerBuilder(address, id);
             }
 
         };
     }
 
-    private static void configureLogger(String id) {
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("etc", id, "logback.xml"),
-                Paths.get(System.getProperty("user.home"), "." + id, "logback.xml"));
+    private static void configureLogger(String id, String config) {
+        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, config + ".xml"),
+                Paths.get(System.getProperty("user.home"), "." + id, config + ".xml"));
 
         for (Path path : logbackConfig) {
             if (searchLoggerConfiguration(path)) {
@@ -96,6 +94,11 @@ public class ServerBuilder {
         this.applicationId = id;
     }
 
+    public ServerBuilder logging(String config) {
+        configureLogger(applicationId, config);
+        return this;
+    }
+
     /**
      *  file:/etc/{applicationId}/{resource}-default.properties
      *  file:/etc/{applicationId}/{resource}.properties
@@ -124,7 +127,7 @@ public class ServerBuilder {
         return new RestServerBuilder(this);
     }
 
-    protected ConfigurableApplicationContext getContext() {
+    protected AnnotationConfigApplicationContext getContext() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
         applicationContext.register(CommonConfiguration.class);
@@ -141,7 +144,6 @@ public class ServerBuilder {
         if (!features.isEmpty()) {
             applicationContext.register(features.toArray(new Class[features.size() - 1]));
         }
-
         applicationContext.refresh();
 
         return applicationContext;
