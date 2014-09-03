@@ -7,6 +7,10 @@ public interface DeviceContextService {
     DeviceContext getContext();
 
     DeviceCredentials getCredentials();
+    
+    void enterContext(DeviceContext context);
+    
+    void leaveContext();
 
     void runWithinContext(DeviceContext context, Runnable task);
 

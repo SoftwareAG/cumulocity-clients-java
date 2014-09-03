@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -56,13 +57,15 @@ public class ServerBuilder {
     private static void configureLogger(String id, String config) {
         Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, config + ".xml"),
                 Paths.get(System.getProperty("user.home"), "." + id, config + ".xml"));
-
+        SLF4JBridgeHandler.removeHandlersForRootLogger(); // (since SLF4J 1.6.5)
+        SLF4JBridgeHandler.install();
         for (Path path : logbackConfig) {
             if (searchLoggerConfiguration(path)) {
                 System.out.println("configuration founded on path " + path);
                 return;
             }
         }
+
         throw new RuntimeException("Can't load logger configuration on paths " + logbackConfig);
     }
 

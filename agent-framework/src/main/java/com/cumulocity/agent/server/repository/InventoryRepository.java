@@ -49,7 +49,7 @@ public class InventoryRepository {
         }
         return managedObjectRepresentation;
     }
-
+    
     public void bindToParent(GId parentId, GId childId) {
         if (parentId == null) {
             return;

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -12,10 +13,9 @@
 	<name>Cumulocity :: Clients Java :: Agent Framework</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<properties>
-		<netty.version>4.0.20.Final</netty.version>
 		<grizzly.version>2.3.14</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
-		<spring.version>4.0.6.RELEASE</spring.version>
+		<spring.version>3.2.10.RELEASE</spring.version>
 	</properties>
 	<licenses>
 		<license>
@@ -46,7 +46,7 @@
 	<organization>
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -71,14 +71,14 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			 <dependency>
-	            <groupId>org.springframework</groupId>
-	            <artifactId>spring-framework-bom</artifactId>
-	            <version>${spring.version}</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
-			
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${spring.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-all</artifactId>
@@ -102,11 +102,11 @@
 				<artifactId>logback-core</artifactId>
 				<version>1.1.2</version>
 			</dependency>
-			
+
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-       <dependency>
+		<dependency>
 			<groupId>com.nsn.cumulocity.clients-java</groupId>
 			<artifactId>java-client</artifactId>
 			<exclusions>
@@ -131,9 +131,9 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring3</artifactId>
@@ -157,6 +157,21 @@
 		<dependency>
 			<groupId>org.glassfish.grizzly</groupId>
 			<artifactId>grizzly-framework</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -192,33 +207,33 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-        <dependency>
-        	<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-        	<artifactId>guava</artifactId>
-        	<scope>test</scope>
-        </dependency>
-        <dependency>
-        	<groupId>ch.qos.logback</groupId>
-        	<artifactId>logback-classic</artifactId>
-        	<version>1.1.2</version>
-        </dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+			<artifactId>guava</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-            <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                            <execution>
-                                    <id>bundle-sources</id>
-                                    <phase>package</phase>
-                                    <goals>
-                                            <!-- produce source artifact for main project sources -->
-                                            <goal>jar-no-fork</goal>
-                                    </goals>
-                            </execution>
-                    </executions>
-            </plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>bundle-sources</id>
+						<phase>package</phase>
+						<goals>
+							<!-- produce source artifact for main project sources -->
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>

@@ -1,5 +1,7 @@
 package com.cumulocity.agent.server.context;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
@@ -10,7 +12,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
 
     private final Logger log = LoggerFactory.getLogger(DeviceContextServiceImpl.class);
 
-    private final ThreadLocal<DeviceContext> localContext = new NamedThreadLocal<DeviceContext>("deviceLocalContext");
+    private final ThreadLocal<Deque<DeviceContext>> localContext = new NamedThreadLocal<Deque<DeviceContext>>("deviceLocalContext");
 
     @Override
     public DeviceContext getContext() {
@@ -22,7 +24,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     }
 
     private DeviceContext doGetContext() {
-        return localContext.get();
+        return localContext.get().peek();
     }
 
     @Override
@@ -43,30 +45,40 @@ public class DeviceContextServiceImpl implements DeviceContextService {
 
     @Override
     public <V> V callWithinContext(DeviceContext context, Callable<V> task) throws Exception {
-        DeviceContext previousContext = doGetContext();
         enterContext(context);
-        log.debug("entering to  {} ", context);
+
         try {
             return task.call();
         } catch (Exception e) {
             log.warn("execution of task failed within tenant : " + context.getLogin().getTenant());
             throw e;
         } finally {
-            log.debug("leaving from {} ", context);
-            leaveContext(previousContext);
+
+            leaveContext();
         }
     }
 
-    private void enterContext(DeviceContext newContext) {
+    @Override
+    public void enterContext(DeviceContext newContext) {
+        log.debug("entering to  {} ", newContext);
         DeviceContext contextCopy = new DeviceContext(newContext.getLogin());
-        localContext.set(contextCopy);
+        if (localContext.get() == null) {
+            localContext.set(new LinkedList<DeviceContext>());
+        }
+        ;
+        localContext.get().push(contextCopy);
+
     }
 
-    private void leaveContext(DeviceContext previousContext) {
-        if (previousContext == null) {
-            localContext.remove();
-        } else {
-            localContext.set(previousContext);
+    @Override
+    public void leaveContext() {
+
+        final Deque<DeviceContext> deque = localContext.get();
+        if (deque != null) {
+            log.debug("leaving from {} ", deque.poll());
+            if (deque.isEmpty()) {
+                localContext.remove();
+            }
         }
     }
 

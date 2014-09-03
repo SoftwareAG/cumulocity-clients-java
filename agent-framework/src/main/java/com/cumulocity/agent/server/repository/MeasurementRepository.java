@@ -1,5 +1,7 @@
 package com.cumulocity.agent.server.repository;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,12 @@ public class MeasurementRepository {
             return measurementApi.create(representation);
         } else {
             throw new UnsupportedOperationException("Unable to update measurment");
+        }
+    }
+
+    public void save(Collection<MeasurementRepresentation> measurments) {
+        for (MeasurementRepresentation measurement : measurments) {
+            measurementApi.createAsync(measurement);
         }
     }
 }
