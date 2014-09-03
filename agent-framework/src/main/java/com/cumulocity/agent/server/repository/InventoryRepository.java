@@ -1,5 +1,9 @@
 package com.cumulocity.agent.server.repository;
 
+import static com.cumulocity.agent.server.repository.ManagedObjects.fromManagedObjectReference;
+import static com.google.common.collect.FluentIterable.from;
+import static jersey.repackaged.com.google.common.collect.Lists.newLinkedList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.inventory.InventoryFilter;
 
 @Component
 public class InventoryRepository {
@@ -33,6 +39,26 @@ public class InventoryRepository {
         return inventoryApi.get(id);
     }
 
+    public Iterable<ManagedObjectRepresentation> findAllChildDevices(ManagedObjectRepresentation managedObjectRepresentation) {
+        return findAllByFilter(search().byIds(newLinkedList(asIds(asManagedObjects(managedObjectRepresentation.getChildDevices())))));
+    }
+
+    private Iterable<ManagedObjectRepresentation> asManagedObjects(final Iterable<ManagedObjectReferenceRepresentation> references) {
+        return from(references).transform(fromManagedObjectReference());
+    }
+
+    private InventoryFilter search() {
+        return new InventoryFilter();
+    }
+
+    private Iterable<GId> asIds(Iterable<ManagedObjectRepresentation> mos) {
+        return from(mos).transform(ManagedObjects.getId());
+    }
+
+    public Iterable<ManagedObjectRepresentation> findAllByFilter(InventoryFilter filter) {
+        return inventoryApi.getManagedObjectsByFilter(filter).get().allPages();
+    }
+
     public ManagedObjectRepresentation save(ManagedObjectRepresentation managedObjectRepresentation) {
         logger.debug("Save managed object: {}.", managedObjectRepresentation);
         if (managedObjectRepresentation.getId() == null) {
@@ -49,7 +75,7 @@ public class InventoryRepository {
         }
         return managedObjectRepresentation;
     }
-    
+
     public void bindToParent(GId parentId, GId childId) {
         if (parentId == null) {
             return;
