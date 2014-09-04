@@ -44,6 +44,7 @@ public class SignalStrength {
 		this.rssi = rssi;
 	}
 	
+	@JSONProperty(ignoreIfNull = true)
 	public MeasurementValue getBer() {
 		return ber;
 	}
