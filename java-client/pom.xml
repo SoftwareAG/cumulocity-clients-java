@@ -93,10 +93,6 @@
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>jersey-multipart</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-client</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -318,6 +319,7 @@ public class DeviceControlIT extends JavaSdkITBase {
 
     @When("^I create an operation for device '([^']*)'$")
     public void iCreateAnOperationForDevice(int deviceNum) throws Exception {
+        TimeUnit.MINUTES.sleep(5);
         GId deviceId = getMoId(deviceNum);
         OperationRepresentation operationRepresentation = new OperationRepresentation();
         operationRepresentation.setDeviceId(deviceId);
