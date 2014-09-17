@@ -3,6 +3,7 @@ package com.cumulocity.agent.server.feature;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -133,7 +134,7 @@ public class CumulocityClientFeature {
         return new ContextScopedSubscriber<String, Object>(cepApi.getCustomNotificationsSubscriber(), contextService);
     }
 
-    public static class CumulocityClientFactoryBean implements FactoryBean<PlatformImpl> {
+    public static class CumulocityClientFactoryBean extends AbstractFactoryBean<PlatformImpl> implements FactoryBean<PlatformImpl> {
 
         private final DeviceContextService contextService;
 
@@ -151,7 +152,7 @@ public class CumulocityClientFeature {
         }
 
         @Override
-        public PlatformImpl getObject() throws Exception {
+        protected PlatformImpl createInstance() throws Exception {
             return create(contextService.getCredentials());
         }
 
