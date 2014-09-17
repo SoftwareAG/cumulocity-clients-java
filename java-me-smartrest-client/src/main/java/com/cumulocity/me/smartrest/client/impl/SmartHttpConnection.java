@@ -8,6 +8,7 @@ import javax.microedition.io.HttpConnection;
 
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
+import com.cumulocity.me.smartrest.client.SmartExecutorService;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
@@ -22,31 +23,29 @@ public class SmartHttpConnection implements SmartConnection {
     private String params = null;
     private int mode = -1;
     private boolean timeout;
-    private boolean isRegistered;
     private HttpConnection connection;
     private InputStream input;
+    private final SmartExecutorService executorService;
     
-    public SmartHttpConnection(String host, String xid) {
-        this.host = host;
-        this.xid = xid;
-        this.authorization = SmartConnection.DEVICEBOOTSTRAP_AUTHENTICATION;
-        this.isRegistered = false;
-    }
-    
-    public SmartHttpConnection(String host, String xid, String authorization) {
+    public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
         this.host = host;
         this.xid = xid;
         this.authorization = authorization;
-        this.isRegistered = true;
+        this.executorService = executorService;
+    }
+    
+    public SmartHttpConnection(String host, String xid, String authorization) {
+        this(host, xid, authorization, new SmartExecutorServiceImpl());
     }
     
     public SmartHttpConnection(String host, String tenant, String username,
             String password, String xid) {
-        this.host = host;
-        this.xid = xid;
-        this.authorization = "Basic " + Base64.encode(tenant + "/" + username + ":" + password);
-        this.isRegistered = true;
-
+        this(host, xid, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), new SmartExecutorServiceImpl());
+    }
+    
+    public SmartHttpConnection(String host, String tenant, String username,
+            String password, String xid, SmartExecutorService executorService) {
+        this(host, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), xid, executorService);
     }
     
     public void setupConnection(String params) {
@@ -74,14 +73,10 @@ public class SmartHttpConnection implements SmartConnection {
         } while(response == null || responseRow == null || responseRow.getMessageId() != SmartConnection.BOOTSTRAP_RESPONSE_CODE);
         String[] data = responseRow.getData();
         authorization = "Basic " + Base64.encode(data[1] + "/" + data[2] + ":" + data[3]);
-        isRegistered = true;
         return authorization;
     }
     
     public String templateRegistration(String templates) throws SDKException {
-        if (!isRegistered) {
-            throw new SDKException("No authorization is set. Use bootstrap first");
-        }
         SmartResponse respCheckRegistration = executeRequest(new SmartRequestImpl(SmartConnection.SMARTREST_API_PATH, ""));
         if (respCheckRegistration == null) {
             throw new SDKException("Could not connect to server");
@@ -122,8 +117,7 @@ public class SmartHttpConnection implements SmartConnection {
     }
     
     public void executeRequestAsync(SmartRequest request, SmartResponseEvaluator evaluator) {
-        SmartRequestAsyncRunner runner = new SmartRequestAsyncRunner(this, request, evaluator);
-        runner.start();
+        executorService.execute(new SmartRequestAsyncRunner(this, request, evaluator));
     }
     
     public void closeConnection() {
@@ -152,9 +146,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection writeHeaders(SmartRequest request) throws IOException {
         connection.setRequestProperty("Authorization", authorization);
         connection.setRequestProperty("Content-Type", "text/plain");
-        if (isRegistered) {
-            connection.setRequestProperty("X-Id", xid);
-        }
+        connection.setRequestProperty("X-Id", xid);
         return this;
     }
     
