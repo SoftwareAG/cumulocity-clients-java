@@ -64,8 +64,17 @@ public class ResponseParser {
         try {
             return response.getEntity(ErrorMessageRepresentation.class);
         } catch (Exception e) {
-            LOG.error(NO_ERROR_REPRESENTATION, e);
+            LOG.error("Failed to parse error message: " + getErrorString(response), e);
             return null;
+        }
+    }
+
+    private String getErrorString(ClientResponse response) {
+        try {
+            return response.getEntity(String.class);
+        } catch (Exception e) {
+            LOG.error("Couldn't parse error message to string.");
+            return "";
         }
     }
 
