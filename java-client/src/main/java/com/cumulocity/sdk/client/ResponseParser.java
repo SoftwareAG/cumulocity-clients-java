@@ -20,12 +20,14 @@
 
 package com.cumulocity.sdk.client;
 
+import javax.ws.rs.core.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
+import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParser {
@@ -51,22 +53,36 @@ public class ResponseParser {
         String errorMessage = "Http status code: " + status;
 
         if (response.hasEntity()) {
-            ErrorMessageRepresentation errorRepresentation = getErrorRepresentation(response);
+            String errorRepresentation = getErrorRepresentation(response);
             if (errorRepresentation == null) {
-                return NO_ERROR_REPRESENTATION;
+                errorRepresentation = NO_ERROR_REPRESENTATION;
             }
             errorMessage += "\n" + errorRepresentation;
         }
         return errorMessage;
     }
 
-    private ErrorMessageRepresentation getErrorRepresentation(ClientResponse response) {
+    private String getErrorRepresentation(ClientResponse response) {
         try {
-            return response.getEntity(ErrorMessageRepresentation.class);
+            if (isJsonResponse(response)) {
+                return response.getEntity(ErrorMessageRepresentation.class).toString();
+            } else {
+                LOG.error("Failed to parse error message to json. Getting error string... ");
+                return response.getEntity(String.class); 
+            }
         } catch (Exception e) {
-            LOG.error(NO_ERROR_REPRESENTATION, e);
+            LOG.error("Failed to parse error message", e);
             return null;
         }
+    }
+
+    private boolean isJsonResponse(ClientResponse response){
+        MediaType contentType = response.getType();
+        if (contentType == null) {
+            return false;
+        }
+        return contentType.getType().contains("application") 
+                && contentType.getSubtype().contains("json");
     }
 
     public GId parseIdFromLocation(ClientResponse response) {
