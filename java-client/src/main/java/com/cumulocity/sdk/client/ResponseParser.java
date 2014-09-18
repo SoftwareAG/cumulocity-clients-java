@@ -68,12 +68,12 @@ public class ResponseParser {
                 return response.getEntity(ErrorMessageRepresentation.class).toString();
             } else {
                 LOG.error("Failed to parse error message to json. Getting error string... ");
-                return response.getEntity(String.class); 
+                LOG.error(response.getEntity(String.class)); 
             }
         } catch (Exception e) {
             LOG.error("Failed to parse error message", e);
-            return null;
         }
+        return null;
     }
 
     private boolean isJsonResponse(ClientResponse response){
