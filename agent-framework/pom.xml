@@ -12,7 +12,7 @@
 	<name>Cumulocity :: Clients Java :: Agent Framework</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<properties>
-		<grizzly.version>2.3.14</grizzly.version>
+		<grizzly.version>2.3.16</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
 		<spring.version>3.2.10.RELEASE</spring.version>
 	</properties>
@@ -136,6 +136,12 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring3</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>validation-api</artifactId>
+					<groupId>javax.validation</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -148,14 +154,6 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-grizzly2-servlet</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http-servlet-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-framework</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

@@ -1,12 +1,10 @@
 package com.cumulocity.agent.server.repository;
 
-import javax.inject.Named;
-
-import jersey.repackaged.com.google.common.collect.Iterables;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.cumulocity.model.idtype.GId;
@@ -17,6 +15,7 @@ import com.cumulocity.sdk.client.devicecontrol.PagedOperationCollectionRepresent
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.cumulocity.sdk.client.notification.Subscription;
 import com.cumulocity.sdk.client.notification.SubscriptionListener;
+import com.google.common.collect.Iterables;
 
 @Component
 public class DeviceControlRepository {
@@ -29,7 +28,7 @@ public class DeviceControlRepository {
 
     @Autowired
     public DeviceControlRepository(DeviceControlApi deviceControlApi,
-            @Named("deviceControlNotificationsSubscriber") Subscriber<GId, OperationRepresentation> subscriber) {
+            @Qualifier("deviceControlNotificationsSubscriber") Subscriber<GId, OperationRepresentation> subscriber) {
         this.deviceControlApi = deviceControlApi;
         this.subscriber = subscriber;
     }

@@ -41,7 +41,7 @@ final class ConnectionHeartBeatWatcher {
             }
 
             private void onConnectionIdle() {
-                log.debug("canceling the request because of inactivity");
+                log.warn("canceling the long poll request because of inactivity");
                 handler.cancel();
             }
 
