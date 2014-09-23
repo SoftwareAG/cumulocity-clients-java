@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
+import javax.ws.rs.core.MediaType;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,6 +97,7 @@ public class ResponseParserTest {
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         ErrorMessageRepresentation errorRepresentation = new ErrorMessageRepresentation();
         when(response.hasEntity()).thenReturn(true);
+        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
         when(response.getEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
 
         // Then
@@ -111,6 +114,7 @@ public class ResponseParserTest {
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         when(response.hasEntity()).thenReturn(false);
         when(response.getEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
+        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
 
         // Then
         thrown.expect(SDKException.class);

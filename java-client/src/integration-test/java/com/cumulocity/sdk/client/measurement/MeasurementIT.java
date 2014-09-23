@@ -24,7 +24,9 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepr
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.cumulocity.model.DateConverter;
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
@@ -120,23 +121,6 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
 //
-//
-//    Scenario: Get measurement collection
-
-    @Test
-    public void getMeasurementCollection() throws Exception {
-//    Given I have '2' measurements of type 'com.type1' for the managed object
-        iHaveMeasurements(2, "com.type1");
-//    When I create all measurements
-        iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should I get all the measurements
-        shouldGetAllMeasurements();
-    }
-
-//
-//
 //    Scenario: Get measurement collection by fragment type
 
     @Test
@@ -147,20 +131,16 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveMeasurementsWithFragments(3, "com.cumulocity.sdk.client.measurement.FragmentTwo");
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '5' measurements
-        iShouldGetNumberOfMeasurements(5);
 //    And I query all measurements by fragment type 'com.cumulocity.sdk.client.measurement.FragmentOne'
-        iQueryAllByType("com.cumulocity.sdk.client.measurement.FragmentOne");
+        iQueryAllByFragmentType("com.cumulocity.sdk.client.measurement.FragmentOne");
 //    Then I should get '2' measurements
         iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by fragment type 'com.cumulocity.sdk.client.measurement.FragmentTwo'
-        iQueryAllByType("com.cumulocity.sdk.client.measurement.FragmentTwo");
+        iQueryAllByFragmentType("com.cumulocity.sdk.client.measurement.FragmentTwo");
 //    Then I should get '3' measurements
         iShouldGetNumberOfMeasurements(3);
 //    And I query all measurements by fragment type 'com.cumulocity.sdk.client.measurement.FragmentThree'
-        iQueryAllByType("com.cumulocity.sdk.client.measurement.FragmentThree");
+        iQueryAllByFragmentType("com.cumulocity.sdk.client.measurement.FragmentThree");
 //    Then I should get '0' measurements
         iShouldGetNumberOfMeasurements(0);
     }
@@ -177,10 +157,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveMeasurementsForSource(2, 1);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '3' measurements
-        iShouldGetNumberOfMeasurements(3);
 //    And I query all measurements by source '0'
         iQueryAllBySource(0);
 //    Then I should get '1' measurements
@@ -208,10 +184,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '2' measurements
-        iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by time from '2011-11-03T11:00:00.000+05:30' and time to '2011-11-03T11:10:00.000+05:30'
         iQueryAllByTime("2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
 //    Then I should get '2' measurements
@@ -236,10 +208,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '2' measurements
-        iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by source '0' and time from '2011-11-03T11:00:00.000+05:30' and time to '2011-11-03T11:10:00.000+05:30'
         iQueryAllBySourceAndTime(0, "2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
 //    Then I should get '1' measurements
@@ -271,10 +239,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '2' measurements
-        iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by source '0' and fragment type 'com.cumulocity.sdk.client.measurement.FragmentOne'
         iQueryAllBySourceAndType(0, "com.cumulocity.sdk.client.measurement.FragmentOne");
 //    Then I should get '1' measurements
@@ -307,10 +271,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '2' measurements
-        iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by fragment type 'com.cumulocity.sdk.client.measurement.FragmentOne' and time from '2011-11-03T11:00:00
 // .000+05:30' and time to '2011-11-03T11:10:00.000+05:30'
         iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
@@ -346,10 +306,6 @@ public class MeasurementIT extends JavaSdkITBase {
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
 //    When I create all measurements
         iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '2' measurements
-        iShouldGetNumberOfMeasurements(2);
 //    And I query all measurements by source '0' and fragment type 'com.cumulocity.sdk.client.measurement.FragmentOne' and time from
 // '2011-11-03T11:00:00.000+05:30' and time to '2011-11-03T11:10:00.000+05:30'
         iQueryAllBySourceTypeAndTime(0, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
@@ -486,18 +442,6 @@ public class MeasurementIT extends JavaSdkITBase {
 
         // Then
         assertThat(page2nd.getMeasurements().size(), is(equalTo(5)));
-
-        // When
-        MeasurementCollectionRepresentation page3rd = measurementApi.getMeasurements().getPage(measurements, 3);
-
-        // Then
-        assertThat(page3rd.getMeasurements().size(), is(equalTo(2)));
-
-        // When
-        MeasurementCollectionRepresentation page4th = measurementApi.getMeasurements().getPage(measurements, 4);
-
-        // Then
-        assertThat(page4th.getMeasurements().size(), is(equalTo(0)));
     }
 
     private MeasurementRepresentation aSampleMeasurement(ManagedObjectRepresentation source) {
@@ -509,31 +453,6 @@ public class MeasurementIT extends JavaSdkITBase {
         rep.set(new FragmentOne());
         return rep;
     }
-
-//
-//    Scenario: Get measurements next and previous collection
-
-    @Test
-    public void getMeasurementNextAndPreviousCollection() throws Exception {
-//    Given I have '12' measurements with fragment type 'com.cumulocity.sdk.client.measurement.FragmentOne' for the managed object
-        iHaveMeasurementsWithFragments(12, "com.cumulocity.sdk.client.measurement.FragmentOne");
-//    When I create all measurements
-        iCreateAll();
-//    And I get all measurements
-        iGetAllMeasurements();
-//    Then I should get '5' measurements
-        iShouldGetNumberOfMeasurements(5);
-//    And I query all measurements by page '2'
-        iQueryAllByPageNumber(2);
-//    Then I should get '5' measurements of paging
-        iShouldGetNumberOfMeasurements(5);
-//    Then I should get next page which has current page '3' and measurements '2'
-        iQueryAllByNextPage(3, 2);
-//    Then I should get previous page which has current page '1' and measurements '5'
-        iQueryAllByPreviousPage(1, 5);
-    }
-
-//
 
     private static final int OK = 200;
 
@@ -548,8 +467,6 @@ public class MeasurementIT extends JavaSdkITBase {
     private List<MeasurementRepresentation> result2;
 
     private MeasurementCollectionRepresentation collection1;
-
-    private MeasurementCollectionRepresentation collection2;
 
     private MeasurementApi measurementApi;
 
@@ -638,15 +555,6 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
-    @When("I get all measurements")
-    public void iGetAllMeasurements() throws SDKException {
-        try {
-            collection1 = measurementApi.getMeasurements().get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
     @When("I get the measurement with the created id")
     public void iGetMeasurementWithCreatedId() throws SDKException {
         try {
@@ -666,7 +574,7 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
     @When("I query all measurements by fragment type '([^']*)'")
-    public void iQueryAllByType(String fragmentType) throws SDKException, ClassNotFoundException {
+    public void iQueryAllByFragmentType(String fragmentType) throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
             MeasurementFilter filter = new MeasurementFilter().byFragmentType(fragmentClass);
@@ -755,7 +663,7 @@ public class MeasurementIT extends JavaSdkITBase {
     @When("I query all measurements by page '(\\d+)'")
     public void iQueryAllByPageNumber(int pageNumber) throws SDKException {
         try {
-            collection2 = measurementApi.getMeasurements().getPage(collection1, pageNumber);
+            collection1 = measurementApi.getMeasurements().getPage(collection1, pageNumber);
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -768,7 +676,7 @@ public class MeasurementIT extends JavaSdkITBase {
     @Then("I should get next page which has current page '(\\d+)' and measurements '(\\d+)'")
     public void iQueryAllByNextPage(int currentPage, int numMeasurements) throws SDKException {
         try {
-            MeasurementCollectionRepresentation collectionRepresentation = measurementApi.getMeasurements().getNextPage(collection2);
+            MeasurementCollectionRepresentation collectionRepresentation = measurementApi.getMeasurements().getNextPage(collection1);
             assertThat(currentPage, is(equalTo(collectionRepresentation.getPageStatistics().getCurrentPage())));
             assertThat(numMeasurements, is(equalTo(collectionRepresentation.getMeasurements().size())));
         } catch (SDKException ex) {
@@ -780,29 +688,13 @@ public class MeasurementIT extends JavaSdkITBase {
     @Then("I should get previous page which has current page '(\\d+)' and measurements '(\\d+)'")
     public void iQueryAllByPreviousPage(int currentPage, int numMeasurements) throws SDKException {
         try {
-            MeasurementCollectionRepresentation collectionRepresentation = measurementApi.getMeasurements().getPreviousPage(collection2);
+            MeasurementCollectionRepresentation collectionRepresentation = measurementApi.getMeasurements().getPreviousPage(collection1);
             assertThat(currentPage, is(equalTo(collectionRepresentation.getPageStatistics().getCurrentPage())));
             assertThat(numMeasurements, is(equalTo(collectionRepresentation.getMeasurements().size())));
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
 
-    }
-
-    @Then("I query measurements by previous page")
-    public void iQueryAllByPreviousPage() throws SDKException {
-        try {
-            collection2 = measurementApi.getMeasurements().getPreviousPage(collection2);
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        } catch (NullPointerException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    @Then("I should get '(\\d+)' measurements of paging")
-    public void iShouldGetNumberOfEventsOfPaging(int count) {
-        assertThat(collection2.getMeasurements().size(), is(count));
     }
 
     @Then("All measurements should be created")
@@ -828,30 +720,9 @@ public class MeasurementIT extends JavaSdkITBase {
         assertThat(result1.get(0).getId(), is(equalTo(result2.get(0).getId())));
     }
 
-    @Then("I should I get all the measurements")
-    public void shouldGetAllMeasurements() {
-        assertThat(collection1.getMeasurements().size(), is(equalTo(result1.size())));
-
-        Map<GId, MeasurementRepresentation> map = new HashMap<GId, MeasurementRepresentation>();
-
-        for (MeasurementRepresentation rep : result1) {
-            map.put(rep.getId(), rep);
-        }
-
-        for (MeasurementRepresentation rep : collection1.getMeasurements()) {
-            MeasurementRepresentation orig = map.get(rep.getId());
-            assertThat(orig, is(notNullValue()));
-        }
-    }
-
     @Then("Measurement should not be found")
     public void shouldNotBeFound() {
         assertThat(status, is(equalTo(NOT_FOUND)));
     }
-
-    // ------------------------------------------------------------------------
-    // Private Methods
-    // ------------------------------------------------------------------------
-
 }
 
