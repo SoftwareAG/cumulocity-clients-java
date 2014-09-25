@@ -2,12 +2,15 @@ package com.cumulocity.agent.server;
 
 import static com.google.common.collect.FluentIterable.from;
 
-import org.springframework.context.ConfigurableApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.cumulocity.agent.server.servers.binary.BinaryServerConfiguration;
 
 public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder> {
+
+    private static final Logger log = LoggerFactory.getLogger(BinaryServerBuilder.class);
 
     private final ServerBuilder builder;
 
@@ -27,9 +30,7 @@ public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder
         if (!packages.isEmpty()) {
             applicationContext.scan(from(packages).toArray(String.class));
         }
-        
         applicationContext.refresh();
-        applicationContext.start();
         final Server server = applicationContext.getBean(Server.class);
         return new Server() {
 
@@ -46,11 +47,11 @@ public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder
                 try {
                     server.start();
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                     stop();
                 }
 
             }
         };
     }
-
 }

@@ -19,11 +19,10 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import org.eclipse.jetty.client.HttpClient;
-
 import com.cumulocity.sdk.client.SDKException;
+import com.sun.jersey.api.client.Client;
 
 interface HttpClientProvider {
     
-    HttpClient get() throws SDKException;
+    Client get() throws SDKException;
 }

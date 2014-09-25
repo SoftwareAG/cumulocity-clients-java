@@ -224,7 +224,7 @@ public class RestConnector {
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
 
-    private static Client createClient(PlatformParameters platformParameters) {
+    public static Client createClient(PlatformParameters platformParameters) {
 
         DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
 

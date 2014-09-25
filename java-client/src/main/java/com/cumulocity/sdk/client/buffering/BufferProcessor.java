@@ -52,7 +52,7 @@ public class BufferProcessor {
                         result.setResponse(response);
                         return result;
                     } catch (SDKException e) {
-                        if (e.getHttpStatus() <= 500 && !NO_ERROR_REPRESENTATION.equals(e.getMessage())) {
+                        if (e.getHttpStatus() <= 500 && !e.getMessage().contains(NO_ERROR_REPRESENTATION)) {
                             result.setException(e);
                             return result;
                         }

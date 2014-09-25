@@ -6,8 +6,6 @@ import java.net.InetSocketAddress;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -18,7 +16,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.cumulocity.agent.server.Server;
-import com.cumulocity.agent.server.context.ContextFilter;
+import com.cumulocity.agent.server.context.DeviceContextFilter;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -47,14 +45,13 @@ public class JaxrsServer implements Server {
             server.getListener("grizzly")
                     .getTransport()
                     .setWorkerThreadPoolConfig(
-                            ThreadPoolConfig.defaultConfig().setPoolName("Grizzly-worker").setCorePoolSize(10).setMaxPoolSize(100));
+                            ThreadPoolConfig.defaultConfig().setPoolName("grizzly-" + applicationId).setCorePoolSize(10)
+                                    .setMaxPoolSize(100));
 
             WebappContext context = new WebappContext(applicationId, "/" + applicationId);
-            resourceConfig.registerClasses(RequestContextFilter.class, JacksonFeature.class, MultiPartFeature.class);
-            resourceConfig.getClasses();
+            resourceConfig.registerClasses(DeviceContextFilter.class);
+            resourceConfig.registerClasses(RequestContextFilter.class);
             context.addServlet("jersey-servlet", new ServletContainer(resourceConfig)).addMapping("/*");
-            context.addFilter("deviceContextFilter", applicationContext.getBean(ContextFilter.class)).addMappingForServletNames(null,
-                    "jersey-servlet");
             context.addListener(new ContextLoaderListener(applicationContext));
             context.deploy(server);
             try {

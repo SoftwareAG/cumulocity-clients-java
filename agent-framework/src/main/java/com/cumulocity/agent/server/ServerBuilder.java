@@ -1,5 +1,7 @@
 package com.cumulocity.agent.server;
 
+import static com.google.common.collect.FluentIterable.from;
+import static com.google.common.collect.Iterables.concat;
 import static java.nio.file.Files.exists;
 
 import java.net.InetSocketAddress;
@@ -10,7 +12,9 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -25,6 +29,8 @@ import com.cumulocity.agent.server.config.PropertiesFactoryBean;
 import com.google.common.collect.ImmutableList;
 
 public class ServerBuilder {
+
+    private final Logger log = LoggerFactory.getLogger(ServerBuilder.class);
 
     public static interface ApplicationBuilder {
         public ServerBuilder application(String id);
@@ -47,23 +53,24 @@ public class ServerBuilder {
 
             @Override
             public ServerBuilder application(String id) {
-                configureLogger(id);
                 return new ServerBuilder(address, id);
             }
 
         };
     }
 
-    private static void configureLogger(String id) {
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, "logback.xml"),
-                Paths.get(System.getProperty("user.home"), "." + id, "logback.xml"));
-
+    private static void configureLogger(String id, String config) {
+        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, config + ".xml"),
+                Paths.get(System.getProperty("user.home"), "." + id, config + ".xml"));
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
         for (Path path : logbackConfig) {
             if (searchLoggerConfiguration(path)) {
                 System.out.println("configuration founded on path " + path);
                 return;
             }
         }
+
         throw new RuntimeException("Can't load logger configuration on paths " + logbackConfig);
     }
 
@@ -93,6 +100,11 @@ public class ServerBuilder {
     private ServerBuilder(InetSocketAddress address, String id) {
         this.address = address;
         this.applicationId = id;
+    }
+
+    public ServerBuilder logging(String config) {
+        configureLogger(applicationId.toLowerCase(), config);
+        return this;
     }
 
     /**
@@ -126,7 +138,6 @@ public class ServerBuilder {
     protected AnnotationConfigApplicationContext getContext() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
-        applicationContext.register(CommonConfiguration.class);
         final Properties configuration = new Properties();
         configuration.setProperty("server.host", address().getHostString());
         configuration.setProperty("server.port", String.valueOf(address().getPort()));
@@ -134,15 +145,18 @@ public class ServerBuilder {
         applicationContext.getEnvironment().getPropertySources()
                 .addFirst(new PropertiesPropertySource("base-configuration", configuration));
         for (String resource : configurations) {
+            log.debug("registering configuration {}", resource);
             applicationContext.getEnvironment().getPropertySources()
                     .addLast(new PropertiesPropertySource(resource, loadResource(applicationContext, resource)));
         }
-        if (!features.isEmpty()) {
-            applicationContext.register(features.toArray(new Class[features.size() - 1]));
-        }
+        applicationContext.register(from(concat(common(), features)).toArray(Class.class));
         applicationContext.refresh();
 
         return applicationContext;
+    }
+
+    private ImmutableList<Class> common() {
+        return ImmutableList.<Class> of(CommonConfiguration.class);
     }
 
     private Properties loadResource(AnnotationConfigApplicationContext applicationContext, String resource) {
