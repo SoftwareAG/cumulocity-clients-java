@@ -148,6 +148,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     public void terminate() {
         super.terminate();
         executorService.shutdownNow();
+        httpClient.destroy();
     }
 
     protected void addCookieHeader(ClientRequest exchange) {
