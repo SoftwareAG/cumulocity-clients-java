@@ -23,5 +23,4 @@ class SmartLongPolling implements Runnable {
                 client.subscribe();
             } while(client.getReconnectAdvice() == 1);
     }
-
 }

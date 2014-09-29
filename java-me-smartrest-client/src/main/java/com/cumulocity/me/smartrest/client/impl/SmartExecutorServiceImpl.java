@@ -7,7 +7,7 @@ import com.cumulocity.me.smartrest.client.SmartExecutorService;
 
 public class SmartExecutorServiceImpl implements SmartExecutorService {
     
-    public static int MAX_THREADS_DEFAULT = 3;
+    public static int MAX_THREADS_DEFAULT = 5;
     
     private Vector threadPool;
     
@@ -40,7 +40,7 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
         }
     }
     
-    public void execute(Runnable task) {
+    public Thread execute(Runnable task) {
         SmartThread thread = checkForIdleThread(); 
         if (thread != null) {
             thread.giveNewTask(task);
@@ -48,13 +48,13 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
             synchronized (thread) {
                 thread.notify();
             }
-            return;
+            return thread;
         } 
         if(threadPool.size() < maxThreads) {
             thread = new SmartThread(task);
             threadPool.addElement(thread);
             thread.start();
-            return;
+            return thread;
         }
         throw new SDKException("ThreadPool cannot execute more tasks");
     }
@@ -94,8 +94,12 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
                     task.run();
                     idle = true;
                 }
-                
             }while(true);
+        }
+        
+        public void interrupt() {
+            super.interrupt();
+            this.idle = true;
         }
         
         private boolean isIdle() {

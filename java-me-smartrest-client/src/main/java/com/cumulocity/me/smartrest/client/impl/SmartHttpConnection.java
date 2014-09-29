@@ -25,6 +25,9 @@ public class SmartHttpConnection implements SmartConnection {
     private boolean timeout;
     private HttpConnection connection;
     private InputStream input;
+    private boolean keepAlive = false;
+    private HeartBeatWatcher heartBeatWatcher;
+    private Thread watcherThread;
     private final SmartExecutorService executorService;
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
@@ -32,6 +35,7 @@ public class SmartHttpConnection implements SmartConnection {
         this.xid = xid;
         this.authorization = authorization;
         this.executorService = executorService;
+        this.heartBeatWatcher =  new HeartBeatWatcher();
     }
     
     public SmartHttpConnection(String host, String xid, String authorization) {
@@ -81,7 +85,11 @@ public class SmartHttpConnection implements SmartConnection {
         if (respCheckRegistration == null) {
             throw new SDKException("Could not connect to server");
         }
-        int codeCheck = respCheckRegistration.getRow(0).getMessageId();
+        SmartRow responseRow = respCheckRegistration.getRow(0);
+        if (responseRow == null) {
+            throw new SDKException("Template registration failed");
+        }
+        int codeCheck = responseRow.getMessageId();
         if (codeCheck != 20) {
             SmartRequest request = new SmartRequestImpl(SmartConnection.SMARTREST_API_PATH, templates);
             SmartResponse respRegister = executeRequest(request);
@@ -109,10 +117,25 @@ public class SmartHttpConnection implements SmartConnection {
                     .writeBody(request)
                     .buildResponse();
         } catch (IOException e) {
-            return null;
+            throw new SDKException("I/O error!");
         } finally {
-            IOUtils.closeQuietly(input);
-            IOUtils.closeQuietly(connection);
+            closeConnection();
+        }
+    }
+    
+    public SmartResponse executeLongPollingRequest(SmartRequest request) {
+        try {
+            return openConnection(request.getPath())
+                    .writeCommand()
+                    .writeHeaders(request)
+                    .writeBody(request)
+                    .startHeartBeatWatcher()
+                    .buildResponse();
+        } catch (IOException e) {
+            throw new SDKException("I/O error!");
+        } finally {
+            stopHeartBeatWatcher();
+            closeConnection();
         }
     }
     
@@ -160,9 +183,83 @@ public class SmartHttpConnection implements SmartConnection {
 
     private SmartResponse buildResponse() throws IOException {
         input = connection.openInputStream();
-        SmartResponse response = new SmartResponseImpl(connection.getResponseCode(), connection.getResponseMessage(), IOUtils.readData(input));
+        SmartResponse response = new SmartResponseImpl(connection.getResponseCode(), connection.getResponseMessage(), readData());
         return response;
     }
     
+    private String readData() {
+        final int maxNumberOfAttempts = 3;
+        final int nextAttemptTimeout = 250;
+        int consecutiveFailedAttemptsCount = 0;
+        boolean lookForHeartbeat = true;
+        StringBuffer line = new StringBuffer();
+        try {
+            
+            do {
+                int c;
+                while ((c = input.read()) != -1) {
+                    if (lookForHeartbeat) {
+                        lookForHeartbeat = isHeartbeat(c);
+                    }
+                    if (!lookForHeartbeat) {
+                        consecutiveFailedAttemptsCount = 0;
+                        line.append((char)c);
+                    }
+                }
+                if (consecutiveFailedAttemptsCount < maxNumberOfAttempts) {
+                    consecutiveFailedAttemptsCount++;
+                    Thread.sleep(nextAttemptTimeout);
+                } else {
+                    break;
+                }
+            } while(true);
+            
+            return line.toString();
+        } catch(IOException e) {
+            throw new SDKException("I/O error!", e);
+        } catch (InterruptedException e) {
+            throw new SDKException("Interrupted!", e);
+        } finally {
+            IOUtils.closeQuietly(input);
+            input = null;
+        }
+    }
     
+    private synchronized boolean isHeartbeat(int c) {
+        if (c == 32) {
+            return keepAlive = true;
+        }
+        return false;
+    }
+    
+    private SmartHttpConnection startHeartBeatWatcher() {
+        watcherThread = new Thread(heartBeatWatcher);
+        watcherThread.start();
+        return this;
+    }
+    
+    private void stopHeartBeatWatcher() {
+        watcherThread.interrupt();
+    }
+        
+    private class HeartBeatWatcher implements Runnable {
+        public void run() {
+            do {
+                try {
+                    Thread.sleep(660000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            } while (checkConnection());
+        }
+        
+        private synchronized boolean checkConnection() {
+            if (!keepAlive) {
+               closeConnection();
+               return false;
+            }
+            keepAlive = false;
+            return true;
+        }
+    }
 }

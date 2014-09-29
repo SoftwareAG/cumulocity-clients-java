@@ -6,6 +6,6 @@ public interface SmartExecutorService {
     
     void terminateAllIdle();
     
-    void execute(Runnable task);
+    Thread execute(Runnable task);
     
 }

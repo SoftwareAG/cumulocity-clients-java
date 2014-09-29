@@ -78,6 +78,7 @@ public class SmartCometClient {
     }
     
     protected String handshake() {
+        System.out.println("Do handshake");
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
         SmartRow[] responseLines = response.getDataRows();
@@ -91,6 +92,7 @@ public class SmartCometClient {
     }
        
     protected void subscribe() {
+        System.out.println("Do subscribe");
         SmartRequestImpl request = new SmartRequestImpl(path, buildSubscriptionBody(channels, SMARTREST_SUBSCRIBE_CODE));
         final SmartResponse response = connection.executeRequest(request);
         if (response == null || response.isTimeout()) {
@@ -108,20 +110,24 @@ public class SmartCometClient {
    
     protected void connect() {
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
-        final SmartResponse response = connection.executeRequest(request);
-        if (response == null || response.isTimeout()) {
-            return;
-        } else if (!response.isSuccessful()){
-            return;
-        }
-        final SmartRow[] rows = extractAdvice(response.getDataRows());
-        executorService.execute(new Runnable() {
-            public void run() {
-                evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), rows));
+        try {
+            final SmartResponse response = connection.executeLongPollingRequest(request);
+            if (response == null || response.isTimeout()) {
+                return;
+            } else if (!response.isSuccessful()){
+                return;
             }
-        });
-        connection.closeConnection();
-        
+            final SmartRow[] rows = extractAdvice(response.getDataRows());
+            executorService.execute(new Runnable() {
+                public void run() {
+                    evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), rows));
+                }
+            });
+        } catch (SDKException e) {
+            // reconnect
+        } finally {
+            connection.closeConnection();
+        }
     }
     
     public void useFixedSettings(long interval) {
