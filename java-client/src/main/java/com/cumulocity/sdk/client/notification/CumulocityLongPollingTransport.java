@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static javax.ws.rs.core.HttpHeaders.COOKIE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
@@ -40,6 +41,8 @@ import com.sun.jersey.client.impl.ClientRequestImpl;
 
 class CumulocityLongPollingTransport extends HttpClientTransport {
 
+    private static final int WORKERS = 2;
+
     public static final String NAME = "long-polling";
 
     public static final String PREFIX = "long-polling.json";
@@ -50,8 +53,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
 
-    final ScheduledExecutorService executorService = Executors
-            .newSingleThreadScheduledExecutor(new CumulocityLongPollingTransportThreadFactory());
+    final ScheduledExecutorService executorService = newScheduledThreadPool(WORKERS, new CumulocityLongPollingTransportThreadFactory());
 
     private volatile boolean _aborted;
 
@@ -102,7 +104,6 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         return super.parseMessages(content);
     }
 
-
     @Override
     protected void setCookie(Cookie cookie) {
         super.setCookie(cookie);
@@ -110,7 +111,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     @Override
     public void send(final TransportListener listener, Message.Mutable... messages) {
-        debug("sending messages {} ", (Object)messages);
+        debug("sending messages {} ", (Object) messages);
         final String content = generateJSON(messages);
         try {
             synchronized (this) {
