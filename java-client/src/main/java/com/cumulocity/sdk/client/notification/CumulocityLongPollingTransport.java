@@ -41,7 +41,7 @@ import com.sun.jersey.client.impl.ClientRequestImpl;
 
 class CumulocityLongPollingTransport extends HttpClientTransport {
 
-    private static final int WORKERS = 2;
+    private static final int WORKERS = 4;
 
     public static final String NAME = "long-polling";
 
@@ -130,7 +130,8 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
-        final MessageExchange exchange = new MessageExchange(this, executorService, listener, messages);
+        final MessageExchange exchange = new MessageExchange(this, executorService, listener, new ConnectionHeartBeatWatcher(
+                executorService), messages);
         listener.onSending(messages);
         final Future<ClientResponse> request = endpoint.handle(createRequest(content), exchange);
         exchange.setRequest(request);

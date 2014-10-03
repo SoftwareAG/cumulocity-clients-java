@@ -16,7 +16,6 @@ import org.cometd.bayeux.Message;
 import org.cometd.client.transport.HttpClientTransport.Cookie;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,24 +39,22 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
 
     private volatile ClientResponse response;
 
-    private volatile DateTime lastHeartBeat = new DateTime();
-
     private final ConnectionHeartBeatWatcher watcher;
 
     private final ScheduledExecutorService executorService;
 
     MessageExchange(CumulocityLongPollingTransport transport, ScheduledExecutorService executorService, TransportListener listener,
-            Message... messages) {
+            ConnectionHeartBeatWatcher watcher, Message... messages) {
         this.transport = transport;
         this.executorService = executorService;
         this.listener = listener;
         this.messages = messages;
-        this.watcher = new ConnectionHeartBeatWatcher(this, executorService);
+        this.watcher = watcher;
         startWatcher();
     }
 
     private void startWatcher() {
-        log.debug("starting heartbeat watcher {}", messages);
+        log.debug("starting heartbeat watcher {}", (Object) messages);
         watcher.start();
     }
 
@@ -66,7 +63,8 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     }
 
     public void cancel() {
-        log.debug("cancling the request {} ", lastHeartBeat);
+        log.debug("canceling {}", (Object) messages);
+        listener.onConnectException(new RuntimeException("request cancelled"), messages);
         request.cancel(true);
         stopWatcher();
     }
@@ -80,12 +78,16 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
 
     public void onComplete(Future<ClientResponse> f) throws InterruptedException {
         try {
-            log.debug("wait for response headers {}", (Object) messages);
-            response = f.get();
-            log.debug("recived response headers {} ", (Object) messages);
-            request = executorService.submit(this);
-        } catch (ExecutionException e) {
-            log.debug("connection failed {}", e);
+            if (!f.isCancelled()) {
+                log.debug("wait for response headers {}", (Object) messages);
+                response = f.get();
+                log.debug("recived response headers {} ", (Object) messages);
+                request = executorService.submit(this);
+            } else {
+                throw new RuntimeException("request cancelled");
+            }
+        } catch (Exception e) {
+            log.debug("connection failed", e);
             listener.onConnectException(e, messages);
             stopWatcher();
         }
@@ -110,6 +112,7 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     }
 
     private void getHeartBeats(final ClientResponse response) throws IOException {
+        log.debug("getting heartbeants  {}", response);
         InputStream entityInputStream = response.getEntityInputStream();
         entityInputStream.mark(Integer.MAX_VALUE);
         int value = -1;
@@ -131,7 +134,7 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     }
 
     private void notifyAboutHeartBeat() {
-        lastHeartBeat = new DateTime();
+        watcher.heatBeat();
     }
 
     private void getMessagesFromResponse(ClientResponse clientResponse) {
@@ -165,6 +168,7 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     }
 
     private void onException(Exception x) {
+        log.debug("request failed ", x);
         listener.onException(x, messages);
     }
 
@@ -173,6 +177,7 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     }
 
     private void onTransportException(int code) {
+        log.debug("request failed with code {}", code);
         Map<String, Object> failure = new HashMap<String, Object>(2);
         failure.put("httpCode", code);
         TransportException x = new TransportException(failure);
@@ -204,10 +209,6 @@ class MessageExchange implements FutureListener<ClientResponse>, Runnable {
     private void stopWatcher() {
         log.debug("stopping heartbeat watcher {}", (Object) messages);
         watcher.stop();
-    }
-
-    public DateTime getLastHeartBeat() {
-        return lastHeartBeat;
     }
 
 }
