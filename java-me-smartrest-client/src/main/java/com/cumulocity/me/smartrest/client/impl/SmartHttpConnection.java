@@ -25,9 +25,7 @@ public class SmartHttpConnection implements SmartConnection {
     private boolean timeout;
     private HttpConnection connection;
     private InputStream input;
-    private boolean keepAlive = false;
-    private HeartBeatWatcher heartBeatWatcher;
-    private Thread watcherThread;
+    private SmartHeartBeatWatcher heartBeatWatcher;
     private final SmartExecutorService executorService;
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
@@ -35,7 +33,6 @@ public class SmartHttpConnection implements SmartConnection {
         this.xid = xid;
         this.authorization = authorization;
         this.executorService = executorService;
-        this.heartBeatWatcher =  new HeartBeatWatcher();
     }
     
     public SmartHttpConnection(String host, String xid, String authorization) {
@@ -134,7 +131,7 @@ public class SmartHttpConnection implements SmartConnection {
         } catch (IOException e) {
             throw new SDKException("I/O error!");
         } finally {
-            stopHeartBeatWatcher();
+            heartBeatWatcher.stop();
             closeConnection();
         }
     }
@@ -227,39 +224,15 @@ public class SmartHttpConnection implements SmartConnection {
     
     private synchronized boolean isHeartbeat(int c) {
         if (c == 32) {
-            return keepAlive = true;
+            heartBeatWatcher.heartbeat();
+            return true;
         }
         return false;
     }
     
     private SmartHttpConnection startHeartBeatWatcher() {
-        watcherThread = new Thread(heartBeatWatcher);
-        watcherThread.start();
+        heartBeatWatcher = new SmartHeartBeatWatcher(this);
+        heartBeatWatcher.start();
         return this;
-    }
-    
-    private void stopHeartBeatWatcher() {
-        watcherThread.interrupt();
-    }
-        
-    private class HeartBeatWatcher implements Runnable {
-        public void run() {
-            do {
-                try {
-                    Thread.sleep(660000);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            } while (checkConnection());
-        }
-        
-        private synchronized boolean checkConnection() {
-            if (!keepAlive) {
-               closeConnection();
-               return false;
-            }
-            keepAlive = false;
-            return true;
-        }
     }
 }

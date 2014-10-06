@@ -5,6 +5,12 @@ import java.util.Vector;
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartExecutorService;
 
+
+/**
+ * TODO: add queue for threads instead of fix limit
+ * TODO: don't return thread and instead mimic Future from java sdk
+ */
+
 public class SmartExecutorServiceImpl implements SmartExecutorService {
     
     public static int MAX_THREADS_DEFAULT = 5;
@@ -43,9 +49,9 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
     public Thread execute(Runnable task) {
         SmartThread thread = checkForIdleThread(); 
         if (thread != null) {
-            thread.giveNewTask(task);
-            thread.setIdle(false);
             synchronized (thread) {
+                thread.giveNewTask(task);
+                thread.setIdle(false);
                 thread.notify();
             }
             return thread;
@@ -58,10 +64,13 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
         }
         throw new SDKException("ThreadPool cannot execute more tasks");
     }
-
+    
     private SmartThread checkForIdleThread() {
         for(int i = 0; i < threadPool.size(); i++) {
             SmartThread thread = (SmartThread) threadPool.elementAt(i);
+            if (!thread.isAlive()) {
+                threadPool.removeElementAt(i);
+            }
             if (thread.isIdle()) {
                 return thread;
             }
@@ -88,6 +97,7 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
                         try {
                             this.wait();
                         } catch (InterruptedException e) {
+                            idle = true;
                             break endThread;
                         }
                     }
