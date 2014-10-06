@@ -2,6 +2,7 @@ package com.cumulocity.me.smartrest.client.impl;
 
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
+import com.cumulocity.me.smartrest.client.SmartExecutorService;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
@@ -15,39 +16,37 @@ public class SmartCometClient {
     public static final int SMARTREST_DISCONNECT_CODE = 84;
     public static final int SMARTREST_ADVICE_CODE = 86;
     
-    private final SmartConnection connection;
-    
-    private final SmartResponseEvaluator evaluator;
-    
-    private String clientId;
-    
-    private String path;
-    
-    private String[] channels;
-    
-    private boolean fixedSettings = false;
-    
-    private volatile SmartLongPolling longPolling;
-    
+    private final SmartConnection connection;    
+    private final SmartResponseEvaluator evaluator;    
+    private String clientId;    
+    private String path;    
+    private String[] channels;    
+    private boolean fixedSettings = false;    
+    private final SmartExecutorService executorService;    
+    private volatile SmartLongPolling longPolling;    
     private long interval;
     // 0: do nothing; 1: do handshake; 2: do connect
     private int reconnectAdvice;
     
-    
-    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator) {
-        this.clientId = null;
-        this.evaluator = evaluator;
-        this.connection = connection;
-        this.interval = 0;
-        this.reconnectAdvice = 2;
-    }
-    
-    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator, long timeout, long interval) {
+    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator, long interval, SmartExecutorService executorService) {
         this.clientId = null;
         this.evaluator = evaluator;
         this.connection = connection;
         this.interval = interval;
         this.reconnectAdvice = 2;
+        this.executorService = executorService;
+    }
+    
+    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator, long interval) {
+        this(connection, evaluator, interval, new SmartExecutorServiceImpl());
+    }
+    
+    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator, SmartExecutorService executorService) {
+        this(connection, evaluator, 0, executorService);
+    }
+    
+    public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator) {
+        this(connection, evaluator, 0, new SmartExecutorServiceImpl());
     }
     
     public void startListenTo(String path, String[] channels) {
@@ -61,8 +60,7 @@ public class SmartCometClient {
             }
             this.channels = channels;
             subscribe();
-            longPolling = new SmartLongPolling(this);
-            longPolling.start();      
+            executorService.execute(new SmartLongPolling(this));   
         } else {
             throw new SDKException("SmartCometClient already started");
         }
@@ -80,6 +78,7 @@ public class SmartCometClient {
     }
     
     protected String handshake() {
+        System.out.println("Do handshake");
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
         SmartRow[] responseLines = response.getDataRows();
@@ -93,6 +92,7 @@ public class SmartCometClient {
     }
        
     protected void subscribe() {
+        System.out.println("Do subscribe");
         SmartRequestImpl request = new SmartRequestImpl(path, buildSubscriptionBody(channels, SMARTREST_SUBSCRIBE_CODE));
         final SmartResponse response = connection.executeRequest(request);
         if (response == null || response.isTimeout()) {
@@ -110,21 +110,24 @@ public class SmartCometClient {
    
     protected void connect() {
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
-        final SmartResponse response = connection.executeRequest(request);
-        if (response == null || response.isTimeout()) {
-            return;
-        } else if (!response.isSuccessful()){
-            return;
-        }
-        final SmartRow[] rows = extractAdvice(response.getDataRows());
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), rows));
+        try {
+            final SmartResponse response = connection.executeLongPollingRequest(request);
+            if (response == null || response.isTimeout()) {
+                return;
+            } else if (!response.isSuccessful()){
+                return;
             }
-        });
-        thread.start();
-        connection.closeConnection();
-        
+            final SmartRow[] rows = extractAdvice(response.getDataRows());
+            executorService.execute(new Runnable() {
+                public void run() {
+                    evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), rows));
+                }
+            });
+        } catch (SDKException e) {
+            // reconnect
+        } finally {
+            connection.closeConnection();
+        }
     }
     
     public void useFixedSettings(long interval) {
