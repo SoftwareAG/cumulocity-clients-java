@@ -152,10 +152,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
             try {
                 if(!isSubscriptionToChannel(message)) return;
                 if (isSuccessfulySubscribed(message)) {
-                    session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE).addListener(new UnsubscribeListener(subscription));
+                    ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
+                    unsubscribeChannel.addListener(new UnsubscribeListener(subscription));
                     subscriptions.add(subscription);
                 } else {
-                    subscription.getListener().onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
+                    subscription.getListener()
+                    .onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
                             + " " + message.get(Message.ERROR_FIELD)));
                 }
             } finally {
