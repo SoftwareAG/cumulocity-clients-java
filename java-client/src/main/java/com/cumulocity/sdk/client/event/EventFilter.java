@@ -44,6 +44,12 @@ public class EventFilter extends Filter {
 
     @ParamSource
     private String dateTo;
+    
+    @ParamSource
+    private String creationDateFrom;
+    
+    @ParamSource
+    private String creationDateTo;
 
     @ParamSource
     private String type;
@@ -109,14 +115,14 @@ public class EventFilter extends Filter {
     }
 
     public EventFilter byDate(Date fromDate, Date toDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
-        this.dateTo = DateConverter.date2String(toDate);
-        return this;
+    	this.dateFrom = DateConverter.date2String(fromDate);
+    	this.dateTo = DateConverter.date2String(toDate);
+    	return this;
     }
-
+    
     public EventFilter byFromDate(Date fromDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
-        return this;
+    	this.dateFrom = DateConverter.date2String(fromDate);
+    	return this;
     }
 
     public String getFromDate() {
@@ -127,4 +133,22 @@ public class EventFilter extends Filter {
         return dateTo;
     }
 
+	public String getCreationDateFrom() {
+		return creationDateFrom;
+	}
+
+	public String getCreationDateTo() {
+		return creationDateTo;
+	}
+	
+	public EventFilter byCreationDate(Date fromDate, Date toDate) {
+		this.creationDateFrom = DateConverter.date2String(fromDate);
+		this.creationDateTo = DateConverter.date2String(toDate);
+		return this;
+	}
+	
+	public EventFilter byFromCreationDate(Date fromDate) {
+		this.creationDateFrom = DateConverter.date2String(fromDate);
+		return this;
+	}
 }
