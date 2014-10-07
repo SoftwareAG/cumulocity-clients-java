@@ -5,12 +5,11 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-
-import net.sf.cglib.beans.ImmutableBean;
 
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
@@ -20,16 +19,26 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
+import com.sun.jersey.api.client.AsyncWebResource;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.async.FutureListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageExchangeTest {
+
+    private static final String URL = null;
+
+    private static final String MESSAGES = null;
 
     @Mock
     private CumulocityLongPollingTransport transport;
@@ -49,12 +58,28 @@ public class MessageExchangeTest {
     @Mock
     private ScheduledExecutorService executorService;
 
+    @Mock
+    private Client client;
+
+    @Mock
+    private AsyncWebResource resource;
+
+    @Mock
+    private Future<ClientResponse> request;
+
+    @Captor
+    private ArgumentCaptor<FutureListener<ClientResponse>> responseHandler;
+
+    @Captor
+    private ArgumentCaptor<Runnable> task;
+
     private MessageExchange exchange;
 
     @Before
     public void setup() {
-        exchange = new MessageExchange(transport, executorService, listener, watcher, message);
-        when(transport.removeExchange(exchange)).thenReturn(true);
+        exchange = new MessageExchange(transport, client, executorService, listener, watcher, message);
+        when(client.asyncResource(any(String.class))).thenReturn(resource);
+        when(resource.handle(any(ClientRequest.class), responseHandler.capture())).thenReturn(request);
     }
 
     @After
@@ -65,10 +90,9 @@ public class MessageExchangeTest {
     @Test
     public void shouldFailMessagesWhenRequestCannceled() throws InterruptedException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.isCancelled()).thenReturn(true);
+        when(request.isCancelled()).thenReturn(true);
         //When
-        exchange.onComplete(f);
+        recivedResponse();
         //Then
         verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
         verify(watcher).start();
@@ -77,10 +101,8 @@ public class MessageExchangeTest {
 
     @Test
     public void shouldStopWatcherAndNotifyWhenCancel() throws InterruptedException, ExecutionException {
-        //Given
-        Future<ClientResponse> f = mock(Future.class);
-        exchange.setRequest(f);
         //When
+        exchange.execute(URL, MESSAGES);
         exchange.cancel();
         //Then
         verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
@@ -90,21 +112,25 @@ public class MessageExchangeTest {
     @Test
     public void shouldScheduleTaskWhenReciveReponse() throws InterruptedException, ExecutionException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenReturn(response);
+        when(request.get()).thenReturn(response);
         //When
-        exchange.onComplete(f);
+        recivedResponse();
         //Then
-        verify(executorService).submit(exchange);
+        verify(executorService).submit(any(Runnable.class));
+    }
+
+    private void recivedResponse() throws InterruptedException {
+        exchange.execute(URL, MESSAGES);
+        verify(resource).handle(any(ClientRequest.class), responseHandler.capture());
+        responseHandler.getValue().onComplete(request);
     }
 
     @Test
     public void shouldNotfyAboutFailWhenRequestFailed() throws InterruptedException, ExecutionException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenThrow(ExecutionException.class);
+        when(request.get()).thenThrow(ExecutionException.class);
         //When
-        exchange.onComplete(f);
+        recivedResponse();
         //Then
         verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
         verify(watcher).stop();
@@ -113,12 +139,11 @@ public class MessageExchangeTest {
     @Test
     public void shouldNotfyAboutFailWhenResponseStatusIsNotOk() throws InterruptedException, ExecutionException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenReturn(response);
+        when(request.get()).thenReturn(response);
         when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.FORBIDDEN);
         //When
-        exchange.onComplete(f);
-        exchange.run();
+        recivedResponse();
+        responseConsumed();
         //Then
         verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
         verify(watcher).stop();
@@ -127,47 +152,54 @@ public class MessageExchangeTest {
     @Test
     public void shouldNotifyAboutHeartBeatsWhenRecivedFromServer() throws InterruptedException, ExecutionException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenReturn(response);
+        when(request.get()).thenReturn(response);
         when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
         when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
         //When
-        exchange.onComplete(f);
-        exchange.run();
+        recivedResponse();
+        responseConsumed();
         //Then
-        verify(watcher, times(2)).heatBeat();
+        verify(watcher, times(2)).heartBeat();
+        verify(watcher).stop();
     }
-    
+
     @Test
     public void shouldNotPassRecivedContentAsMessagesToListnerWhenResponseIsEmptyString() throws InterruptedException, ExecutionException {
         //Given
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenReturn(response);
+        when(request.get()).thenReturn(response);
         when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
         when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
         when(response.getEntity(String.class)).thenReturn("");
         //When
-        exchange.onComplete(f);
-        exchange.run();
+        recivedResponse();
+        responseConsumed();
         //Then
-        verify(listener,never()).onMessages(Mockito.anyList());
+        verify(listener, never()).onMessages(Mockito.anyList());
         verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
+        verify(watcher).stop();
     }
+
+    private void responseConsumed() {
+        verify(executorService).submit(task.capture());
+        task.getValue().run();
+    }
+
     @Test
-    public void shouldPassRecivedContentAsMessagesToListnerWhenResponseIsNotEmptyString() throws InterruptedException, ExecutionException, ParseException {
+    public void shouldPassRecivedContentAsMessagesToListnerWhenResponseIsNotEmptyString() throws InterruptedException, ExecutionException,
+            ParseException {
         //Given
-        Future<ClientResponse> f = mock(Future.class);
-        when(f.get()).thenReturn(response);
+        when(request.get()).thenReturn(response);
         when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
         when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
         when(response.getEntity(String.class)).thenReturn("non_empty_content");
         final ImmutableList<Mutable> messages = ImmutableList.of(mock(Mutable.class));
         when(transport.parseMessages("non_empty_content")).thenReturn(messages);
         //When
-        exchange.onComplete(f);
-        exchange.run();
+        recivedResponse();
+        responseConsumed();
         //Then
         verify(listener).onMessages(messages);
+        verify(watcher).stop();
     }
 }

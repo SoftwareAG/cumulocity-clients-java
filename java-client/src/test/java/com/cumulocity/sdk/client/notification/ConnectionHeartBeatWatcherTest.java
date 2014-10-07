@@ -1,5 +1,6 @@
 package com.cumulocity.sdk.client.notification;
 
+import static com.cumulocity.sdk.client.notification.ConnectionHeartBeatWatcher.HEARTBEAT_INTERVAL;
 import static org.joda.time.DateTimeUtils.currentTimeMillis;
 import static org.joda.time.DateTimeUtils.setCurrentMillisFixed;
 import static org.mockito.Mockito.never;
@@ -38,15 +39,19 @@ public class ConnectionHeartBeatWatcherTest {
     public void shouldDontSendNotificationWhenRecivedHeartBeat() {
         //Given
         watcher.addConnectionListener(listener);
-        setCurrentMillisFixed(currentTimeMillis());
+        stopTime();
         //When
         watcher.start();
         verifyWatcherStarted();
-        moveTimeForward(13);
-        watcher.heatBeat();
+        moveTimeForward(HEARTBEAT_INTERVAL+1);
+        watcher.heartBeat();
         executeWatcherTask();
         //Then
         verify(listener, never()).onConnectionIdle();
+    }
+
+    private void stopTime() {
+        setCurrentMillisFixed(currentTimeMillis());
     }
 
     private void moveTimeForward(final int minutes) {
@@ -57,11 +62,11 @@ public class ConnectionHeartBeatWatcherTest {
     public void shouldSendNotificationWhenHeartBeatNotRecived() {
         //Given
         watcher.addConnectionListener(listener);
-        setCurrentMillisFixed(currentTimeMillis());
+        stopTime();
         //When
         watcher.start();
         verifyWatcherStarted();
-        moveTimeForward(13);
+        moveTimeForward(HEARTBEAT_INTERVAL+1);
         executeWatcherTask();
         //Then
         verify(listener).onConnectionIdle();

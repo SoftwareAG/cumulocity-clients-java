@@ -19,10 +19,6 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import com.cumulocity.sdk.client.SDKException;
-import com.sun.jersey.api.client.Client;
-
-interface HttpClientProvider {
-    
-    Client get() throws SDKException;
+public interface Provider<T> {
+    T get();
 }

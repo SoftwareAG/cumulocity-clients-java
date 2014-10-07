@@ -42,7 +42,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private String endpoint;
 
-    private HttpClientProvider httpClientProvider;
+    private Provider<Client> httpClientProvider;
 
     private final Class<?> endpointDataType;
 
@@ -50,12 +50,12 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters));
     }
 
-    private static HttpClientProvider createDefaultHttpProvider(final PlatformParameters paramters) {
-        return new HttpClientProvider() {
+    private static Provider<Client> createDefaultHttpProvider(final PlatformParameters paramters) {
+        return new Provider<Client>() {
 
             @Override
             public Client get() throws SDKException {
-                final Client client = RestConnector.createClient(paramters);
+                final Client client = RestConnector.createURLConnectionClient(paramters);
                 client.setConnectTimeout(0);
                 client.setReadTimeout(0);
                 return client;
@@ -64,11 +64,11 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
-            Class<?> endpointDataType, final HttpClientProvider client) {
+            Class<?> endpointDataType, final Provider<Client> client) {
         return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, client);
     }
 
-    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType, HttpClientProvider client) {
+    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType, Provider<Client> client) {
         this.paramters = paramters;
         this.endpoint = endpoint;
         this.httpClientProvider = client;
@@ -81,7 +81,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private BayeuxClient createSession() throws SDKException {
-        return new BayeuxClient(buildUrl(), createTransport(httpClientProvider.get()));
+        return new BayeuxClient(buildUrl(), createTransport(httpClientProvider));
     }
 
     private BayeuxClient openSession(final BayeuxClient bayeuxClient) throws SDKException {
@@ -98,7 +98,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return (host.endsWith("/") ? host : host + "/") + endpoint;
     }
 
-    private ClientTransport createTransport(final Client httpClient) {
+    private ClientTransport createTransport(final Provider<Client> httpClient) {
         return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters);
     }
 
@@ -108,4 +108,8 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return options;
     }
 
+    @Override
+    public String toString() {
+        return buildUrl();
+    }
 }

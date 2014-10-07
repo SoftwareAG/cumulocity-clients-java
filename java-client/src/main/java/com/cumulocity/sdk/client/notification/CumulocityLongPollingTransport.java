@@ -21,12 +21,16 @@ package com.cumulocity.sdk.client.notification;
 
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static javax.ws.rs.core.HttpHeaders.COOKIE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
-import java.net.URI;
 import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
+import javax.ws.rs.core.NewCookie;
 
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
@@ -35,9 +39,11 @@ import org.cometd.client.transport.TransportListener;
 
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import com.sun.jersey.api.client.*;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.client.impl.ClientRequestImpl;
 
 class CumulocityLongPollingTransport extends HttpClientTransport {
 
@@ -57,11 +63,9 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private volatile boolean _aborted;
 
-    private AsyncWebResource endpoint;
-
-    CumulocityLongPollingTransport(Map<String, Object> options, Client httpClient, PlatformParameters paramters) {
+    CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters) {
         super(NAME, null, options);
-        this.httpClient = httpClient;
+        this.httpClient = new ManagedHttpClient(httpClient).get();
         setOptionPrefix(PREFIX);
         this.paramters = paramters;
     }
@@ -74,21 +78,13 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     public void init() {
         super.init();
         _aborted = false;
-        endpoint = httpClient.asyncResource(getURL());
-        endpoint.addFilter(new ClientFilter() {
-            @Override
-            public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-                addCookieHeader(cr);
-                return getNext().handle(cr);
-            }
-        });
+
     }
 
     @Override
     public void abort() {
-
         List<MessageExchange> exchanges = new ArrayList<MessageExchange>();
-        synchronized (this) {
+        synchronized (this.exchanges) {
             _aborted = true;
             exchanges.addAll(this.exchanges);
             this.exchanges.clear();
@@ -105,16 +101,11 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     @Override
-    protected void setCookie(Cookie cookie) {
-        super.setCookie(cookie);
-    }
-
-    @Override
     public void send(final TransportListener listener, Message.Mutable... messages) {
         debug("sending messages {} ", (Object) messages);
         final String content = generateJSON(messages);
         try {
-            synchronized (this) {
+            synchronized (exchanges) {
                 verifyState();
                 createMessageExchange(listener, content, messages);
             }
@@ -130,27 +121,38 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
-        final MessageExchange exchange = new MessageExchange(this, executorService, listener, new ConnectionHeartBeatWatcher(
-                executorService), messages);
-        listener.onSending(messages);
-        final Future<ClientResponse> request = endpoint.handle(createRequest(content), exchange);
-        exchange.setRequest(request);
+        final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService);
+        final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, messages);
+        watcher.addConnectionListener(new ConnectionIdleListener() {
+            @Override
+            public void onConnectionIdle() {
+                exchange.cancel();
+            }
+        });
+        exchange.execute(getURL(), content);
+        exchange.addListener(new MessageExchangeListener() {
+            @Override
+            public void onFinish() {
+                synchronized (exchanges) {
+                    exchanges.remove(exchange);
+                }
+            }
+
+        });
         exchanges.add(exchange);
     }
 
-    private ClientRequest createRequest(final String content) {
-        return addApplicationKeyHeader(request().type(APPLICATION_JSON_TYPE)).build(content);
-    }
-
-    private BayeuxRequestBuilder request() {
-        return new BayeuxRequestBuilder(endpoint.getURI());
+    private ClientResponse copyCookies(final ClientResponse clientResponse) {
+        for (NewCookie cookie : clientResponse.getCookies()) {
+            setCookie(new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getMaxAge(),
+                    cookie.isSecure(), cookie.getVersion(), cookie.getComment()));
+        }
+        return clientResponse;
     }
 
     @Override
     public void terminate() {
-        super.terminate();
         executorService.shutdownNow();
-        httpClient.destroy();
     }
 
     protected void addCookieHeader(ClientRequest exchange) {
@@ -168,26 +170,33 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         }
     }
 
-    private <T extends RequestBuilder<T>> T addApplicationKeyHeader(T builder) {
+    private void addApplicationKeyHeader(ClientRequest request) {
         if (paramters.getApplicationKey() != null) {
-            builder.header(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
+            request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
         }
-        return builder;
     }
 
-    private class BayeuxRequestBuilder extends PartialRequestBuilder<BayeuxRequestBuilder> {
+    public final class ManagedHttpClient implements Provider<Client> {
 
-        private final URI uri;
+        private final Provider<Client> httpClient;
 
-        public BayeuxRequestBuilder(URI uri) {
-            this.uri = uri;
+        public ManagedHttpClient(Provider<Client> httpClient) {
+            this.httpClient = httpClient;
         }
 
-        public ClientRequest build(Object e) {
-            ClientRequest ro = new ClientRequestImpl(uri, "POST", e, metadata);
-            entity = null;
-            metadata = null;
-            return ro;
+        @Override
+        public Client get() {
+            final Client client = httpClient.get();
+            client.setExecutorService(executorService);
+            client.addFilter(new ClientFilter() {
+                @Override
+                public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
+                    addCookieHeader(cr);
+                    addApplicationKeyHeader(cr);
+                    return copyCookies(getNext().handle(cr));
+                }
+            });
+            return client;
         }
     }
 
@@ -201,10 +210,6 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
             thread.setName("CumulocityLongPollingTransport-scheduler-" + counter++);
             return thread;
         }
-    }
-
-    protected synchronized boolean removeExchange(MessageExchange messageExchange) {
-        return exchanges.remove(messageExchange);
     }
 
 }
