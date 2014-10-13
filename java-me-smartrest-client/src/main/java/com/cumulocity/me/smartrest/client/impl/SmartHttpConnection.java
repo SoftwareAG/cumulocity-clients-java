@@ -172,7 +172,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection writeHeaders(SmartRequest request) throws IOException {
         connection.setRequestProperty("Authorization", authorization);
         connection.setRequestProperty("Content-Type", "text/plain");
-        if (isBootstrapping) {
+        if (! isBootstrapping) {
             connection.setRequestProperty("X-Id", xid);
         }
         return this;
