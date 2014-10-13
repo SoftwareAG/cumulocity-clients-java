@@ -27,6 +27,7 @@ public class SmartHttpConnection implements SmartConnection {
     private InputStream input;
     private SmartHeartBeatWatcher heartBeatWatcher;
     private final SmartExecutorService executorService;
+    private boolean isBootstrapping = false;
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
         this.host = host;
@@ -67,13 +68,18 @@ public class SmartHttpConnection implements SmartConnection {
             } catch (InterruptedException e) {
                 continue;
             }
+            
+            isBootstrapping = true; //setting to true in order for the writeHeaders method to not add the X-Id header
             response = executeRequest(new SmartRequestImpl(SmartConnection.BOOTSTRAP_REQUEST_CODE, id));
+            isBootstrapping = false;
+            
             if (response != null) {
                 responseRow = response.getRow(0);
             }
         } while(response == null || responseRow == null || responseRow.getMessageId() != SmartConnection.BOOTSTRAP_RESPONSE_CODE);
         String[] data = responseRow.getData();
         authorization = "Basic " + Base64.encode(data[1] + "/" + data[2] + ":" + data[3]);
+        
         return authorization;
     }
     
@@ -148,7 +154,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection openConnection(String path) throws IOException {
         String url = host + path;
         if (params != null) {
-            url = url + params;    
+            url = url + params;
         }
         if (mode != -1) {
             connection = (HttpConnection) Connector.open(url, mode, timeout);
@@ -166,7 +172,9 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection writeHeaders(SmartRequest request) throws IOException {
         connection.setRequestProperty("Authorization", authorization);
         connection.setRequestProperty("Content-Type", "text/plain");
-        connection.setRequestProperty("X-Id", xid);
+        if (isBootstrapping) {
+            connection.setRequestProperty("X-Id", xid);
+        }
         return this;
     }
     
