@@ -37,6 +37,7 @@ import org.cometd.common.TransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.Closeables;
 import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.async.FutureListener;
@@ -73,14 +74,12 @@ class MessageExchange {
         this.watcher = watcher;
     }
 
-    
     public void execute(String url, String content) {
         startWatcher();
         final AsyncWebResource endpoint = client.asyncResource(url);
         request = endpoint.handle(createRequest(endpoint.getURI(), content), new ResponseHandler());
     }
 
-    
     private void startWatcher() {
         log.debug("starting heartbeat watcher {}", (Object) messages);
         watcher.start();
@@ -93,7 +92,6 @@ class MessageExchange {
         onFinish();
     }
 
-   
     private ClientRequest createRequest(URI uri, final String content) {
         return request(uri).type(APPLICATION_JSON_TYPE).build(content);
     }
@@ -135,7 +133,11 @@ class MessageExchange {
             } catch (Exception e) {
                 onConnectionFailed(e);
             } finally {
-                onFinish();
+                try {
+                    onFinish();
+                } finally {
+                    response.close();
+                }
             }
         }
 
