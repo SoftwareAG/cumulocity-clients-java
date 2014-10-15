@@ -16,10 +16,6 @@ public class YawidMajaSmartHttpConnection extends SmartHttpConnection {
 	private final static Object monitor = new Object();
 	private static long lastConnectorOpenCallTime = System.currentTimeMillis() - WAITING_TIME_MILLIS;
 	
-	public YawidMajaSmartHttpConnection(String host, String xid) {
-		super(host, xid);
-	}
-	
 	public YawidMajaSmartHttpConnection(String host, String xid, String authorization) {
 		super(host, xid, authorization);
 	}

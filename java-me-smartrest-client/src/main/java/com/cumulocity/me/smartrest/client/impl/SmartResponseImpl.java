@@ -27,6 +27,9 @@ public class SmartResponseImpl implements SmartResponse {
     }
     
     public SmartRow getRow(int index) {
+        if (dataRows == null) {
+            return null;
+        }
         return dataRows[index];
     }
     
