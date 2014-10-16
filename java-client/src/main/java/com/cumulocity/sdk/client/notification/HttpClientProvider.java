@@ -19,12 +19,11 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import org.eclipse.jetty.client.HttpClient;
+
 import com.cumulocity.sdk.client.SDKException;
 
-
-public interface Subscriber<T, R> {
-
-    Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException;
-
-    void disconnect();
+interface HttpClientProvider {
+    
+    HttpClient get() throws SDKException;
 }
