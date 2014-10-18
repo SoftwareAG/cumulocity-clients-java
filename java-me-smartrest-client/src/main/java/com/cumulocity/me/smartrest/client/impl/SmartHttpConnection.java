@@ -120,7 +120,8 @@ public class SmartHttpConnection implements SmartConnection {
                     .writeBody(request)
                     .buildResponse();
         } catch (IOException e) {
-            throw new SDKException("I/O error!");
+            e.printStackTrace();
+            throw new SDKException("I/O error!", e);
         } finally {
             closeConnection();
         }
@@ -135,7 +136,8 @@ public class SmartHttpConnection implements SmartConnection {
                     .startHeartBeatWatcher()
                     .buildResponse();
         } catch (IOException e) {
-            throw new SDKException("I/O error!");
+            e.printStackTrace();
+            throw new SDKException("I/O error!", e);
         } finally {
             heartBeatWatcher.stop();
             closeConnection();
@@ -221,8 +223,10 @@ public class SmartHttpConnection implements SmartConnection {
             
             return line.toString();
         } catch(IOException e) {
+            e.printStackTrace();
             throw new SDKException("I/O error!", e);
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new SDKException("Interrupted!", e);
         } finally {
             IOUtils.closeQuietly(input);
