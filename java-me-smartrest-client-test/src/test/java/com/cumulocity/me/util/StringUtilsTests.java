@@ -36,4 +36,14 @@ public class StringUtilsTests {
 		   
 	}
 	
+	@Test
+	public void testStringWithoutAnythingToSplit() {
+		String withoutANewlineString = "this is a plain line";
+		String delimiter = "§$%&/(";
+		String[] result = StringUtils.split(withoutANewlineString, delimiter);
+		
+		assertThat(  result.length, is( equalTo(1) )  );
+		assertThat(  result[0], is( equalTo(withoutANewlineString) )  );
+	}
+	
 }
