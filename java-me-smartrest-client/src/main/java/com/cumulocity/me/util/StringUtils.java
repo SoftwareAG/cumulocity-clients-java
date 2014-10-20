@@ -65,7 +65,7 @@ public abstract class StringUtils {
         int previousIndex = 0;
 
         while ( source.indexOf(delimiter, previousIndex) > -1 ) {
-        	currentIndex = source.indexOf(delimiter, previousIndex);
+            currentIndex = source.indexOf(delimiter, previousIndex);
             resultBuilder.addElement(source.substring(previousIndex, currentIndex));
             previousIndex = currentIndex + delimiter.length();
         }
