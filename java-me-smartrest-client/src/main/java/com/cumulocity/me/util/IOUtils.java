@@ -66,7 +66,7 @@ public abstract class IOUtils {
         }
     }
     
-    public static String readData(InputStream input) {
+    public static final String readData(InputStream input) {
         final int maxNumberOfAttempts = 3;
         final int nextAttemptTimeout = 250;
         int consecutiveFailedAttemptsCount = 0;
@@ -104,7 +104,7 @@ public abstract class IOUtils {
         }
     }
     
-    public static boolean isHeartbeat(int c) {
+    public static final boolean isHeartbeat(int c) {
         return c == 32;
     }
 }

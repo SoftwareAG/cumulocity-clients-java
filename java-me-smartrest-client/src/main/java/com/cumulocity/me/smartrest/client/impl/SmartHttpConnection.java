@@ -8,6 +8,7 @@ import javax.microedition.io.HttpConnection;
 
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
+import com.cumulocity.me.smartrest.client.SmartExecutorService;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
@@ -22,31 +23,31 @@ public class SmartHttpConnection implements SmartConnection {
     private String params = null;
     private int mode = -1;
     private boolean timeout;
-    private boolean isRegistered;
     private HttpConnection connection;
     private InputStream input;
+    private SmartHeartBeatWatcher heartBeatWatcher;
+    private final SmartExecutorService executorService;
+    private boolean isBootstrapping = false;
     
-    public SmartHttpConnection(String host, String xid) {
-        this.host = host;
-        this.xid = xid;
-        this.authorization = SmartConnection.DEVICEBOOTSTRAP_AUTHENTICATION;
-        this.isRegistered = false;
-    }
-    
-    public SmartHttpConnection(String host, String xid, String authorization) {
+    public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
         this.host = host;
         this.xid = xid;
         this.authorization = authorization;
-        this.isRegistered = true;
+        this.executorService = executorService;
+    }
+    
+    public SmartHttpConnection(String host, String xid, String authorization) {
+        this(host, xid, authorization, new SmartExecutorServiceImpl());
     }
     
     public SmartHttpConnection(String host, String tenant, String username,
             String password, String xid) {
-        this.host = host;
-        this.xid = xid;
-        this.authorization = "Basic " + Base64.encode(tenant + "/" + username + ":" + password);
-        this.isRegistered = true;
-
+        this(host, xid, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), new SmartExecutorServiceImpl());
+    }
+    
+    public SmartHttpConnection(String host, String tenant, String username,
+            String password, String xid, SmartExecutorService executorService) {
+        this(host, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), xid, executorService);
     }
     
     public void setupConnection(String params) {
@@ -67,26 +68,31 @@ public class SmartHttpConnection implements SmartConnection {
             } catch (InterruptedException e) {
                 continue;
             }
+            
+            isBootstrapping = true; //setting to true in order for the writeHeaders method to not add the X-Id header
             response = executeRequest(new SmartRequestImpl(SmartConnection.BOOTSTRAP_REQUEST_CODE, id));
+            isBootstrapping = false;
+            
             if (response != null) {
                 responseRow = response.getRow(0);
             }
         } while(response == null || responseRow == null || responseRow.getMessageId() != SmartConnection.BOOTSTRAP_RESPONSE_CODE);
         String[] data = responseRow.getData();
         authorization = "Basic " + Base64.encode(data[1] + "/" + data[2] + ":" + data[3]);
-        isRegistered = true;
+        
         return authorization;
     }
     
     public String templateRegistration(String templates) throws SDKException {
-        if (!isRegistered) {
-            throw new SDKException("No authorization is set. Use bootstrap first");
-        }
         SmartResponse respCheckRegistration = executeRequest(new SmartRequestImpl(SmartConnection.SMARTREST_API_PATH, ""));
         if (respCheckRegistration == null) {
             throw new SDKException("Could not connect to server");
         }
-        int codeCheck = respCheckRegistration.getRow(0).getMessageId();
+        SmartRow responseRow = respCheckRegistration.getRow(0);
+        if (responseRow == null) {
+            throw new SDKException("Template registration failed");
+        }
+        int codeCheck = responseRow.getMessageId();
         if (codeCheck != 20) {
             SmartRequest request = new SmartRequestImpl(SmartConnection.SMARTREST_API_PATH, templates);
             SmartResponse respRegister = executeRequest(request);
@@ -114,16 +120,30 @@ public class SmartHttpConnection implements SmartConnection {
                     .writeBody(request)
                     .buildResponse();
         } catch (IOException e) {
-            return null;
+            throw new SDKException("I/O error!");
         } finally {
-            IOUtils.closeQuietly(input);
-            IOUtils.closeQuietly(connection);
+            closeConnection();
+        }
+    }
+    
+    public SmartResponse executeLongPollingRequest(SmartRequest request) {
+        try {
+            return openConnection(request.getPath())
+                    .writeCommand()
+                    .writeHeaders(request)
+                    .writeBody(request)
+                    .startHeartBeatWatcher()
+                    .buildResponse();
+        } catch (IOException e) {
+            throw new SDKException("I/O error!");
+        } finally {
+            heartBeatWatcher.stop();
+            closeConnection();
         }
     }
     
     public void executeRequestAsync(SmartRequest request, SmartResponseEvaluator evaluator) {
-        SmartRequestAsyncRunner runner = new SmartRequestAsyncRunner(this, request, evaluator);
-        runner.start();
+        executorService.execute(new SmartRequestAsyncRunner(this, request, evaluator));
     }
     
     public void closeConnection() {
@@ -134,7 +154,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection openConnection(String path) throws IOException {
         String url = host + path;
         if (params != null) {
-            url = url + params;    
+            url = url + params;
         }
         if (mode != -1) {
             connection = (HttpConnection) Connector.open(url, mode, timeout);
@@ -152,7 +172,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHttpConnection writeHeaders(SmartRequest request) throws IOException {
         connection.setRequestProperty("Authorization", authorization);
         connection.setRequestProperty("Content-Type", "text/plain");
-        if (isRegistered) {
+        if (! isBootstrapping) {
             connection.setRequestProperty("X-Id", xid);
         }
         return this;
@@ -168,9 +188,59 @@ public class SmartHttpConnection implements SmartConnection {
 
     private SmartResponse buildResponse() throws IOException {
         input = connection.openInputStream();
-        SmartResponse response = new SmartResponseImpl(connection.getResponseCode(), connection.getResponseMessage(), IOUtils.readData(input));
+        SmartResponse response = new SmartResponseImpl(connection.getResponseCode(), connection.getResponseMessage(), readData());
         return response;
     }
     
+    private String readData() {
+        final int maxNumberOfAttempts = 3;
+        final int nextAttemptTimeout = 250;
+        int consecutiveFailedAttemptsCount = 0;
+        boolean lookForHeartbeat = true;
+        StringBuffer line = new StringBuffer();
+        try {
+            
+            do {
+                int c;
+                while ((c = input.read()) != -1) {
+                    if (lookForHeartbeat) {
+                        lookForHeartbeat = isHeartbeat(c);
+                    }
+                    if (!lookForHeartbeat) {
+                        consecutiveFailedAttemptsCount = 0;
+                        line.append((char)c);
+                    }
+                }
+                if (consecutiveFailedAttemptsCount < maxNumberOfAttempts) {
+                    consecutiveFailedAttemptsCount++;
+                    Thread.sleep(nextAttemptTimeout);
+                } else {
+                    break;
+                }
+            } while(true);
+            
+            return line.toString();
+        } catch(IOException e) {
+            throw new SDKException("I/O error!", e);
+        } catch (InterruptedException e) {
+            throw new SDKException("Interrupted!", e);
+        } finally {
+            IOUtils.closeQuietly(input);
+            input = null;
+        }
+    }
     
+    private synchronized boolean isHeartbeat(int c) {
+        if (c == 32) {
+            heartBeatWatcher.heartbeat();
+            return true;
+        }
+        return false;
+    }
+    
+    private SmartHttpConnection startHeartBeatWatcher() {
+        heartBeatWatcher = new SmartHeartBeatWatcher(this);
+        heartBeatWatcher.start();
+        return this;
+    }
 }

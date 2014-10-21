@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>5.12.2-SNAPSHOT</version>
+		<version>5.14.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-client</artifactId>
@@ -92,10 +92,6 @@
 		<dependency>
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>jersey-multipart</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-client</artifactId>
         </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

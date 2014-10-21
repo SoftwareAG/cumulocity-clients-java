@@ -41,6 +41,7 @@ public class JavaSdkITBase {
 
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
+        
     }
 
     @AfterClass

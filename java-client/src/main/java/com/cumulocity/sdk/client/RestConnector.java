@@ -20,12 +20,15 @@
 
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
+import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -43,35 +46,49 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
+import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
 public class RestConnector {
-    
+
+    public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
+
+        Proxy proxy;
+
+        public ProxyHttpURLConnectionFactory(PlatformParameters platformParameters) {
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(platformParameters.getProxyHost(), platformParameters.getProxyPort()));
+        }
+
+        public HttpURLConnection getHttpURLConnection(URL url) throws IOException {
+            return (HttpURLConnection) url.openConnection(proxy);
+        }
+    }
+
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
-    
-    private final static Class<?>[] PROVIDERS_CLASSES = {
-        CumulocityJSONMessageBodyWriter.class,
-        CumulocityJSONMessageBodyReader.class,
-        ErrorMessageRepresentationReader.class
-    };
+
+    private final static Class<?>[] PROVIDERS_CLASSES = { CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
+            ErrorMessageRepresentationReader.class };
 
     private static final int READ_TIMEOUT_IN_MILLIS = 180000;
-    
+
     private final PlatformParameters platformParameters;
-    
+
     private final Client client;
-    
+
     private final ResponseParser responseParser;
 
     public RestConnector(PlatformParameters platformParameters, ResponseParser responseParser) {
         this(platformParameters, responseParser, createClient(platformParameters));
     }
-    
+
     protected RestConnector(PlatformParameters platformParameters, ResponseParser responseParser, Client client) {
         this.platformParameters = platformParameters;
         this.responseParser = responseParser;
@@ -90,11 +107,10 @@ public class RestConnector {
         return responseParser;
     }
 
-    public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType,
-            Class<T> responseType) throws SDKException {
-         Builder builder = client.resource(path).accept(mediaType);
-         builder = addApplicationKeyHeader(builder);
-         ClientResponse response = builder.get(ClientResponse.class);
+    public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
+        Builder builder = client.resource(path).accept(mediaType);
+        builder = addApplicationKeyHeader(builder);
+        ClientResponse response = builder.get(ClientResponse.class);
         return responseParser.parse(response, OK.getStatusCode(), responseType);
     }
 
@@ -123,16 +139,15 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
 
-    } 
+    }
 
-    private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response,
-            int responseCode) throws SDKException {
+    private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response, int responseCode)
+            throws SDKException {
         @SuppressWarnings("unchecked")
         T repFromPlatform = responseParser.parse(response, responseCode, (Class<T>) representation.getClass());
         T repToReturn = isDefined(repFromPlatform) ? repFromPlatform : representation;
@@ -145,69 +160,65 @@ public class RestConnector {
     private <T extends ResourceRepresentationWithId> boolean isDefined(T repFromPlatform) {
         return repFromPlatform != null;
     }
-    
-    public <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+
+    public <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType, T representation)
+            throws SDKException {
         return sendAsyncRequest(HttpMethod.POST, path, mediaType, representation);
     }
-    
-    public <T extends ResourceRepresentation> Future putAsync(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+
+    public <T extends ResourceRepresentation> Future putAsync(String path, CumulocityMediaType mediaType, T representation)
+            throws SDKException {
         return sendAsyncRequest(HttpMethod.PUT, path, mediaType, representation);
     }
 
-    private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType,
+            T representation) {
         BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
         return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
-    
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+
+    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation)
+            throws SDKException {
         ClientResponse response = httpPost(path, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType,
-            T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, OK.getStatusCode());
     }
-    
+
     private Builder addApplicationKeyHeader(Builder builder) {
         if (platformParameters.getApplicationKey() != null) {
-             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
-         }
+            builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
+        }
         return builder;
     }
 
-    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response,
-            int responseCode) throws SDKException {
+    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
+            throws SDKException {
         return responseParser.parse(response, responseCode, type);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path,
-            CumulocityMediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType mediaType, T representation) {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
-        return builder.post(ClientResponse.class,
-                representation);
+        return builder.post(ClientResponse.class, representation);
     }
-    
-    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType,
-            T representation) {
-        
+
+    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType, T representation) {
+
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
@@ -218,36 +229,67 @@ public class RestConnector {
 
     public void delete(String path) throws SDKException {
         Builder builder = client.resource(path).getRequestBuilder();
-        
+
         builder = addApplicationKeyHeader(builder);
         ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
 
-    private static Client createClient(PlatformParameters platformParameters) {
+    public static Client createClient(PlatformParameters platformParameters) {
 
         DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
 
-        if (hasText(platformParameters.getProxyHost()) && (platformParameters.getProxyPort() > 0)) {
+        if (isProxyRequired(platformParameters)) {
             config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI,
                     "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
-            if (hasText(platformParameters.getProxyUserId()) && hasText(platformParameters.getProxyPassword())) {
-                config.getState().setProxyCredentials(null, platformParameters.getProxyHost(),
-                        platformParameters.getProxyPort(), platformParameters.getProxyUserId(),
-                        platformParameters.getProxyPassword());
+            if (isProxyAuthenticationRequired(platformParameters)) {
+                config.getState().setProxyCredentials(null, platformParameters.getProxyHost(), platformParameters.getProxyPort(),
+                        platformParameters.getProxyUserId(), platformParameters.getProxyPassword());
             }
         }
 
+        registerClasses(config);
+        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
+
+        ApacheHttpClient client = ApacheHttpClient.create(config);
+        client.setFollowRedirects(true);
+        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        return client;
+    }
+
+    private static boolean isProxyAuthenticationRequired(PlatformParameters platformParameters) {
+        return hasText(platformParameters.getProxyUserId()) && hasText(platformParameters.getProxyPassword());
+    }
+
+    private static boolean isProxyRequired(PlatformParameters platformParameters) {
+        return hasText(platformParameters.getProxyHost()) && (platformParameters.getProxyPort() > 0);
+    }
+
+    public static Client createURLConnectionClient(final PlatformParameters platformParameters) {
+
+        ClientConfig config = new DefaultClientConfig();
+
+        registerClasses(config);
+
+        Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
+        client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
+        client.setFollowRedirects(true);
+        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
+            client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
+                    .getProxyPassword()));
+        }
+        return client;
+    }
+
+    private static HttpURLConnectionFactory resolveConnectionFactory(final PlatformParameters platformParameters) {
+        return isProxyRequired(platformParameters) ? new ProxyHttpURLConnectionFactory(platformParameters) : null;
+    }
+
+    private static void registerClasses(ClientConfig config) {
         for (Class<?> c : PROVIDERS_CLASSES) {
             config.getClasses().add(c);
         }
-        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
-
-        Client client = ApacheHttpClient.create(config);
-        client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
-        
-        return client;
     }
 
     private static boolean hasText(String string) {
