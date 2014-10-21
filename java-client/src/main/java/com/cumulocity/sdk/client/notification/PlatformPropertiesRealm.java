@@ -19,6 +19,31 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-public interface Provider<T> {
-    T get();
+import org.eclipse.jetty.client.security.Realm;
+
+import com.cumulocity.sdk.client.PlatformParameters;
+
+class PlatformPropertiesRealm implements Realm {
+
+    private PlatformParameters paramters;
+
+    public PlatformPropertiesRealm(PlatformParameters paramters) {
+        this.paramters = paramters;
+    }
+
+    @Override
+    public String getId() {
+        return null;
+    }
+
+    @Override
+    public String getPrincipal() {
+        return paramters.getPrincipal();
+    }
+
+    @Override
+    public String getCredentials() {
+        return paramters.getPassword();
+    }
+
 }
