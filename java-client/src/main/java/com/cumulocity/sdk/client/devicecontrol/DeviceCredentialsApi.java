@@ -12,7 +12,9 @@ import com.cumulocity.sdk.client.polling.PollingStrategy;
 public interface DeviceCredentialsApi {
 	
 	/**
-	 * Device poll credentials
+	 * Schedule polling credentials task, invoking it at the specified execution time and subsequently with the given interval 
+	 * 
+	 * Execution will end after timeout
 	 * 
 	 * @param deviceId
 	 * @param interval - how often request is sent in seconds
@@ -28,5 +30,12 @@ public interface DeviceCredentialsApi {
 	 * @param strategy
 	 */
 	DeviceCredentialsRepresentation pollCredentials(String deviceId, PollingStrategy strategy);
-		
+
+    /**
+     * Executes single request to credentials endpoint
+     * 
+     * @param deviceId
+     * @return
+     */
+    DeviceCredentialsRepresentation pollCredentials(String deviceId);
 }
