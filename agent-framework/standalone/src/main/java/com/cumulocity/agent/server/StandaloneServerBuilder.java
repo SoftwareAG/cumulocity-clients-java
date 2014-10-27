@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.cumulocity.agent.server.servers.standalone.StandaloneServer;
+
 public class StandaloneServerBuilder extends SpringServerBuilder<StandaloneServerBuilder> {
 
     private static final Logger log = LoggerFactory.getLogger(StandaloneServerBuilder.class);
@@ -24,7 +26,7 @@ public class StandaloneServerBuilder extends SpringServerBuilder<StandaloneServe
 
         applicationContext.setParent(parentContext);
 
-        applicationContext.register(annotatedClasses());
+        applicationContext.register(annotatedClasses(StandaloneServer.class));
         if (!packages.isEmpty()) {
             applicationContext.scan(from(packages).toArray(String.class));
         }

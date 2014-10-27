@@ -29,6 +29,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.cumulocity.agent.server.config.CommonConfiguration;
 import com.cumulocity.agent.server.config.PropertiesFactoryBean;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 public class ServerBuilder {
@@ -77,7 +78,14 @@ public class ServerBuilder {
         for (Path path : logbackConfig) {
             if (searchLoggerConfiguration(path)) {
                 System.out.println("configuration founded on path " + path);
-                return;
+                try {
+                    loadLoggingConfiguration(path);
+
+                    return;
+                } catch (Exception ex) {
+                    System.out.println("unable to load " + path);
+                    ex.printStackTrace();
+                }
             }
         }
 
@@ -90,17 +98,20 @@ public class ServerBuilder {
             System.err.println("Not logback configuration found: " + logbackConfig + ".");
             return false;
         }
+        return true;
+
+    }
+
+    private static void loadLoggingConfiguration(Path logbackConfig) {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
             configurator.doConfigure(logbackConfig.toFile());
-            return true;
         } catch (JoranException je) {
-            return false;
+            propagate(je);
         }
-
     }
 
     public static ApplicationBuilder on(final int port) {

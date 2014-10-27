@@ -3,11 +3,13 @@ package com.cumulocity.agent.server.servers.standalone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.cumulocity.agent.server.Server;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.Service;
 
+@Component
 public class StandaloneServer implements Server {
     private static final Logger log = LoggerFactory.getLogger(StandaloneServer.class);
 
@@ -30,6 +32,7 @@ public class StandaloneServer implements Server {
 
         @Override
         protected void run() throws Exception {
+            log.debug("started {}", applicationId);
             try {
                 thread = Thread.currentThread();
                 this.wait();
