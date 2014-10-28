@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -16,8 +15,6 @@
 		<grizzly.version>2.3.16</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
 		<spring.version>3.2.10.RELEASE</spring.version>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
 	<licenses>
 		<license>
@@ -57,41 +54,6 @@
 				<version>17.0</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-binary</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-jaxrs</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-repositories</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-mvc</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-standalone</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.clients-java</groupId>
-				<artifactId>agent-framework-device-context</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.glassfish.grizzly</groupId>
 				<artifactId>grizzly-http-servlet-server</artifactId>
 				<version>${grizzly.version}</version>
@@ -129,15 +91,10 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.assertj</groupId>
-				<artifactId>assertj-core</artifactId>
-				<version>1.7.0</version>
+				<groupId>org.easytesting</groupId>
+				<artifactId>fest-assert</artifactId>
+				<version>1.4</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.1.2</version>
 			</dependency>
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
@@ -145,19 +102,17 @@
 				<version>1.1.2</version>
 			</dependency>
 
-
 		</dependencies>
 	</dependencyManagement>
 	<modules>
-		<module>core</module>
-		<module>binary</module>
-		<module>device-context</module>
-		<module>mvc</module>
-		<module>repositories</module>
-		<module>jaxrs</module>
-		<module>standalone</module>
+	    <module>core</module>
+  	    <module>binary</module>
+  	    <module>device-context</module>
+  	    <module>mvc</module>
+  	    <module>repositories</module>
+  	    <module>jaxrs</module>
 	</modules>
-
+     
 	<build>
 		<plugins>
 			<plugin>
