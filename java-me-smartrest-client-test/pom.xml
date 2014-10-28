@@ -10,6 +10,7 @@
 	
   	<groupId>com.nsn.cumulocity.sdk</groupId>
   	<artifactId>java-me-smartrest-client-test</artifactId>
+	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client Test</name>
   
   	<dependencies>
         <dependency>
