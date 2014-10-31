@@ -44,7 +44,7 @@ public class MvcServer implements Server {
                                     .setMaxPoolSize(100));
 
             WebappContext context = new WebappContext(applicationId, "/" + applicationId);
-            context.addServlet("jersey-servlet", new DispatcherServlet(applicationContext)).addMapping("/*");
+            context.addServlet("dispatcher-servlet", new DispatcherServlet(applicationContext)).addMapping("/*");
             context.addListener(new ContextLoaderListener(applicationContext));
             context.deploy(server);
             try {
