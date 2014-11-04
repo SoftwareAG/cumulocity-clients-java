@@ -5,11 +5,12 @@
   	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>5.14.1-SNAPSHOT</version>
+		<version>5.15.1-SNAPSHOT</version>
 	</parent>
 	
   	<groupId>com.nsn.cumulocity.sdk</groupId>
   	<artifactId>java-me-smartrest-client-test</artifactId>
+	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client Test</name>
   
   	<dependencies>
         <dependency>
