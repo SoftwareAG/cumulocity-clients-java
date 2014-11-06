@@ -68,7 +68,7 @@ public class SmartCometClient {
 
     public void stopListenTo() {
         if (path == null) {
-            throw new SDKException("Nothing to stop");
+            return;
         }
         if (clientId == null) {
             return;
@@ -109,9 +109,11 @@ public class SmartCometClient {
     }
    
     protected void connect() {
+        System.out.println("Do connect");
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
         try {
             final SmartResponse response = connection.executeLongPollingRequest(request);
+            System.out.println("after request calls");
             if (response == null || response.isTimeout()) {
                 return;
             } else if (!response.isSuccessful()){
@@ -151,7 +153,7 @@ public class SmartCometClient {
         return interval;
     }
 
-    public int getReconnectAdvice() {
+    public synchronized int getReconnectAdvice() {
         return reconnectAdvice;
     }
     
@@ -219,5 +221,7 @@ public class SmartCometClient {
                 this.reconnectAdvice = 0;
             }
         }
+        System.out.println("reconnect ad: "+reconnectAdvice);
+        System.out.println("interval ad: "+ this.interval);
     }
 }

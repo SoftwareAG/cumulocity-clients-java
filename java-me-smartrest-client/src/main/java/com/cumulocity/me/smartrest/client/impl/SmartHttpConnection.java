@@ -2,6 +2,8 @@ package com.cumulocity.me.smartrest.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.TimerTask;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
@@ -25,6 +27,7 @@ public class SmartHttpConnection implements SmartConnection {
     private boolean timeout;
     private HttpConnection connection;
     private InputStream input;
+    private OutputStream output;
     private SmartHeartBeatWatcher heartBeatWatcher;
     private final SmartExecutorService executorService;
     private boolean isBootstrapping = false;
@@ -137,7 +140,10 @@ public class SmartHttpConnection implements SmartConnection {
         } catch (IOException e) {
             throw new SDKException("I/O error!", e);
         } finally {
-            heartBeatWatcher.stop();
+            if (heartBeatWatcher != null) {
+                heartBeatWatcher.stop();
+                heartBeatWatcher = null;
+            }
             closeConnection();
         }
     }
@@ -147,6 +153,7 @@ public class SmartHttpConnection implements SmartConnection {
     }
     
     public void closeConnection() {
+        IOUtils.closeQuietly(output);
         IOUtils.closeQuietly(input);
         IOUtils.closeQuietly(connection);
     }
@@ -182,24 +189,42 @@ public class SmartHttpConnection implements SmartConnection {
         if (request == null || request.getData() == null) {
             return this;
         }
-        IOUtils.writeData(request.getData().getBytes(), connection.openOutputStream());
+        output = connection.openOutputStream();
+        IOUtils.writeData(request.getData().getBytes(), output);
         return this;
     }
 
     private SmartResponse buildResponse() throws IOException {
+        try {
+            return interruptableReading();
+        } catch (InterruptedException e) {
+            System.out.println("interrupt catched");
+            return null;
+        }
+    }
+    
+    private SmartResponse interruptableReading() throws InterruptedException, IOException {
+        System.out.println("thread for read: "+Thread.currentThread().getName());
+        System.out.println("open input");
         input = connection.openInputStream();
-        SmartResponse response = new SmartResponseImpl(connection.getResponseCode(), connection.getResponseMessage(), readData());
+        System.out.println("before code");
+        int responseCode = connection.getResponseCode();
+        System.out.println("before message");
+        String responseMessage = connection.getResponseMessage();
+        System.out.println("before read");
+        String body = readData();
+        closeConnection();
+        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
         return response;
     }
     
-    private String readData() {
+    private synchronized String readData() {
         final int maxNumberOfAttempts = 3;
         final int nextAttemptTimeout = 250;
         int consecutiveFailedAttemptsCount = 0;
         boolean lookForHeartbeat = true;
         StringBuffer line = new StringBuffer();
         try {
-            
             do {
                 int c;
                 while ((c = input.read()) != -1) {
@@ -218,28 +243,27 @@ public class SmartHttpConnection implements SmartConnection {
                     break;
                 }
             } while(true);
-            
             return line.toString();
         } catch(IOException e) {
             throw new SDKException("I/O error!", e);
         } catch (InterruptedException e) {
-            throw new SDKException("Interrupted!", e);
-        } finally {
-            IOUtils.closeQuietly(input);
-            input = null;
+            return null;
         }
     }
     
     private synchronized boolean isHeartbeat(int c) {
         if (c == 32) {
-            heartBeatWatcher.heartbeat();
+            System.out.println("heartbeat");
+            if (heartBeatWatcher != null) {
+                heartBeatWatcher.heartbeat();
+            }
             return true;
         }
         return false;
     }
     
     private SmartHttpConnection startHeartBeatWatcher() {
-        heartBeatWatcher = new SmartHeartBeatWatcher(this);
+        heartBeatWatcher = new SmartHeartBeatWatcher(this, Thread.currentThread());
         heartBeatWatcher.start();
         return this;
     }

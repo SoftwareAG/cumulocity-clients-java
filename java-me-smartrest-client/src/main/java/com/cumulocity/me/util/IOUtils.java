@@ -44,11 +44,21 @@ public abstract class IOUtils {
         } catch (IOException e) {
         }
     }
+    
+    public static final void closeQuietly(OutputStream out) {
+        if (out == null) {
+            return;
+        } 
+        try {
+            out.close();
+        } catch (IOException e) {
+        }
+    }
 
     public static final void closeQuietly(Connection connection) {
         if (connection == null) {
             return;
-        }
+        }                                                                                                                                                                                                                                                                                                                                                                                                       
         try {
             connection.close();
         } catch (IOException e) {
