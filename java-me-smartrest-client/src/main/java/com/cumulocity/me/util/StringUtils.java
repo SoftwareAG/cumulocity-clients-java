@@ -59,30 +59,24 @@ public abstract class StringUtils {
     }
 
     public static final String[] split(String source, String delimiter) {
-        StringBuffer token = new StringBuffer();
-        Vector tokens = new Vector();
-        // split
-        char[] chars = source.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            if (delimiter.indexOf(chars[i]) != -1) {
-                if (token.length() > 0) {
-                    tokens.addElement(token.toString());
-                    token.setLength(0);
-                } else {
-                    tokens.addElement("");
-                }
-            } else {
-                token.append(chars[i]);
-            }
+        Vector resultBuilder = new Vector();
+
+        int currentIndex;
+        int previousIndex = 0;
+
+        while ( source.indexOf(delimiter, previousIndex) > -1 ) {
+            currentIndex = source.indexOf(delimiter, previousIndex);
+            resultBuilder.addElement(source.substring(previousIndex, currentIndex));
+            previousIndex = currentIndex + delimiter.length();
         }
-        if (token.length() > 0) {
-            tokens.addElement(token.toString());
-        }
-        String[] splitArray = new String[tokens.size()];
-        for (int i = 0; i < splitArray.length; i++) {
-            splitArray[i] = (String) tokens.elementAt(i);
-        }
-        return splitArray;
+
+        // also add everything after the final delimiter occurrence
+        resultBuilder.addElement( source.substring(previousIndex) );
+
+        String[] result = new String[resultBuilder.size()];
+        resultBuilder.copyInto(result);
+
+        return result;
     }
 
     public static final String replaceAll(String source, String pattern, String replacement) {
