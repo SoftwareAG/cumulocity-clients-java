@@ -69,15 +69,6 @@ public class AlarmIT extends JavaSdkITBase {
         mo3 = platform.getInventoryApi().create(aSampleMo().withName("MO" + 3).build());
     }
 
-    @After
-    public void deleteManagedObjects() throws Exception {
-        List<ManagedObjectRepresentation> mosOn1stPage = getMOsFrom1stPage();
-        while (!mosOn1stPage.isEmpty()) {
-            deleteMOs(mosOn1stPage);
-            mosOn1stPage = getMOsFrom1stPage();
-        }
-    }
-    
     private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
         for (ManagedObjectRepresentation mo : mosOn1stPage) {
             platform.getInventoryApi().getManagedObject(mo.getId()).delete();

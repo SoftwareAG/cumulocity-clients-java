@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -68,16 +67,6 @@ public class DeviceControlIT extends JavaSdkITBase {
     private OperationNotificationSubscriber subscriber;
 
     public void createManagedObjects() throws Exception {
-        //        And I have managed object with name 'Agent', type 'com.type' and 'com.cumulocity.model.Agent' fragment
-        //        And I have managed object with name 'Device' and type 'com.type'
-        //        And I have managed object with name 'Agent2', type 'com.type' and 'com.cumulocity.model.Agent' fragment
-        //        And I have managed object with name 'Device2' and type 'com.type'
-        //        And I create all
-        //        And I add child devices as per the following:
-        //        | parent | child |
-        //        | 0      | 1     |
-        //        | 2      | 3     |
-
         ManagedObjectRepresentation agent = aSampleMo().withName("Agent").withType("com.type").with(new Agent()).build();
         ManagedObjectRepresentation device = aSampleMo().withName("Device").withType("com.type").build();
         ManagedObjectRepresentation agent2 = aSampleMo().withName("Agent2").withType("com.type").with(new Agent()).build();
@@ -120,12 +109,7 @@ public class DeviceControlIT extends JavaSdkITBase {
     }
 
     @After
-    public void deleteManagedObjects() throws Exception {
-        List<ManagedObjectRepresentation> mosOn1stPage = getMOsFrom1stPage();
-        while (!mosOn1stPage.isEmpty()) {
-            deleteMOs(mosOn1stPage);
-            mosOn1stPage = getMOsFrom1stPage();
-        }
+    public void cleanup() throws Exception {
         if (poller != null) {
             poller.stop();
         }
@@ -206,23 +190,16 @@ public class DeviceControlIT extends JavaSdkITBase {
     //    Scenario: query operations by status
     @Test
     public void queryOperationByStatus() throws Exception {
-        iGetAllOperations();
-        int numOfAll = allOperations.getOperations().size();
         iQueryOperationsWithStatusX("EXECUTING");
         int numOfExecuting = allOperations.getOperations().size();
         iQueryOperationsWithStatusX("PENDING");
         int numOfPending = allOperations.getOperations().size();
-
         //    When I create an operation for device '1'
         iCreateAnOperationForDevice(1);
         //    And I update created operation with status 'EXECUTING'
         iUpdateCreatedOperationWithStatusX("EXECUTING");
         //    And I create an operation for device '1'
         iCreateAnOperationForDevice(1);
-        //    And I get all operations
-        iGetAllOperations();
-        //    Then I should receive '2' operations
-        iShouldReceiveXOperations(numOfAll + 2);
         //    When I query operations with status 'PENDING'
         iQueryOperationsWithStatusX("PENDING");
         //    Then I should receive '1' operations
