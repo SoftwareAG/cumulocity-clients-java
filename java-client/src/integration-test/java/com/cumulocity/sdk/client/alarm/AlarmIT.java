@@ -25,14 +25,11 @@ import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentati
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 import java.util.Date;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +40,6 @@ import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 public class AlarmIT extends JavaSdkITBase {
@@ -67,16 +63,6 @@ public class AlarmIT extends JavaSdkITBase {
         mo1 = platform.getInventoryApi().create(aSampleMo().withName("MO" + 1).build());
         mo2 = platform.getInventoryApi().create(aSampleMo().withName("MO" + 2).build());
         mo3 = platform.getInventoryApi().create(aSampleMo().withName("MO" + 3).build());
-    }
-
-    private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
-        for (ManagedObjectRepresentation mo : mosOn1stPage) {
-            platform.getInventoryApi().getManagedObject(mo.getId()).delete();
-        }
-    }
-
-    private List<ManagedObjectRepresentation> getMOsFrom1stPage() throws SDKException {
-        return platform.getInventoryApi().getManagedObjects().get().getManagedObjects();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -241,12 +227,11 @@ public class AlarmIT extends JavaSdkITBase {
 
         // When
         AlarmFilter acknowledgedFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED"));
-        AlarmCollectionRepresentation acknowledgedAlarms = alarmApi.getAlarmsByFilter(acknowledgedFilter).get();
 
         // Then
-        List<AlarmRepresentation> alarms = acknowledgedAlarms.getAlarms();
-        assertThat(alarms.size(), is(equalTo(1)));
-        assertThat(alarms.get(0).getStatus(), is("ACKNOWLEDGED"));
+        for (AlarmRepresentation result : alarmApi.getAlarmsByFilter(acknowledgedFilter).get().allPages()) {
+            assertThat(result.getStatus(), is("ACKNOWLEDGED"));
+        }
     }
 
     @Test

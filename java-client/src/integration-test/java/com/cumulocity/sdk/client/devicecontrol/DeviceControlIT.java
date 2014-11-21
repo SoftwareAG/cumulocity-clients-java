@@ -119,16 +119,6 @@ public class DeviceControlIT extends JavaSdkITBase {
         }
     }
 
-    private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
-        for (ManagedObjectRepresentation mo : mosOn1stPage) {
-            inventoryApi.getManagedObject(mo.getId()).delete();
-        }
-    }
-
-    private List<ManagedObjectRepresentation> getMOsFrom1stPage() throws SDKException {
-        return inventoryApi.getManagedObjects().get().getManagedObjects();
-    }
-
     //    Scenario: Create Operation and poll it
     @Test
     public void createOperationAndPollIt() throws Exception {
