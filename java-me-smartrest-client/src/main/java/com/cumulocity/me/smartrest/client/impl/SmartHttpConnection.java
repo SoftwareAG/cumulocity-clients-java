@@ -204,14 +204,9 @@ public class SmartHttpConnection implements SmartConnection {
     }
     
     private SmartResponse interruptableReading() throws InterruptedException, IOException {
-        System.out.println("thread for read: "+Thread.currentThread().getName());
-        System.out.println("open input");
         input = connection.openInputStream();
-        System.out.println("before code");
         int responseCode = connection.getResponseCode();
-        System.out.println("before message");
         String responseMessage = connection.getResponseMessage();
-        System.out.println("before read");
         String body = readData();
         closeConnection();
         SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
@@ -253,7 +248,6 @@ public class SmartHttpConnection implements SmartConnection {
     
     private synchronized boolean isHeartbeat(int c) {
         if (c == 32) {
-            System.out.println("heartbeat");
             if (heartBeatWatcher != null) {
                 heartBeatWatcher.heartbeat();
             }
