@@ -57,15 +57,6 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
         parentMo = inventory.getManagedObject(parentRep.getId());
     }
 
-    @After
-    public void deleteManagedObjects() throws Exception {
-        List<ManagedObjectRepresentation> mosOn1stPage = getMOsFrom1stPage();
-        while (!mosOn1stPage.isEmpty()) {
-            deleteMOs(mosOn1stPage);
-            mosOn1stPage = getMOsFrom1stPage();
-        }
-    }
-
     @Test
     public void shouldKeepChildDevicesOrder() throws Exception {
         shouldKeepChildrenInOrder(new ChildDeviceAdder(), new ChildDevicesQuery());

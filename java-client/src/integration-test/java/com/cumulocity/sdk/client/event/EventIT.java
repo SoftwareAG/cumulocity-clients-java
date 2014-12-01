@@ -418,7 +418,6 @@ public class EventIT extends JavaSdkITBase {
         rep.setType(type);
         rep.setText(" Event of Managed Object : ");
         rep.setTime(DateConverter.string2Date(time));
-        System.out.println("Time = "+ DateConverter.date2String(rep.getTime()));
         rep.setSource(managedObject);
         input.add(rep);
     }

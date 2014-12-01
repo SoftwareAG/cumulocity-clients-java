@@ -25,22 +25,14 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRefe
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,15 +62,6 @@ public class InventoryIT extends JavaSdkITBase {
     public void setUp() throws Exception {
         inventory = platform.getInventoryApi();
         platform.setRequireResponseBody(true);
-    }
-
-    @After
-    public void deleteManagedObjects() throws Exception {
-        List<ManagedObjectRepresentation> mosOn1stPage = getMOsFrom1stPage();
-        while (!mosOn1stPage.isEmpty()) {
-            deleteMOs(mosOn1stPage);
-            mosOn1stPage = getMOsFrom1stPage();
-        }
     }
 
     @Test
@@ -261,7 +244,7 @@ public class InventoryIT extends JavaSdkITBase {
     @Test
     public void getAllWhenNoManagedObjectPresent() throws Exception {
         // When
-        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get();
+        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjectsByFilter(new InventoryFilter().byType("not_existing_mo_type")).get();
 
         // Then
         assertThat(mos.getManagedObjects(), is(Collections.<ManagedObjectRepresentation>emptyList()));
@@ -270,15 +253,15 @@ public class InventoryIT extends JavaSdkITBase {
     @Test
     public void getAllWhen2ManagedObjectArePresent() throws Exception {
         // Given
-        ManagedObjectRepresentation rep1 = aSampleMo().withName("MO1").build();
-        ManagedObjectRepresentation rep2 = aSampleMo().withName("MO2").build();
+        ManagedObjectRepresentation rep1 = aSampleMo().withType("type1").build();
+        ManagedObjectRepresentation rep2 = aSampleMo().withType("type1").build();
 
         // When
         inventory.create(rep1);
         inventory.create(rep2);
 
         // Then
-        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get();
+        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjectsByFilter(new InventoryFilter().byType("type1")).get();
         assertThat(mos.getManagedObjects().size(), is(2));
     }
 
@@ -442,7 +425,6 @@ public class InventoryIT extends JavaSdkITBase {
 
     }
 
-    //
     @Test
     public void queryWithFragmentType() throws Exception {
         // Given
@@ -450,7 +432,7 @@ public class InventoryIT extends JavaSdkITBase {
         inventory.create(aSampleMo().withName("MO2").with(new SecondFragment()).build());
 
         // When
-        InventoryFilter filter = new InventoryFilter().byFragmentType(Coordinate.class);
+        InventoryFilter filter = new InventoryFilter().byFragmentType(SecondFragment.class);
         ManagedObjectCollectionRepresentation coordinates = inventory.getManagedObjectsByFilter(filter).get();
 
         // Then
@@ -469,7 +451,7 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get();
 
         // Then
-        assertThat(mos.getPageStatistics().getTotalPages(), is(4));
+        assertThat(mos.getPageStatistics().getTotalPages(),  is(greaterThanOrEqualTo(4)));
 
         // When
         ManagedObjectCollectionRepresentation secondPage = inventory.getManagedObjects().getPage(mos, 2);
