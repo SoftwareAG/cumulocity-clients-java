@@ -4,7 +4,7 @@ import com.cumulocity.me.smartrest.client.SmartConnection;
 
 public class SmartHeartBeatWatcher {
     
-    public static int HEARTBEAT_CHECK_INTERVAL = 60000;
+    public static int HEARTBEAT_CHECK_INTERVAL = 720000;
     
     private SmartConnection connection;
     private Thread watcherThread;
@@ -19,8 +19,6 @@ public class SmartHeartBeatWatcher {
     public void start() {
         watcherThread = new Thread(new HeartBeatWatcher());
         watcherThread.start();
-        System.out.println("watch: "+ watcherThread.getName());
-        System.out.println("read: "+ readerThread.getName());
     }
     
     public void stop() {
@@ -45,10 +43,8 @@ public class SmartHeartBeatWatcher {
         }
         
         private boolean checkConnection() {
-            System.out.println("check connection");
             synchronized (connection) {
                 if (!heartbeat) {
-                    System.out.println("Interrupt: "+ readerThread.getName());
                     connection.closeConnection();
                     readerThread.interrupt();
                     return false;

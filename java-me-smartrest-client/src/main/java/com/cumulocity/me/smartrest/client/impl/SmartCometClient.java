@@ -78,7 +78,6 @@ public class SmartCometClient {
     }
     
     protected String handshake() {
-        System.out.println("Do handshake");
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
         SmartRow[] responseLines = response.getDataRows();
@@ -92,7 +91,6 @@ public class SmartCometClient {
     }
        
     protected void subscribe() {
-        System.out.println("Do subscribe");
         SmartRequestImpl request = new SmartRequestImpl(path, buildSubscriptionBody(channels, SMARTREST_SUBSCRIBE_CODE));
         final SmartResponse response = connection.executeRequest(request);
         if (response == null || response.isTimeout()) {
@@ -109,11 +107,9 @@ public class SmartCometClient {
     }
    
     protected void connect() {
-        System.out.println("Do connect");
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
         try {
             final SmartResponse response = connection.executeLongPollingRequest(request);
-            System.out.println("after request calls");
             if (response == null || response.isTimeout()) {
                 return;
             } else if (!response.isSuccessful()){
@@ -193,9 +189,6 @@ public class SmartCometClient {
         if (index == -1) {
             return rows;
         }
-        if (rows.length == 1) {
-            return null;
-        }
         setAdvice(rows[index]);
         SmartRow[] newRows = new SmartRow[rows.length - 1];
         System.arraycopy(rows, 0, newRows, 0, index);
@@ -221,7 +214,5 @@ public class SmartCometClient {
                 this.reconnectAdvice = 0;
             }
         }
-        System.out.println("reconnect ad: "+reconnectAdvice);
-        System.out.println("interval ad: "+ this.interval);
     }
 }

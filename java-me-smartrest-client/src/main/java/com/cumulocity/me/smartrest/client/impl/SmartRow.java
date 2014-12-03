@@ -16,6 +16,9 @@ public class SmartRow {
         String[] data;
         String[] values = StringUtils.split(row, ",");
         if (values.length == 1) {
+            if (values[0].equals("")) {
+                return null;
+            }
             messageId = 0;
             rowNumber = -1;
             data = values;

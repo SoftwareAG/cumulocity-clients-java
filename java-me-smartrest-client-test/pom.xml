@@ -12,6 +12,10 @@
   	<artifactId>java-me-smartrest-client-test</artifactId>
 	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client Test</name>
   
+  	<properties>
+    	<powermock.version>1.6.0</powermock.version>
+	</properties>
+
   	<dependencies>
         <dependency>
             <groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -22,6 +26,18 @@
             <artifactId>microemulator</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+	      <groupId>org.powermock</groupId>
+	      <artifactId>powermock-module-junit4</artifactId>
+	      <version>${powermock.version}</version>
+	      <scope>test</scope>
+	   </dependency>
+	   <dependency>
+	      <groupId>org.powermock</groupId>
+	      <artifactId>powermock-api-mockito</artifactId>
+	      <version>${powermock.version}</version>
+	      <scope>test</scope>
+	   </dependency>
   	</dependencies>
   	
   	<build>

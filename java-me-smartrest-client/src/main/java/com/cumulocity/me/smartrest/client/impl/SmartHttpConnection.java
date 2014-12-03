@@ -198,7 +198,6 @@ public class SmartHttpConnection implements SmartConnection {
         try {
             return interruptableReading();
         } catch (InterruptedException e) {
-            System.out.println("interrupt catched");
             return null;
         }
     }
