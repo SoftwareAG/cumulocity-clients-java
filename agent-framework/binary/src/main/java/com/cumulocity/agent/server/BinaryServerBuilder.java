@@ -2,6 +2,7 @@ package com.cumulocity.agent.server;
 
 import static com.google.common.collect.FluentIterable.from;
 
+import org.glassfish.grizzly.Grizzly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -19,7 +20,7 @@ public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder
     }
 
     public Server build() {
-
+        Grizzly.getDotedVersion();
         final AnnotationConfigApplicationContext parentContext = builder.getContext();
 
         final AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
