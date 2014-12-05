@@ -3,15 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.nsn.cumulocity.root</groupId>
-		<artifactId>root</artifactId>
-		<version>5.17.0-SNAPSHOT</version>
+		<groupId>com.nsn.cumulocity.clients-java</groupId>
+		<artifactId>clients-java</artifactId>
+		<version>5.18.0-SNAPSHOT</version>
 	</parent>
-
+	
 	<groupId>com.nsn.cumulocity.sdk.me</groupId>
 	<artifactId>java-me-smartrest</artifactId>
 	<packaging>pom</packaging>
-	<version>5.17.0-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -19,11 +18,6 @@
 		<module>java-me-smartrest-client</module>
 		<module>java-me-smartrest-client-test</module>
 	</modules>
-
-	<properties>
-		<cumulocity.model.version>5.17.0-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>5.17.0-SNAPSHOT</cumulocity.shared-components.version>
-	</properties>
 
 	<licenses>
 		<license>
