@@ -20,19 +20,29 @@
 
 package com.cumulocity.sdk.client;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UrlProcessor {
 
+	public String removeQueryParam(String url, Collection<String> params) throws SDKException {
+		URLParts urlParts = URLParts.asParts(url);
+		Map<String, String> queryParams = urlParts.getQueryParams();
+		
+		for (String param : params) {
+			queryParams.remove(param);
+		}
+		
+		return buildUrl(urlParts.getPartOfUrlWithoutQueryParams(), queryParams);
+	}
+	
     public String replaceOrAddQueryParam(String url, Map<String, String> newParams) throws SDKException {
-        String[] urlParts = url.split("\\?");
-        String partOfUrlWithoutQueryParams = urlParts[0];
-        String queryParamsString = (urlParts.length == 2) ? urlParts[1] : "";
-
-        Map<String, String> queryParams = parseQueryParams(queryParamsString);
-        queryParams.putAll(newParams);
-        return buildUrl(partOfUrlWithoutQueryParams, queryParams);
+    	URLParts urlParts = URLParts.asParts(url);
+    	Map<String, String> queryParams = urlParts.getQueryParams();
+    	queryParams.putAll(newParams);
+        
+        return buildUrl(urlParts.getPartOfUrlWithoutQueryParams(), queryParams);
     }
 
     private String buildUrl(String urlBeginning, Map<String, String> queryParams) {
@@ -52,16 +62,44 @@ public class UrlProcessor {
         return builder.toString();
     }
 
-    private Map<String, String> parseQueryParams(String queryParams) {
-        Map<String, String> result = new HashMap<String, String>();
-        String[] pairs = queryParams.split("&");
-        for (String pair : pairs) {
-            String[] items = pair.split("=");
-            if (items.length == 2) {
-                result.put(items[0], items[1]);
-            }
-        }
+	private static class URLParts {
 
-        return result;
-    }
+		private final String partOfUrlWithoutQueryParams;
+		private final Map<String, String> queryParams;
+
+		static URLParts asParts(String url) {
+			String[] urlParts = url.split("\\?");
+			String partOfUrlWithoutQueryParams = urlParts[0];
+			String queryParamsString = (urlParts.length == 2) ? urlParts[1] : "";
+
+			Map<String, String> queryParams = parseQueryParams(queryParamsString);
+			return new URLParts(partOfUrlWithoutQueryParams, queryParams);
+		}
+
+		private URLParts(String partOfUrlWithoutQueryParams, Map<String, String> queryParams) {
+			this.partOfUrlWithoutQueryParams = partOfUrlWithoutQueryParams;
+			this.queryParams = queryParams;
+		}
+
+		public String getPartOfUrlWithoutQueryParams() {
+			return partOfUrlWithoutQueryParams;
+		}
+
+		public Map<String, String> getQueryParams() {
+			return queryParams;
+		}
+
+		private static Map<String, String> parseQueryParams(String queryParams) {
+			Map<String, String> result = new HashMap<String, String>();
+			String[] pairs = queryParams.split("&");
+			for (String pair : pairs) {
+				String[] items = pair.split("=");
+				if (items.length == 2) {
+					result.put(items[0], items[1]);
+				}
+			}
+
+			return result;
+		}
+	}
 }
