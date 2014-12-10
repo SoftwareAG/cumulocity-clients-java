@@ -21,7 +21,10 @@
 package com.cumulocity.sdk.client;
 
 import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
+import static com.cumulocity.rest.pagination.RestPageRequest.PARAM_START_KEY;
+import static com.cumulocity.rest.pagination.RestPageRequest.PARAM_START_KEY_DOCID;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,8 +68,12 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
 
     @Override
     public I getPage(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) throws SDKException {
+        String pageUrl = getPageUrl(collectionRepresentation, pageNumber, pageSize);
+		return getCollection(pageUrl);
+    }
 
-        if (collectionRepresentation == null || collectionRepresentation.getSelf() == null) {
+	String getPageUrl(BaseCollectionRepresentation collectionRepresentation, int pageNumber, int pageSize) {
+	    if (collectionRepresentation == null || collectionRepresentation.getSelf() == null) {
             throw new SDKException("Unable to determin the Resource URL. ");
         }
 
@@ -75,9 +82,10 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
         params.put(PAGE_NUMBER_KEY, String.valueOf(pageNumber));
 
         String url = urlProcessor.replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
+        url = urlProcessor.removeQueryParam(url, Arrays.asList(PARAM_START_KEY, PARAM_START_KEY_DOCID));
 
         LOG.debug(" URL : " + url);
-        return getCollection(url);
+	    return url;
     }
 
     protected I getCollection(String url) throws SDKException {
