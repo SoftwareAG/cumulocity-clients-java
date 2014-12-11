@@ -39,7 +39,7 @@ public class DeviceControlRepository {
             return deviceControlApi.getOperation(operationId);
         } catch (SDKException e) {
             if (e.getHttpStatus() == 404) {
-                return null;
+                throw new NotFoundException();
             }
             throw e;
         }
