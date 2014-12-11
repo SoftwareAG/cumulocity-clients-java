@@ -1,14 +1,13 @@
 package com.cumulocity.agent.server.repository;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
+import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.OperationFilter;
 import com.cumulocity.sdk.client.devicecontrol.PagedOperationCollectionRepresentation;
@@ -20,8 +19,6 @@ import com.google.common.collect.Iterables;
 @Component
 public class DeviceControlRepository {
 	
-	private static final Logger logger = LoggerFactory.getLogger(DeviceControlRepository.class);
-
     private final DeviceControlApi deviceControlApi;
 
     private Subscriber<GId, OperationRepresentation> subscriber;
@@ -35,6 +32,17 @@ public class DeviceControlRepository {
 
     public OperationRepresentation findOneByFilter(OperationFilter filter) {
         return Iterables.get(loadByFilter(filter).elements(1), 0);
+    }
+    
+    public OperationRepresentation findById(GId operationId) {
+        try {
+            return deviceControlApi.getOperation(operationId);
+        } catch (SDKException e) {
+            if (e.getHttpStatus() == 404) {
+                return null;
+            }
+            throw e;
+        }
     }
 
     public Iterable<OperationRepresentation> findAllByFilter(OperationFilter filter) {
