@@ -1,21 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
-		<artifactId>agent-framework</artifactId>
+		<artifactId>clients-java</artifactId>
 		<version>5.18.2-SNAPSHOT</version>
 	</parent>
-
-	<artifactId>agent-framework-mvc</artifactId>
-	<packaging>jar</packaging>
-	<name>Cumulocity :: Clients Java :: Agent Framework :: Sprint MVC</name>
+	
+	<groupId>com.nsn.cumulocity.sdk.me</groupId>
+	<artifactId>java-me-smartrest</artifactId>
+	<packaging>pom</packaging>
+	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
-	<properties>
-		<grizzly.version>2.3.16</grizzly.version>
-		<glassfish.jersey.version>2.11</glassfish.jersey.version>
-		<spring.version>3.2.10.RELEASE</spring.version>
-	</properties>
+
+	<modules>
+		<module>java-me-smartrest-client</module>
+		<module>java-me-smartrest-client-test</module>
+	</modules>
+
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -23,15 +26,15 @@
 			<comments>
                     Copyright (C) 2013 Cumulocity GmbH
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy of 
+    Permission is hereby granted, free of charge, to any person obtaining a copy of
     this software and associated documentation files (the "Software"),
     to deal in the Software without restriction, including without limitation the rights to use,
     copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
     and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-    
+
     The above copyright notice and this permission notice shall be
     included in all copies or substantial portions of the Software.
-    
+
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -46,22 +49,4 @@
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.nsn.cumulocity.clients-java</groupId>
-			<artifactId>agent-framework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-framework</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http-servlet-server</artifactId>
-		</dependency>
-	</dependencies>
 </project>

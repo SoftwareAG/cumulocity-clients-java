@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>5.17.1-SNAPSHOT</version>
+		<version>5.18.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>agent-framework</artifactId>
@@ -12,7 +12,7 @@
 	<name>Cumulocity :: Clients Java :: Agent Framework</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<properties>
-		<grizzly.version>2.3.16</grizzly.version>
+		<grizzly.version>2.3.17</grizzly.version>
 		<glassfish.jersey.version>2.11</glassfish.jersey.version>
 		<spring.version>3.2.10.RELEASE</spring.version>
 		<maven.compiler.source>1.7</maven.compiler.source>
