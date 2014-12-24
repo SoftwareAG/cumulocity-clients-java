@@ -15,6 +15,7 @@ import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
+import com.cumulocity.me.util.MeHttpConnectionFactory;
 
 public class SmartRestClientIT {
     
@@ -45,7 +46,9 @@ public class SmartRestClientIT {
                 p.get("cumulocity.tenant"),
                 p.get("cumulocity.user"),
                 p.get("cumulocity.password"),
-                p.get("cumulocity.xid"));
+                p.get("cumulocity.xid"),
+                new MeHttpConnectionFactory()
+                );
         
         Assert.assertNotNull(con);
         

@@ -1,15 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  	<modelVersion>4.0.0</modelVersion>
-  
-  	<parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
 		<groupId>com.nsn.cumulocity.sdk.me</groupId>
-	<artifactId>java-me-smartrest</artifactId>
+		<artifactId>java-me-smartrest</artifactId>
 		<version>5.19.0-SNAPSHOT</version>
 	</parent>
-	
-  	<groupId>com.nsn.cumulocity.sdk.me</groupId>
-  	<artifactId>java-me-smartrest-client</artifactId>
-  	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client</name>
+
+	<groupId>com.nsn.cumulocity.sdk.me</groupId>
+	<artifactId>java-me-smartrest-client</artifactId>
+	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<properties>
@@ -89,8 +90,25 @@
 					</compilerArguments>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>../java-smartrest/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	
-	
+
+
 </project>

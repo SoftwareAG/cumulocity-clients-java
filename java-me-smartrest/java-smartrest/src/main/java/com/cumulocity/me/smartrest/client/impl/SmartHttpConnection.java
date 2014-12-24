@@ -3,10 +3,6 @@ package com.cumulocity.me.smartrest.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.TimerTask;
-
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
 
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
@@ -15,6 +11,8 @@ import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.util.Base64;
+import com.cumulocity.me.util.HttpConnection;
+import com.cumulocity.me.util.HttpConnectionFactory;
 import com.cumulocity.me.util.IOUtils;
 
 public class SmartHttpConnection implements SmartConnection {
@@ -25,6 +23,7 @@ public class SmartHttpConnection implements SmartConnection {
     private String params = null;
     private int mode = -1;
     private boolean timeout;
+    private HttpConnectionFactory connector;
     private HttpConnection connection;
     private InputStream input;
     private OutputStream output;
@@ -32,25 +31,26 @@ public class SmartHttpConnection implements SmartConnection {
     private final SmartExecutorService executorService;
     private boolean isBootstrapping = false;
     
-    public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
+    public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService, HttpConnectionFactory connector) {
         this.host = host;
         this.xid = xid;
         this.authorization = authorization;
         this.executorService = executorService;
+        this.connector = connector;
     }
     
-    public SmartHttpConnection(String host, String xid, String authorization) {
-        this(host, xid, authorization, new SmartExecutorServiceImpl());
-    }
-    
-    public SmartHttpConnection(String host, String tenant, String username,
-            String password, String xid) {
-        this(host, xid, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), new SmartExecutorServiceImpl());
+    public SmartHttpConnection(String host, String xid, String authorization, HttpConnectionFactory connector) {
+        this(host, xid, authorization, new SmartExecutorServiceImpl(), connector);
     }
     
     public SmartHttpConnection(String host, String tenant, String username,
-            String password, String xid, SmartExecutorService executorService) {
-        this(host, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), xid, executorService);
+            String password, String xid, HttpConnectionFactory connector) {
+        this(host, xid, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), new SmartExecutorServiceImpl(), connector);
+    }
+    
+    public SmartHttpConnection(String host, String tenant, String username,
+            String password, String xid, SmartExecutorService executorService, HttpConnectionFactory connector) {
+        this(host, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), xid, executorService, connector);
     }
     
     public void setupConnection(String params) {
@@ -164,9 +164,9 @@ public class SmartHttpConnection implements SmartConnection {
             url = url + params;
         }
         if (mode != -1) {
-            connection = (HttpConnection) Connector.open(url, mode, timeout);
+            connection = (HttpConnection) connector.open(url, mode, timeout);
         } else {
-            connection = (HttpConnection) Connector.open(url);
+            connection = (HttpConnection) connector.open(url);
         }
         return this;
     }

@@ -22,6 +22,8 @@ import com.cumulocity.me.smartrest.client.SmartConnection;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.util.Base64;
+import com.cumulocity.me.util.HttpConnectionFactory;
+import com.cumulocity.me.util.MeHttpConnectionFactory;
 
 @PrepareForTest(Connector.class)
 @RunWith(PowerMockRunner.class)
@@ -33,6 +35,7 @@ public class SmartHttpConnectionTest {
 
     private static final String TEST_HOST = "http://my.cumulocity.com";
     
+    HttpConnectionFactory connector = new MeHttpConnectionFactory();
     SmartHttpConnection smartConnection;
     HttpConnection connection;
     OutputStream output;
@@ -54,7 +57,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         SmartResponse response = smartConnection.executeRequest(new SmartRequestImpl(100,"test"));
         
         // then
@@ -78,7 +81,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         SmartResponse response = smartConnection.executeRequest(new SmartRequestImpl(100,"test"));
         
         // then
@@ -111,7 +114,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.getResponseMessage()).thenReturn("OK");
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         SmartResponse response = smartConnection.executeRequest(new SmartRequestImpl(100,"test"));
         
         // then
@@ -128,7 +131,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         SmartResponse response = smartConnection.executeRequest(new SmartRequestImpl(100,"test"));
         
         // then
@@ -159,7 +162,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         smartConnection.executeRequestAsync(new SmartRequestImpl(100,"test"), new SmartResponseEvaluator() {
             @Override
             public void evaluate(SmartResponse response) {
@@ -186,7 +189,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         SmartResponse response = smartConnection.executeLongPollingRequest(new SmartRequestImpl(100,"test"));
         
         // then
@@ -213,7 +216,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input); 
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         String response = smartConnection.bootstrap("123");
         
         // then
@@ -231,7 +234,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input).thenReturn(input2);
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         String response = smartConnection.templateRegistration("myTempates");
         
         // then
@@ -248,7 +251,7 @@ public class SmartHttpConnectionTest {
         Mockito.when(connection.openInputStream()).thenReturn(input);
         
         // when
-        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
+        smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH, connector);
         String response = smartConnection.templateRegistration("myTempates");
         
         // then

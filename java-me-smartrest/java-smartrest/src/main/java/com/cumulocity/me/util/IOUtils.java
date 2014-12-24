@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.microedition.io.Connection;
-
 import com.cumulocity.me.sdk.SDKException;
 
 public abstract class IOUtils {
@@ -55,7 +53,7 @@ public abstract class IOUtils {
         }
     }
 
-    public static final void closeQuietly(Connection connection) {
+    public static final void closeQuietly(HttpConnection connection) {
         if (connection == null) {
             return;
         }                                                                                                                                                                                                                                                                                                                                                                                                       
