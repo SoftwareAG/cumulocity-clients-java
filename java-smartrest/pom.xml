@@ -9,7 +9,7 @@
 	</parent>
 	
 	<groupId>com.nsn.cumulocity.sdk.me</groupId>
-	<artifactId>java-me-smartrest</artifactId>
+	<artifactId>java-smartrest</artifactId>
 	<packaging>pom</packaging>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
