@@ -3,14 +3,13 @@
   	<modelVersion>4.0.0</modelVersion>
   	
   	<parent>
-		<groupId>com.nsn.cumulocity.sdk.me</groupId>
-		<artifactId>java-smartrest</artifactId>
+			<groupId>com.cumulocity</groupId>
+			<artifactId>smartrest</artifactId>
 		<version>5.19.0-SNAPSHOT</version>
 	</parent>
 	
-  	<groupId>com.nsn.cumulocity.sdk</groupId>
-  	<artifactId>java-me-smartrest-client-test</artifactId>
-	<name>Cumulocity :: Clients Java :: Java ME SmartREST Client Test</name>
+	<artifactId>smartrest-me-test</artifactId>
+	<name>Cumulocity :: Java SmartREST :: ME Test</name>
   
   	<properties>
     	<powermock.version>1.6.0</powermock.version>
@@ -18,8 +17,8 @@
 
   	<dependencies>
         <dependency>
-            <groupId>com.nsn.cumulocity.sdk.me</groupId>
-            <artifactId>java-me-smartrest-client</artifactId>
+            <groupId>com.cumulocity</groupId>
+            <artifactId>smartrest-me</artifactId>
         </dependency>
         <dependency>
             <groupId>org.microemu</groupId>

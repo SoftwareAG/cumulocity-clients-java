@@ -13,7 +13,6 @@
 	<packaging>pom</packaging>
 	<version>5.19.0-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
-	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<scm>
 		<connection>scm:hg:https://bitbucket.org/m2m/cumulocity-clients-java</connection>
@@ -21,9 +20,9 @@
 	</scm>
 
 	<modules>
+		<module>smartrest</module>
 		<module>device-capability-model</module>
 		<module>java-client</module>
-		<module>java-smartrest</module>
 		<module>agent-framework</module>
 	</modules>
 
@@ -198,13 +197,8 @@
 				<version>${cumulocity.model.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nsn.cumulocity.sdk.me</groupId>
-				<artifactId>java-me-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.nsn.cumulocity.sdk.me</groupId>
-				<artifactId>java-me-smartrest-client</artifactId>
+				<groupId>com.cumulocity</groupId>
+				<artifactId>smartrest-me</artifactId>
 				<version>${project.version}</version>
 			</dependency>
             <dependency>
