@@ -3,6 +3,9 @@ package com.cumulocity.me.util;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+
+import java.util.Hashtable;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -77,4 +80,31 @@ public class StringUtilsTests {
 	    Assert.assertEquals("myNewString", newString);
 	}
 	
+	@Test
+	public void testStringEscaping() {
+		Assert.assertEquals("\"\"", StringUtils.escape(""));
+		Assert.assertEquals("\"abc\"", StringUtils.escape("abc"));
+		Assert.assertEquals("\"\"\"\"", StringUtils.escape("\""));
+		Assert.assertEquals("\"A \"\"quote\"\"!\"", StringUtils.escape("A \"quote\"!"));		
+	}
+	
+	@Test
+	public void testArrayEscaping() {
+		Assert.assertEquals("\"\"", StringUtils.escape(new String[] { } ));
+		Assert.assertEquals("\"\"\"Test\"\"\"", StringUtils.escape(new String[] { "Test" } ));
+		Assert.assertEquals("\"\"\"Test\"\",\"\"Test2\"\"\"", StringUtils.escape(new String[] { "Test", "Test2" } ));
+	}
+	
+	@Test
+	public void testTableEscaping() {
+		Hashtable table = new Hashtable();
+		Assert.assertEquals("\"\"", StringUtils.escape(table));
+
+		table.put("key1", "value1");
+		Assert.assertEquals("\"\"\"key1\"\":\"\"value1\"\"\"", StringUtils.escape(table));
+
+		table.put("key2", "value2");
+		// Some speculation on hash ordering here ...
+		Assert.assertEquals("\"\"\"key2\"\":\"\"value2\"\",\"\"key1\"\":\"\"value1\"\"\"", StringUtils.escape(table));	
+	}
 }

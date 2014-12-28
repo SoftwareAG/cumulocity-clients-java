@@ -23,8 +23,6 @@
 	<modules>
 		<module>device-capability-model</module>
 		<module>java-client</module>
-		<module>java-me-client</module>
-		<module>java-me-client-test</module>
 		<module>java-smartrest</module>
 		<module>agent-framework</module>
 	</modules>

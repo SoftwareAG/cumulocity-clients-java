@@ -15,6 +15,7 @@
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<modules>
+		<module>java-smartrest</module>
 		<module>java-me-smartrest-client</module>
 		<module>java-me-smartrest-client-test</module>
 		<module>java-se-smartrest-client</module>
