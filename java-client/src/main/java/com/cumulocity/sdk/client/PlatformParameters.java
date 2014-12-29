@@ -63,6 +63,8 @@ public class PlatformParameters {
     private BufferRequestService bufferRequestService;
 
     private BufferProcessor bufferProcessor;
+    
+    private RestConnector restConnector;
 
     public PlatformParameters() {
         //empty constructor for spring based initialization
@@ -93,8 +95,11 @@ public class PlatformParameters {
         this.pageSize = pageSize;
     }
 
-    protected RestConnector createRestConnector() {
-        return new RestConnector(this, new ResponseParser());
+    protected synchronized RestConnector createRestConnector() {
+        if (restConnector == null) {
+            restConnector = new RestConnector(this, new ResponseParser());
+        }
+        return restConnector;
     }
 
     public int getPageSize() {
