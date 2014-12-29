@@ -33,6 +33,9 @@ import java.net.URL;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
@@ -50,6 +53,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
@@ -251,10 +255,17 @@ public class RestConnector {
         registerClasses(config);
         config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
 
-        ApacheHttpClient client = ApacheHttpClient.create(config);
+        ApacheHttpClient client =  new ApacheHttpClient(createDefaultClientHander(config), null);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
         return client;
+    }
+    
+    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
+        MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
+        httpConnectionManager.setMaxConnectionsPerHost(20);
+        final HttpClient client = new HttpClient(httpConnectionManager);
+        return new ApacheHttpClientHandler(client, cc);
     }
 
     private static boolean isProxyAuthenticationRequired(PlatformParameters platformParameters) {
