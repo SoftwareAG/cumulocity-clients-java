@@ -3,17 +3,12 @@ package com.cumulocity.me.smartrest.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.TimerTask;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
 import com.cumulocity.me.sdk.SDKException;
-import com.cumulocity.me.smartrest.client.SmartConnection;
-import com.cumulocity.me.smartrest.client.SmartExecutorService;
-import com.cumulocity.me.smartrest.client.SmartRequest;
-import com.cumulocity.me.smartrest.client.SmartResponse;
-import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
+import com.cumulocity.me.smartrest.client.*;
 import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.IOUtils;
 
@@ -129,14 +124,22 @@ public class SmartHttpConnection implements SmartConnection {
         }
     }
     
-    public SmartResponse executeLongPollingRequest(SmartRequest request) {
+    protected SmartResponse executeLongPollingRequest(SmartRequest request, boolean startHeartBeatWatcher) {
         try {
-            return openConnection(request.getPath())
-                    .writeCommand()
-                    .writeHeaders(request)
-                    .writeBody(request)
-                    .startHeartBeatWatcher()
-                    .buildResponse();
+            if (startHeartBeatWatcher) {
+                return openConnection(request.getPath())
+                        .writeCommand()
+                        .writeHeaders(request)
+                        .writeBody(request)
+                        .startHeartBeatWatcher()
+                        .buildResponse();
+            } else {
+                return openConnection(request.getPath())
+                        .writeCommand()
+                        .writeHeaders(request)
+                        .writeBody(request)
+                        .buildResponse();
+            }
         } catch (IOException e) {
             throw new SDKException("I/O error!", e);
         } finally {
@@ -146,6 +149,10 @@ public class SmartHttpConnection implements SmartConnection {
             }
             closeConnection();
         }
+    }
+    
+    public SmartResponse executeLongPollingRequest(SmartRequest request) {
+        return executeLongPollingRequest(request, true);
     }
     
     public void executeRequestAsync(SmartRequest request, SmartResponseEvaluator evaluator) {
