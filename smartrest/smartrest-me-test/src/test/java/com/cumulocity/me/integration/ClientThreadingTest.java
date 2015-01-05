@@ -7,9 +7,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.cumulocity.me.sdk.SDKException;
-import com.cumulocity.me.smartrest.client.SmartExecutorService;
-import com.cumulocity.me.smartrest.client.impl.SmartExecutorServiceImpl;
+import com.cumulocity.SDKException;
+import com.cumulocity.smartrest.client.SmartExecutorService;
+import com.cumulocity.smartrest.client.impl.SmartExecutorServiceImpl;
 
 @Ignore
 public class ClientThreadingTest {

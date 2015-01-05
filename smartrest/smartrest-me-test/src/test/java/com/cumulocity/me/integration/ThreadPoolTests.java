@@ -1,12 +1,10 @@
 package com.cumulocity.me.integration;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.cumulocity.me.sdk.SDKException;
-import com.cumulocity.me.smartrest.client.impl.SmartExecutorServiceImpl;
+import com.cumulocity.SDKException;
+import com.cumulocity.smartrest.client.impl.SmartExecutorServiceImpl;
 
 @Ignore
 public class ThreadPoolTests {

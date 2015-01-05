@@ -19,10 +19,12 @@
         <dependency>
             <groupId>com.cumulocity</groupId>
             <artifactId>smartrest-me</artifactId>
+            <version>${cumulocity.dependencies.version}</version>
         </dependency>
         <dependency>
             <groupId>org.microemu</groupId>
             <artifactId>microemulator</artifactId>
+            <version>${microemu.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

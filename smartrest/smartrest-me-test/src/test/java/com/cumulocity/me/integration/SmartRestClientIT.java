@@ -9,13 +9,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.cumulocity.me.smartrest.client.SmartConnection;
-import com.cumulocity.me.smartrest.client.SmartRequest;
-import com.cumulocity.me.smartrest.client.SmartResponse;
-import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
-import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
-import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
-import com.cumulocity.me.util.MeHttpConnectionFactory;
+import com.cumulocity.smartrest.client.SmartConnection;
+import com.cumulocity.smartrest.client.SmartRequest;
+import com.cumulocity.smartrest.client.SmartResponse;
+import com.cumulocity.smartrest.client.SmartResponseEvaluator;
+import com.cumulocity.smartrest.client.impl.SmartHttpConnection;
+import com.cumulocity.smartrest.client.impl.SmartRequestImpl;
+import com.cumulocity.smartrest.util.MeHttpConnectionFactory;
 
 public class SmartRestClientIT {
     

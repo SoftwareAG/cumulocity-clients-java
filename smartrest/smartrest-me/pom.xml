@@ -49,11 +49,13 @@
 		<dependency>
 			<groupId>org.microemu</groupId>
 			<artifactId>cldcapi11</artifactId>
+            <version>${microemu.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.microemu</groupId>
 			<artifactId>midpapi20</artifactId>
+            <version>${microemu.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
