@@ -22,11 +22,16 @@ package c8y;
 
 import org.svenson.JSONProperty;
 
+
 public class Mobile {
 
 	private String imei;
 	private String cellId;
 	private String iccid;
+	private String mcc;
+	private String mnc;
+	private String imsi;
+	private String lac;
 
 	public Mobile() {
 	}
@@ -63,28 +68,102 @@ public class Mobile {
 	public void setCellId(String cellId) {
 		this.cellId = cellId;
 	}
+	
+	@JSONProperty(ignoreIfNull = true)
+	public String getMcc() {
+        return mcc;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null)
-			return false;
-		if (obj == this)
-			return true;
-		if (!(obj instanceof Mobile))
-			return false;
+    public void setMcc(String mcc) {
+        this.mcc = mcc;
+    }
 
-		Mobile rhs = (Mobile) obj;
-		boolean result = (imei == null) ? (rhs.imei == null) : imei.equals(rhs.imei);
-		result = result && ((cellId == null) ? (rhs.cellId == null) : cellId.equals(rhs.cellId));
-		result = result && ((iccid == null) ? (rhs.iccid == null) : iccid.equals(rhs.iccid));
-		return result;
-	}
+    @JSONProperty(ignoreIfNull = true)
+    public String getMnc() {
+        return mnc;
+    }
 
-	@Override
-	public int hashCode() {
-        int result = imei == null ? 0 : imei.hashCode();
-        result = 31 * result + (cellId == null ? 0 : cellId.hashCode());
-        result = 31 * result + (iccid == null ? 0 : iccid.hashCode());
+    public void setMnc(String mnc) {
+        this.mnc = mnc;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public String getImsi() {
+        return imsi;
+    }
+
+    public void setImsi(String imsi) {
+        this.imsi = imsi;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public String getLac() {
+        return lac;
+    }
+
+    public void setLac(String lac) {
+        this.lac = lac;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((cellId == null) ? 0 : cellId.hashCode());
+        result = prime * result + ((iccid == null) ? 0 : iccid.hashCode());
+        result = prime * result + ((imei == null) ? 0 : imei.hashCode());
+        result = prime * result + ((imsi == null) ? 0 : imsi.hashCode());
+        result = prime * result + ((lac == null) ? 0 : lac.hashCode());
+        result = prime * result + ((mcc == null) ? 0 : mcc.hashCode());
+        result = prime * result + ((mnc == null) ? 0 : mnc.hashCode());
         return result;
-	}
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Mobile other = (Mobile) obj;
+        if (cellId == null) {
+            if (other.cellId != null)
+                return false;
+        } else if (!cellId.equals(other.cellId))
+            return false;
+        if (iccid == null) {
+            if (other.iccid != null)
+                return false;
+        } else if (!iccid.equals(other.iccid))
+            return false;
+        if (imei == null) {
+            if (other.imei != null)
+                return false;
+        } else if (!imei.equals(other.imei))
+            return false;
+        if (imsi == null) {
+            if (other.imsi != null)
+                return false;
+        } else if (!imsi.equals(other.imsi))
+            return false;
+        if (lac == null) {
+            if (other.lac != null)
+                return false;
+        } else if (!lac.equals(other.lac))
+            return false;
+        if (mcc == null) {
+            if (other.mcc != null)
+                return false;
+        } else if (!mcc.equals(other.mcc))
+            return false;
+        if (mnc == null) {
+            if (other.mnc != null)
+                return false;
+        } else if (!mnc.equals(other.mnc))
+            return false;
+        return true;
+    }
+
 }
