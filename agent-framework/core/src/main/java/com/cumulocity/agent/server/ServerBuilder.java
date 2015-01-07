@@ -29,7 +29,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.cumulocity.agent.server.config.CommonConfiguration;
 import com.cumulocity.agent.server.config.PropertiesFactoryBean;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 public class ServerBuilder {

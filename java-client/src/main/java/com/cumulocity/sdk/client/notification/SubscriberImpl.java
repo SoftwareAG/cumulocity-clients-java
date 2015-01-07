@@ -164,11 +164,11 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         }
 
         private boolean isSubscriptionToChannel(Message message) {
-            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId());
+            return this.channel.getId().equals(message.get(Message.SUBSCRIPTION_FIELD));
         }
 
         private boolean isSuccessfulySubscribed(Message message) {
-            return  message.isSuccessful();
+            return message.isSuccessful();
         }
     }
 
@@ -203,7 +203,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object) {
             this.handler = handler;
-            subscription = createSubscription(channel, object);
+            this.subscription = createSubscription(channel, object);
         }
 
         protected ChannelSubscription createSubscription(ClientSessionChannel channel, T object) {
