@@ -42,15 +42,19 @@ public class InventoryFilter extends Filter {
 
     @ParamSource
     private String type;
-    
+
     @ParamSource
     private String owner;
-    
+
     @ParamSource
     private String text;
-    
+
     @ParamSource
     private String ids;
+
+    public static InventoryFilter searchInventory() {
+        return new InventoryFilter();
+    }
 
     /**
      * Specifies the {@code fragmentType} query parameter
@@ -98,7 +102,7 @@ public class InventoryFilter extends Filter {
     public String getType() {
         return type;
     }
-    
+
     /**
      * Specifies the {@code owner} query parameter
      *
@@ -116,7 +120,7 @@ public class InventoryFilter extends Filter {
     public String getOwner() {
         return owner;
     }
-    
+
     /**
      * Specifies the {@code text} query parameter
      *
@@ -134,7 +138,7 @@ public class InventoryFilter extends Filter {
     public String getText() {
         return text;
     }
-    
+
     /**
      * Specifies the {@code ids} query parameter
      *
@@ -145,7 +149,7 @@ public class InventoryFilter extends Filter {
         this.ids = createCommaSeparatedStringFromGids(ids);
         return this;
     }
-    
+
     /**
      * Specifies the {@code ids} query parameter
      *
@@ -156,7 +160,7 @@ public class InventoryFilter extends Filter {
         this.ids = createCommaSeparatedStringFromGids(asList(ids));
         return this;
     }
-    
+
     private String createCommaSeparatedStringFromGids(List<GId> ids) {
         boolean atLeastOneItemProcessed = false;
         StringBuilder builder = new StringBuilder();
