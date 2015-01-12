@@ -155,6 +155,7 @@
 		<module>repositories</module>
 		<module>jaxrs</module>
 		<module>standalone</module>
+		<module>package</module>
 	</modules>
 
 	<build>
