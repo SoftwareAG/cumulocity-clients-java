@@ -1,23 +1,12 @@
 package com.cumulocity.agent.server.context;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.*;
 import javax.ws.rs.ext.Provider;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.google.common.base.Optional;
-import com.google.common.reflect.TypeToken;
 
 @Provider
 @PreMatching
