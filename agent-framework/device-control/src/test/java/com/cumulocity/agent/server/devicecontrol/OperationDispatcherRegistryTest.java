@@ -55,11 +55,6 @@ public class OperationDispatcherRegistryTest {
         public void handle(OperationRepresentation operation) {
         }
 
-        @Override
-        public String getFragment() {
-            return null;
-        }
-        
     }
 
     @Test

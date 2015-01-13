@@ -101,9 +101,7 @@ public class SynchronizedOperationDispatcher implements OperationDispatcher {
                             log.info("operation finished by external skiping execution {} ", operation);
                         }
                     }
-                } else {
-                    log.debug("operation {} queued ", handler.getFragment());
-                }
+                } 
             }
         }
 

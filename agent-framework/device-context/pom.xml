@@ -62,11 +62,6 @@
 		<!-- Testing -->
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>device-capability-model</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>model-test-tools</artifactId>
 			<scope>test</scope>
 			<exclusions>
