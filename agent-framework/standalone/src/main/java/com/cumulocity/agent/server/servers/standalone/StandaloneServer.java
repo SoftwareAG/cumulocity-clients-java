@@ -61,4 +61,8 @@ public class StandaloneServer implements Server {
         service.awaitTerminated();
     }
 
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
+    }
 }

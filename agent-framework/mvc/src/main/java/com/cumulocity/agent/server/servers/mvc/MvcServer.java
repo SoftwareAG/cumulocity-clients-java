@@ -6,20 +6,26 @@ import java.net.InetSocketAddress;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import com.cumulocity.agent.server.Server;
 import com.google.common.base.Throwables;
-import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 
 @Component("mvcServer")
 public class MvcServer implements Server {
+
+    private final Logger log = LoggerFactory.getLogger(MvcServer.class);
 
     private final String host;
 
@@ -27,14 +33,14 @@ public class MvcServer implements Server {
 
     private final String applicationId;
 
-    private final WebApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    private final Service service = new AbstractService() {
+    private final Service service = new AbstractIdleService() {
 
         private HttpServer server;
 
         @Override
-        protected void doStart() {
+        protected void startUp() throws Exception {
             server = HttpServer.createSimpleServer(null, new InetSocketAddress(host, port));
 
             server.getListener("grizzly")
@@ -44,25 +50,32 @@ public class MvcServer implements Server {
                                     .setMaxPoolSize(100));
 
             WebappContext context = new WebappContext(applicationId, "/" + applicationId);
-            context.addServlet("dispatcher-servlet", new DispatcherServlet(applicationContext)).addMapping("/*");
-            context.addListener(new ContextLoaderListener(applicationContext));
+            final AnnotationConfigWebApplicationContext webApplicationContext = new AnnotationConfigWebApplicationContext();
+            webApplicationContext.register(MvcServerConfiguration.class);
+            context.addServlet("dispatcher-servlet", new DispatcherServlet(webApplicationContext)).addMapping("/*");
+            context.addListener(new ContextLoaderListener(webApplicationContext));
             context.deploy(server);
             try {
                 server.start();
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
+            log.info("mvc server started ");
+
         }
 
         @Override
-        protected void doStop() {
+        protected void shutDown() throws Exception {
             server.shutdownNow();
+            log.info("mvc server shutdown ");
+
         }
+
     };
 
     @Autowired
     public MvcServer(@Value("${server.host:0.0.0.0}") String host, @Value("${server.port:80}") int port,
-            @Value("${server.id}") String contextPath, WebApplicationContext context) {
+            @Value("${server.id}") String contextPath, ApplicationContext context) {
         this.host = host;
         this.port = port;
         this.applicationId = contextPath;
@@ -73,6 +86,11 @@ public class MvcServer implements Server {
     public void start() {
         service.startAsync();
         service.awaitRunning();
+    }
+
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
     }
 
     @Override

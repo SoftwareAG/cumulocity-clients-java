@@ -53,6 +53,12 @@ public class BinaryServerBuilder extends SpringServerBuilder<BinaryServerBuilder
                 }
 
             }
+
+            @Override
+            public void awaitTerminated() {
+                server.awaitTerminated();
+
+            }
         };
     }
 }

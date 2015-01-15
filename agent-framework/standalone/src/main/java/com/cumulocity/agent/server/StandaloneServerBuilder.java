@@ -52,6 +52,11 @@ public class StandaloneServerBuilder extends SpringServerBuilder<StandaloneServe
                 }
 
             }
+
+            @Override
+            public void awaitTerminated() {
+                server.awaitTerminated();
+            }
         };
     }
 }

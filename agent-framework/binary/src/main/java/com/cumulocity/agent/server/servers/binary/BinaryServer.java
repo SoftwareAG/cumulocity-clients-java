@@ -53,6 +53,7 @@ public class BinaryServer implements Server {
                 log.debug("staring server on {}:{}", host, port);
                 server.bind(host, port);
                 server.start();
+                notifyStarted();
                 log.info("stared server on {}:{}", host, port);
             } catch (IOException e) {
                 server.shutdown();
@@ -64,6 +65,7 @@ public class BinaryServer implements Server {
         protected void doStop() {
             try {
                 server.shutdownNow();
+                notifyStopped();
             } catch (IOException e) {
                 throw propagate(e);
             }
@@ -73,6 +75,11 @@ public class BinaryServer implements Server {
     @Autowired
     public BinaryServer(List<BinaryServerConfigurator> configurators) {
         this.configurators = configurators;
+    }
+
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
     }
 
     @Override

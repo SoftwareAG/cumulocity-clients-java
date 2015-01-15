@@ -100,4 +100,9 @@ public class JaxrsServer implements Server {
         service.stopAsync();
         service.awaitTerminated();
     }
+
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
+    }
 }
