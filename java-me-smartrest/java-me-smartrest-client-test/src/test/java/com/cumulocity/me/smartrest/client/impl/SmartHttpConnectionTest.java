@@ -187,7 +187,7 @@ public class SmartHttpConnectionTest {
         
         // when
         smartConnection = new SmartHttpConnection(TEST_HOST, TEST_XID, TEST_AUTH);
-        SmartResponse response = smartConnection.executeLongPollingRequest(new SmartRequestImpl(100,"test"));
+        SmartResponse response = smartConnection.executeLongPollingRequest(new SmartRequestImpl(100,"test"), false);
         
         // then
         SmartRow[] rows = response.getDataRows();

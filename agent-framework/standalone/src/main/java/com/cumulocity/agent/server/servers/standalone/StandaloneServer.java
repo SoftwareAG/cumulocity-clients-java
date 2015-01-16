@@ -1,5 +1,9 @@
 package com.cumulocity.agent.server.servers.standalone;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +21,8 @@ public class StandaloneServer implements Server {
     private String applicationId;
 
     private final Service service = new AbstractExecutionThreadService() {
-        private Thread thread;
+
+        private final ExecutorService executor = Executors.newCachedThreadPool();
 
         @Override
         protected void startUp() throws Exception {
@@ -26,19 +31,18 @@ public class StandaloneServer implements Server {
 
         @Override
         protected void shutDown() throws Exception {
-            thread.interrupt();
             log.debug("stopping {}", applicationId);
+            executor.shutdownNow();
         }
 
         @Override
         protected void run() throws Exception {
             log.debug("started {}", applicationId);
-            try {
-                thread = Thread.currentThread();
-                this.wait();
-            } catch (InterruptedException ex) {
-                log.info("service interuppted");
-            }
+        }
+
+        @Override
+        protected Executor executor() {
+            return executor;
         }
     };
 

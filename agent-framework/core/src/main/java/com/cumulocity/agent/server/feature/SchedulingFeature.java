@@ -29,7 +29,6 @@ public class SchedulingFeature {
 
     public static final int DEFAULT_POOL_SIZE = 10;
 
-
     @Bean
     @Autowired
     public SchedulerFactoryBean scheduler(Environment environment) {

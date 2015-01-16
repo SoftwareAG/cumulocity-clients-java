@@ -26,10 +26,14 @@ import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cumulocity.sdk.client.SDKException;
 
 class SubscriberImpl<T> implements Subscriber<T, Message> {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriberImpl.class);
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
@@ -57,7 +61,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         final ClientSessionChannel channel = getChannel(object);
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
-        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(new SubscriptionRecord(object, handler) , listener, metaSubscribeChannel, channel));
+        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(new SubscriptionRecord(object, handler), listener,
+                metaSubscribeChannel, channel));
         channel.subscribe(listener);
 
         return listener.getSubscription();
@@ -138,8 +143,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         private final SubscriptionRecord subscription;
 
-
-        private SubscriptionSuccessListener( SubscriptionRecord subscribed, MessageListenerAdapter listener, 
+        private SubscriptionSuccessListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
                 ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
             this.subscription = subscribed;
             this.listener = listener;
@@ -150,25 +154,31 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
             try {
-                if(!isSubscriptionToChannel(message)) return;
+                if (!isSubscriptionToChannel(message))
+                    return;
                 if (isSuccessfulySubscribed(message)) {
                     session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE).addListener(new UnsubscribeListener(subscription));
                     subscriptions.add(subscription);
                 } else {
-                    subscription.getListener().onError(listener.getSubscription(), new SDKException("unable to subscribe on Channel " + channel.getChannelId()
-                            + " " + message.get(Message.ERROR_FIELD)));
+                    subscription.getListener().onError(
+                            listener.getSubscription(),
+                            new SDKException("unable to subscribe on Channel " + channel.getChannelId() + " "
+                                    + message.get(Message.ERROR_FIELD)));
                 }
+            } catch (NullPointerException ex) {
+                log.warn("NPE on message {} - {}", message, this.channel);
+                throw new RuntimeException(ex);
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
         }
 
         private boolean isSubscriptionToChannel(Message message) {
-            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId());
+            return this.channel.getId().equals(message.get(Message.SUBSCRIPTION_FIELD));
         }
 
         private boolean isSuccessfulySubscribed(Message message) {
-            return  message.isSuccessful();
+            return message.isSuccessful();
         }
     }
 
@@ -203,7 +213,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object) {
             this.handler = handler;
-            subscription = createSubscription(channel, object);
+            this.subscription = createSubscription(channel, object);
         }
 
         protected ChannelSubscription createSubscription(ClientSessionChannel channel, T object) {

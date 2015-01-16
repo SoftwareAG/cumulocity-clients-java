@@ -6,14 +6,12 @@ import javax.ws.rs.HttpMethod;
 
 import org.junit.Test;
 
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.builder.AlarmRepresentationBuilder;
 import com.cumulocity.rest.representation.builder.EventRepresentationBuilder;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 
 public class BufferedRequestTest {
 
@@ -22,7 +20,7 @@ public class BufferedRequestTest {
         String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/event/events", EventMediaType.EVENT, eventRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/event/events##E##E##{\"source\":{\"id\":\"1\"},\"text\":\"text##\"}");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/event/events##E##E##{\"text\":\"text##\"}");
     }
     
     @Test
@@ -30,12 +28,12 @@ public class BufferedRequestTest {
         String csvString = BufferedRequest.create(HttpMethod.POST, "http://test.cumulocity.com/alarm/alarms", AlarmMediaType.ALARM, alarmRepresentation())
                 .toCsvString();
         
-        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"source\":{\"id\":\"1\"},\"text\":\"text\"}");
+        assertThat(csvString).isEqualTo("POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"text\":\"text\"}");
     }
     
     @Test
     public void shouldParseCsvStringToAlarmRepresentation() {
-        String csvString = "POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"source\":{\"id\":\"1\"},\"text\":\"text\"}";
+        String csvString = "POST##http://test.cumulocity.com/alarm/alarms##A##A##{\"text\":\"text\"}";
         
         BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
@@ -47,7 +45,7 @@ public class BufferedRequestTest {
     
     @Test
     public void shouldParseCsvStringToEventRepresentation() {
-        String csvString = "POST##http://test.cumulocity.com/event/events##E##E##{\"source\":{\"id\":\"1\"},\"text\":\"text##\"}";
+        String csvString = "POST##http://test.cumulocity.com/event/events##E##E##{\"text\":\"text##\"}";
         
         BufferedRequest request = BufferedRequest.parseCsvString(csvString);
         
@@ -60,20 +58,12 @@ public class BufferedRequestTest {
     private EventRepresentation eventRepresentation() {
         return new EventRepresentationBuilder()
             .withText("text##")
-            .withSource(source())
             .build();
     }
     
     private AlarmRepresentation alarmRepresentation() {
         return new AlarmRepresentationBuilder()
             .withText("text")
-            .withSource(source())
             .build();
-    }
-
-    private ManagedObjectRepresentation source() {
-        ManagedObjectRepresentation source = new ManagedObjectRepresentation();
-        source.setId(new GId("1"));
-        return source;
     }
 }
