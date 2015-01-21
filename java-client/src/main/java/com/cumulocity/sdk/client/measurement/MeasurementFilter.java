@@ -104,6 +104,11 @@ public class MeasurementFilter extends Filter {
         return this;
     }
 
+    public MeasurementFilter byFragmentType(String fragmentType) {
+        this.fragmentType = fragmentType;
+        return this;
+    }
+
     public String getFragmentType() {
         return fragmentType;
     }

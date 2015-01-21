@@ -110,6 +110,11 @@ public class EventFilter extends Filter {
         return this;
     }
 
+    public EventFilter byFragmentType(String fragmentType) {
+        this.fragmentType = fragmentType;
+        return this;
+    }
+
     public String getFragmentType() {
         return fragmentType;
     }
