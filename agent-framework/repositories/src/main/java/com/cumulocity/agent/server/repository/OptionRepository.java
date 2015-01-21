@@ -32,7 +32,7 @@ public class OptionRepository {
         rest.delete(optionUrl(category, key));
     }
 
-    public String optionUrl(String category, String key) {
+    private String optionUrl(String category, String key) {
         return baseUrl + TENANT_OPTIONS_URL + "/" + category + "/" + key;
     }
 
