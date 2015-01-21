@@ -6,9 +6,10 @@ import static com.google.common.collect.FluentIterable.from;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.cumulocity.agent.server.servers.mvc.MvcServerConfiguration;
+import com.cumulocity.agent.server.config.CommonConfiguration;
+import com.cumulocity.agent.server.servers.mvc.MvcServer;
 
 public class MvcServerBuilder extends SpringServerBuilder<MvcServerBuilder> {
 
@@ -16,7 +17,7 @@ public class MvcServerBuilder extends SpringServerBuilder<MvcServerBuilder> {
 
     private final ServerBuilder builder;
 
-    protected MvcServerBuilder(ServerBuilder builder) {
+    public MvcServerBuilder(ServerBuilder builder) {
         this.builder = builder;
     }
 
@@ -24,10 +25,9 @@ public class MvcServerBuilder extends SpringServerBuilder<MvcServerBuilder> {
         try {
             ConfigurableApplicationContext parentContext = builder.getContext();
 
-            AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
-
+            AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+            applicationContext.register(CommonConfiguration.class,MvcServer.class);
             applicationContext.setParent(parentContext);
-            applicationContext.register(annotatedClasses(MvcServerConfiguration.class));
             if (!packages.isEmpty()) {
                 applicationContext.scan(from(packages).toArray(String.class));
             }
