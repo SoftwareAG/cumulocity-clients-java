@@ -2,8 +2,7 @@ package com.cumulocity.agent.server.feature;
 
 import static org.springframework.scheduling.support.TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -40,7 +39,7 @@ public class SchedulingFeature {
 
     @Bean
     @Autowired
-    public Executor executor(SchedulerFactoryBean factory) {
+    public ExecutorService executor(SchedulerFactoryBean factory) {
         return factory.getAsyncExecutor();
     }
 
@@ -85,8 +84,8 @@ public class SchedulingFeature {
         }
 
         @Override
-        public Executor getAsyncExecutor() {
-            return scheduler;
+        public ExecutorService getAsyncExecutor() {
+            return scheduler.getScheduledExecutor();
         }
 
         @Override

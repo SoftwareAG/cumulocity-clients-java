@@ -1,5 +1,9 @@
 package com.cumulocity.agent.server.devicecontrol;
 
+import static com.cumulocity.rest.representation.operation.Operations.asFailedOperation;
+import static com.google.common.base.Throwables.getRootCause;
+import static java.lang.String.format;
+
 import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
@@ -7,26 +11,30 @@ import org.slf4j.LoggerFactory;
 
 import com.cumulocity.agent.server.context.DeviceContext;
 import com.cumulocity.agent.server.context.DeviceContextService;
+import com.cumulocity.agent.server.repository.DeviceControlRepository;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 
 public class ConcurrentOperationDispatcher implements OperationDispatcher {
 
     private final static Logger log = LoggerFactory.getLogger(ConcurrentOperationDispatcher.class);
 
-    private OperationExecutor handler;
+    private final OperationExecutor handler;
 
-    private Executor executor;
+    private final Executor executor;
 
-    private DeviceContext context;
+    private final DeviceContext context;
 
-    private DeviceContextService contextService;
+    private final DeviceContextService contextService;
+
+    private final DeviceControlRepository deviceControl;
 
     public ConcurrentOperationDispatcher(OperationExecutor input, Executor executor, DeviceContext context,
-            DeviceContextService contextService) {
+            DeviceContextService contextService, DeviceControlRepository deviceControl) {
         this.handler = input;
         this.executor = executor;
         this.context = context;
         this.contextService = contextService;
+        this.deviceControl = deviceControl;
     }
 
     @Override
@@ -43,6 +51,9 @@ public class ConcurrentOperationDispatcher implements OperationDispatcher {
                     handler.handle(operation);
                 } catch (Exception ex) {
                     log.error("handle operation failed {}", operation, ex);
+                    final Throwable rootCause = getRootCause(ex);
+                    deviceControl.save(asFailedOperation(operation.getId(),
+                            format("Opertion dispatch failed %s : %s", rootCause.getClass().getName(), rootCause.getMessage())));
                 }
             }
         }));

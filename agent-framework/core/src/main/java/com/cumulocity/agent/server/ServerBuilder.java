@@ -70,7 +70,6 @@ public class ServerBuilder {
     private static boolean searchLoggerConfiguration(Path logbackConfig) {
 
         if (!exists(logbackConfig)) {
-            System.err.println("Not logback configuration found: " + logbackConfig + ".");
             return false;
         }
         return true;
@@ -153,6 +152,8 @@ public class ServerBuilder {
         final String config = findLoggingConfiguration();
         if (config != null) {
             configuration.setProperty(CONFIG_PROPERTY, config);
+        } else {
+            System.err.println("Application is running without logger configuration.");
         }
     }
 
@@ -168,8 +169,11 @@ public class ServerBuilder {
                 } catch (Exception ex) {
                     System.out.println("unable to load " + path);
                 }
+            } else {
+                System.err.println("Not logback configuration found: " + path + ".");
             }
         }
+
         return null;
     }
 

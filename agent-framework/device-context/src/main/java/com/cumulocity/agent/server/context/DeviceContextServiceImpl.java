@@ -50,7 +50,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         try {
             return task.call();
         } catch (Exception e) {
-            log.warn("execution of task failed within tenant : " + context.getLogin().getTenant());
+            log.warn("execution of task failed within tenant : " + context.getLogin().getTenant(), e);
             throw e;
         } finally {
 

@@ -33,6 +33,7 @@
 
 	<logger name="com.cumulocity" level="DEBUG" />
 	<logger name="c8y" level="DEBUG" />
+	<logger name="httpclient.wire" level="INFO" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />
