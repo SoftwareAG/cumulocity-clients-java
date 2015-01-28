@@ -1,11 +1,14 @@
 package com.cumulocity.agent.server.context;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.codec.binary.Base64;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
+import com.google.common.io.BaseEncoding;
 
 public class DeviceCredentials {
 
@@ -162,6 +165,14 @@ public class DeviceCredentials {
         } else if (!username.equals(other.username))
             return false;
         return true;
+    }
+
+    public String encode() {
+        return BaseEncoding.base64().encode(((tenant(this) + getUsername() + ":" + this.getPassword())).getBytes());
+    }
+
+    private String tenant(DeviceCredentials credentials) {
+        return isNullOrEmpty(credentials.getTenant()) ? "" : credentials.getTenant() + "/";
     }
 
 }

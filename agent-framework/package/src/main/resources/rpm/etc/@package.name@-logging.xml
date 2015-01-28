@@ -25,10 +25,6 @@
 		<encoder>
 			<pattern>%-5level %logger{36} - %msg%n</pattern>
 		</encoder>
-		<!-- Only log level INFO and above -->
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>WARN</level>
-		</filter>
 	</appender>
 
 	<logger name="com.cumulocity" level="DEBUG" />
