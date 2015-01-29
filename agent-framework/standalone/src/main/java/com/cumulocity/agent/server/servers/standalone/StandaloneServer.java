@@ -6,7 +6,9 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,9 @@ public class StandaloneServer implements Server {
     @Value("${application.id}")
     private String applicationId;
 
+    @Autowired
+    ConfigurableApplicationContext context;
+
     private final Service service = new AbstractExecutionThreadService() {
 
         private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -35,7 +40,9 @@ public class StandaloneServer implements Server {
         @Override
         protected void shutDown() throws Exception {
             log.debug("stopping {}", applicationId);
+            context.close();
             executor.shutdownNow();
+          
         }
 
         @Override
