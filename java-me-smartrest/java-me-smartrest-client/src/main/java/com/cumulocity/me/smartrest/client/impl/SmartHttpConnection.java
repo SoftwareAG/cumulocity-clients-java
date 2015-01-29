@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.*;
 import com.cumulocity.me.util.Base64;
+import com.cumulocity.me.util.ConnectorWrapper;
 import com.cumulocity.me.util.IOUtils;
 
 public class SmartHttpConnection implements SmartConnection {
@@ -26,6 +26,7 @@ public class SmartHttpConnection implements SmartConnection {
     private SmartHeartBeatWatcher heartBeatWatcher;
     private final SmartExecutorService executorService;
     private boolean isBootstrapping = false;
+    private ConnectorWrapper connectorWrapper = new ConnectorWrapper();
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
         this.host = host;
@@ -33,7 +34,7 @@ public class SmartHttpConnection implements SmartConnection {
         this.authorization = authorization;
         this.executorService = executorService;
     }
-    
+
     public SmartHttpConnection(String host, String xid, String authorization) {
         this(host, xid, authorization, new SmartExecutorServiceImpl());
     }
@@ -46,6 +47,10 @@ public class SmartHttpConnection implements SmartConnection {
     public SmartHttpConnection(String host, String tenant, String username,
             String password, String xid, SmartExecutorService executorService) {
         this(host, "Basic " + Base64.encode(tenant + "/" + username + ":" + password), xid, executorService);
+    }
+
+    public void setConnectorWrapper(ConnectorWrapper connectorWrapper) {
+        this.connectorWrapper = connectorWrapper;
     }
     
     public void setupConnection(String params) {
@@ -66,7 +71,7 @@ public class SmartHttpConnection implements SmartConnection {
             } catch (InterruptedException e) {
                 continue;
             }
-            
+
             isBootstrapping = true; //setting to true in order for the writeHeaders method to not add the X-Id header
             response = executeRequest(new SmartRequestImpl(SmartConnection.BOOTSTRAP_REQUEST_CODE, id));
             isBootstrapping = false;
@@ -77,7 +82,6 @@ public class SmartHttpConnection implements SmartConnection {
         } while(response == null || responseRow == null || responseRow.getMessageId() != SmartConnection.BOOTSTRAP_RESPONSE_CODE);
         String[] data = responseRow.getData();
         authorization = "Basic " + Base64.encode(data[1] + "/" + data[2] + ":" + data[3]);
-        
         return authorization;
     }
     
@@ -171,9 +175,9 @@ public class SmartHttpConnection implements SmartConnection {
             url = url + params;
         }
         if (mode != -1) {
-            connection = (HttpConnection) Connector.open(url, mode, timeout);
+            connection = connectorWrapper.open(url, mode, timeout);
         } else {
-            connection = (HttpConnection) Connector.open(url);
+            connection = connectorWrapper.open(url);
         }
         return this;
     }
