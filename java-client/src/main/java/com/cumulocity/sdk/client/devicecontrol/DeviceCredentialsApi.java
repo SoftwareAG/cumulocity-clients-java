@@ -1,18 +1,29 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
+import com.cumulocity.rest.representation.devicebootstrap.NewDeviceRequestRepresentation;
 import com.cumulocity.sdk.client.polling.PollingStrategy;
 
 /**
  * Api for device bootstrap
  * 
- * @author dombiel
- *
  */
 public interface DeviceCredentialsApi {
+
+	/**
+	 * Register a new device.
+	 */
+	NewDeviceRequestRepresentation register(String id);
 	
 	/**
-	 * Device poll credentials
+	 * Remove a device registration.
+	 */
+	void delete(NewDeviceRequestRepresentation representation);
+	
+	/**
+	 * Schedule polling credentials task, invoking it at the specified execution time and subsequently with the given interval 
+	 * 
+	 * Execution will end after timeout
 	 * 
 	 * @param deviceId
 	 * @param interval - how often request is sent in seconds
@@ -28,5 +39,12 @@ public interface DeviceCredentialsApi {
 	 * @param strategy
 	 */
 	DeviceCredentialsRepresentation pollCredentials(String deviceId, PollingStrategy strategy);
-		
+
+    /**
+     * Executes single request to credentials endpoint
+     * 
+     * @param deviceId
+     * @return
+     */
+    DeviceCredentialsRepresentation pollCredentials(String deviceId);
 }

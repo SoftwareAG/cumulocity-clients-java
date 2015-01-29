@@ -23,9 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.cometd.bayeux.Message;
-import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
-import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.slf4j.Logger;
@@ -51,13 +49,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
     }
 
     public void start() throws SDKException {
-        log.trace("starting new subscriber");
         checkState(!isConnected(), "subscriber already started");
         session = bayeuxSessionProvider.get();
-    }
-
-    private boolean isHandshake(Mutable message) {
-        return ClientSessionChannel.META_HANDSHAKE.equals(message.getChannel());
     }
 
     public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
@@ -66,7 +59,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         checkArgument(handler != null, "handler can't be null");
         ensureConnection();
         final ClientSessionChannel channel = getChannel(object);
-        log.debug("subscribing to channel {}", channel.getId());
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
         metaSubscribeChannel.addListener(new SubscriptionSuccessListener(new SubscriptionRecord(object, handler), listener,
@@ -80,7 +72,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         synchronized (this) {
             if (!isConnected()) {
                 start();
-                session.addExtension(new ReconnectOnSuccessfulHandshake());
+                session.getChannel(ClientSessionChannel.META_HANDSHAKE).addListener(new ReconnectListener());
             }
         }
     }
@@ -116,35 +108,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         }
     }
 
-    private void resubscribe() {
-        for (SubscriptionRecord subscribed : subscriptions) {
-            subscribe(subscribed.getId(), subscribed.getListener());
-        }
-    }
-
-    public final class ReconnectOnSuccessfulHandshake implements Extension {
+    private final class ReconnectListener implements MessageListener {
         @Override
-        public boolean sendMeta(ClientSession session, Mutable message) {
-            return true;
-        }
-
-        @Override
-        public boolean send(ClientSession session, Mutable message) {
-            return true;
-        }
-
-        @Override
-        public boolean rcvMeta(ClientSession session, Mutable message) {
-            if (isHandshake(message) && message.isSuccessful()) {
-                log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
-                resubscribe();
+        public void onMessage(ClientSessionChannel channel, Message message) {
+            for (SubscriptionRecord subscribed : subscriptions) {
+                subscribe(subscribed.getId(), subscribed.getListener());
             }
-            return true;
-        }
-
-        @Override
-        public boolean rcv(ClientSession session, Mutable message) {
-            return true;
         }
     }
 
@@ -159,7 +128,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         public void onMessage(ClientSessionChannel channel, Message message) {
             if (subscriptionNameResolver.apply(subscribed.getId()).equals(message.get(Message.SUBSCRIPTION_FIELD))
                     && message.isSuccessful()) {
-                log.debug("unsubscribed successfuly from channel {}", channel.getId());
                 subscribed.remove();
             }
         }
@@ -185,13 +153,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
+            log.info("subscribing to {} - {}", this.channel, message);
             try {
                 if (!isSubscriptionToChannel(message))
                     return;
                 if (isSuccessfulySubscribed(message)) {
-                    log.debug("subscribed successfuly to channel {}", channel.getId());
-                    ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
-                    unsubscribeChannel.addListener(new UnsubscribeListener(subscription));
+                    session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE).addListener(new UnsubscribeListener(subscription));
                     subscriptions.add(subscription);
                 } else {
                     subscription.getListener().onError(
@@ -199,13 +166,16 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
                             new SDKException("unable to subscribe on Channel " + channel.getChannelId() + " "
                                     + message.get(Message.ERROR_FIELD)));
                 }
+            } catch (NullPointerException ex) {
+                log.warn("NPE on message {} - {}", message, this.channel);
+                throw new RuntimeException(ex);
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
         }
 
         private boolean isSubscriptionToChannel(Message message) {
-            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId());
+            return this.channel.getId().equals(message.get(Message.SUBSCRIPTION_FIELD));
         }
 
         private boolean isSuccessfulySubscribed(Message message) {
@@ -228,7 +198,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         @Override
         public void unsubscribe() {
-            log.debug("unsubscribing from channel {}", channel.getId());
             channel.unsubscribe(listener);
         }
 
@@ -245,7 +214,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object) {
             this.handler = handler;
-            subscription = createSubscription(channel, object);
+            this.subscription = createSubscription(channel, object);
         }
 
         protected ChannelSubscription createSubscription(ClientSessionChannel channel, T object) {

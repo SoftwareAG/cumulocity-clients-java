@@ -19,22 +19,29 @@
  */
 package com.cumulocity.sdk.client;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.cumulocity.rest.pagination.RestPageRequest;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.PageStatisticsRepresentation;
 import com.cumulocity.rest.representation.TestCollectionRepresentation;
@@ -321,6 +328,19 @@ public class PagedCollectionResourceImplTest {
 
         //Then
         assertThat(hashCode, is(expectedHashCode));
+    }
+    
+    @Test
+    public void shouldRemoveRowCoordinatesFromUrlWhenGettingPageWithGivenNumber() throws Exception {
+    	target = createPagedCollectionResource(restConnector, URL, PAGE_SIZE, MEDIA_TYPE, CLAZZ);    	
+        TestCollectionRepresentation input = new TestCollectionRepresentation();
+        input.setPageStatistics(new PageStatisticsRepresentation(PAGE_SIZE));
+        input.setSelf(URL + "/measurement/measurments" + "?startkey=abc&startkey_docid=cde");
+        
+        String url = ((PagedCollectionResourceImpl) target).getPageUrl(input, 3, 5);
+        
+        assertThat(url).doesNotContain(RestPageRequest.PARAM_START_KEY);
+
     }
 
     private PagedCollectionResource<Object, TestCollectionRepresentation<Object>> createPagedCollectionResource(RestConnector restConnector,

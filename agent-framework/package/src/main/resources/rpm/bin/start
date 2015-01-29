@@ -1,0 +1,4 @@
+#!/bin/bash
+BIN=/usr/lib/@package.directory@
+JAVA_PATH=`$BIN/detect-java`
+$JAVA_PATH/bin/java -jar $BIN/@package.name@.jar
