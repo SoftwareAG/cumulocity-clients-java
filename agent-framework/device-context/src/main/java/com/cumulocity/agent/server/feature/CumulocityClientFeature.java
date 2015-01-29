@@ -16,9 +16,7 @@ import com.cumulocity.agent.server.context.scope.ContextScopedSubscriber;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformImpl;
-import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
 import com.cumulocity.sdk.client.cep.CepApi;
@@ -54,6 +52,13 @@ public class CumulocityClientFeature {
     @DeviceScope
     public CumulocityClientFactoryBean cumulocityClient(DeviceContextService contextService) {
         return new CumulocityClientFactoryBean(contextService, host, proxy, proxyPort);
+    }
+
+    @Bean
+    @Autowired
+    @DeviceScope
+    public RestConnector connector(PlatformParameters platformParameters) {
+        return new RestConnector(platformParameters, new ResponseParser());
     }
 
     @Bean

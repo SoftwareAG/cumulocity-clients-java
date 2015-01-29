@@ -9,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,6 +19,8 @@ import com.google.common.base.Throwables;
 
 @Component
 public class ServletDeviceContextFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(ServletDeviceContextFilter.class);
 
     private final DeviceContextService contextService;
 
@@ -37,7 +41,9 @@ public class ServletDeviceContextFilter extends OncePerRequestFilter {
 
         for (DeviceCredentailsResolver<HttpServletRequest> resolver : deviceCredentailsResolvers) {
             if (resolver.supports(request)) {
-                return resolver.get(request);
+                final DeviceCredentials deviceCredentials = resolver.get(request);
+                log.debug("credientials resolved using {} : {}", resolver.getClass(), deviceCredentials);
+                return deviceCredentials;
             }
         }
         return deviceBootstrapDeviceCredentialsSupplier.get();

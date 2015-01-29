@@ -25,14 +25,11 @@
 		<encoder>
 			<pattern>%-5level %logger{36} - %msg%n</pattern>
 		</encoder>
-		<!-- Only log level INFO and above -->
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>WARN</level>
-		</filter>
 	</appender>
 
 	<logger name="com.cumulocity" level="DEBUG" />
 	<logger name="c8y" level="DEBUG" />
+	<logger name="httpclient.wire" level="INFO" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />
