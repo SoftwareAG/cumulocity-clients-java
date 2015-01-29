@@ -66,7 +66,7 @@ public class ServerBuilder {
         };
     }
 
-    private static boolean searchLoggerConfiguration(Path logbackConfig) {
+    private static boolean isConfigurationExists(Path logbackConfig) {
 
         if (!exists(logbackConfig)) {
             return false;
@@ -125,26 +125,32 @@ public class ServerBuilder {
 
         SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
         builder.showBanner(false).registerShutdownHook(false);
+        StandardEnvironment environment = new StandardEnvironment();
+        loadConfiguration(environment);
+        registerBaseConfiguration(environment);
+        builder.environment(environment);
 
+        return builder;
+    }
+
+    private void registerBaseConfiguration(StandardEnvironment environment) {
         final Properties configuration = new Properties();
+        confugireLogging(configuration);
         if (address() != null) {
             configuration.setProperty("server.address", address().getHostString());
             configuration.setProperty("server.port", String.valueOf(address().getPort()));
         }
-
-        confugireLogging(configuration);
-
         configuration.setProperty("application.id", applicationId);
         configuration.setProperty("server.contextPath", "/" + applicationId);
-        StandardEnvironment environment = new StandardEnvironment();
-        environment.getPropertySources().addFirst(new PropertiesPropertySource("base-configuration", configuration));
+
+        environment.getPropertySources().addLast(new PropertiesPropertySource("base-configuration", configuration));
+    }
+
+    private void loadConfiguration(StandardEnvironment environment) {
         for (String resource : configurations) {
             log.debug("registering configuration {}", resource);
             environment.getPropertySources().addLast(new PropertiesPropertySource(resource, loadResource(environment, resource)));
         }
-        builder.environment(environment);
-
-        return builder;
     }
 
     public void confugireLogging(final Properties configuration) {
@@ -157,11 +163,8 @@ public class ServerBuilder {
     }
 
     private String findLoggingConfiguration() {
-        String id = applicationId.toLowerCase();
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, loggingConfiguration + ".xml"),
-                Paths.get(System.getProperty("user.home"), "." + id, loggingConfiguration + ".xml"));
-        for (Path path : logbackConfig) {
-            if (searchLoggerConfiguration(path)) {
+        for (Path path : getConfigurationPaths()) {
+            if (isConfigurationExists(path)) {
                 System.out.println("configuration founded on path " + path);
                 try {
                     return path.toString();
@@ -174,6 +177,14 @@ public class ServerBuilder {
         }
 
         return null;
+    }
+
+    private Collection<Path> getConfigurationPaths() {
+        String id = applicationId.toLowerCase();
+        Collection<Path> logbackConfig = ImmutableList.of(
+                Paths.get(System.getProperty("user.home"), "." + id, loggingConfiguration + ".xml"),
+                Paths.get("/etc", id, loggingConfiguration + ".xml"));
+        return logbackConfig;
     }
 
     private ImmutableList<Object> common() {

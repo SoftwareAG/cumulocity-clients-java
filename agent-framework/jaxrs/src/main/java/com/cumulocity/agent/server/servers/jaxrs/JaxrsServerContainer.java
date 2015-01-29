@@ -61,7 +61,7 @@ public class JaxrsServerContainer implements Server, EmbeddedServletContainerFac
 
     @Autowired
     public JaxrsServerContainer(@Value("${server.host:0.0.0.0}") String host, @Value("${server.port:80}") int port,
-            @Value("${server.id}") String contextPath) {
+            @Value("${server.contextPath:${application.id}}") String contextPath) {
         this.host = host;
         this.port = port;
         this.applicationId = contextPath;
