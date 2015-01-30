@@ -153,6 +153,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
+            log.info("subscribing to {} - {}", this.channel, message);
             try {
                 if (!isSubscriptionToChannel(message))
                     return;
