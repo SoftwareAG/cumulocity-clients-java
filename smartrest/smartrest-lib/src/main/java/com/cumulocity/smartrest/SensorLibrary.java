@@ -13,4 +13,6 @@ public interface SensorLibrary {
 	void sendElectricity(double ap, double am, double pp, double pm);
 	void sendCurrent(double val);
 	void sendVoltage(double val);
+	void sendPower(double val);
+	void sendBarometerReading(double pressure, double altitude);
 }
