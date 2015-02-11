@@ -89,7 +89,7 @@ class MessageExchange {
 
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
-        listener.onConnectException(new RuntimeException("request cancelled"), messages);
+        listener.onException(new RuntimeException("request cancelled"), messages);
         request.cancel(true);
         onFinish();
     }
@@ -247,8 +247,6 @@ class MessageExchange {
                     ClientResponse response = f.get();
                     log.debug("recived response headers {} ", (Object) messages);
                     request = executorService.submit(new ResponseConsumer(response));
-                } else {
-                    throw new RuntimeException("request cancelled");
                 }
             } catch (Exception e) {
                 log.debug("connection failed", e);

@@ -88,24 +88,13 @@ public class MessageExchangeTest {
     }
 
     @Test
-    public void shouldFailMessagesWhenRequestCannceled() throws InterruptedException {
-        //Given
-        when(request.isCancelled()).thenReturn(true);
-        //When
-        recivedResponse();
-        //Then
-        verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
-        verify(watcher).start();
-        verify(watcher).stop();
-    }
-
-    @Test
     public void shouldStopWatcherAndNotifyWhenCancel() throws InterruptedException, ExecutionException {
         //When
         exchange.execute(URL, MESSAGES);
         exchange.cancel();
         //Then
-        verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
+        verify(listener).onException(any(RuntimeException.class), eq(new Message[] { message }));
+        verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
 
@@ -146,6 +135,7 @@ public class MessageExchangeTest {
         responseConsumed();
         //Then
         verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
+        verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
 
@@ -177,6 +167,7 @@ public class MessageExchangeTest {
         //Then
         verify(listener, never()).onMessages(Mockito.anyList());
         verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
+        verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
 
@@ -200,6 +191,7 @@ public class MessageExchangeTest {
         responseConsumed();
         //Then
         verify(listener).onMessages(messages);
+        verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
 }
