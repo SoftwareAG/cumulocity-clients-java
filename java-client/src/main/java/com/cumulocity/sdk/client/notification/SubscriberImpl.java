@@ -43,6 +43,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
     private final Collection<SubscriptionRecord> subscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
 
+    private final Object lock = new Object();
+
     private volatile ClientSession session;
 
     public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider) {
@@ -77,7 +79,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
     }
 
     private void ensureConnection() {
-        synchronized (this) {
+        synchronized (lock) {
             if (!isConnected()) {
                 start();
                 session.addExtension(new ReconnectOnSuccessfulHandshake());
@@ -97,10 +99,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
     @Override
     public void disconnect() {
-        if (isConnected()) {
-            subscriptions.clear();
-            session.disconnect();
-            session = null;
+        synchronized (lock) {
+            if (isConnected()) {
+                subscriptions.clear();
+                session.disconnect();
+                session = null;
+            }
         }
     }
 

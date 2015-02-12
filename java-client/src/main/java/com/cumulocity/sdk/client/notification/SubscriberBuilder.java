@@ -21,6 +21,12 @@ package com.cumulocity.sdk.client.notification;
 
 import static com.cumulocity.sdk.client.notification.DefaultBayeuxClientProvider.createProvider;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
+import org.cometd.bayeux.client.ClientSession.Extension;
+import org.cometd.client.ext.AckExtension;
+
 import com.cumulocity.sdk.client.PlatformParameters;
 
 public class SubscriberBuilder<T, R> {
@@ -32,6 +38,8 @@ public class SubscriberBuilder<T, R> {
     private PlatformParameters parameters;
 
     private SubscriptionNameResolver<T> subscriptionNameResolver;
+
+    private boolean messageReliability = false;
 
     public static <T, R> SubscriberBuilder<T, R> anSubscriber() {
         return new SubscriberBuilder<T, R>();
@@ -57,6 +65,11 @@ public class SubscriberBuilder<T, R> {
         return this;
     }
 
+    public SubscriberBuilder<T, R> withMessageDeliveryAcknowlage(boolean enabled) {
+        this.messageReliability = true;
+        return this;
+    }
+
     public Subscriber<T, R> build() {
         verifyRequiredFields();
         return new TypedSubscriber<T, R>(new SubscriberImpl<T>(subscriptionNameResolver, createSessionProvider()), dataType);
@@ -76,7 +89,14 @@ public class SubscriberBuilder<T, R> {
     }
 
     private BayeuxSessionProvider createSessionProvider() {
-        return createProvider(endpoint, parameters, dataType);
+        return createProvider(endpoint, parameters, dataType, resolveEnabledExtensions());
     }
 
+    private Extension[] resolveEnabledExtensions() {
+        Collection<Extension> extensions = new LinkedList<Extension>();
+        if (messageReliability) {
+            extensions.add(new AckExtension());
+        }
+        return extensions.toArray(new Extension[] {});
+    }
 }

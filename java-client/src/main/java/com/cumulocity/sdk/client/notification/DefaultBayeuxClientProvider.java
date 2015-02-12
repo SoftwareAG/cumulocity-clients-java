@@ -19,11 +19,13 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.cometd.bayeux.client.ClientSession;
+import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.BayeuxClient.State;
 import org.cometd.client.transport.ClientTransport;
@@ -32,22 +34,26 @@ import com.cumulocity.common.notification.ClientSvensonJSONContext;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private static final int CONNECTED_STATE_TIMEOUT = 30;
 
-    final PlatformParameters paramters;
+    private final PlatformParameters paramters;
 
-    private String endpoint;
+    private final String endpoint;
 
-    private Provider<Client> httpClientProvider;
+    private Provider<Client> httpClient;
 
     private final Class<?> endpointDataType;
 
-    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters, Class<?> endpointDataType) {
-        return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters));
+    private final Collection<Extension> extensions;
+
+    public static BayeuxSessionProvider createProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
+            Extension... extensions) {
+        return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters), extensions);
     }
 
     private static Provider<Client> createDefaultHttpProvider(final PlatformParameters paramters) {
@@ -64,15 +70,17 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
-            Class<?> endpointDataType, final Provider<Client> client) {
-        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, client);
+            Class<?> endpointDataType, final Provider<Client> httpClient, Extension... extensions) {
+        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, extensions);
     }
 
-    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType, Provider<Client> client) {
+    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
+            Provider<Client> httpClient, Extension... extensions) {
         this.paramters = paramters;
         this.endpoint = endpoint;
-        this.httpClientProvider = client;
+        this.httpClient = httpClient;
         this.endpointDataType = endpointDataType;
+        this.extensions = ImmutableList.copyOf(extensions);
     }
 
     @Override
@@ -81,7 +89,11 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private BayeuxClient createSession() throws SDKException {
-        return new BayeuxClient(buildUrl(), createTransport(httpClientProvider));
+        final BayeuxClient session = new BayeuxClient(buildUrl(), createTransport(httpClient));
+        for (Extension extension : extensions) {
+            session.addExtension(extension);
+        }
+        return session;
     }
 
     private BayeuxClient openSession(final BayeuxClient bayeuxClient) throws SDKException {
