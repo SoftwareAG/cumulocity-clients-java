@@ -39,7 +39,7 @@ public class DeviceControlListener implements SubscriptionListener<GId, Operatio
 
     @Autowired
     public DeviceControlListener(OperationsDispatcher dispatcher, AlarmRepository alarmRepository, InventoryRepository inventoryRepository,
-            @Value("${server.id}") String applicationId) {
+            @Value("${application.id}") String applicationId) {
         this.dispatcher = dispatcher;
         this.alarmRepository = alarmRepository;
         this.inventoryRepository = inventoryRepository;

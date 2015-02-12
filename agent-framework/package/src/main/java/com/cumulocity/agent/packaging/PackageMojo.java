@@ -2,16 +2,20 @@ package com.cumulocity.agent.packaging;
 
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.io.FileWriteMode.APPEND;
 import static com.google.common.io.Files.asByteSink;
 import static com.google.common.io.Resources.asByteSource;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.walkFileTree;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
@@ -29,16 +33,13 @@ import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.twdata.maven.mojoexecutor.MojoExecutor.Element;
 
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Sets;
-import com.google.common.io.FileWriteMode;
 import com.google.common.io.Files;
-import com.google.common.io.Resources;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ResourceInfo;
 
@@ -84,6 +85,11 @@ public class PackageMojo extends AbstractMojo {
             getLog().info("skiping agent packaging");
             return;
         }
+        generateResources();
+        attachRpm();
+    }
+
+    private void generateResources() {
         try {
             copyBaseArtifact();
             initializeTemplates();
@@ -93,7 +99,11 @@ public class PackageMojo extends AbstractMojo {
         } catch (MavenFilteringException e) {
             Throwables.propagate(e);
         }
+    }
+
+    private void attachRpm() throws MojoExecutionException {
         Plugin rpmPlugin = plugin(groupId("org.codehaus.mojo"), artifactId("rpm-maven-plugin"), version("2.1.1"));
+
         executeMojo(
                 rpmPlugin,
                 goal("attached-rpm"),
@@ -139,18 +149,15 @@ public class PackageMojo extends AbstractMojo {
         for (ResourceInfo resource : loadTemplates()) {
             final URL url = resource.url();
             getLog().debug("template found " + resource.getResourceName());
-
             final File destination = new File(rpmTemporaryDirectory, new File(resource.getResourceName()).getPath().substring(4));
             Files.createParentDirs(destination);
             asByteSource(url).copyTo(asByteSink(destination));
         }
+
         final File etc = new File(workarea, "etc");
-        final File[] configurationFiles = Objects.firstNonNull(configurationDirectory.listFiles(), new File[] {});
-        for (File config : configurationFiles) {
-            final File destination = new File(etc, config.getName());
-            Files.createParentDirs(destination);
-            Files.copy(config, destination);
-        }
+        createDirectories(etc.toPath());
+        walkFileTree(configurationDirectory.toPath(), new CopyFileVisitor(etc.toPath()));
+
     }
 
     public void copyBaseArtifact() throws IOException {
@@ -237,5 +244,32 @@ public class PackageMojo extends AbstractMojo {
     public static Element mapping(Element... elements) {
         return element(name("mapping"), ObjectArrays.concat(elements,
                 new Element[] { element(name("username"), "root"), element(name("filemode"), "777") }, Element.class));
+    }
+
+    public class CopyFileVisitor extends SimpleFileVisitor<Path> {
+        private final Path targetPath;
+
+        private Path sourcePath = null;
+
+        public CopyFileVisitor(Path targetPath) {
+            this.targetPath = targetPath;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+            if (sourcePath == null) {
+                sourcePath = dir;
+            } else {
+                java.nio.file.Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            getLog().info("copy " + file + " to " + targetPath.resolve(sourcePath.relativize(file)));
+            java.nio.file.Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
+            return FileVisitResult.CONTINUE;
+        }
     }
 }

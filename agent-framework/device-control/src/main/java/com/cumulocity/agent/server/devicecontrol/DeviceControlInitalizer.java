@@ -14,7 +14,7 @@ import com.cumulocity.agent.server.context.DeviceContext;
 import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.context.DeviceCredentials;
 import com.cumulocity.agent.server.repository.DeviceControlRepository;
-import com.cumulocity.agent.server.repository.TenantRepository;
+import com.cumulocity.agent.server.repository.EnabledTenantRepository;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.devicecontrol.OperationFilter;
@@ -25,7 +25,7 @@ public class DeviceControlInitalizer {
 
     private final Logger log = LoggerFactory.getLogger(DeviceControlInitalizer.class);
 
-    private final TenantRepository tenantsConfig;
+    private final EnabledTenantRepository tenantsConfig;
 
     private final DeviceControlRepository deviceControlRepository;
 
@@ -34,7 +34,7 @@ public class DeviceControlInitalizer {
     private final DeviceControlListener listener;
 
     @Autowired
-    public DeviceControlInitalizer(TenantRepository tenantsConfig, DeviceControlRepository deviceControlRepository,
+    public DeviceControlInitalizer(EnabledTenantRepository tenantsConfig, DeviceControlRepository deviceControlRepository,
             DeviceContextService contextService, DeviceControlListener listener) {
         this.tenantsConfig = tenantsConfig;
         this.deviceControlRepository = deviceControlRepository;

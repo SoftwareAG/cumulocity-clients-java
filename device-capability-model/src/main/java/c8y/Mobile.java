@@ -24,7 +24,7 @@ import org.svenson.JSONProperty;
 
 
 public class Mobile {
-
+    
 	private String imei;
 	private String cellId;
 	private String iccid;

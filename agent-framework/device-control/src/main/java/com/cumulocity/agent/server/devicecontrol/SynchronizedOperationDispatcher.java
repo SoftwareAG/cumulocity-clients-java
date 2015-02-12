@@ -1,7 +1,10 @@
 package com.cumulocity.agent.server.devicecontrol;
 
 import static com.cumulocity.model.operation.OperationStatus.*;
+import static com.cumulocity.rest.representation.operation.Operations.asFailedOperation;
+import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.collect.Queues.newConcurrentLinkedQueue;
+import static java.lang.String.format;
 
 import java.util.Queue;
 import java.util.concurrent.Executor;
@@ -14,6 +17,8 @@ import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.repository.DeviceControlRepository;
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
+import com.cumulocity.rest.representation.operation.Operations;
+import com.google.common.base.Throwables;
 
 public class SynchronizedOperationDispatcher implements OperationDispatcher {
 
@@ -93,7 +98,14 @@ public class SynchronizedOperationDispatcher implements OperationDispatcher {
                             try {
                                 handler.handle(operation);
                             } catch (Exception ex) {
+                                final Throwable rootCause = getRootCause(ex);
+
                                 log.error("handle operation failed {}", operation, ex);
+                                deviceControl
+                                        .save(asFailedOperation(
+                                                operation.getId(),
+                                                format("Opertion dispatch failed %s : %s", rootCause.getClass().getName(),
+                                                        rootCause.getMessage())));
                             }
                             executeNext();
                             break;
@@ -101,7 +113,7 @@ public class SynchronizedOperationDispatcher implements OperationDispatcher {
                             log.info("operation finished by external skiping execution {} ", operation);
                         }
                     }
-                } 
+                }
             }
         }
 

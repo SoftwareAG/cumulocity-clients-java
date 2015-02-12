@@ -73,7 +73,7 @@ public class OperationDispacherRegistry {
                 if (input.getClass().isAnnotationPresent(SynchronizedDispatch.class)) {
                     return new SynchronizedOperationDispatcher(input, executor, contextService.getContext(), contextService, deviceControl);
                 } else {
-                    return new ConcurrentOperationDispatcher(input, executor, contextService.getContext(), contextService);
+                    return new ConcurrentOperationDispatcher(input, executor, contextService.getContext(), contextService, deviceControl);
                 }
 
             }

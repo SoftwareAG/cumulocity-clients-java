@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 import com.cumulocity.agent.server.context.DeviceCredentials;
 
 @Component
-public class TenantRepository {
+public class EnabledTenantRepository {
     private final Environment environment;
 
     @Autowired
-    public TenantRepository(Environment environment) {
+    public EnabledTenantRepository(Environment environment) {
         this.environment = environment;
     }
 

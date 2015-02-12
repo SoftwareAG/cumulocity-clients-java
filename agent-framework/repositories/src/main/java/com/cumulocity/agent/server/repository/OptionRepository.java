@@ -2,12 +2,14 @@ package com.cumulocity.agent.server.repository;
 
 import static com.cumulocity.rest.representation.tenant.OptionMediaType.OPTION;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.SDKException;
 
 @Component
 public class OptionRepository {
@@ -25,14 +27,22 @@ public class OptionRepository {
     }
 
     public OptionRepresentation find(String category, String key) {
-        return rest.get(optionUrl(category, key), OPTION, OptionRepresentation.class);
+        try {
+            return rest.get(optionUrl(category, key), OPTION, OptionRepresentation.class);
+        } catch (SDKException ex) {
+            if (ex.getHttpStatus() == HttpStatus.SC_NOT_FOUND) {
+                return null;
+            } else {
+                throw ex;
+            }
+        }
     }
 
     public void delete(String category, String key) {
         rest.delete(optionUrl(category, key));
     }
 
-    public String optionUrl(String category, String key) {
+    private String optionUrl(String category, String key) {
         return baseUrl + TENANT_OPTIONS_URL + "/" + category + "/" + key;
     }
 

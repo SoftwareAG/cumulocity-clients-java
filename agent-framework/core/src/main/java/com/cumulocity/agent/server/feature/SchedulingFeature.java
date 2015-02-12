@@ -2,11 +2,13 @@ package com.cumulocity.agent.server.feature;
 
 import static org.springframework.scheduling.support.TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +39,7 @@ public class SchedulingFeature {
 
     @Bean
     @Autowired
-    public Executor executor(SchedulerFactoryBean factory) {
+    public ExecutorService executor(SchedulerFactoryBean factory) {
         return factory.getAsyncExecutor();
     }
 
@@ -82,13 +84,18 @@ public class SchedulingFeature {
         }
 
         @Override
-        public Executor getAsyncExecutor() {
-            return scheduler;
+        public ExecutorService getAsyncExecutor() {
+            return scheduler.getScheduledExecutor();
         }
 
         @Override
         public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
             taskRegistrar.setTaskScheduler(scheduler);
+        }
+
+        @Override
+        public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+            return new SimpleAsyncUncaughtExceptionHandler();
         }
     }
 }

@@ -4,18 +4,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>agent-framework</artifactId>
-		<version>5.20.0-SNAPSHOT</version>
+		<version>5.21.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>agent-framework-mvc</artifactId>
 	<packaging>jar</packaging>
 	<name>Cumulocity :: Clients Java :: Agent Framework :: Sprint MVC</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
-	<properties>
-		<grizzly.version>2.3.16</grizzly.version>
-		<glassfish.jersey.version>2.11</glassfish.jersey.version>
-		<spring.version>3.2.10.RELEASE</spring.version>
-	</properties>
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -60,12 +55,21 @@
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-framework</artifactId>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-base</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http-servlet-server</artifactId>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
 	</dependencies>
 </project>
