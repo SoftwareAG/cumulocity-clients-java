@@ -19,6 +19,8 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import static java.util.Arrays.asList;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +36,6 @@ import com.cumulocity.common.notification.ClientSvensonJSONContext;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
@@ -80,7 +81,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         this.endpoint = endpoint;
         this.httpClient = httpClient;
         this.endpointDataType = endpointDataType;
-        this.extensions = ImmutableList.copyOf(extensions);
+        this.extensions = asList(extensions);
     }
 
     @Override
