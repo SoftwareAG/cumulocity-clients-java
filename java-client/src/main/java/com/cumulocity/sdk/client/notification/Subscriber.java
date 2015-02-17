@@ -25,6 +25,6 @@ import com.cumulocity.sdk.client.SDKException;
 public interface Subscriber<T, R> {
 
     Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException;
-
+    
     void disconnect();
 }

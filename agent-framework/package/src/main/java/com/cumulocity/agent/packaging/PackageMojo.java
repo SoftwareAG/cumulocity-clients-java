@@ -113,6 +113,7 @@ public class PackageMojo extends AbstractMojo {
                         element(name("distribution"), "Cumulocity 2014"),
                         element(name("packager"), "Cumulocity"),
                         element(name("requires"), element(name("require"), "java > 1.7")),
+                        element(name("repackJars"), String.valueOf(false)),
                         mappings(
                                 mapping(directory("/usr/lib/${package.directory}"),
                                         sources(source(location(new File(workarea, "bin").getAbsolutePath())))),

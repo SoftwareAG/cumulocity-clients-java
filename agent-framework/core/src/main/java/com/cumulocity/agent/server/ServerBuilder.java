@@ -135,7 +135,7 @@ public class ServerBuilder {
 
     private void registerBaseConfiguration(StandardEnvironment environment) {
         final Properties configuration = new Properties();
-        //confugireLogging(configuration);
+        confugireLogging(configuration);
         if (address() != null) {
             configuration.setProperty("server.address", address().getHostString());
             configuration.setProperty("server.port", String.valueOf(address().getPort()));
