@@ -172,7 +172,7 @@ class MessageExchange {
             while ((value = entityInputStream.read()) >= 0) {
                 if (isHeartBeat(value)) {
                     log.debug("recived heartbeat");
-                    notifyAboutHeartBeat();
+                    watcher.heartBeat();
                     entityInputStream.mark(MAX_VALUE);
                 } else {
                     log.debug("new messages recived");
@@ -180,10 +180,6 @@ class MessageExchange {
                     break;
                 }
             }
-        }
-
-        private void notifyAboutHeartBeat() {
-            watcher.heartBeat();
         }
 
         private boolean isNullOrEmpty(String content) {
