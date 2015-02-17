@@ -5,7 +5,6 @@ import static com.google.common.base.Throwables.propagate;
 import java.io.IOException;
 import java.util.List;
 
-import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
@@ -18,8 +17,8 @@ import com.cumulocity.agent.server.Server;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
-public class BinaryServer implements Server {
-    private static final Logger log = LoggerFactory.getLogger(BinaryServer.class);
+public class BinaryServerRunner implements Server {
+    private static final Logger log = LoggerFactory.getLogger(BinaryServerRunner.class);
 
     @Value("${server.host:0.0.0.0}")
     private String host;
@@ -27,7 +26,7 @@ public class BinaryServer implements Server {
     @Value("${server.port}")
     private int port;
 
-    @Value("${server.id}")
+    @Value("${application.id}")
     private String applicationId;
 
     private final List<BinaryServerConfigurator> configurators;
@@ -53,6 +52,7 @@ public class BinaryServer implements Server {
                 log.debug("staring server on {}:{}", host, port);
                 server.bind(host, port);
                 server.start();
+                notifyStarted();
                 log.info("stared server on {}:{}", host, port);
             } catch (IOException e) {
                 server.shutdown();
@@ -64,6 +64,7 @@ public class BinaryServer implements Server {
         protected void doStop() {
             try {
                 server.shutdownNow();
+                notifyStopped();
             } catch (IOException e) {
                 throw propagate(e);
             }
@@ -71,8 +72,13 @@ public class BinaryServer implements Server {
     };
 
     @Autowired
-    public BinaryServer(List<BinaryServerConfigurator> configurators) {
+    public BinaryServerRunner(List<BinaryServerConfigurator> configurators) {
         this.configurators = configurators;
+    }
+
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
     }
 
     @Override

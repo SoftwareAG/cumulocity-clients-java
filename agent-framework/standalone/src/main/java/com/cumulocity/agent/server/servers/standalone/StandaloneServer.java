@@ -6,19 +6,27 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 import com.cumulocity.agent.server.Server;
+import com.cumulocity.agent.server.config.ServerLicecycle;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.Service;
 
 @Component
+@Import(ServerLicecycle.class)
 public class StandaloneServer implements Server {
     private static final Logger log = LoggerFactory.getLogger(StandaloneServer.class);
 
-    @Value("${server.id}")
+    @Value("${application.id}")
     private String applicationId;
+
+    @Autowired
+    ConfigurableApplicationContext context;
 
     private final Service service = new AbstractExecutionThreadService() {
 
@@ -32,7 +40,9 @@ public class StandaloneServer implements Server {
         @Override
         protected void shutDown() throws Exception {
             log.debug("stopping {}", applicationId);
+            context.close();
             executor.shutdownNow();
+          
         }
 
         @Override
@@ -61,4 +71,8 @@ public class StandaloneServer implements Server {
         service.awaitTerminated();
     }
 
+    @Override
+    public void awaitTerminated() {
+        service.awaitTerminated();
+    }
 }

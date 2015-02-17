@@ -4,28 +4,23 @@ import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Iterables.concat;
 import static java.nio.file.Files.exists;
-import static org.springframework.beans.BeanUtils.instantiateClass;
+import static org.springframework.boot.logging.LoggingApplicationListener.CONFIG_PROPERTY;
 
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.cumulocity.agent.server.config.CommonConfiguration;
 import com.cumulocity.agent.server.config.PropertiesFactoryBean;
@@ -46,6 +41,8 @@ public class ServerBuilder {
     private final Set<String> configurations = new LinkedHashSet<String>();
 
     private final Set<Class<?>> features = new LinkedHashSet<Class<?>>();
+
+    private String loggingConfiguration;
 
     protected InetSocketAddress address() {
         return address;
@@ -69,48 +66,13 @@ public class ServerBuilder {
         };
     }
 
-    private static void configureLogger(String id, String config) {
-        Collection<Path> logbackConfig = ImmutableList.of(Paths.get("/etc", id, config + ".xml"),
-                Paths.get(System.getProperty("user.home"), "." + id, config + ".xml"));
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
-        for (Path path : logbackConfig) {
-            if (searchLoggerConfiguration(path)) {
-                System.out.println("configuration founded on path " + path);
-                try {
-                    loadLoggingConfiguration(path);
-
-                    return;
-                } catch (Exception ex) {
-                    System.out.println("unable to load " + path);
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        throw new RuntimeException("Can't load logger configuration on paths " + logbackConfig);
-    }
-
-    private static boolean searchLoggerConfiguration(Path logbackConfig) {
+    private static boolean isConfigurationExists(Path logbackConfig) {
 
         if (!exists(logbackConfig)) {
-            System.err.println("Not logback configuration found: " + logbackConfig + ".");
             return false;
         }
         return true;
 
-    }
-
-    private static void loadLoggingConfiguration(Path logbackConfig) {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        try {
-            JoranConfigurator configurator = new JoranConfigurator();
-            configurator.setContext(context);
-            context.reset();
-            configurator.doConfigure(logbackConfig.toFile());
-        } catch (JoranException je) {
-            propagate(je);
-        }
     }
 
     public static ApplicationBuilder on(final int port) {
@@ -123,7 +85,7 @@ public class ServerBuilder {
     }
 
     public ServerBuilder logging(String config) {
-        configureLogger(applicationId.toLowerCase(), config);
+        this.loggingConfiguration = config;
         return this;
     }
 
@@ -142,49 +104,105 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder enable(Class<?> feature) {
-        features.add(feature);
+    public ServerBuilder enable(Class<?>... features) {
+        for (Class<?> feature : features) {
+            this.features.add(feature);
+        }
         return this;
     }
 
-    public <T> T server(Class<T> builderClass) {
-        try {
-            return (T) instantiateClass(builderClass.getConstructor(ServerBuilder.class), this);
-        } catch (BeanInstantiationException | NoSuchMethodException | SecurityException e) {
-            throw propagate(e);
+    class FeatureOrderComparator extends AnnotationAwareOrderComparator {
+        @Override
+        protected int getOrder(Object obj) {
+            Integer order = findOrder(obj);
+            return (order != null ? order : 0);
         }
     }
 
-    protected AnnotationConfigApplicationContext getContext() {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+    protected SpringApplicationBuilder context() {
+        List<Object> features = new ArrayList<Object>(this.features);
+        Collections.sort(features, new FeatureOrderComparator());
 
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
+        builder.showBanner(false).registerShutdownHook(false);
+        StandardEnvironment environment = new StandardEnvironment();
+        loadConfiguration(environment);
+        registerBaseConfiguration(environment);
+        builder.environment(environment);
+
+        return builder;
+    }
+
+    private void registerBaseConfiguration(StandardEnvironment environment) {
         final Properties configuration = new Properties();
+        confugireLogging(configuration);
         if (address() != null) {
-            configuration.setProperty("server.host", address().getHostString());
+            configuration.setProperty("server.address", address().getHostString());
             configuration.setProperty("server.port", String.valueOf(address().getPort()));
         }
-        configuration.setProperty("server.id", applicationId);
-        applicationContext.getEnvironment().getPropertySources()
-                .addFirst(new PropertiesPropertySource("base-configuration", configuration));
+        configuration.setProperty("application.id", applicationId);
+        configuration.setProperty("server.contextPath", "/" + applicationId);
+
+        environment.getPropertySources().addLast(new PropertiesPropertySource("base-configuration", configuration));
+    }
+
+    private void loadConfiguration(StandardEnvironment environment) {
         for (String resource : configurations) {
             log.debug("registering configuration {}", resource);
-            applicationContext.getEnvironment().getPropertySources()
-                    .addLast(new PropertiesPropertySource(resource, loadResource(applicationContext, resource)));
+            environment.getPropertySources().addLast(new PropertiesPropertySource(resource, loadResource(environment, resource)));
         }
-        applicationContext.register(from(concat(common(), features)).toArray(Class.class));
-        applicationContext.refresh();
-
-        return applicationContext;
     }
 
-    private ImmutableList<Class> common() {
-        return ImmutableList.<Class> of(CommonConfiguration.class);
+    public void confugireLogging(final Properties configuration) {
+        final String config = findLoggingConfiguration();
+        if (config != null) {
+            configuration.setProperty(CONFIG_PROPERTY, config);
+        } else {
+            System.err.println("Application is running without logger configuration.");
+        }
     }
 
-    private Properties loadResource(AnnotationConfigApplicationContext applicationContext, String resource) {
-        ResourceLoader loader = new DefaultResourceLoader(applicationContext.getClassLoader());
-        PropertiesFactoryBean factoryBean = new PropertiesFactoryBean(applicationId.toLowerCase(), resource,
-                applicationContext.getEnvironment(), loader, false);
+    private String findLoggingConfiguration() {
+        for (Path path : getConfigurationPaths()) {
+            if (isConfigurationExists(path)) {
+                System.out.println("configuration founded on path " + path);
+                try {
+                    return path.toString();
+                } catch (Exception ex) {
+                    System.out.println("unable to load " + path);
+                }
+            } else {
+                System.err.println("Not logback configuration found: " + path + ".");
+            }
+        }
+
+        return null;
+    }
+
+    private Collection<Path> getConfigurationPaths() {
+        String id = applicationId.toLowerCase();
+        Collection<Path> logbackConfig = ImmutableList.of(
+                Paths.get(System.getProperty("user.home"), "." + id, loggingConfiguration + ".xml"),
+                Paths.get("/etc", id, loggingConfiguration + ".xml"));
+        return logbackConfig;
+    }
+
+    private ImmutableList<Object> common() {
+        return ImmutableList.<Object> of(CommonConfiguration.class);
+    }
+
+    public ConfigurableApplicationContext run(String... args) {
+        try {
+            return context().run(args);
+        } catch (Exception ex) {
+            log.error("build server failed", ex);
+            throw propagate(ex);
+        }
+    }
+
+    private Properties loadResource(Environment environment, String resource) {
+        ResourceLoader loader = new DefaultResourceLoader(this.getClass().getClassLoader());
+        PropertiesFactoryBean factoryBean = new PropertiesFactoryBean(applicationId.toLowerCase(), resource, environment, loader, false);
         try {
             return factoryBean.getObject();
         } catch (Exception e) {
