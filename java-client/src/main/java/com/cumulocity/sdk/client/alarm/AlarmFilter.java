@@ -54,7 +54,10 @@ public class AlarmFilter extends Filter {
     
     @ParamSource
     private String resolved;
-
+    
+    @ParamSource
+    private String type;
+    
     /**
      * Specifies the {@code source} query parameter
      *
@@ -177,4 +180,15 @@ public class AlarmFilter extends Filter {
         this.resolved = resolved.toString();
         return this;
     }
+
+	public String getType() {
+		return type;
+	}
+
+	public AlarmFilter byType(String type) {
+		this.type = type;
+		return this;
+	}
+    
+    
 }
