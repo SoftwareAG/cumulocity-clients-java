@@ -183,7 +183,7 @@ public class InventoryFilter extends Filter {
     }
 
     /**
-     * Specifies the {@code childAssetId} query parameter
+     * Specifies the {@code childDeviceId} query parameter
      *
      * @param childDeviceId the child asset of the managed object(s)
      * @return the managed object filter with {@code childDeviceId} set
