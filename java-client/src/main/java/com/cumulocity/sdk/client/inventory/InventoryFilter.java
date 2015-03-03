@@ -52,6 +52,12 @@ public class InventoryFilter extends Filter {
     @ParamSource
     private String ids;
 
+    @ParamSource
+    private String childAssetId;
+
+    @ParamSource
+    private String childDeviceId;
+
     public static InventoryFilter searchInventory() {
         return new InventoryFilter();
     }
@@ -159,6 +165,36 @@ public class InventoryFilter extends Filter {
     public InventoryFilter byIds(GId... ids) {
         this.ids = createCommaSeparatedStringFromGids(asList(ids));
         return this;
+    }
+
+    /**
+     * Specifies the {@code childAssetId} query parameter
+     *
+     * @param childAssetId the child asset of the managed object(s)
+     * @return the managed object filter with {@code childAssetId} set
+     */
+    public InventoryFilter byChildAssetId(GId childAssetId) {
+        this.childAssetId = childAssetId.getValue();
+        return this;
+    }
+
+    public String getChildAssetId() {
+        return childAssetId;
+    }
+
+    /**
+     * Specifies the {@code childAssetId} query parameter
+     *
+     * @param childDeviceId the child asset of the managed object(s)
+     * @return the managed object filter with {@code childDeviceId} set
+     */
+    public InventoryFilter byChildDeviceId(GId childDeviceId) {
+        this.childDeviceId = childDeviceId.getValue();
+        return this;
+    }
+
+    public String getChildDeviceId() {
+        return childDeviceId;
     }
 
     private String createCommaSeparatedStringFromGids(List<GId> ids) {
