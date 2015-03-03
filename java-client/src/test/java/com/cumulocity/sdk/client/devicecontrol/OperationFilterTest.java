@@ -28,19 +28,22 @@ import com.cumulocity.model.operation.OperationStatus;
 
 public class OperationFilterTest {
     @Test
-    public void shouldHaveStatusAndDeviceAndAgent() throws Exception {
+    public void shouldHaveStatusAndDeviceAndAgentAndFragment() throws Exception {
         // Given
         OperationStatus status = OperationStatus.EXECUTING;
         String deviceId = "deviceId";
         String agentId = "agentId";
+        String fragmentType = "fragment_type";
 
         //When
-        OperationFilter filter = new OperationFilter().byStatus(status).byDevice(deviceId).byAgent(agentId);
+        OperationFilter filter = new OperationFilter().byStatus(status).byDevice(deviceId).byAgent(agentId)
+                .byFragmentType(fragmentType);
 
         //Then
         assertThat(filter.getStatus(), is(status.toString()));
         assertThat(filter.getDevice(), is(deviceId));
         assertThat(filter.getAgent(), is(agentId));
+        assertThat(filter.getFragmentType(), is(fragmentType));
     }
 
 }

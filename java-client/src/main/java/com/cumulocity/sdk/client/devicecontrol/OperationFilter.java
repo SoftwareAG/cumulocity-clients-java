@@ -24,12 +24,17 @@ import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.ParamSource;
 
+import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
+
 /**
  * A filter to be used in operation queries.
  * The setter (by*) methods return the filter itself to provide chaining:
  * {@code OperationFilter filter = new OperationFilter().byStatus(status).byDevice(deviceId);}
  */
 public class OperationFilter extends Filter {
+
+    @ParamSource
+    private String fragmentType;
 
     @ParamSource
     private String status;
@@ -39,6 +44,22 @@ public class OperationFilter extends Filter {
 
     @ParamSource
     private String agentId;
+
+    /**
+     * Specifies the {@code fragmentType} query parameter
+     *
+     * @param fragmentClass the class representation of the type of the operation(s)
+     * @return the operation filter with {@code fragmentType} set
+     */
+    public OperationFilter byFragmentType(Class<?> fragmentClass) {
+        this.fragmentType = classToStringRepresentation(fragmentClass);
+        return this;
+    }
+
+    public OperationFilter byFragmentType(String fragmentType) {
+        this.fragmentType = fragmentType;
+        return this;
+    }
 
     /**
      * Specifies the {@code status} query parameter
@@ -94,4 +115,10 @@ public class OperationFilter extends Filter {
         return agentId;
     }
 
+    /**
+     * @return the {@code fragmentType} parameter of the query
+     */
+    public String getFragmentType() {
+        return fragmentType;
+    }
 }

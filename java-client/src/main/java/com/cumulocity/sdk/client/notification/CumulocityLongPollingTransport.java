@@ -19,46 +19,197 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import java.io.IOException;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
+import static javax.ws.rs.core.HttpHeaders.COOKIE;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
-import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.NewCookie;
 
-import org.cometd.client.transport.LongPollingTransport;
-import org.eclipse.jetty.client.ContentExchange;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.security.Authentication;
-import org.eclipse.jetty.client.security.BasicAuthentication;
-import org.eclipse.jetty.client.security.SimpleRealmResolver;
+import org.cometd.bayeux.Message;
+import org.cometd.bayeux.Message.Mutable;
+import org.cometd.client.transport.HttpClientTransport;
+import org.cometd.client.transport.TransportListener;
 
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.sdk.client.SDKException;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.filter.ClientFilter;
 
-class CumulocityLongPollingTransport extends LongPollingTransport {
+class CumulocityLongPollingTransport extends HttpClientTransport {
 
-    private PlatformParameters paramters;
+    private static final int WORKERS = 4;
 
-    private final Authentication authentication;
+    public static final String NAME = "long-polling";
 
-    CumulocityLongPollingTransport(Map<String, Object> options, HttpClient httpClient, PlatformParameters paramters) {
-        super(options, httpClient);
+    public static final String PREFIX = "long-polling.json";
+
+    private final PlatformParameters paramters;
+
+    private final Client httpClient;
+
+    final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
+
+    final ScheduledExecutorService executorService = newScheduledThreadPool(WORKERS, new CumulocityLongPollingTransportThreadFactory());
+
+    private volatile boolean _aborted;
+
+    CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters) {
+        super(NAME, null, options);
+        this.httpClient = new ManagedHttpClient(httpClient).get();
+        setOptionPrefix(PREFIX);
         this.paramters = paramters;
-        try {
-            this.authentication = new BasicAuthentication(new PlatformPropertiesRealm(paramters));
-        } catch (IOException e) {
-            throw new SDKException("authentication failed", e);
-        }
+    }
+
+    public boolean accept(String bayeuxVersion) {
+        return true;
     }
 
     @Override
-    protected void customize(ContentExchange exchange) {
-        super.customize(exchange);
-        exchange.addRequestHeader(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
+    public void init() {
+        super.init();
+        _aborted = false;
+
+    }
+
+    @Override
+    public void abort() {
+        List<MessageExchange> exchanges = new ArrayList<MessageExchange>();
+        synchronized (this.exchanges) {
+            _aborted = true;
+            exchanges.addAll(this.exchanges);
+            this.exchanges.clear();
+        }
+        for (MessageExchange exchange : exchanges) {
+            exchange.cancel();
+        }
+        executorService.shutdownNow();
+    }
+
+    @Override
+    protected List<Mutable> parseMessages(String content) throws ParseException {
+        return super.parseMessages(content);
+    }
+
+    @Override
+    public void send(final TransportListener listener, Message.Mutable... messages) {
+        debug("sending messages {} ", (Object) messages);
+        final String content = generateJSON(messages);
         try {
-            authentication.setCredentials(exchange);
-        } catch (IOException e) {
-            throw new SDKException("authentication failed", e);
+            synchronized (exchanges) {
+                verifyState();
+                createMessageExchange(listener, content, messages);
+            }
+
+        } catch (Exception x) {
+            listener.onException(x, messages);
         }
     }
+
+    private void verifyState() {
+        if (_aborted)
+            throw new IllegalStateException("Aborted");
+    }
+
+    private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
+        final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService);
+        final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, messages);
+        watcher.addConnectionListener(new ConnectionIdleListener() {
+            @Override
+            public void onConnectionIdle() {
+                exchange.cancel();
+            }
+        });
+        exchange.execute(getURL(), content);
+        exchange.addListener(new MessageExchangeListener() {
+            @Override
+            public void onFinish() {
+                synchronized (exchanges) {
+                    exchanges.remove(exchange);
+                }
+            }
+
+        });
+        exchanges.add(exchange);
+    }
+
+    private ClientResponse copyCookies(final ClientResponse clientResponse) {
+        for (NewCookie cookie : clientResponse.getCookies()) {
+            setCookie(new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getMaxAge(),
+                    cookie.isSecure(), cookie.getVersion(), cookie.getComment()));
+        }
+        return clientResponse;
+    }
+
+    @Override
+    public void terminate() {
+        executorService.shutdownNow();
+    }
+
+    protected void addCookieHeader(ClientRequest exchange) {
+        CookieProvider cookieProvider = getCookieProvider();
+        if (cookieProvider != null) {
+            StringBuilder builder = new StringBuilder();
+            for (Cookie cookie : cookieProvider.getCookies()) {
+                if (builder.length() > 0)
+                    builder.append("; ");
+                builder.append(cookie.asString());
+            }
+            if (builder.length() > 0) {
+                exchange.getHeaders().add(COOKIE, builder.toString());
+            }
+        }
+    }
+
+    private void addApplicationKeyHeader(ClientRequest request) {
+        if (paramters.getApplicationKey() != null) {
+            request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
+        }
+    }
+
+    public final class ManagedHttpClient implements Provider<Client> {
+
+        private final Provider<Client> httpClient;
+
+        public ManagedHttpClient(Provider<Client> httpClient) {
+            this.httpClient = httpClient;
+        }
+
+        @Override
+        public Client get() {
+            final Client client = httpClient.get();
+            client.setExecutorService(executorService);
+            client.addFilter(new ClientFilter() {
+                @Override
+                public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
+                    addCookieHeader(cr);
+                    addApplicationKeyHeader(cr);
+                    return copyCookies(getNext().handle(cr));
+                }
+            });
+            return client;
+        }
+    }
+
+    private static final class CumulocityLongPollingTransportThreadFactory implements ThreadFactory {
+        private int counter = 0;
+
+        @Override
+        public Thread newThread(Runnable r) {
+            final Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            thread.setName("CumulocityLongPollingTransport-scheduler-" + counter++);
+            return thread;
+        }
+    }
+
 }

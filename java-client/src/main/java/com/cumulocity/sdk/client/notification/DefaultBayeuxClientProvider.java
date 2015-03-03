@@ -19,48 +19,69 @@
  */
 package com.cumulocity.sdk.client.notification;
 
+import static java.util.Arrays.asList;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.cometd.bayeux.client.ClientSession;
+import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.BayeuxClient.State;
 import org.cometd.client.transport.ClientTransport;
-import org.cometd.client.transport.LongPollingTransport;
-import org.eclipse.jetty.client.HttpClient;
 
 import com.cumulocity.common.notification.ClientSvensonJSONContext;
 import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.sun.jersey.api.client.Client;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private static final int CONNECTED_STATE_TIMEOUT = 30;
 
-    final PlatformParameters paramters;
+    private final PlatformParameters paramters;
 
-    private String endpoint;
+    private final String endpoint;
 
-    private HttpClientProvider httpClientProvider;
+    private Provider<Client> httpClient;
 
     private final Class<?> endpointDataType;
 
-    public static BayeuxSessionProvider createProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType) {
-        return createProvider(endpoint, paramters, endpointDataType, DefaultHttpClientProvider.createProvider(paramters));
+    private final Collection<Extension> extensions;
+
+    public static BayeuxSessionProvider createProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
+            Extension... extensions) {
+        return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters), extensions);
+    }
+
+    private static Provider<Client> createDefaultHttpProvider(final PlatformParameters paramters) {
+        return new Provider<Client>() {
+
+            @Override
+            public Client get() throws SDKException {
+                final Client client = RestConnector.createURLConnectionClient(paramters);
+                client.setConnectTimeout(0);
+                client.setReadTimeout(0);
+                return client;
+            }
+        };
     }
 
     public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
-            Class<?> endpointDataType, final HttpClientProvider httpClientProvider) {
-        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClientProvider);
+            Class<?> endpointDataType, final Provider<Client> httpClient, Extension... extensions) {
+        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, extensions);
     }
 
     public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
-            HttpClientProvider httpClientProvider) {
+            Provider<Client> httpClient, Extension... extensions) {
         this.paramters = paramters;
         this.endpoint = endpoint;
-        this.httpClientProvider = httpClientProvider;
+        this.httpClient = httpClient;
         this.endpointDataType = endpointDataType;
+        this.extensions = asList(extensions);
     }
 
     @Override
@@ -69,7 +90,11 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private BayeuxClient createSession() throws SDKException {
-        return new BayeuxClient(buildUrl(), createTransport(createHttpClient()));
+        final BayeuxClient session = new BayeuxClient(buildUrl(), createTransport(httpClient));
+        for (Extension extension : extensions) {
+            session.addExtension(extension);
+        }
+        return session;
     }
 
     private BayeuxClient openSession(final BayeuxClient bayeuxClient) throws SDKException {
@@ -86,20 +111,8 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return (host.endsWith("/") ? host : host + "/") + endpoint;
     }
 
-    private HttpClient createHttpClient() throws SDKException {
-        return httpClientProvider.get();
-    }
-
-    private LongPollingTransport createTransport(final HttpClient httpClient) {
-        LongPollingTransport transport = new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters);
-        if (!httpClient.isStarted()) {
-            try {
-                httpClient.start();
-            } catch (Exception x) {
-                throw new RuntimeException(x);
-            }
-        }
-        return transport;
+    private ClientTransport createTransport(final Provider<Client> httpClient) {
+        return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters);
     }
 
     private Map<String, Object> createTransportOptions() {
@@ -108,4 +121,8 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return options;
     }
 
+    @Override
+    public String toString() {
+        return buildUrl();
+    }
 }
