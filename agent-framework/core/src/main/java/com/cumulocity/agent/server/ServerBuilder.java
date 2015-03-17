@@ -120,14 +120,14 @@ public class ServerBuilder {
     }
 
     protected SpringApplicationBuilder context() {
+       
+        StandardEnvironment environment = new StandardEnvironment();
+        registerBaseConfiguration(environment);
+        loadConfiguration(environment);
         List<Object> features = new ArrayList<Object>(this.features);
         Collections.sort(features, new FeatureOrderComparator());
-
         SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
         builder.showBanner(false).registerShutdownHook(false);
-        StandardEnvironment environment = new StandardEnvironment();
-        loadConfiguration(environment);
-        registerBaseConfiguration(environment);
         builder.environment(environment);
 
         return builder;
@@ -142,7 +142,6 @@ public class ServerBuilder {
         }
         configuration.setProperty("application.id", applicationId);
         configuration.setProperty("server.contextPath", "/" + applicationId);
-
         environment.getPropertySources().addLast(new PropertiesPropertySource("base-configuration", configuration));
     }
 
@@ -157,6 +156,7 @@ public class ServerBuilder {
         final String config = findLoggingConfiguration();
         if (config != null) {
             configuration.setProperty(CONFIG_PROPERTY, config);
+            System.setProperty(CONFIG_PROPERTY, config);
         } else {
             System.err.println("Application is running without logger configuration.");
         }
@@ -166,11 +166,7 @@ public class ServerBuilder {
         for (Path path : getConfigurationPaths()) {
             if (isConfigurationExists(path)) {
                 System.out.println("configuration founded on path " + path);
-                try {
-                    return path.toString();
-                } catch (Exception ex) {
-                    System.out.println("unable to load " + path);
-                }
+                return path.toString();
             } else {
                 System.err.println("Not logback configuration found: " + path + ".");
             }

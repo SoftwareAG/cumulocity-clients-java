@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>5.21.0-SNAPSHOT</version>
+		<version>5.23.0-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>5.21.0-SNAPSHOT</version>
+	<version>5.23.0-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -30,8 +30,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>5.21.0-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>5.21.0-SNAPSHOT</cumulocity.shared-components.version>
+		<cumulocity.model.version>5.23.0-SNAPSHOT</cumulocity.model.version>
+		<cumulocity.shared-components.version>5.23.0-SNAPSHOT</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
@@ -128,62 +128,76 @@
 	</build>
 
 	<dependencies>
-        <!--COMMON TEST DEPENDENCIES -->
-        <dependency>
-            <groupId>com.jayway.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-spring</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-        </dependency>
-	 <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-        </dependency>
-        <dependency>
-        	<groupId>org.cometd.java</groupId>
-        	<artifactId>cometd-java-client</artifactId>
-        </dependency>
+		<!--COMMON TEST DEPENDENCIES -->
+		<dependency>
+			<groupId>com.jayway.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.cukes</groupId>
+			<artifactId>cucumber-junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.cukes</groupId>
+			<artifactId>cucumber-spring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-assert</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cometd.java</groupId>
+			<artifactId>cometd-java-client</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>jetty-client</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-io</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-http</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 			<!-- COMPILE DEPENDENCIES START -->
-			 <dependency>
-			    <groupId>com.nsn.cumulocity.clients-java</groupId>
-			    <artifactId>java-client</artifactId>
-			    <version>${project.version}</version>
-		    </dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.clients-java</groupId>
+				<artifactId>java-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>core-model</artifactId>
@@ -209,21 +223,21 @@
 				<artifactId>java-me-smartrest-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-            <dependency>
-                <groupId>com.nsn.cumulocity.shared-components</groupId>
-                <artifactId>common-notification</artifactId>
-                <version>${cumulocity.shared-components.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.shared-components</groupId>
+				<artifactId>common-notification</artifactId>
+				<version>${cumulocity.shared-components.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.shared-components</groupId>
 				<artifactId>common-rest</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
-            <dependency>
-                <groupId>com.nsn.cumulocity.platform-services.notification</groupId>
-                <artifactId>notification-service</artifactId>
-                <version>${cumulocity.shared-components.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.platform-services.notification</groupId>
+				<artifactId>notification-service</artifactId>
+				<version>${cumulocity.shared-components.version}</version>
+			</dependency>
 			<!-- COMPILE DEPENDENCIES END -->
 
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->

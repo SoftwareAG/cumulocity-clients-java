@@ -26,6 +26,7 @@ public class OperationNotificationSubscriber implements Subscriber<GId, Operatio
                     .withSubscriptionNameResolver(new AgentDeviceIdAsSubscriptonName())
                     .withParameters(parameters)
                     .withDataType(OperationRepresentation.class)
+                    .withMessageDeliveryAcknowlage(true)
                     .build();
         // @formatter:on
     }

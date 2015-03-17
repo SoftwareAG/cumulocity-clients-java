@@ -5,8 +5,10 @@ import static org.mockito.Mockito.*;
 
 import org.cometd.bayeux.ChannelId;
 import org.cometd.bayeux.Message;
+import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSessionChannel;
+import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +31,9 @@ public class SubscriberImplTest {
 
     @Mock
     ClientSessionChannel metaHandshakeChannel;
-    
+
     @Mock
     ClientSessionChannel metaUnsubscribeChannel;
-
 
     @Mock
     SubscriptionNameResolver<Object> subscriptionNameResolver;
@@ -179,11 +180,11 @@ public class SubscriberImplTest {
         verifySubscribed(secondChannel, 1);
 
     }
-    
+
     private void sendUnsubscribeMessage(String channelId) {
         verify(metaUnsubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
-            listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessge(channelId ,true ));
+            listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessge(channelId, true));
         }
     }
 
@@ -198,7 +199,7 @@ public class SubscriberImplTest {
         assertThat(subscription).isNotNull();
         assertThat(subscription.getObject()).isNotNull().isEqualTo(subscribedOn);
     }
-    
+
     @Test
     public final void onMessageShouldPassMessageData() {
         final SubscriptionListener listenerMock = Mockito.mock(SubscriptionListener.class);
@@ -230,15 +231,18 @@ public class SubscriberImplTest {
     private void givenSubsciptionsSuccessfulySubscribed(final String channelId) {
         verify(metaSubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
-            listener.onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId ,true ));
+            listener.onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, true));
         }
     }
 
     private void reconnect() {
-        final ArgumentCaptor<MessageListener> listenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
-        verify(metaHandshakeChannel).addListener(listenerCaptor.capture());
-        MessageListener reconnectListener = listenerCaptor.getValue();
-        reconnectListener.onMessage(metaHandshakeChannel, Mockito.mock(Message.class));
+        final ArgumentCaptor<Extension> listenerCaptor = ArgumentCaptor.forClass(Extension.class);
+        verify(client).addExtension(listenerCaptor.capture());
+        Extension reconnectListener = listenerCaptor.getValue();
+        final Mutable message = Mockito.mock(Mutable.class);
+        when(message.getChannel()).thenReturn(ClientSessionChannel.META_HANDSHAKE);
+        when(message.isSuccessful()).thenReturn(true);
+        reconnectListener.rcvMeta(client, message);
     }
 
     private Message mockSubscribeMessge(String channelID, boolean successful) {
