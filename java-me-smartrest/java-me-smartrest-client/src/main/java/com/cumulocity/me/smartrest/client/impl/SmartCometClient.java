@@ -7,6 +7,7 @@ import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 
+
 public class SmartCometClient {
 
     public static final int SMARTREST_HANDSHAKE_CODE = 80;
@@ -58,6 +59,9 @@ public class SmartCometClient {
             if (clientId == null) {
                 clientId = handshake();
             }
+            if (clientId == null ) {
+            	throw new SDKException("Unauthorized");
+            }
             this.channels = channels;
             subscribe();
             executorService.execute(new SmartLongPolling(this));   
@@ -80,6 +84,9 @@ public class SmartCometClient {
     protected String handshake() {
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
+        if (!response.isSuccessful()) {
+        	return null;
+        }
         SmartRow[] responseLines = response.getDataRows();
         SmartRow responseLine = extractAdvice(responseLines)[0];
         if (responseLine.getMessageId() == 0) {

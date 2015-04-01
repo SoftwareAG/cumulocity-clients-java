@@ -11,6 +11,7 @@ import com.cumulocity.me.smartrest.client.*;
 import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.ConnectorWrapper;
 import com.cumulocity.me.util.IOUtils;
+import com.cumulocity.me.util.StringUtils;
 
 public class SmartHttpConnection implements SmartConnection {
     
@@ -213,14 +214,20 @@ public class SmartHttpConnection implements SmartConnection {
         }
     }
     
-    private SmartResponse interruptableReading() throws InterruptedException, IOException {
-        input = connection.openInputStream();
-        int responseCode = connection.getResponseCode();
-        String responseMessage = connection.getResponseMessage();
-        String body = readData();
-        closeConnection();
-        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
-        return response;
+    private synchronized SmartResponse interruptableReading() throws InterruptedException, IOException {
+    	try {
+	        input = connection.openInputStream();
+	        int responseCode = connection.getResponseCode();
+	        String responseMessage = connection.getResponseMessage();
+	        String body = readData();
+	        if (body.endsWith("\r\n")) {
+	            body = body.substring(0, body.length() -2);
+	        }
+	        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
+	        return response;
+    	} finally {
+    		closeConnection();
+    	}
     }
     
     private synchronized String readData() {

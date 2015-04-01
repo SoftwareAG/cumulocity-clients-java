@@ -4,7 +4,7 @@
   	<parent>
 		<groupId>com.nsn.cumulocity.sdk.me</groupId>
 	<artifactId>java-me-smartrest</artifactId>
-		<version>5.23.1-SNAPSHOT</version>
+		<version>5.24.1-SNAPSHOT</version>
 	</parent>
 	
   	<groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -72,7 +72,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<includeGroupIds>org.microemu</includeGroupIds>
+							<includeGroupIds>org.microemu,net.sf.microlog</includeGroupIds>
 							<outputDirectory>${bootclasspath.dir}</outputDirectory>
 						</configuration>
 					</execution>

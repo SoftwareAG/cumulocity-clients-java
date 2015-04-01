@@ -107,4 +107,18 @@ public abstract class StringUtils {
     public static final String insert(String source, int position, String extra) {
         return source.substring(0, position) + extra + source.substring(position, source.length());
     }
+    
+    public static final String stringArrayToCsv(String[] array) {
+    	if (array.length < 1) {
+    		return "";
+    	} else if (array.length == 1) {
+    		return array[0];
+    	}
+    	String result = "";
+    	for (int i = 0; i < array.length - 1; i++) {
+    		result += array[0] + ",";
+    	}
+    	result += array[array.length - 1];
+    	return result;
+    }
 }
