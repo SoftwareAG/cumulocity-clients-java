@@ -26,6 +26,11 @@ import org.svenson.AbstractDynamicProperties;
 
 public class Position extends AbstractDynamicProperties {
 	private static final long serialVersionUID = -8365376637780307348L;
+	
+	private BigDecimal lat;
+    private BigDecimal lng;
+    private BigDecimal alt;
+    private long accuracy;
 
 	public BigDecimal getLat() {
 		return lat;
@@ -50,6 +55,14 @@ public class Position extends AbstractDynamicProperties {
 	public void setAlt(BigDecimal altitude) {
 		this.alt = altitude;
 	}
+	
+	public long getAccuracy() {
+        return accuracy;
+    }
+
+    public void setAccuracy(long accuracy) {
+        this.accuracy = accuracy;
+    }
 
 	@Override
 	public boolean equals(Object obj) {
@@ -74,8 +87,4 @@ public class Position extends AbstractDynamicProperties {
         result = 31 * result + (alt == null ? 0 : alt.hashCode());
         return result;
     }
-
-	private BigDecimal lat;
-	private BigDecimal lng;
-	private BigDecimal alt;
 }
