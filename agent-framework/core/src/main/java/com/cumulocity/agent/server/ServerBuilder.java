@@ -43,6 +43,8 @@ public class ServerBuilder {
     private final Set<Class<?>> features = new LinkedHashSet<Class<?>>();
 
     private String loggingConfiguration;
+    
+    private boolean webEnvironmentEnabled = true;
 
     protected InetSocketAddress address() {
         return address;
@@ -110,6 +112,11 @@ public class ServerBuilder {
         }
         return this;
     }
+    
+    public ServerBuilder useWebEnvironment(boolean webEnvironmentEnabled) {
+        this.webEnvironmentEnabled = webEnvironmentEnabled;
+        return this;
+    }
 
     class FeatureOrderComparator extends AnnotationAwareOrderComparator {
         @Override
@@ -129,6 +136,7 @@ public class ServerBuilder {
         SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
         builder.showBanner(false).registerShutdownHook(false);
         builder.environment(environment);
+        builder.web(webEnvironmentEnabled);
 
         return builder;
     }
