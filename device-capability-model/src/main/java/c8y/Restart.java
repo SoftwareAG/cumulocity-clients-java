@@ -21,6 +21,8 @@
 
 package c8y;
 
-public class Restart {
+import org.svenson.AbstractDynamicProperties;
+
+public class Restart extends AbstractDynamicProperties {
 
 }
