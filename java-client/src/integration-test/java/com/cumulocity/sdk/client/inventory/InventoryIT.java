@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -210,6 +211,7 @@ public class InventoryIT extends JavaSdkITBase {
     }
     
     @Test
+    @Ignore
     public void updatingManagedObjectByMultipleThreads() throws Exception {
         // Given
         int threads = 30;
@@ -473,8 +475,8 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         List<ManagedObjectRepresentation> mos = moCollection.getManagedObjects();
         assertThat(mos.size(), is(2));
-        assertThat(mos.get(1).getName(), is("MO3"));
-        assertThat(mos.get(0).getName(), is("MO1"));
+        assertThat(mos.get(0).getName(), is("MO3"));
+        assertThat(mos.get(1).getName(), is("MO1"));
 
     }
 
