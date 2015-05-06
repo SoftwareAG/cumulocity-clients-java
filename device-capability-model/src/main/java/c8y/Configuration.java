@@ -20,7 +20,9 @@ iz * Copyright (C) 2013 Cumulocity GmbH
 
 package c8y;
 
-public class Configuration {
+import org.svenson.AbstractDynamicProperties;
+
+public class Configuration extends AbstractDynamicProperties {
 	private String config;
 
 	public Configuration() {

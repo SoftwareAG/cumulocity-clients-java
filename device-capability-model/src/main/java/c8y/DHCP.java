@@ -20,9 +20,10 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
-public class DHCP {
+public class DHCP extends AbstractDynamicProperties {
 
     private boolean enabled;
     private String dns1;

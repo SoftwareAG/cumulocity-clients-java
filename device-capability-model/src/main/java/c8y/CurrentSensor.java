@@ -1,5 +1,7 @@
 package c8y;
 
-public class CurrentSensor {
+import org.svenson.AbstractDynamicProperties;
+
+public class CurrentSensor extends AbstractDynamicProperties {
 
 }

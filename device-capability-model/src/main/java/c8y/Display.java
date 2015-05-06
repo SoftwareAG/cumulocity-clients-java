@@ -21,6 +21,8 @@
 
 package c8y;
 
-public class Display {
+import org.svenson.AbstractDynamicProperties;
+
+public class Display extends AbstractDynamicProperties {
 
 }

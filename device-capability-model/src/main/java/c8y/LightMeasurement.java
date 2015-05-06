@@ -2,11 +2,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class LightMeasurement {
+public class LightMeasurement extends AbstractDynamicProperties {
 	public static final String LIGHT_UNIT = "lux";
 
 	private MeasurementValue e;

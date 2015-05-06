@@ -1,6 +1,8 @@
 package c8y;
 
-public class CellTower {
+import org.svenson.AbstractDynamicProperties;
+
+public class CellTower extends AbstractDynamicProperties {
 
     private String radioType;
     private int mobileCountryCode;

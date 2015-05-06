@@ -2,11 +2,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class CurrentMeasurement {
+public class CurrentMeasurement extends AbstractDynamicProperties {
 	public static final String CURRENT_UNIT = "A";
 	
 	private MeasurementValue current = new MeasurementValue(CURRENT_UNIT);

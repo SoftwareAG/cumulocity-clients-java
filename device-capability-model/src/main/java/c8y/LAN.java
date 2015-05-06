@@ -20,9 +20,10 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
-public class LAN {
+public class LAN extends AbstractDynamicProperties {
 
     private String name;
     private String mac;

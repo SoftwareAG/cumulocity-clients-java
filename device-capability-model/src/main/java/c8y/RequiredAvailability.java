@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,40 +20,45 @@
 
 package c8y;
 
-public class RequiredAvailability {
+import org.svenson.AbstractDynamicProperties;
 
-	private int responseInterval;
-	
-	public RequiredAvailability() {
-	}
+public class RequiredAvailability extends AbstractDynamicProperties {
 
-	public RequiredAvailability(int responseInterval) {
-		this.responseInterval = responseInterval;
-	}
+    private int responseInterval;
 
-	public int getResponseInterval() {
-		return responseInterval;
-	}
+    public RequiredAvailability() {
+    }
 
-	public void setResponseInterval(int responseInterval) {
-		this.responseInterval = responseInterval;
-	}
+    public RequiredAvailability(int responseInterval) {
+        this.responseInterval = responseInterval;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null)
-			return false;
-		if (obj == this)
-			return true;
-		if (!(obj instanceof RequiredAvailability))
-			return false;
+    public int getResponseInterval() {
+        return responseInterval;
+    }
 
-		RequiredAvailability rhs = (RequiredAvailability) obj;
-		return rhs.responseInterval == this.responseInterval;
-	}
-	
-	@Override
-	public int hashCode() {
-		return responseInterval;
-	}
+    public void setResponseInterval(int responseInterval) {
+        this.responseInterval = responseInterval;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof RequiredAvailability)) {
+            return false;
+        }
+
+        RequiredAvailability rhs = (RequiredAvailability) obj;
+        return rhs.responseInterval == this.responseInterval;
+    }
+
+    @Override
+    public int hashCode() {
+        return responseInterval;
+    }
 }

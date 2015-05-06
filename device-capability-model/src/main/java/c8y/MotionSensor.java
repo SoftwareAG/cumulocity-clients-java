@@ -1,5 +1,7 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
+
 /**
  * Provides a representation for a motion sensor.
  * 
@@ -13,6 +15,6 @@ package c8y;
  * @author ricardomarques
  *
  */
-public class MotionSensor {
+public class MotionSensor extends AbstractDynamicProperties {
     // So far, this representation does not have any properties of its own.
 }
