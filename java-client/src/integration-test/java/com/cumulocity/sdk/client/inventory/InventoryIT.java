@@ -48,6 +48,10 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepres
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class InventoryIT extends JavaSdkITBase {
 
@@ -203,6 +207,55 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         assertNotNull(updated.getId());
         assertNull(updated.get(Coordinate.class));
+    }
+    
+    @Test
+    public void updatingManagedObjectByMultipleThreads() throws Exception {
+        // Given
+        int threads = 30;
+        ExecutorService executor = newFixedThreadPool(threads);
+        ManagedObjectRepresentation rep = aSampleMo().build();
+        ManagedObjectRepresentation created = inventory.create(rep);
+        final GId id = created.getId();
+        List<Callable<Void>> tasks = buildUpdateTasks(threads, id);
+        
+        // When
+        executor.invokeAll(tasks);
+        
+        // Then
+        ManagedObjectRepresentation updated = checkNotDuplicated(id);
+        checkUpdatedFragments(threads, updated);
+    }
+
+    private ManagedObjectRepresentation checkNotDuplicated(final GId id) throws SDKException {
+        InventoryFilter byIdFilter = new InventoryFilter().byIds(asList(id));
+        ManagedObjectCollectionRepresentation moCollection = inventory.getManagedObjectsByFilter(byIdFilter).get();
+        List<ManagedObjectRepresentation> devices = moCollection.getManagedObjects();
+        assertThat(devices.size(), is(1));
+        return devices.get(0);
+    }
+
+    private void checkUpdatedFragments(int numberOfFragments, ManagedObjectRepresentation updated) {
+        for(int i = 0; i < numberOfFragments; i++) {
+            assertThat(updated.get(String.valueOf(i)), is(notNullValue()));
+        }
+    }
+
+    private List<Callable<Void>> buildUpdateTasks(int numerOfTasks, final GId id) {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        for(int i = 0; i < numerOfTasks; i++) {
+            final String fragmentName = String.valueOf(i);
+            tasks.add(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    ManagedObjectRepresentation toUpdate = aSampleMo().build();
+                    toUpdate.set("test", fragmentName);
+                    inventory.getManagedObject(id).update(toUpdate);
+                    return null;
+                }
+            });
+        }
+        return tasks;
     }
 
     @Test
@@ -420,8 +473,8 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         List<ManagedObjectRepresentation> mos = moCollection.getManagedObjects();
         assertThat(mos.size(), is(2));
-        assertThat(mos.get(0).getName(), is("MO3"));
-        assertThat(mos.get(1).getName(), is("MO1"));
+        assertThat(mos.get(1).getName(), is("MO3"));
+        assertThat(mos.get(0).getName(), is("MO1"));
 
     }
 
