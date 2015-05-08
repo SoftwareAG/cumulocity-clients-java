@@ -1,6 +1,7 @@
 package c8y;
 
 import org.svenson.AbstractDynamicProperties;
+import org.svenson.JSONProperty;
 
 /**
  * Implementation of software entries in {@link SoftwareList SoftwareLists}.
@@ -28,6 +29,7 @@ public class SoftwareItem extends AbstractDynamicProperties {
         this.version = version;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public String getUrl() {
         return url;
     }

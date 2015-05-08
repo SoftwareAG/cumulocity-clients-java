@@ -43,4 +43,37 @@ public class SoftwareItemTest {
         Assert.assertEquals(VERSION, deserialized.getVersion());
         Assert.assertEquals(URL, deserialized.getUrl());
     }
+
+    @Test
+    public void missingParameters() {
+        String toDeserializeWithoutUrl = "{\"name\":\"" + NAME + "\",\"version\":\"" + VERSION + "\"}";
+        SoftwareItem deserialized = JSONParser.defaultJSONParser().parse(SoftwareItem.class, toDeserializeWithoutUrl);
+
+        Assert.assertEquals(NAME, deserialized.getName());
+        Assert.assertEquals(VERSION, deserialized.getVersion());
+        Assert.assertEquals(null, deserialized.getUrl());
+
+        String serialized = JSON.defaultJSON().forValue(deserialized);
+
+        Assert.assertEquals(toDeserializeWithoutUrl, serialized);
+    }
+
+    @Test
+    public void additionalParameters() {
+        String additionalParameterName = "abc";
+        String additionalParameterValue = "def";
+        String toDeserializeWithParameter = "{\"name\":\"" + NAME + "\",\"url\":\"" + URL + "\",\"version\":\"" + VERSION + "\",\""
+                + additionalParameterName + "\":\"" + additionalParameterValue + "\"}";
+        SoftwareItem deserialized = JSONParser.defaultJSONParser().parse(SoftwareItem.class, toDeserializeWithParameter);
+
+        Assert.assertEquals(NAME, deserialized.getName());
+        Assert.assertEquals(VERSION, deserialized.getVersion());
+        Assert.assertEquals(URL, deserialized.getUrl());
+
+        Assert.assertEquals(additionalParameterValue, deserialized.getProperty(additionalParameterName));
+
+        String serialized = JSON.defaultJSON().forValue(deserialized);
+
+        Assert.assertEquals(toDeserializeWithParameter, serialized);
+    }
 }
