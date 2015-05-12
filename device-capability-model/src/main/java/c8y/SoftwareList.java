@@ -1,8 +1,8 @@
 package c8y;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONTypeHint;
 
 /**
@@ -12,6 +12,16 @@ import org.svenson.JSONTypeHint;
  *
  * See {@link SoftwareListContainer} for an example.
  */
-public class SoftwareList extends ArrayList<SoftwareItem> {
+public class SoftwareList extends AbstractDynamicProperties {
 
+    private List<SoftwareItem> list;
+
+    public List<SoftwareItem> getList() {
+        return list;
+    }
+
+    @JSONTypeHint(SoftwareItem.class)
+    public void setList(List<SoftwareItem> list) {
+        this.list = list;
+    }
 }
