@@ -2,9 +2,10 @@ package c8y;
 
 import java.util.List;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONTypeHint;
 
-public class CellInfo {
+public class CellInfo extends AbstractDynamicProperties {
 
     private String radioType;
     private List<CellTower> cellTowers;
@@ -46,23 +47,30 @@ public class CellInfo {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         CellInfo other = (CellInfo) obj;
         if (cellTowers == null) {
-            if (other.cellTowers != null)
+            if (other.cellTowers != null) {
                 return false;
-        } else if (!cellTowers.equals(other.cellTowers))
+            }
+        } else if (!cellTowers.equals(other.cellTowers)) {
             return false;
+        }
         if (radioType == null) {
-            if (other.radioType != null)
+            if (other.radioType != null) {
                 return false;
-        } else if (!radioType.equals(other.radioType))
+            }
+        } else if (!radioType.equals(other.radioType)) {
             return false;
+        }
         return true;
     }
 

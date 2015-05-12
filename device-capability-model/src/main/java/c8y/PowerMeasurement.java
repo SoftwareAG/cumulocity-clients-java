@@ -2,11 +2,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class PowerMeasurement {
+public class PowerMeasurement extends AbstractDynamicProperties {
 	public static final String POWER_UNIT="W";
 	private MeasurementValue power;
 	

@@ -23,11 +23,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class BarometerMeasurement {
+public class BarometerMeasurement extends AbstractDynamicProperties {
 	public static final String PRESS_UNIT = "mbar";
 	public static final String ALT_UNIT = "m";
 	

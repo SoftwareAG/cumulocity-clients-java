@@ -1,8 +1,10 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
+
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class MoistureSensor {
+public class MoistureSensor extends AbstractDynamicProperties {
 	
 	private MeasurementValue moisture;
 

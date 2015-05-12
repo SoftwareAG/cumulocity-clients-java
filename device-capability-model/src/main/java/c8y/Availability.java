@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -22,68 +22,75 @@ package c8y;
 
 import java.util.Date;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
 
 import com.cumulocity.model.DateConverter;
 
-public class Availability {
-	
-	private Date lastMessage;
-	private ConnectionState status;
+public class Availability extends AbstractDynamicProperties {
 
-	public Availability() {
-	}
-	
-	public Availability(Date lastMessage, ConnectionState status) {
-		this.lastMessage = lastMessage;
-		this.status = status;
-	}
+    private Date lastMessage;
+    private ConnectionState status;
+
+    public Availability() {
+    }
+
+    public Availability(Date lastMessage, ConnectionState status) {
+        this.lastMessage = lastMessage;
+        this.status = status;
+    }
 
     @JSONProperty(ignoreIfNull = true)
     @JSONConverter(type = DateConverter.class)
-	public Date getLastMessage() {
-		return lastMessage;
-	}
+    public Date getLastMessage() {
+        return lastMessage;
+    }
 
-	public void setLastMessage(Date lastMessage) {
-		this.lastMessage = lastMessage;
-	}
+    public void setLastMessage(Date lastMessage) {
+        this.lastMessage = lastMessage;
+    }
 
-	public ConnectionState getStatus() {
-		return status;
-	}
+    public ConnectionState getStatus() {
+        return status;
+    }
 
-	public void setStatus(ConnectionState status) {
-		this.status = status;
-	}
+    public void setStatus(ConnectionState status) {
+        this.status = status;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((lastMessage == null) ? 0 : lastMessage.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((lastMessage == null) ? 0 : lastMessage.hashCode());
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Availability other = (Availability) obj;
-		if (lastMessage == null) {
-			if (other.lastMessage != null)
-				return false;
-		} else if (!lastMessage.equals(other.lastMessage))
-			return false;
-		if (status != other.status)
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Availability other = (Availability) obj;
+        if (lastMessage == null) {
+            if (other.lastMessage != null) {
+                return false;
+            }
+        } else if (!lastMessage.equals(other.lastMessage)) {
+            return false;
+        }
+        if (status != other.status) {
+            return false;
+        }
+        return true;
+    }
 }

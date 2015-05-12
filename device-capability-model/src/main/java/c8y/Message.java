@@ -20,7 +20,9 @@
 
 package c8y;
 
-public class Message {
+import org.svenson.AbstractDynamicProperties;
+
+public class Message extends AbstractDynamicProperties {
 	private String text;
 
 	public Message() {

@@ -14,10 +14,10 @@ import c8y.AccelerationMeasurement;
 public class AccelerationMeasurementTest {
 
     private AccelerationMeasurement measurement;
-    
+
     @Before
     public void setUp() throws Exception {
-    	measurement = new AccelerationMeasurement();
+        measurement = new AccelerationMeasurement();
         measurement.setAccelerationValue(new BigDecimal(10));
     }
 
@@ -27,5 +27,4 @@ public class AccelerationMeasurementTest {
         AccelerationMeasurement newMeasurement = JSONParser.defaultJSONParser().parse(AccelerationMeasurement.class, serialized);
         assertEquals(measurement.getAccelerationValue(), newMeasurement.getAccelerationValue());
     }
-
 }

@@ -20,9 +20,10 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
-public class AddressRange {
+public class AddressRange extends AbstractDynamicProperties {
 
     private String start;
     private String end;

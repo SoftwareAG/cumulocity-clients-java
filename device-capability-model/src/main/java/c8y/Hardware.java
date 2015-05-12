@@ -20,8 +20,10 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 
-public class Hardware {
+
+public class Hardware extends AbstractDynamicProperties {
 
 	private String model;
 	private String serialNumber;

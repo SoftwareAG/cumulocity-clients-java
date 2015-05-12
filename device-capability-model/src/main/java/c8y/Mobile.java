@@ -20,10 +20,11 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 
-public class Mobile {
+public class Mobile extends AbstractDynamicProperties {
     
 	private String imei;
 	private String cellId;

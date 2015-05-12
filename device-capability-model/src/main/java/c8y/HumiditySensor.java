@@ -21,6 +21,8 @@
 
 package c8y;
 
-public class HumiditySensor {
+import org.svenson.AbstractDynamicProperties;
+
+public class HumiditySensor extends AbstractDynamicProperties {
 
 }
