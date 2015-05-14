@@ -23,11 +23,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class Battery {
+public class Battery extends AbstractDynamicProperties {
 	public static final String LEVEL_UNIT = "%";
 
 	private MeasurementValue level;

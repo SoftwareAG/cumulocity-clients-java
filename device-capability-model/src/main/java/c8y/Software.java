@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -27,6 +27,7 @@ import java.util.HashMap;
  * installed on a device. When used as operation, maps to URLs of the files. The
  * last part of the URL is used as file name.
  */
+@Deprecated
 public class Software extends HashMap<String, String> {
-	private static final long serialVersionUID = 9094136944975438527L;
+    private static final long serialVersionUID = 9094136944975438527L;
 }

@@ -21,6 +21,8 @@
 
 package c8y;
 
-public class Barometer {
+import org.svenson.AbstractDynamicProperties;
+
+public class Barometer extends AbstractDynamicProperties {
 
 }

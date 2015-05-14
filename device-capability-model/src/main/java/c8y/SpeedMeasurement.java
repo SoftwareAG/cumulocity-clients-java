@@ -1,5 +1,6 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
@@ -9,8 +10,8 @@ import com.cumulocity.model.measurement.MeasurementValue;
  * See <a>https://code.telcoassetmarketplace.com/devcommunity/index.php/c8ydocumentation/114/320#Motion</a> for details.
  * @author ricardomarques
  */
-public class SpeedMeasurement {
-    
+public class SpeedMeasurement extends AbstractDynamicProperties {
+
     public static final String SPEED_UNITS = "m/s";
 
     public static final String BEARING_UNITS = "degrees";
@@ -23,7 +24,7 @@ public class SpeedMeasurement {
 
     public SpeedMeasurement() {
     }
-    
+
     public SpeedMeasurement(MeasurementValue motion, MeasurementValue speed, MeasurementValue bearing) {
         this.motion = motion;
         this.speed = speed;
@@ -69,7 +70,7 @@ public class SpeedMeasurement {
     }
 
     /**
-     * @return the bearing, or null if the bearing is not set 
+     * @return the bearing, or null if the bearing is not set
      */
     @JSONProperty(value = "bearing", ignoreIfNull = true)
     public MeasurementValue getBearing() {
@@ -93,14 +94,24 @@ public class SpeedMeasurement {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SpeedMeasurement)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SpeedMeasurement)) {
+            return false;
+        }
 
         SpeedMeasurement that = (SpeedMeasurement) o;
 
-        if (bearing != null ? !bearing.equals(that.bearing) : that.bearing != null) return false;
-        if (motion != null ? !motion.equals(that.motion) : that.motion != null) return false;
-        if (speed != null ? !speed.equals(that.speed) : that.speed != null) return false;
+        if (bearing != null ? !bearing.equals(that.bearing) : that.bearing != null) {
+            return false;
+        }
+        if (motion != null ? !motion.equals(that.motion) : that.motion != null) {
+            return false;
+        }
+        if (speed != null ? !speed.equals(that.speed) : that.speed != null) {
+            return false;
+        }
 
         return true;
     }

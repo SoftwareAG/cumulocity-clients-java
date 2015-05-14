@@ -1,5 +1,6 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
@@ -10,7 +11,7 @@ import com.cumulocity.model.measurement.MeasurementValue;
  * @author ricardomarques
  *
  */
-public class SinglePhaseEnergyMeasurement  {
+public class SinglePhaseEnergyMeasurement extends AbstractDynamicProperties  {
 
     private MeasurementValue A_plus, A_minus;
 
@@ -97,15 +98,27 @@ public class SinglePhaseEnergyMeasurement  {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SinglePhaseEnergyMeasurement)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SinglePhaseEnergyMeasurement)) {
+            return false;
+        }
 
         SinglePhaseEnergyMeasurement that = (SinglePhaseEnergyMeasurement) o;
 
-        if (A_minus != null ? !A_minus.equals(that.A_minus) : that.A_minus != null) return false;
-        if (A_plus != null ? !A_plus.equals(that.A_plus) : that.A_plus != null) return false;
-        if (P_minus != null ? !P_minus.equals(that.P_minus) : that.P_minus != null) return false;
-        if (P_plus != null ? !P_plus.equals(that.P_plus) : that.P_plus != null) return false;
+        if (A_minus != null ? !A_minus.equals(that.A_minus) : that.A_minus != null) {
+            return false;
+        }
+        if (A_plus != null ? !A_plus.equals(that.A_plus) : that.A_plus != null) {
+            return false;
+        }
+        if (P_minus != null ? !P_minus.equals(that.P_minus) : that.P_minus != null) {
+            return false;
+        }
+        if (P_plus != null ? !P_plus.equals(that.P_plus) : that.P_plus != null) {
+            return false;
+        }
 
         return true;
     }

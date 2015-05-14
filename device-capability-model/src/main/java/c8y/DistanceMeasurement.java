@@ -1,8 +1,10 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
+
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class DistanceMeasurement {
+public class DistanceMeasurement extends AbstractDynamicProperties {
 
     private MeasurementValue distance;
 

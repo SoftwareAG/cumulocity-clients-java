@@ -2,7 +2,9 @@ package c8y;
 
 import java.io.Serializable;
 
-public class Command implements Serializable {
+import org.svenson.AbstractDynamicProperties;
+
+public class Command extends AbstractDynamicProperties implements Serializable {
 
     private static final long serialVersionUID = -6443811928706492241L;
     
