@@ -253,7 +253,6 @@
 		<module>mvc</module>
 		<module>repositories</module>
 		<module>jaxrs</module>
-		<module>standalone</module>
 		<module>device-control</module>
 		<module>package</module>
 	</modules>
