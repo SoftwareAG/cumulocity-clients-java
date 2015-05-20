@@ -11,7 +11,7 @@ public class BufferRequestServiceTest {
 
     private static final int REQUEST_ID = 1;
     private static final long QUEUE_CAPACITY = 5;
-    BufferRequestService bufferRequestService = new BufferRequestService(new TestPersistentProvider(QUEUE_CAPACITY));
+    BufferRequestServiceImpl bufferRequestService = new BufferRequestServiceImpl(new TestPersistentProvider(QUEUE_CAPACITY));
 
     @Test
     public void shouldReturnResponse() {
