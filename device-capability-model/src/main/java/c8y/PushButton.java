@@ -1,6 +1,8 @@
 package c8y;
 
-public class PushButton { 
+import org.svenson.AbstractDynamicProperties;
+
+public class PushButton extends AbstractDynamicProperties { 
 
     private int duration;
     

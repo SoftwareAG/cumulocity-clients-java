@@ -2,11 +2,12 @@ package c8y;
 
 import java.math.BigDecimal;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.measurement.MeasurementValue;
 
-public class MoistureMeasurement {
+public class MoistureMeasurement extends AbstractDynamicProperties {
 	public static final String MOISTURE_UNIT="%";
 	private MeasurementValue moisture;
 	

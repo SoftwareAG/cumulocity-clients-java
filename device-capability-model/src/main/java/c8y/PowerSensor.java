@@ -1,5 +1,7 @@
 package c8y;
 
-public class PowerSensor {
+import org.svenson.AbstractDynamicProperties;
+
+public class PowerSensor extends AbstractDynamicProperties {
 
 }

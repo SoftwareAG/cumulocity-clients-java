@@ -2,7 +2,9 @@ package c8y;
 
 import java.io.Serializable;
 
-public class MeasurementRequestOperation implements Serializable {
+import org.svenson.AbstractDynamicProperties;
+
+public class MeasurementRequestOperation extends AbstractDynamicProperties implements Serializable {
 
 	private static final long serialVersionUID = -2731997499381254447L;
 

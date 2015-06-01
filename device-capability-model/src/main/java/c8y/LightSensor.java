@@ -21,6 +21,8 @@
 
 package c8y;
 
-public class LightSensor {
+import org.svenson.AbstractDynamicProperties;
+
+public class LightSensor extends AbstractDynamicProperties {
 
 }

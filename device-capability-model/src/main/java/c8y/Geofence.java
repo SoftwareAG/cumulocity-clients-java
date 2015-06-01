@@ -23,7 +23,9 @@ package c8y;
 
 import java.math.BigDecimal;
 
-public class Geofence {
+import org.svenson.AbstractDynamicProperties;
+
+public class Geofence extends AbstractDynamicProperties {
 	private BigDecimal lat;
 	private BigDecimal lng;
 	private BigDecimal radius;

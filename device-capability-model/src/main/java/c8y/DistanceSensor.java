@@ -1,5 +1,7 @@
 package c8y;
 
-public class DistanceSensor {
+import org.svenson.AbstractDynamicProperties;
+
+public class DistanceSensor extends AbstractDynamicProperties {
 
 }

@@ -20,7 +20,9 @@
 
 package c8y;
 
-public class MotionTracking {
+import org.svenson.AbstractDynamicProperties;
+
+public class MotionTracking extends AbstractDynamicProperties {
 	
 	private boolean active;
 

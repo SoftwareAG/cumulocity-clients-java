@@ -1,5 +1,7 @@
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
+
 
 
 /**
@@ -10,7 +12,7 @@ package c8y;
  * @author ricardomarques
  *
  */
-public class Relay {
+public class Relay extends AbstractDynamicProperties {
 
     public enum RelayState {
         OPEN, CLOSED;

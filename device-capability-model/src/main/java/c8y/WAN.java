@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,9 +20,10 @@
 
 package c8y;
 
+import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
-public class WAN {
+public class WAN extends AbstractDynamicProperties {
 
     private String simStatus;
     private String apn;
@@ -89,38 +90,51 @@ public class WAN {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         WAN other = (WAN) obj;
         if (apn == null) {
-            if (other.apn != null)
+            if (other.apn != null) {
                 return false;
-        } else if (!apn.equals(other.apn))
+            }
+        } else if (!apn.equals(other.apn)) {
             return false;
+        }
         if (authType == null) {
-            if (other.authType != null)
+            if (other.authType != null) {
                 return false;
-        } else if (!authType.equals(other.authType))
+            }
+        } else if (!authType.equals(other.authType)) {
             return false;
+        }
         if (password == null) {
-            if (other.password != null)
+            if (other.password != null) {
                 return false;
-        } else if (!password.equals(other.password))
+            }
+        } else if (!password.equals(other.password)) {
             return false;
+        }
         if (simStatus == null) {
-            if (other.simStatus != null)
+            if (other.simStatus != null) {
                 return false;
-        } else if (!simStatus.equals(other.simStatus))
+            }
+        } else if (!simStatus.equals(other.simStatus)) {
             return false;
+        }
         if (username == null) {
-            if (other.username != null)
+            if (other.username != null) {
                 return false;
-        } else if (!username.equals(other.username))
+            }
+        } else if (!username.equals(other.username)) {
             return false;
+        }
         return true;
     }
 }
