@@ -14,6 +14,8 @@ import org.springframework.core.io.ResourceLoader;
 
 public class PropertiesFactoryBean implements FactoryBean<Properties> {
 
+    public static final String DEFAULT_CONFIG_ROOT_DIR = "/etc";
+
     private static final Logger log = LoggerFactory.getLogger(PropertiesFactoryBean.class);
 
     private final Environment environment;
@@ -31,9 +33,13 @@ public class PropertiesFactoryBean implements FactoryBean<Properties> {
     }
 
     public PropertiesFactoryBean(String id, String fileName, Environment environment, ResourceLoader resourceLoader, boolean merge) {
+        this(id, fileName, environment, resourceLoader, merge, DEFAULT_CONFIG_ROOT_DIR);
+    }
+    
+    public PropertiesFactoryBean(String id, String fileName, Environment environment, ResourceLoader resourceLoader, boolean merge, String configRootDir) {
         this.environment = environment;
         this.resourceLoader = resourceLoader;
-        this.properties = loadFromStandardLocations(id, fileName);
+        this.properties = loadFromStandardLocations(id, fileName, configRootDir);
         this.merge = merge;
     }
 
@@ -60,14 +66,14 @@ public class PropertiesFactoryBean implements FactoryBean<Properties> {
         return true;
     }
 
-    private Properties loadFromStandardLocations(String id, String fileName) {
-        return loadFromStandardLocations(id, environment.getRequiredProperty("user.home"), fileName);
+    private Properties loadFromStandardLocations(String id, String fileName, String configRootDir) {
+        return loadFromStandardLocations(id, environment.getRequiredProperty("user.home"), configRootDir, fileName);
     }
 
-    private Properties loadFromStandardLocations(String id, String userHome, String fileName) {
+    private Properties loadFromStandardLocations(String id, String userHome, String configRootDir, String fileName) {
         return loadFromLocations(
-        		format("file:/etc/%s/%s-default.properties", id, fileName),
-                format("file:/etc/%s/%s.properties", id, fileName), 
+        		format("file:%s/%s/%s-default.properties", configRootDir, id, fileName),
+                format("file:%s/%s/%s.properties", configRootDir, id, fileName), 
                 format("file:%s/.%s/%s.properties", userHome, id, fileName),
                 format("classpath:META-INF/%s/%s.properties", id, fileName), 
                 format("classpath:META-INF/spring/%s.properties", fileName));
