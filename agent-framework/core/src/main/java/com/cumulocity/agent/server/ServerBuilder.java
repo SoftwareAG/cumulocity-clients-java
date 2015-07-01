@@ -136,18 +136,22 @@ public class ServerBuilder {
     }
 
     protected SpringApplicationBuilder context() {
-       
+        return configure(new SpringApplicationBuilder());
+    }
+    
+    public SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
         StandardEnvironment environment = new StandardEnvironment();
         registerBaseConfiguration(environment);
         loadConfiguration(environment);
         List<Object> features = new ArrayList<Object>(this.features);
         Collections.sort(features, new FeatureOrderComparator());
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
-        builder.showBanner(false).registerShutdownHook(false);
-        builder.environment(environment);
-        builder.web(webEnvironmentEnabled);
-
-        return builder;
+        Object[] sources = from(concat(common(), features)).toArray(Object.class);
+        return builder
+            .sources(sources)
+            .showBanner(false)
+            .registerShutdownHook(false)
+            .environment(environment)
+            .web(webEnvironmentEnabled);
     }
 
     private void registerBaseConfiguration(StandardEnvironment environment) {
