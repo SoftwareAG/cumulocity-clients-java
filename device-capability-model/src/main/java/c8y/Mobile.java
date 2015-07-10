@@ -33,6 +33,7 @@ public class Mobile extends AbstractDynamicProperties {
 	private String mnc;
 	private String imsi;
 	private String lac;
+	private String msisdn;
 
 	public Mobile() {
 	}
@@ -105,6 +106,15 @@ public class Mobile extends AbstractDynamicProperties {
     public void setLac(String lac) {
         this.lac = lac;
     }
+    
+    @JSONProperty(ignoreIfNull = true)
+    public String getMsisdn() {
+        return msisdn;
+    }
+
+    public void setMsisdn(String msisdn) {
+        this.msisdn = msisdn;
+    }
 
     @Override
     public int hashCode() {
@@ -117,6 +127,7 @@ public class Mobile extends AbstractDynamicProperties {
         result = prime * result + ((lac == null) ? 0 : lac.hashCode());
         result = prime * result + ((mcc == null) ? 0 : mcc.hashCode());
         result = prime * result + ((mnc == null) ? 0 : mnc.hashCode());
+        result = prime * result + ((msisdn == null) ? 0 : msisdn.hashCode());
         return result;
     }
 
@@ -163,6 +174,11 @@ public class Mobile extends AbstractDynamicProperties {
             if (other.mnc != null)
                 return false;
         } else if (!mnc.equals(other.mnc))
+            return false;
+        if (msisdn == null) {
+            if (other.msisdn != null)
+                return false;
+        } else if (!msisdn.equals(other.msisdn))
             return false;
         return true;
     }
