@@ -30,8 +30,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>6.5.1</cumulocity.model.version>
-		<cumulocity.shared-components.version>6.5.1</cumulocity.shared-components.version>
+		<cumulocity.model.version>6.5.3</cumulocity.model.version>
+		<cumulocity.shared-components.version>6.5.4</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
