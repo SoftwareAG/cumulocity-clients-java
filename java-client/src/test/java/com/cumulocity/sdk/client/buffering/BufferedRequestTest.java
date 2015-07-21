@@ -64,6 +64,7 @@ public class BufferedRequestTest {
     private AlarmRepresentation alarmRepresentation() {
         return new AlarmRepresentationBuilder()
             .withText("text")
+            .withHistory(null)
             .build();
     }
 }
