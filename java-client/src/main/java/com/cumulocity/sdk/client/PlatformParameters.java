@@ -55,6 +55,8 @@ public class PlatformParameters {
     private String proxyPassword;
 
     private boolean requireResponseBody = true;
+    
+    private boolean forceInitialHost = false;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
 
@@ -174,6 +176,14 @@ public class PlatformParameters {
 
     public boolean requireResponseBody() {
         return requireResponseBody;
+    }
+
+    public boolean isForceInitialHost() {
+        return forceInitialHost;
+    }
+
+    public void setForceInitialHost(boolean forceInitialHost) {
+        this.forceInitialHost = forceInitialHost;
     }
 
     public String getPrincipal() {
