@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>6.6.0-SNAPSHOT</version>
+		<version>6.6.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
@@ -30,8 +30,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>6.6.0-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>6.6.0-SNAPSHOT</cumulocity.shared-components.version>
+		<cumulocity.model.version>6.6.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>6.6.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
