@@ -9,6 +9,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
 
 public class CumulocityHttpClientTest {
     
@@ -37,23 +39,20 @@ public class CumulocityHttpClientTest {
         verifyResolvedPath(HOST + pathParams, "http://127.0.0.1" + pathParams);
     }
     
-
     private void verifyResolvedPath(String expected, String initial) {
         String resolved = client.resolvePath(initial);
         assertThat(expected, is(resolved));
     }
     
     public static CumulocityHttpClient createClient(PlatformParameters platformParameters) {
-        DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
-        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
+        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(), null);
         client.setPlatformParameters(platformParameters);
         return client;
     }
     
-    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
-        MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        final HttpClient client = new HttpClient(httpConnectionManager);
-        return new ApacheHttpClientHandler(client, cc);
+    private static ApacheHttpClientHandler createDefaultClientHander() {
+        final HttpClient client = new HttpClient(new MultiThreadedHttpConnectionManager());
+        return new ApacheHttpClientHandler(client, mock(ClientConfig.class));
     }
 
 }

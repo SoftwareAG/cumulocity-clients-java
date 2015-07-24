@@ -8,9 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CumulocityHttpClient extends ApacheHttpClient {
-    
+
     private final Pattern hostPattern = Pattern.compile("((http|https):\\/\\/.+?)(\\/|\\?|$)");
-    
+
     private PlatformParameters platformParameters;
 
     CumulocityHttpClient(ApacheHttpClientHandler createDefaultClientHander, IoCComponentProviderFactory provider) {
@@ -21,25 +21,22 @@ public class CumulocityHttpClient extends ApacheHttpClient {
     public WebResource resource(String path) {
         return super.resource(resolvePath(path));
     }
-    
+
     protected String resolvePath(String path) {
-        if (platformParameters != null && platformParameters.isForceInitialHost()) {
-            if (platformParameters.getHost().equals(path)) {
-                return path;
-            }
-            Matcher matcher = hostPattern.matcher(path);
-            if (matcher.find()) {
-                String capturedHost = matcher.group(1);
-                return path.replace(capturedHost, platformParameters.getHost());
-            }
-        }
-        return path;
+        return platformParameters.isForceInitialHost() ? insertInitialHost(path) : path;
     }
-    
+
     public void setPlatformParameters(PlatformParameters platformParameters) {
         this.platformParameters = platformParameters;
     }
-    
-    
+
+    private String insertInitialHost(String path) {
+        Matcher matcher = hostPattern.matcher(path);
+        if (matcher.find()) {
+            String capturedHost = matcher.group(1);
+            return path.replace(capturedHost, platformParameters.getHost());
+        }
+        return path;
+    }
 
 }
