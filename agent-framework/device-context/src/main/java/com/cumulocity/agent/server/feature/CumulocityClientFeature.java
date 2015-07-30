@@ -28,15 +28,21 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 public class CumulocityClientFeature {
+    
+    private final Logger log = LoggerFactory.getLogger(CumulocityClientFeature.class);
 
     public static final String C8Y_HOST_PROP = "C8Y.baseURL";
 
     public static final String C8Y_PROXY_PROP = "C8Y.proxy";
 
     public static final String C8Y_PROXY_PORT_PROP = "C8Y.proxyPort";
+    
+    public static final String C8Y_FORCE_INITIAL_HOST = "C8Y.forceInitialHost";
 
     @Value("${" + C8Y_HOST_PROP + "}")
     private String host;
@@ -47,11 +53,17 @@ public class CumulocityClientFeature {
     @Value("${" + C8Y_PROXY_PORT_PROP + ":0}")
     private Integer proxyPort;
 
+    @Value("${" + C8Y_FORCE_INITIAL_HOST + ":false}")
+    private boolean forceInitialHost;
+    
     @Bean
     @Autowired
     @DeviceScope
     public CumulocityClientFactoryBean cumulocityClient(DeviceContextService contextService) {
-        return new CumulocityClientFactoryBean(contextService, host, proxy, proxyPort);
+        if(forceInitialHost) {
+            log.debug("Client will prefer {} value instead of self links when making requests.", C8Y_HOST_PROP);
+        }
+        return new CumulocityClientFactoryBean(contextService, host, proxy, proxyPort, forceInitialHost);
     }
 
     @Bean
@@ -144,16 +156,20 @@ public class CumulocityClientFeature {
         private final DeviceContextService contextService;
 
         private final String host;
+        
+        private final boolean forceInitialHost;
 
         private final Optional<String> proxy;
 
         private final Optional<Integer> proxyPort;
 
-        public CumulocityClientFactoryBean(DeviceContextService contextService, String host, String proxy, Integer proxyPort) {
+        public CumulocityClientFactoryBean(DeviceContextService contextService, String host, String proxy, Integer proxyPort, 
+                boolean forceInitialHost) {
             this.contextService = contextService;
             this.host = host;
             this.proxy = Optional.fromNullable(proxy);
             this.proxyPort = Optional.fromNullable(proxyPort);
+            this.forceInitialHost = forceInitialHost;
         }
 
         @Override
@@ -162,9 +178,11 @@ public class CumulocityClientFeature {
         }
 
         private PlatformImpl create(DeviceCredentials login) throws Exception {
+            final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
+                    login.getAppKey()), login.getPageSize());
+            platformImpl.setForceInitialHost(forceInitialHost);
 
-            return proxy(new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
-                    login.getAppKey()), login.getPageSize()));
+            return proxy(platformImpl);
         }
 
         private PlatformImpl proxy(PlatformImpl platform) {

@@ -1,5 +1,6 @@
 package com.cumulocity.agent.server;
 
+import static com.cumulocity.agent.server.config.PropertiesFactoryBean.DEFAULT_CONFIG_ROOT_DIR;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Iterables.concat;
@@ -9,7 +10,13 @@ import static org.springframework.boot.logging.LoggingApplicationListener.CONFIG
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +53,8 @@ public class ServerBuilder {
     
     private boolean webEnvironmentEnabled = true;
 
+    private String configRootDir;
+            
     protected InetSocketAddress address() {
         return address;
     }
@@ -127,18 +136,22 @@ public class ServerBuilder {
     }
 
     protected SpringApplicationBuilder context() {
-       
+        return configure(new SpringApplicationBuilder());
+    }
+    
+    public SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
         StandardEnvironment environment = new StandardEnvironment();
         registerBaseConfiguration(environment);
         loadConfiguration(environment);
         List<Object> features = new ArrayList<Object>(this.features);
         Collections.sort(features, new FeatureOrderComparator());
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(from(concat(common(), features)).toArray(Object.class));
-        builder.showBanner(false).registerShutdownHook(false);
-        builder.environment(environment);
-        builder.web(webEnvironmentEnabled);
-
-        return builder;
+        Object[] sources = from(concat(common(), features)).toArray(Object.class);
+        return builder
+            .sources(sources)
+            .showBanner(false)
+            .registerShutdownHook(false)
+            .environment(environment)
+            .web(webEnvironmentEnabled);
     }
 
     private void registerBaseConfiguration(StandardEnvironment environment) {
@@ -187,7 +200,7 @@ public class ServerBuilder {
         String id = applicationId.toLowerCase();
         Collection<Path> logbackConfig = ImmutableList.of(
                 Paths.get(System.getProperty("user.home"), "." + id, loggingConfiguration + ".xml"),
-                Paths.get("/etc", id, loggingConfiguration + ".xml"));
+                Paths.get(getConfigRootDir(), id, loggingConfiguration + ".xml"));
         return logbackConfig;
     }
 
@@ -206,11 +219,20 @@ public class ServerBuilder {
 
     private Properties loadResource(Environment environment, String resource) {
         ResourceLoader loader = new DefaultResourceLoader(this.getClass().getClassLoader());
-        PropertiesFactoryBean factoryBean = new PropertiesFactoryBean(applicationId.toLowerCase(), resource, environment, loader, false);
+        PropertiesFactoryBean factoryBean = new PropertiesFactoryBean(applicationId.toLowerCase(), resource, environment, loader, false, getConfigRootDir());
         try {
             return factoryBean.getObject();
         } catch (Exception e) {
             throw new RuntimeException("Unable to load resource " + resource, e);
         }
+    }
+
+    public ServerBuilder configurationRootDirectory(String configRootDir) {
+        this.configRootDir = configRootDir;
+        return this;
+    }
+    
+    private String getConfigRootDir() {
+        return configRootDir == null ? DEFAULT_CONFIG_ROOT_DIR : configRootDir;
     }
 }

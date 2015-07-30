@@ -22,9 +22,7 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
-import com.cumulocity.sdk.client.buffering.BufferProcessor;
-import com.cumulocity.sdk.client.buffering.BufferRequestService;
-import com.cumulocity.sdk.client.buffering.PersistentProvider;
+import com.cumulocity.sdk.client.buffering.*;
 
 /**
  *  Keeps credentials and client configuration.
@@ -57,6 +55,8 @@ public class PlatformParameters {
     private String proxyPassword;
 
     private boolean requireResponseBody = true;
+    
+    private boolean forceInitialHost = false;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
 
@@ -88,11 +88,19 @@ public class PlatformParameters {
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
         setMandatoryFields(host, credentials);
-        PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
-        bufferRequestService = new BufferRequestService(persistentProvider);
-        bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector());
-        bufferProcessor.startProcessing();
+        startBufferProcessing(clientConfiguration);
         this.pageSize = pageSize;
+    }
+
+    private void startBufferProcessing(ClientConfiguration clientConfiguration) {
+        if (clientConfiguration.isAsyncEnabled()) {
+            PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
+            bufferRequestService = new BufferRequestServiceImpl(persistentProvider);
+            bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector());
+            bufferProcessor.startProcessing();
+        } else {
+            bufferRequestService = new DisabledBufferRequestService();
+        }
     }
 
     protected synchronized RestConnector createRestConnector() {
@@ -170,6 +178,14 @@ public class PlatformParameters {
         return requireResponseBody;
     }
 
+    public boolean isForceInitialHost() {
+        return forceInitialHost;
+    }
+
+    public void setForceInitialHost(boolean forceInitialHost) {
+        this.forceInitialHost = forceInitialHost;
+    }
+
     public String getPrincipal() {
         return cumulocityLogin.toLoginString();
     }
@@ -190,12 +206,27 @@ public class PlatformParameters {
         this.password = password;
     }
 
-    public BufferRequestService getBufferRequestService() {
+    BufferRequestService getBufferRequestService() {
         return bufferRequestService;
     }
 
     public void close() {
-        bufferProcessor.shutdown();
+        if (bufferProcessor != null) {
+            bufferProcessor.shutdown();
+        }
+    }
+    
+    private class DisabledBufferRequestService implements BufferRequestService {
+
+        @Override
+        public Future create(BufferedRequest request) {
+            throw new RuntimeException("Async feature is disabled in this platform client instance.");
+        }
+
+        @Override
+        public void addResponse(long requestId, Result result) {
+        }
+
     }
 
 }

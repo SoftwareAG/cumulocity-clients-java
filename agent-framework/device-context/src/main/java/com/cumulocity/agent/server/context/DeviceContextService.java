@@ -11,7 +11,7 @@ public interface DeviceContextService {
     void enterContext(DeviceContext context);
     
     void leaveContext();
-
+    
     void runWithinContext(DeviceContext context, Runnable task);
 
     <V> V callWithinContext(DeviceContext context, Callable<V> task) throws Exception;
