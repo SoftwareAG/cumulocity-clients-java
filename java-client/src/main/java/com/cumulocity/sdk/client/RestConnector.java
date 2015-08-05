@@ -17,7 +17,6 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package com.cumulocity.sdk.client;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
@@ -52,7 +51,6 @@ import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
@@ -78,8 +76,8 @@ public class RestConnector {
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
 
-    private final static Class<?>[] PROVIDERS_CLASSES = { CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
-            ErrorMessageRepresentationReader.class };
+    private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
+        ErrorMessageRepresentationReader.class};
 
     private static final int READ_TIMEOUT_IN_MILLIS = 180000;
 
@@ -255,12 +253,13 @@ public class RestConnector {
         registerClasses(config);
         config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
 
-        ApacheHttpClient client =  new ApacheHttpClient(createDefaultClientHander(config), null);
+        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
+        client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
         return client;
     }
-    
+
     private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
         MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
         httpConnectionManager.setMaxConnectionsPerHost(20);
