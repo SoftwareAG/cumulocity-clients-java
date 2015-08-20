@@ -34,9 +34,17 @@ public class CumulocityHttpClient extends ApacheHttpClient {
         Matcher matcher = hostPattern.matcher(path);
         if (matcher.find()) {
             String capturedHost = matcher.group(1);
-            return path.replace(capturedHost, platformParameters.getHost());
+            return path.replace(capturedHost, getInitialHost());
         }
         return path;
+    }
+
+    private String getInitialHost() {
+        String initialHost = platformParameters.getHost();
+        if(initialHost.endsWith("/")) {
+            initialHost = initialHost.substring(0, initialHost.length() - 1);
+        }
+        return initialHost;
     }
 
 }
