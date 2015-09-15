@@ -66,6 +66,8 @@ public class PlatformParameters {
     
     private RestConnector restConnector;
 
+    private ClientConfiguration clientConfiguration;
+
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -87,16 +89,16 @@ public class PlatformParameters {
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
-        setMandatoryFields(host, credentials);
-        startBufferProcessing(clientConfiguration);
         this.pageSize = pageSize;
+        this.clientConfiguration = clientConfiguration;
+        setMandatoryFields(host, credentials);
     }
 
-    private void startBufferProcessing(ClientConfiguration clientConfiguration) {
+    private void startBufferProcessing() {
         if (clientConfiguration.isAsyncEnabled()) {
             PersistentProvider persistentProvider = clientConfiguration.getPersistentProvider();
             bufferRequestService = new BufferRequestServiceImpl(persistentProvider);
-            bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, createRestConnector());
+            bufferProcessor = new BufferProcessor(persistentProvider, bufferRequestService, restConnector);
             bufferProcessor.startProcessing();
         } else {
             bufferRequestService = new DisabledBufferRequestService();
@@ -106,6 +108,7 @@ public class PlatformParameters {
     protected synchronized RestConnector createRestConnector() {
         if (restConnector == null) {
             restConnector = new RestConnector(this, new ResponseParser());
+            startBufferProcessing();
         }
         return restConnector;
     }
