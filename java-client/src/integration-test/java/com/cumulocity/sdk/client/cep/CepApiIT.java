@@ -1,12 +1,13 @@
 package com.cumulocity.sdk.client.cep;
 
 import static com.google.common.io.Resources.getResource;
-import static com.google.common.io.Resources.newInputStreamSupplier;
+import static com.google.common.io.Resources.asByteSource;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.google.common.io.ByteSource;
 import org.junit.After;
 import org.junit.Test;
 
@@ -32,9 +33,9 @@ public class CepApiIT  extends JavaSdkITBase{
     @Test
     public void shouldCreateCepModule() throws IOException {
         //Given
-        final InputSupplier<InputStream> cepModuleFile = cepModuleFile("cep/test-module.epl");
+        final ByteSource cepModuleFile = cepModuleFile("cep/test-module.epl");
         //When
-        final CepModuleRepresentation cepModule = cepApi.create(cepModuleFile.getInput());
+        final CepModuleRepresentation cepModule = cepApi.create(cepModuleFile.openStream());
         //Then
         assertThat(cepModule).isNotNull();
         assertThat(cepModule.getId()).isNotNull().isNotEmpty();
@@ -45,7 +46,7 @@ public class CepApiIT  extends JavaSdkITBase{
     @Test
     public void shouldDeleteCepModule() throws IOException {
         //Given
-        final CepModuleRepresentation cepModule = cepApi.create( cepModuleFile("cep/test-module.epl").getInput());
+        final CepModuleRepresentation cepModule = cepApi.create( cepModuleFile("cep/test-module.epl").openStream());
         //When
         cepApi.delete(cepModule);
         //Then
@@ -53,8 +54,8 @@ public class CepApiIT  extends JavaSdkITBase{
         assertThat(cepModule.getId()).isNotNull().isNotEmpty();
     }
 
-    private InputSupplier<InputStream> cepModuleFile(String module) {
-        return newInputStreamSupplier(getResource(module));
+    private ByteSource cepModuleFile(String module) {
+        return asByteSource(getResource(module));
     }
 
 }
