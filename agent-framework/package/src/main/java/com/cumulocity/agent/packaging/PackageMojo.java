@@ -115,6 +115,7 @@ public class PackageMojo extends AbstractMojo {
                         element(name("requires"), element(name("require"), "java > 1.7")),
                         element(name("repackJars"), String.valueOf(false)),
                         mappings(
+                                mapping(directory("/var/log/${package.directory}")),
                                 mapping(directory("/usr/lib/${package.directory}"),
                                         sources(source(location(new File(workarea, "bin").getAbsolutePath())))),
                                 mapping(directory("/usr/lib/systemd/system"),
