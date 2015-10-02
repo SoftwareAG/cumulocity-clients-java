@@ -69,6 +69,11 @@ public class CepApiImpl implements CepApi {
         return restConnector.putStream(cepModuleUrl(id), CEP_MODULE, content, CepModuleRepresentation.class);
     }
 
+    @Override
+    public CepModuleRepresentation update(CepModuleRepresentation module) {
+        return restConnector.put(cepModuleUrl(module.getId()), CEP_MODULE, module);
+    }
+
     private String cepModuleUrl(String id) {
         return cepModulesUrl()+"/"+ id;
     }
