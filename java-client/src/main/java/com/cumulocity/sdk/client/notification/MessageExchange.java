@@ -214,10 +214,14 @@ class MessageExchange {
 
         private void onTransportException(int code) {
             log.debug("request failed with code {}", code);
-            Map<String, Object> failure = new HashMap<String, Object>(2);
-            failure.put("httpCode", code);
-            TransportException x = new TransportException(failure);
-            listener.onException(x, messages);
+            if (code == 401) {
+                log.warn("bayeux client received 401 while running -> do no longer reconnect");
+            } else {
+                Map<String, Object> failure = new HashMap<String, Object>(2);
+                failure.put("httpCode", code);
+                TransportException x = new TransportException(failure);
+                listener.onException(x, messages); 
+            }
         }
 
         private void onConnectionFailed(Exception e) {
