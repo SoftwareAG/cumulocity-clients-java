@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.core.NamedThreadLocal;
 
 public class DeviceContextServiceImpl implements DeviceContextService {
@@ -57,12 +58,16 @@ public class DeviceContextServiceImpl implements DeviceContextService {
 
     @Override
     public void enterContext(DeviceContext newContext) {
+        MDC.put("tenant", newContext.getLogin().getTenant());
+        MDC.put("user", newContext.getLogin().getUsername());
         log.debug("entering to  {} ", newContext);
         DeviceContext contextCopy = new DeviceContext(newContext.getLogin());
         localContext.set(contextCopy);
     }
 
     private void leaveContext(DeviceContext previousContext) {
+        MDC.remove("tenant");
+        MDC.remove("user");
         if (previousContext == null) {
             localContext.remove();
         } else {
@@ -72,6 +77,8 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     
     @Override
     public void leaveContext() {
+        MDC.remove("tenant");
+        MDC.remove("user");
         localContext.remove();
     }
 
