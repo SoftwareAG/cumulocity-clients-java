@@ -19,6 +19,7 @@ import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.google.common.collect.Maps;
 
 @Component
 public class DeviceCreatorService {
@@ -102,7 +103,7 @@ public class DeviceCreatorService {
     private static ManagedObjectRepresentation defaultAgent(String name) {
         ManagedObjectRepresentation agent = new ManagedObjectRepresentation();
         agent.setName(name);
-        agent.set(new HashMap(), Agent.class);
+        agent.set(Maps.newHashMap(), Agent.class);
         return agent;
     }
     
