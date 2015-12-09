@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ComponentScan(basePackages = "com.cumulocity.agent.server.executor")
-@Import(ContextFeature.class)
+@Import({ContextFeature.class, AgentControlFeature.class})
 public class DeviceOperationExecutorFeature {
 
 }

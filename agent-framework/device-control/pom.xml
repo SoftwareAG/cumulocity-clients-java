@@ -46,6 +46,11 @@
 			<groupId>com.nsn.cumulocity.clients-java</groupId>
 			<artifactId>agent-framework-repositories</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.nsn.cumulocity.clients-java</groupId>
+			<artifactId>agent-framework-core</artifactId>
+		</dependency>
 
 
 		<!-- TEST Dependencies -->

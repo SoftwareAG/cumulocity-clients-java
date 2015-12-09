@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.devicecontrol;
+package com.cumulocity.agent.server.agent;
 
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 
