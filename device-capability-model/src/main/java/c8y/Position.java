@@ -87,4 +87,9 @@ public class Position extends AbstractDynamicProperties {
         result = 31 * result + (alt == null ? 0 : alt.hashCode());
         return result;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Position [lat=%s, lng=%s, alt=%s, accuracy=%s]", lat, lng, alt, accuracy);
+    }
 }
