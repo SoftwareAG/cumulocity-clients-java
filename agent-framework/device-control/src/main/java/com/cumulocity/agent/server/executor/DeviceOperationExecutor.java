@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import c8y.AgentLogRequest;
+
 import com.cumulocity.agent.server.agent.AgentDeviceControlInitalizer;
 import com.cumulocity.agent.server.agent.OperationSubscriber;
 import com.cumulocity.agent.server.context.DeviceContextService;
@@ -21,8 +23,6 @@ import com.google.common.collect.Maps;
 public class DeviceOperationExecutor implements OperationExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceOperationExecutor.class);
-    
-    protected static final String AGENT_LOG_FRAGMENT = "c8y_AgentLogRequest";
     
     protected volatile Map<String,Map<String, OperationSubscriber>> subscribers = Maps.newConcurrentMap();
     
@@ -42,7 +42,7 @@ public class DeviceOperationExecutor implements OperationExecutor {
     
     @Override
     public boolean supports(OperationRepresentation operation) {
-        if (operation.get(AGENT_LOG_FRAGMENT) != null) {
+        if (operation.get(AgentLogRequest.class) != null) {
             return false;
         };
         return true;
