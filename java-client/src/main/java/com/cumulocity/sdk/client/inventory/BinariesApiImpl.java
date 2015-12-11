@@ -1,12 +1,8 @@
 package com.cumulocity.sdk.client.inventory;
 
-import java.io.File;
 import java.io.InputStream;
 
-import javax.ws.rs.core.MediaType;
-
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.RestConnector;

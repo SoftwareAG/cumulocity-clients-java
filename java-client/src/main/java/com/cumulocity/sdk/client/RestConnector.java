@@ -19,10 +19,11 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
+import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
+import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;

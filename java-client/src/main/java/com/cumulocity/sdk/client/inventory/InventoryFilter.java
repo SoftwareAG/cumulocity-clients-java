@@ -23,7 +23,6 @@ package com.cumulocity.sdk.client.inventory;
 import static com.cumulocity.model.util.ExtensibilityConverter.classToStringRepresentation;
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.cumulocity.model.idtype.GId;
