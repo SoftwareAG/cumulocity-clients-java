@@ -20,7 +20,7 @@ import com.cumulocity.agent.server.repository.InventoryRepository;
 
 @Configuration
 @ComponentScan(basePackages = "com.cumulocity.agent.server.agent")
-@Import({ContextFeature.class, SchedulingFeature.class})
+@Import({ContextFeature.class, SchedulingFeature.class, RepositoryFeature.class})
 public class AgentControlFeature {
 
     @Bean

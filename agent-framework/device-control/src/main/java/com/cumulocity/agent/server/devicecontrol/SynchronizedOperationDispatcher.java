@@ -1,6 +1,8 @@
 package com.cumulocity.agent.server.devicecontrol;
 
-import static com.cumulocity.model.operation.OperationStatus.*;
+import static com.cumulocity.model.operation.OperationStatus.FAILED;
+import static com.cumulocity.model.operation.OperationStatus.PENDING;
+import static com.cumulocity.model.operation.OperationStatus.SUCCESSFUL;
 import static com.cumulocity.rest.representation.operation.Operations.asFailedOperation;
 import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.collect.Queues.newConcurrentLinkedQueue;
@@ -17,8 +19,6 @@ import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.repository.DeviceControlRepository;
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.rest.representation.operation.Operations;
-import com.google.common.base.Throwables;
 
 public class SynchronizedOperationDispatcher implements OperationDispatcher {
 
