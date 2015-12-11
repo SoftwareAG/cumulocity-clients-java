@@ -60,11 +60,12 @@ public class SmartCometClient {
                 clientId = handshake();
             }
             if (clientId == null ) {
-            	throw new SDKException("Unauthorized");
+                throw new SDKException("Unauthorized");
             }
             this.channels = channels;
             subscribe();
-            executorService.execute(new SmartLongPolling(this));   
+            longPolling = new SmartLongPolling(this);
+            executorService.execute(longPolling);   
         } else {
             throw new SDKException("SmartCometClient already started");
         }
@@ -85,7 +86,7 @@ public class SmartCometClient {
         SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
         SmartResponse response = connection.executeRequest(request);
         if (!response.isSuccessful()) {
-        	return null;
+            return null;
         }
         SmartRow[] responseLines = response.getDataRows();
         SmartRow responseLine = extractAdvice(responseLines)[0];
@@ -161,6 +162,7 @@ public class SmartCometClient {
     }
     
     private void disconnect() {
+        longPolling.setFlag(false);
         SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_DISCONNECT_CODE + "," + clientId);
         executeWithoutResponse(request);
     }
