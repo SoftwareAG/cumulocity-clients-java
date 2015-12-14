@@ -43,13 +43,13 @@ public class AgentService {
     public AgentService(
             @Value("${C8Y.agent.user}") String agentUser,
             @Value("${C8Y.agent.password}") String agentPassword,
-            @Value("${C8Y.agent.identity}") String agentIdentity,
+            @Value("${C8Y.application.id}") String applicationId,
             DeviceContextService contextService,
             IdentityRepository identity,
             InventoryRepository inventory) {
         this.agentUser = agentUser;
         this.agentPassword = agentPassword;
-        this.agentIdentity = new ID(AGENT_IDENTITY_TYPE, agentIdentity);
+        this.agentIdentity = new ID(AGENT_IDENTITY_TYPE, applicationId);
         this.contextService = contextService;
         this.identity = identity;
         this.inventory = inventory;

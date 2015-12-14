@@ -26,7 +26,7 @@ public class AgentControlFeature {
     @Bean
     @Autowired
     public DeviceControlListener deviceControlListener(OperationsDispatcher dispatcher, AlarmRepository alarmRepository, InventoryRepository inventoryRepository,
-            @Value("${application.id:defaultId}") String applicationId) {
+            @Value("${C8Y.application.id}") String applicationId) {
         return new DeviceControlListener(dispatcher, alarmRepository, inventoryRepository, applicationId);
     }
     

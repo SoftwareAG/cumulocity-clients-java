@@ -59,18 +59,18 @@ public class LoggingService {
         }
         String command = buildCommand(request);
         try {
-            InputStream logInput = readFile(command);
-            uploadLog(operation, logInput);
+            uploadLog(command, operation);
         } catch (Exception e) {
             logger.error("Could not read log file", e);
-            deviceControl.save(Operations.asFailedOperation(operation.getDeviceId(), "Error on reading file: " + e.getMessage()));
+            deviceControl.save(Operations.asFailedOperation(operation.getId(), "Error on reading file: " + e.getMessage()));
         }
     }
 
     private InputStream readFile(String command) throws IOException, InterruptedException {
         logger.info("Run log command: {}", command);
-        Process process = Runtime.getRuntime().exec(command);
-        process.waitFor();
+        ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+        builder.redirectErrorStream(true);
+        Process process = builder.start();
         return process.getInputStream();
     }
     
@@ -98,13 +98,26 @@ public class LoggingService {
         return builder.build();
     }
     
-    private void uploadLog(OperationRepresentation operation, InputStream is) {
+    private void uploadLog(String command, OperationRepresentation operation) {
+        Process process =  null;
         try {
+            logger.info("Run log command: {}", command);
+            ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", command);
+            builder.redirectErrorStream(true);
+            process = builder.start();
+            logger.info("Uploading log file");
             String filename = buildName(operation);
             ManagedObjectRepresentation container = uploadFileDummy(filename);
-            uploadLogFile(container.getId(), is);
+            uploadLogFile(container.getId(), process.getInputStream());
         } catch (SDKException e) {
             logger.error("Could not upload log", e);
+        } catch (IOException e) {
+            logger.error("Could not read log", e);
+        } finally {
+            if (process != null) {
+                logger.debug("Kill log read process");
+                process.destroy();
+            }
         }
     }
     
