@@ -31,6 +31,7 @@ import java.net.URL;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -110,10 +111,19 @@ public class RestConnector {
     }
 
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
+        ClientResponse response = getClientResponse(path, mediaType);
+        return responseParser.parse(response, OK.getStatusCode(), responseType);
+    }
+
+    public Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException {
+        ClientResponse response = getClientResponse(path, mediaType);
+        return response.getResponseStatus();
+    }
+
+    private ClientResponse getClientResponse(String path, CumulocityMediaType mediaType) {
         Builder builder = client.resource(path).accept(mediaType);
         builder = addApplicationKeyHeader(builder);
-        ClientResponse response = builder.get(ClientResponse.class);
-        return responseParser.parse(response, OK.getStatusCode(), responseType);
+        return builder.get(ClientResponse.class);
     }
 
     public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
