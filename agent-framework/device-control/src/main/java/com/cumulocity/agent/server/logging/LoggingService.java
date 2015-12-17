@@ -4,6 +4,8 @@ import static com.cumulocity.agent.server.logging.LogFileCommandBuilder.searchIn
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +16,11 @@ import org.springframework.util.StringUtils;
 
 import c8y.AgentLogRequest;
 
+import com.cumulocity.agent.server.logging.LogFileCommandBuilder.InvalidSearchException;
 import com.cumulocity.agent.server.repository.BinariesRepository;
 import com.cumulocity.agent.server.repository.DeviceControlRepository;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.rest.representation.operation.Operations;
@@ -29,6 +33,8 @@ public class LoggingService {
     
     public static final String LOGFILE_CONTENT_TYPE = "text/plain";
     public static final String LOGFILE_FILE_EXTENSION = ".log";
+    
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     
     private final DeviceControlRepository deviceControl;
     
@@ -57,24 +63,19 @@ public class LoggingService {
             logger.info("Could not handle operation with id: {} -> no AgentLogRequest fragment", operation.getId());
             return;
         }
-        String command = buildCommand(request);
+        
         try {
-            uploadLog(command, operation);
+            String command = buildCommand(request);
+            String selfUrl = uploadLog(command, request);
+            saveOperationWithLogLink(operation, request, selfUrl);
+        } catch (InvalidSearchException e) {
+            deviceControl.save(Operations.asFailedOperation(operation.getId(), e.getMessage()));
         } catch (Exception e) {
-            logger.error("Could not read log file", e);
-            deviceControl.save(Operations.asFailedOperation(operation.getId(), "Error on reading file: " + e.getMessage()));
+            deviceControl.save(Operations.asFailedOperation(operation.getId(), "Error on reading log file: " + e.getMessage()));
         }
     }
 
-    private InputStream readFile(String command) throws IOException, InterruptedException {
-        logger.info("Run log command: {}", command);
-        ProcessBuilder builder = new ProcessBuilder(command.split(" "));
-        builder.redirectErrorStream(true);
-        Process process = builder.start();
-        return process.getInputStream();
-    }
-    
-    private String buildCommand(AgentLogRequest request) {
+    private String buildCommand(AgentLogRequest request) throws InvalidSearchException {
         LogFileCommandBuilder builder = searchInFile(logfile);
         if (request.getTenant() != null) {
             builder.withTenant(request.getTenant());
@@ -98,7 +99,7 @@ public class LoggingService {
         return builder.build();
     }
     
-    private void uploadLog(String command, OperationRepresentation operation) {
+    private String uploadLog(String command, AgentLogRequest request) throws SDKException, IOException {
         Process process =  null;
         try {
             logger.info("Run log command: {}", command);
@@ -106,13 +107,16 @@ public class LoggingService {
             builder.redirectErrorStream(true);
             process = builder.start();
             logger.info("Uploading log file");
-            String filename = buildName(operation);
+            String filename = buildName(request);
             ManagedObjectRepresentation container = uploadFileDummy(filename);
             uploadLogFile(container.getId(), process.getInputStream());
+            return container.getSelf();
         } catch (SDKException e) {
             logger.error("Could not upload log", e);
+            throw e;
         } catch (IOException e) {
             logger.error("Could not read log", e);
+            throw e;
         } finally {
             if (process != null) {
                 logger.debug("Kill log read process");
@@ -121,11 +125,17 @@ public class LoggingService {
         }
     }
     
-    private String buildName(OperationRepresentation operation) {
+    private String buildName(AgentLogRequest request) {
         StringBuilder builder = new StringBuilder();
         builder.append(applicationId);
-        builder.append("_ID");
-        builder.append(operation.getId().getValue());
+        if (request.getDeviceUser() != null) {
+            builder.append("_");
+            builder.append(request.getDeviceUser());
+        }
+        if (request.getDateFrom() != null && request.getDateTo() != null) {
+            builder.append("_");
+            builder.append(DATE_FORMAT.format(request.getDateFrom()));
+        }
         builder.append(LOGFILE_FILE_EXTENSION);
         return builder.toString();
     }
@@ -138,5 +148,14 @@ public class LoggingService {
         ManagedObjectRepresentation container = new ManagedObjectRepresentation();
         container.setName(filename);
         return binaries.uploadFile(container, new byte[]{0x00});
+    }
+    
+    private void saveOperationWithLogLink(OperationRepresentation operation, AgentLogRequest request, String selfUrl) {
+        request.setFile(selfUrl.replace("managedObjects", "binaries"));
+        OperationRepresentation updatedOperation = new OperationRepresentation();
+        updatedOperation.setId(operation.getId());
+        updatedOperation.set(request, AgentLogRequest.class);
+        updatedOperation.setStatus(OperationStatus.SUCCESSFUL.toString());
+        deviceControl.save(updatedOperation);
     }
 }

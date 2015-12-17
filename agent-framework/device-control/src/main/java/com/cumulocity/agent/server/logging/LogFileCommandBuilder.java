@@ -3,12 +3,15 @@ package com.cumulocity.agent.server.logging;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Lists;
 
 public class LogFileCommandBuilder {
 
     private static String DEFAULT_TIMESTAMP_FORMAT = "HH:mm";
+    
+    private static Pattern PATTERN = Pattern.compile("^[a-zA-Z0-9_ ]*$");
     
     public static String HOURS_FORMAT = "HH";
     public static String MINUTES_FORMAT = "mm";
@@ -30,17 +33,26 @@ public class LogFileCommandBuilder {
         return this;
     }
     
-    public LogFileCommandBuilder withTenant(String tenant) {
-        this.filters.add(String.format("- %s -", tenant));
+    public LogFileCommandBuilder withTenant(String tenant) throws InvalidSearchException {
+        if (!PATTERN.matcher(tenant).matches()) {
+            throw new InvalidSearchException("Cannot build command. Search parameters only allow the following characters [a-zA-Z0-9_]");
+        }
+        this.filters.add(String.format("\\- %s \\-", tenant));
         return this;
     }
     
-    public LogFileCommandBuilder withDeviceUser(String deviceUser) {
-        this.filters.add(String.format("- %s -", deviceUser));
+    public LogFileCommandBuilder withDeviceUser(String deviceUser) throws InvalidSearchException {
+        if (!PATTERN.matcher(deviceUser).matches()) {
+            throw new InvalidSearchException("Cannot build command. Search parameters only allow the following characters [a-zA-Z0-9_]");
+        }
+        this.filters.add(String.format("\\- %s \\-", deviceUser));
         return this;
     }
     
-    public LogFileCommandBuilder withSearchText(String text) {
+    public LogFileCommandBuilder withSearchText(String text) throws InvalidSearchException {
+        if (!PATTERN.matcher(text).matches()) {
+            throw new InvalidSearchException("Cannot build command. Search parameters only allow the following characters [a-zA-Z0-9_]");
+        }
         this.filters.add(text);
         return this;
     }
@@ -89,19 +101,33 @@ public class LogFileCommandBuilder {
         int hoursTo = dateTo.getHours();
         int minutesTo = dateTo.getMinutes();
         if (hoursTo == hoursFrom) {
-            // We only need to care about minutes
-            filter.append(replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, minutesTo), timestampFormat));
+            filter.append(getFilterForSameHour(timestampFormat, hoursFrom, minutesFrom, minutesTo));
         } else if (hoursTo == hoursFrom + 1) {
-            String firstHour = replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, 59), timestampFormat);
-            String lastHour = replacePlaceholders(getLeadingZeroString(hoursTo),numberRangeFilter(0, minutesTo), timestampFormat);
-            filter.append(String.format("(%s)|(%s)", firstHour, lastHour));
+            filter.append(getFilterForConnectedHours(timestampFormat, hoursFrom, minutesFrom, hoursTo, minutesTo));
         } else {
-            String firstHour = replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, 59), timestampFormat);
-            String lastHour = replacePlaceholders(getLeadingZeroString(hoursTo),numberRangeFilter(0, minutesTo), timestampFormat);
-            String hoursBetween = replacePlaceholders(numberRangeFilter((hoursFrom + 1) % 24, (hoursTo - 1) % 24), "", timestampFormat);
-            filter.append(String.format("(%s)|(%s)|(%s)", firstHour, hoursBetween, lastHour));
+            filter.append(getFilterForHourRange(timestampFormat, hoursFrom, minutesFrom, hoursTo, minutesTo));
         }
         return filter.toString();
+    }
+
+    private static String getFilterForHourRange(String timestampFormat, int hoursFrom, int minutesFrom, int hoursTo,
+            int minutesTo) {
+        String firstHour = replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, 59), timestampFormat);
+        String lastHour = replacePlaceholders(getLeadingZeroString(hoursTo),numberRangeFilter(0, minutesTo), timestampFormat);
+        String hoursBetween = replacePlaceholders(numberRangeFilter((hoursFrom + 1) % 24, (hoursTo - 1) % 24), "", timestampFormat);
+        return String.format("(%s)|(%s)|(%s)", firstHour, hoursBetween, lastHour);
+    }
+
+    private static String getFilterForConnectedHours(String timestampFormat, int hoursFrom, int minutesFrom,
+            int hoursTo, int minutesTo) {
+        String firstHour = replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, 59), timestampFormat);
+        String lastHour = replacePlaceholders(getLeadingZeroString(hoursTo),numberRangeFilter(0, minutesTo), timestampFormat);
+        return String.format("(%s)|(%s)", firstHour, lastHour);
+    }
+
+    private static String getFilterForSameHour(String timestampFormat, int hoursFrom, int minutesFrom, int minutesTo) {
+        // We only need to care about minutes
+        return replacePlaceholders(getLeadingZeroString(hoursFrom),numberRangeFilter(minutesFrom, minutesTo), timestampFormat);
     }
 
     private static String getLeadingZeroString(int number) {
@@ -134,13 +160,20 @@ public class LogFileCommandBuilder {
     private void appendEgrepCommand(String filter) {
         command.append(String.format("egrep '%s'", filter));
     }
-    
+     
     private void appendTailCommand() {
         command.append("tail -n " + maximumLines);
     }
     
     private void appendPipe() {
         command.append(" | ");
+    }
+    
+    public class InvalidSearchException extends Exception {
+        
+        public InvalidSearchException(String exception) {
+            super(exception);
+        }
     }
     
 }

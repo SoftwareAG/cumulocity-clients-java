@@ -8,6 +8,8 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.cumulocity.agent.server.logging.LogFileCommandBuilder.InvalidSearchException;
+
 public class LogFileCommandBuilderTest {
 
     private static String filename = "defaultFileName";
@@ -21,6 +23,21 @@ public class LogFileCommandBuilderTest {
         builder.withSearchText("text2");
         
         assertThat(builder.build()).isEqualTo("cat defaultFileName | egrep 'text1' | egrep 'text2'");
+    }
+    
+    @Test
+    public void shouldHandleSearchText2Correctly() throws Exception {
+        LogFileCommandBuilder builder = searchInFile(filename);
+        builder.withSearchText("text 1");
+        builder.withSearchText("text_2");
+        
+        assertThat(builder.build()).isEqualTo("cat defaultFileName | egrep 'text 1' | egrep 'text_2'");
+    }
+    
+    @Test(expected=InvalidSearchException.class)
+    public void shouldHandleWrongCharacters() throws Exception {
+        LogFileCommandBuilder builder = searchInFile(filename);
+        builder.withSearchText("I try to break the command'; do nasty stuff");
     }
     
     @Test

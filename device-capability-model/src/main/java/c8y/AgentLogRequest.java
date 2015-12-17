@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.svenson.AbstractDynamicProperties;
+import org.svenson.JSONProperty;
+import org.svenson.converter.JSONConverter;
+
+import com.cumulocity.model.DateConverter;
 
 public class AgentLogRequest extends AbstractDynamicProperties implements Serializable {
 
@@ -19,6 +23,8 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
 	
 	public AgentLogRequest() {}
 	
+	@JSONProperty(ignoreIfNull = true)
+	@JSONConverter(type = DateConverter.class)
 	public Date getDateFrom() {
         return dateFrom;
     }
@@ -27,6 +33,8 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.dateFrom = dateFrom;
     }
 
+    @JSONProperty(ignoreIfNull = true)
+    @JSONConverter(type = DateConverter.class)
     public Date getDateTo() {
         return dateTo;
     }
@@ -35,6 +43,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.dateTo = dateTo;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public int getMaximumLines() {
         return maximumLines;
     }
@@ -43,6 +52,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.maximumLines = maximumLines;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public String getFile() {
         return file;
     }
@@ -51,6 +61,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.file = file;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public String getSearchText() {
         return searchText;
     }
@@ -59,6 +70,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.searchText = searchText;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public String getTenant() {
         return tenant;
     }
@@ -67,6 +79,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         this.tenant = tenant;
     }
 
+    @JSONProperty(ignoreIfNull = true)
     public String getDeviceUser() {
         return deviceUser;
     }
