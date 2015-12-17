@@ -24,10 +24,12 @@ import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.identity.IdentityApi;
+import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,6 +136,13 @@ public class CumulocityClientFeature {
     @ContextScope
     public CepApi cepApi(Platform platform) throws SDKException {
         return platform.getCepApi();
+    }
+    
+    @Bean
+    @Autowired
+    @ContextScope
+    public BinariesApi binariesApi(Platform platform) throws SDKException {
+        return platform.getBinariesApi();
     }
 
     @Bean(destroyMethod = "disconnect")
