@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>agent-framework</artifactId>
-		<version>6.16.1-SNAPSHOT</version>
+		<version>6.16.1</version>
 	</parent>
 	<artifactId>agent-framework-package</artifactId>
 	<packaging>maven-plugin</packaging>
