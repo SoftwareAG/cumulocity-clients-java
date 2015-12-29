@@ -25,6 +25,12 @@ Please add [Cumulocity] [1] [Maven repository] [2] to Your `settings.xml` like t
               <url>http://resources.cumulocity.com/maven/repository</url>
             </repository>
           </repositories>
+          <pluginRepositories>
+            <pluginRepository>
+              <id>cumulocity-plugins-repo</id>
+              <url>http://resources.cumulocity.com/maven/repository</url>
+            </pluginRepository>
+          </pluginRepositories>
         </profile>
       </profiles>
     </settings>
