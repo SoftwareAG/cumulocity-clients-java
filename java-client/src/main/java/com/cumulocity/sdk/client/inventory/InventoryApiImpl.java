@@ -106,7 +106,7 @@ public class InventoryApiImpl implements InventoryApi {
 	protected String getMOCollectionUrl() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
 	}
-
+	
 	private InventoryRepresentation getInventoryRepresentation() throws SDKException {
 		return inventoryRepresentation;
 	}
