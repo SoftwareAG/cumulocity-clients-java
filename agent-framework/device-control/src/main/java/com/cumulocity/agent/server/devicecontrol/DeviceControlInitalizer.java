@@ -32,7 +32,7 @@ public class DeviceControlInitalizer {
     private final DeviceContextService contextService;
 
     private final DeviceControlListener listener;
-
+    
     @Autowired
     public DeviceControlInitalizer(EnabledTenantRepository tenantsConfig, DeviceControlRepository deviceControlRepository,
             DeviceContextService contextService, DeviceControlListener listener) {

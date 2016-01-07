@@ -17,7 +17,6 @@ public class OperationsDispatcher {
     @Autowired
     public OperationsDispatcher(OperationDispacherRegistry queueRegistry) {
         this.dispatchersRegistry = queueRegistry;
-
     }
 
     public void dispatch(OperationRepresentation operation) {

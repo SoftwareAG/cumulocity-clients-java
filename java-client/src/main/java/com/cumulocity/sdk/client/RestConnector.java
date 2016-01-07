@@ -19,7 +19,9 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
+import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
+import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 import java.io.IOException;
@@ -129,7 +131,17 @@ public class RestConnector {
 
     }
 
-    public <T extends ResourceRepresentation> T putStream(String path, CumulocityMediaType mediaType, InputStream content,
+    public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
+            Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(contentType);
+        builder = addApplicationKeyHeader(builder);
+        if (platformParameters.requireResponseBody()) {
+            builder.accept(MediaType.APPLICATION_JSON);
+        }
+        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), CREATED.getStatusCode());
+    }
+    
+    public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
@@ -139,6 +151,20 @@ public class RestConnector {
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
+    }
+    
+    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
+            Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
+        builder = addApplicationKeyHeader(builder);
+        if (platformParameters.requireResponseBody()) {
+            builder.accept(MediaType.APPLICATION_JSON);
+        }
+        FormDataMultiPart form = new FormDataMultiPart();
+        form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
+        form.bodyPart(new FormDataBodyPart("filesize", String.valueOf(bytes.length)));
+        form.bodyPart(new FormDataBodyPart("file", bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
     }
 
     public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {

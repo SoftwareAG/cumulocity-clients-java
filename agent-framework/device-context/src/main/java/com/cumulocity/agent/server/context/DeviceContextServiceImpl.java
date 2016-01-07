@@ -4,10 +4,14 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.core.NamedThreadLocal;
 
 public class DeviceContextServiceImpl implements DeviceContextService {
 
+    private static final String TENANT_LOG_FLAG = "tenant";
+    private static final String USER_LOG_FLAG = "user";
+    
     private final Logger log = LoggerFactory.getLogger(DeviceContextServiceImpl.class);
 
     private final ThreadLocal<DeviceContext> localContext = new NamedThreadLocal<DeviceContext>("deviceLocalContext");
@@ -48,7 +52,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         try {
             return task.call();
         } catch (Exception e) {
-            log.warn("execution of task failed within tenant : " + context.getLogin().getTenant(), e);
+            log.warn("execution of task failed within tenant : " + getContextTenant(context), e);
             throw e;
         } finally {
             leaveContext(previousContext);
@@ -57,12 +61,18 @@ public class DeviceContextServiceImpl implements DeviceContextService {
 
     @Override
     public void enterContext(DeviceContext newContext) {
+        // Add flags for logging framework
+        MDC.put(TENANT_LOG_FLAG, getContextTenant(newContext));
+        MDC.put(USER_LOG_FLAG, getContextUser(newContext));
         log.debug("entering to  {} ", newContext);
         DeviceContext contextCopy = new DeviceContext(newContext.getLogin());
         localContext.set(contextCopy);
     }
 
     private void leaveContext(DeviceContext previousContext) {
+        // Remove logging flags
+        MDC.remove(TENANT_LOG_FLAG);
+        MDC.remove(USER_LOG_FLAG);
         if (previousContext == null) {
             localContext.remove();
         } else {
@@ -72,6 +82,9 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     
     @Override
     public void leaveContext() {
+        // Remove logging flags
+        MDC.remove(TENANT_LOG_FLAG);
+        MDC.remove(USER_LOG_FLAG);
         localContext.remove();
     }
 
@@ -118,5 +131,13 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     @Override
     public <V> Callable<V> withinContext(Callable<V> task) {
         return withinContext(getContext(), task);
+    }
+    
+    private static String getContextUser(DeviceContext newContext) {
+        return newContext.getLogin().getUsername();
+    }
+
+    private static String getContextTenant(DeviceContext newContext) {
+        return newContext.getLogin().getTenant();
     }
 }
