@@ -9,12 +9,12 @@ import com.google.common.collect.Lists;
 
 public class LogFileCommandBuilder {
 
-    private static String DEFAULT_TIMESTAMP_FORMAT = "HH:mm";
+    private final static String DEFAULT_TIMESTAMP_FORMAT = "HH:mm";
     
-    private static Pattern PATTERN = Pattern.compile("^[a-zA-Z0-9_ ]*$");
+    private final static Pattern PATTERN = Pattern.compile("^[a-zA-Z0-9_ ]*$");
     
-    public static String HOURS_FORMAT = "HH";
-    public static String MINUTES_FORMAT = "mm";
+    public final static String HOURS_FORMAT = "HH";
+    public final static String MINUTES_FORMAT = "mm";
     
     private StringBuilder command = new StringBuilder();
     
@@ -169,6 +169,7 @@ public class LogFileCommandBuilder {
         command.append(" | ");
     }
     
+    @SuppressWarnings("serial")
     public class InvalidSearchException extends Exception {
         
         public InvalidSearchException(String exception) {
