@@ -108,19 +108,6 @@ public class AlarmIT extends JavaSdkITBase {
     }
 
     @Test
-    public void createAlarmWithoutStatus() throws Exception {
-        // Given
-        AlarmRepresentation alarm = anAlarmRepresentationLike(ALARM_REPRESENTATION)
-                .withSource(mo1).withStatus(null).build();
-
-        // Then
-        exception.expect(sdkException(UNPROCESSABLE));
-
-        // When
-        alarmApi.create(alarm);
-    }
-
-    @Test
     public void createAlarmsWithoutSeverity() throws Exception {
         // Given
         AlarmRepresentation alarm = anAlarmRepresentationLike(ALARM_REPRESENTATION)
