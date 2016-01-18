@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import c8y.AgentLogRequest;
+import c8y.LogfileRequest;
 
 import com.cumulocity.agent.server.logging.LogFileCommandBuilder.InvalidSearchException;
 import com.cumulocity.agent.server.repository.BinariesRepository;
@@ -58,7 +58,7 @@ public class LoggingService {
     }
     
     public void readLog(OperationRepresentation operation) throws SDKException {
-        AgentLogRequest request = operation.get(AgentLogRequest.class);
+        LogfileRequest request = operation.get(LogfileRequest.class);
         if (request == null) {
             logger.info("Could not handle operation with id: {} -> no AgentLogRequest fragment", operation.getId());
             return;
@@ -75,7 +75,7 @@ public class LoggingService {
         }
     }
 
-    private String buildCommand(AgentLogRequest request) throws InvalidSearchException {
+    private String buildCommand(LogfileRequest request) throws InvalidSearchException {
         LogFileCommandBuilder builder = searchInFile(logfile);
         if (request.getTenant() != null) {
             builder.withTenant(request.getTenant());
@@ -99,7 +99,7 @@ public class LoggingService {
         return builder.build();
     }
     
-    private String uploadLog(String command, AgentLogRequest request) throws SDKException, IOException {
+    private String uploadLog(String command, LogfileRequest request) throws SDKException, IOException {
         Process process =  null;
         try {
             logger.info("Run log command: {}", command);
@@ -125,7 +125,7 @@ public class LoggingService {
         }
     }
     
-    private String buildName(AgentLogRequest request) {
+    private String buildName(LogfileRequest request) {
         StringBuilder builder = new StringBuilder();
         builder.append(applicationId);
         if (request.getDeviceUser() != null) {
@@ -150,11 +150,11 @@ public class LoggingService {
         return binaries.uploadFile(container, new byte[] { 0x00 });
     }
     
-    private void saveOperationWithLogLink(OperationRepresentation operation, AgentLogRequest request, String selfUrl) {
+    private void saveOperationWithLogLink(OperationRepresentation operation, LogfileRequest request, String selfUrl) {
         request.setFile(selfUrl.replace("managedObjects", "binaries"));
         OperationRepresentation updatedOperation = new OperationRepresentation();
         updatedOperation.setId(operation.getId());
-        updatedOperation.set(request, AgentLogRequest.class);
+        updatedOperation.set(request, LogfileRequest.class);
         updatedOperation.setStatus(OperationStatus.SUCCESSFUL.toString());
         deviceControl.save(updatedOperation);
     }

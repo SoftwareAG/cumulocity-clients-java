@@ -9,7 +9,7 @@ import org.svenson.converter.JSONConverter;
 
 import com.cumulocity.model.DateConverter;
 
-public class AgentLogRequest extends AbstractDynamicProperties implements Serializable {
+public class LogfileRequest extends AbstractDynamicProperties implements Serializable {
 
     private static final long serialVersionUID = -6443811928706492241L;
     
@@ -17,11 +17,12 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
 	private Date dateTo;
 	private int maximumLines = 0;
 	private String file;
+	private String logFile;
 	private String searchText;
 	private String tenant;
-	private String deviceUser;
+    private String deviceUser;
 	
-	public AgentLogRequest() {}
+	public LogfileRequest() {}
 	
 	@JSONProperty(ignoreIfNull = true)
 	@JSONConverter(type = DateConverter.class)
@@ -50,6 +51,15 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
 
     public void setMaximumLines(int maximumLines) {
         this.maximumLines = maximumLines;
+    }
+    
+    @JSONProperty(ignoreIfNull = true)
+    public String getLogFile() {
+        return logFile;
+    }
+
+    public void setLogFile(String logFile) {
+        this.logFile = logFile;
     }
 
     @JSONProperty(ignoreIfNull = true)
@@ -100,6 +110,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
         result = prime * result + ((dateTo == null) ? 0 : dateTo.hashCode());
         result = prime * result + ((deviceUser == null) ? 0 : deviceUser.hashCode());
         result = prime * result + ((file == null) ? 0 : file.hashCode());
+        result = prime * result + ((logFile == null) ? 0 : logFile.hashCode());
         result = prime * result + maximumLines;
         result = prime * result + ((searchText == null) ? 0 : searchText.hashCode());
         result = prime * result + ((tenant == null) ? 0 : tenant.hashCode());
@@ -114,7 +125,7 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
             return false;
         if (getClass() != obj.getClass())
             return false;
-        AgentLogRequest other = (AgentLogRequest) obj;
+        LogfileRequest other = (LogfileRequest) obj;
         if (dateFrom == null) {
             if (other.dateFrom != null)
                 return false;
@@ -135,6 +146,11 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
                 return false;
         } else if (!file.equals(other.file))
             return false;
+        if (logFile == null) {
+            if (other.logFile != null)
+                return false;
+        } else if (!logFile.equals(other.logFile))
+            return false;
         if (maximumLines != other.maximumLines)
             return false;
         if (searchText == null) {
@@ -152,8 +168,8 @@ public class AgentLogRequest extends AbstractDynamicProperties implements Serial
 
     @Override
     public String toString() {
-        return "AgentLogRequest [dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", maximumLines=" + maximumLines + ", file=" + file
-                + ", searchText=" + searchText + ", tenant=" + tenant + ", deviceUser=" + deviceUser + "]";
+        return "LogfileRequest [dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", maximumLines=" + maximumLines + ", file=" + file
+                + ", logFile=" + logFile + ", searchText=" + searchText + ", tenant=" + tenant + ", deviceUser=" + deviceUser + "]";
     }
     
 }

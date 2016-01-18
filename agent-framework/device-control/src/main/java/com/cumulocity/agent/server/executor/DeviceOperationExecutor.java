@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import c8y.AgentLogRequest;
+import c8y.LogfileRequest;
 
 import com.cumulocity.agent.server.agent.AgentDeviceControlInitalizer;
 import com.cumulocity.agent.server.agent.OperationSubscriber;
@@ -42,7 +42,7 @@ public class DeviceOperationExecutor implements OperationExecutor {
     
     @Override
     public boolean supports(OperationRepresentation operation) {
-        if (operation.get(AgentLogRequest.class) != null) {
+        if (operation.get(LogfileRequest.class) != null) {
             return false;
         };
         return true;

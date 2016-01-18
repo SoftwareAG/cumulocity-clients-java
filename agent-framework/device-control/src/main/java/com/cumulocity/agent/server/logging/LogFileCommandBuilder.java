@@ -1,5 +1,6 @@
 package com.cumulocity.agent.server.logging;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +58,10 @@ public class LogFileCommandBuilder {
         return this;
     }
     
-    public LogFileCommandBuilder withTimeRange(Date dateFrom, Date dateTo) {
+    public LogFileCommandBuilder withTimeRange(Date dateFrom, Date dateTo) throws InvalidSearchException {
+        if (!isToday(dateFrom) || !isToday(dateTo)) {
+            throw new InvalidSearchException("Can only search the log from the current day");
+        }
         String filter = dateFilter(dateFrom, dateTo, DEFAULT_TIMESTAMP_FORMAT);
         if (filter != null) {
             this.filters.add(filter);
@@ -108,6 +112,12 @@ public class LogFileCommandBuilder {
             filter.append(getFilterForHourRange(timestampFormat, hoursFrom, minutesFrom, hoursTo, minutesTo));
         }
         return filter.toString();
+    }
+    
+    private static boolean isToday(Date date) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        Date today = new Date();
+        return fmt.format(date).equals(fmt.format(today));
     }
 
     private static String getFilterForHourRange(String timestampFormat, int hoursFrom, int minutesFrom, int hoursTo,
