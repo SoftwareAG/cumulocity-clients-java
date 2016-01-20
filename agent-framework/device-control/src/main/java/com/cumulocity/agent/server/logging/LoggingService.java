@@ -147,7 +147,7 @@ public class LoggingService {
     private ManagedObjectRepresentation uploadFileDummy(String filename) {
         ManagedObjectRepresentation container = new ManagedObjectRepresentation();
         container.setName(filename);
-        return binaries.uploadFile(container, new byte[]{0x00});
+        return binaries.uploadFile(container, new byte[] { 0x00 });
     }
     
     private void saveOperationWithLogLink(OperationRepresentation operation, AgentLogRequest request, String selfUrl) {
