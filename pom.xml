@@ -30,8 +30,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>7.6.0-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>7.6.0-SNAPSHOT</cumulocity.shared-components.version>
+		<cumulocity.model.version>7.7.0-SNAPSHOT</cumulocity.model.version>
+		<cumulocity.shared-components.version>7.7.0-SNAPSHOT</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
