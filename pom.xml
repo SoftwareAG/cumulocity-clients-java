@@ -31,7 +31,7 @@
 
 	<properties>
 		<cumulocity.model.version>7.7.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>7.7.2</cumulocity.shared-components.version>
+		<cumulocity.shared-components.version>7.7.3</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
