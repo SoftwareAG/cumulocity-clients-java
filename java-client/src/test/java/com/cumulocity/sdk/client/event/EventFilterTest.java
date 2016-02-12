@@ -19,11 +19,11 @@
  */
 package com.cumulocity.sdk.client.event;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import java.util.Date;
-
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.cumulocity.model.DateConverter;
@@ -40,8 +40,8 @@ public class EventFilterTest {
     
     @Test
     public void shouldHoldFragmentTypeAndDate() throws Exception {
-        Date fromDate = new Date(System.currentTimeMillis());
-        Date toDate = new Date(System.currentTimeMillis());
+        DateTime fromDate = nowLocal();
+        DateTime toDate = nowLocal();
         EventFilter filter = new EventFilter().byFragmentType(Object.class).byDate(fromDate, toDate);
         assertThat(filter.getFragmentType(), is(Object.class));
         assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));

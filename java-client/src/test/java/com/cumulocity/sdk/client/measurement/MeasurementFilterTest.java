@@ -22,8 +22,7 @@ package com.cumulocity.sdk.client.measurement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import java.util.Date;
-
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.cumulocity.model.DateConverter;
@@ -34,8 +33,8 @@ public class MeasurementFilterTest {
 
     @Test
     public void shouldHoldTypeSourceDateAndFragmentType() throws Exception {
-        Date fromDate = new Date(0L);
-        Date toDate = new Date(1L);
+        DateTime fromDate = new DateTime(0L);
+        DateTime toDate = new DateTime(1L);
         MeasurementFilter filter = new MeasurementFilter().byType("type").bySource(new GId("1")).byFragmentType(NonRelevantFragmentType.class).byDate(
                 fromDate, toDate);
 

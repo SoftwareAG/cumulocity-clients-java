@@ -20,14 +20,13 @@
 
 package com.cumulocity.sdk.client.event;
 
-import java.util.Date;
-
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.ParamSource;
+import org.joda.time.DateTime;
 
 /**
  * A filter to be used in event queries.
@@ -69,6 +68,7 @@ public class EventFilter extends Filter {
     }
 
     /**
+
      * Specifies the {@code source} query parameter
      *
      * @param source the managed object that generated the event(s)
@@ -119,13 +119,13 @@ public class EventFilter extends Filter {
         return fragmentType;
     }
 
-    public EventFilter byDate(Date fromDate, Date toDate) {
+    public EventFilter byDate(DateTime fromDate, DateTime toDate) {
     	this.dateFrom = DateConverter.date2String(fromDate);
     	this.dateTo = DateConverter.date2String(toDate);
     	return this;
     }
     
-    public EventFilter byFromDate(Date fromDate) {
+    public EventFilter byFromDate(DateTime fromDate) {
     	this.dateFrom = DateConverter.date2String(fromDate);
     	return this;
     }
@@ -146,13 +146,13 @@ public class EventFilter extends Filter {
 		return createdTo;
 	}
 	
-	public EventFilter byCreationDate(Date fromDate, Date toDate) {
+	public EventFilter byCreationDate(DateTime fromDate, DateTime toDate) {
 		this.createdFrom = DateConverter.date2String(fromDate);
 		this.createdTo = DateConverter.date2String(toDate);
 		return this;
 	}
 	
-	public EventFilter byFromCreationDate(Date fromDate) {
+	public EventFilter byFromCreationDate(DateTime fromDate) {
 		this.createdFrom = DateConverter.date2String(fromDate);
 		return this;
 	}

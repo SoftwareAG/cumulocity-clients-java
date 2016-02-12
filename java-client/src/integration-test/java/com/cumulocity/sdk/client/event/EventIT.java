@@ -19,11 +19,11 @@
  */
 package com.cumulocity.sdk.client.event;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -351,7 +351,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);
@@ -365,7 +365,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);
@@ -375,7 +375,7 @@ public class EventIT extends JavaSdkITBase {
     @Given("I have a Event with no type value for the managed object$")
     public void iHaveAEventWithNoType() {
         EventRepresentation rep = new EventRepresentation();
-        rep.setTime(new Date());
+        rep.setTime(nowLocal());
         rep.setText(" Event of Managed Object : " + 0);
         rep.setSource(managedObject);
         input.add(rep);
@@ -385,7 +385,7 @@ public class EventIT extends JavaSdkITBase {
     public void iHaveAEventWithNoText() {
         EventRepresentation rep = new EventRepresentation();
         rep.setType("type");
-        rep.setTime(new Date());
+        rep.setTime(nowLocal());
         rep.setSource(managedObject);
         input.add(rep);
     }
@@ -404,7 +404,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType("type");
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);

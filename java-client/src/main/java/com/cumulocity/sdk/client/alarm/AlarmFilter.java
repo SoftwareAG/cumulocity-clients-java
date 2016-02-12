@@ -20,8 +20,6 @@
 
 package com.cumulocity.sdk.client.alarm;
 
-import java.util.Date;
-
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.event.CumulocitySeverities;
@@ -29,6 +27,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.ParamSource;
+import org.joda.time.DateTime;
 
 /**
  * A filter to be used in alarm queries.
@@ -146,7 +145,7 @@ public class AlarmFilter extends Filter {
      * @param toDate the end date time of the range
      * @return the alarm filter with {@code fromDate} and {@code toDate} set.
      */
-    public AlarmFilter byDate(Date fromDate, Date toDate) {
+    public AlarmFilter byDate(DateTime fromDate, DateTime toDate) {
         this.dateFrom = DateConverter.date2String(fromDate);
         this.dateTo = DateConverter.date2String(toDate);
         return this;
@@ -159,7 +158,7 @@ public class AlarmFilter extends Filter {
      * @param fromDate the date time from which all alarms to be returned.
      * @return the alarm filter with {@code fromDate} set
      */
-    public AlarmFilter byFromDate(Date fromDate) {
+    public AlarmFilter byFromDate(DateTime fromDate) {
         this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }

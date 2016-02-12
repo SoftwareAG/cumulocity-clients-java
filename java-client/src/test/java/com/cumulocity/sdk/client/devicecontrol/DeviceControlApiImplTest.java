@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client.devicecontrol;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -27,7 +28,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -119,7 +119,7 @@ public class DeviceControlApiImplTest {
         OperationRepresentation op = new OperationRepresentation();
         op.setStatus(OperationStatus.EXECUTING.toString());
         op.setId(new GId("myId"));
-        op.setCreationTime(new Date());
+        op.setCreationTime(nowLocal());
         OperationRepresentation updated = new OperationRepresentation();
         when(restConnector.put(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
                 argThat(hasOnlyUpdateFields(op)))).thenReturn(updated);

@@ -20,8 +20,7 @@
 
 package c8y;
 
-import java.util.Date;
-
+import org.joda.time.DateTime;
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
@@ -30,24 +29,24 @@ import com.cumulocity.model.DateConverter;
 
 public class Availability extends AbstractDynamicProperties {
 
-    private Date lastMessage;
+    private DateTime lastMessage;
     private ConnectionState status;
 
     public Availability() {
     }
 
-    public Availability(Date lastMessage, ConnectionState status) {
+    public Availability(DateTime lastMessage, ConnectionState status) {
         this.lastMessage = lastMessage;
         this.status = status;
     }
 
     @JSONProperty(ignoreIfNull = true)
     @JSONConverter(type = DateConverter.class)
-    public Date getLastMessage() {
+    public DateTime getLastMessage() {
         return lastMessage;
     }
 
-    public void setLastMessage(Date lastMessage) {
+    public void setLastMessage(DateTime lastMessage) {
         this.lastMessage = lastMessage;
     }
 

@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Date;
 
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -409,8 +410,8 @@ public class EventIT extends JavaSdkITBase {
         EventRepresentation rep = new EventRepresentation();
         rep.setType(type);
         rep.setText(" Event of Managed Object : ");
-        rep.setTime(DateConverter.string2Date(time));
-        System.out.println("Time = " + DateConverter.date2String(rep.getTime()));
+        rep.setTime(DateConverter.string2Date(time).toDate());
+        System.out.println("Time = " + DateConverter.date2String(new DateTime(rep.getTime())));
         rep.setSource(managedObject);
         input.add(rep);
     }
@@ -476,7 +477,7 @@ public class EventIT extends JavaSdkITBase {
     @When("I query all Events by source '(\\d+)' and time '([^']*)'$")
     public void iQueryAllBySourceAndTime(int index, String time) throws SDKException, ClassNotFoundException {
         try {
-            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time), DateConverter.string2Date(time));
+            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time).toDate(), DateConverter.string2Date(time).toDate());
             collection = (EventCollectionRepresentation) eventApi.getEventsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();

@@ -20,14 +20,13 @@
 
 package com.cumulocity.sdk.client.measurement;
 
-import java.util.Date;
-
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.ParamSource;
+import org.joda.time.DateTime;
 
 /**
  * A filter to be used in measurement queries.
@@ -113,13 +112,13 @@ public class MeasurementFilter extends Filter {
         return fragmentType;
     }
 
-    public MeasurementFilter byDate(Date fromDate, Date toDate) {
+    public MeasurementFilter byDate(DateTime fromDate, DateTime toDate) {
         this.dateFrom = DateConverter.date2String(fromDate);
         this.dateTo = DateConverter.date2String(toDate);
         return this;
     }
 
-    public MeasurementFilter byFromDate(Date fromDate) {
+    public MeasurementFilter byFromDate(DateTime fromDate) {
         this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }

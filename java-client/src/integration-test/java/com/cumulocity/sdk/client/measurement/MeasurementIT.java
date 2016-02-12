@@ -19,15 +19,17 @@
  */
 package com.cumulocity.sdk.client.measurement;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import com.cumulocity.model.util.DateTimeUtils;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -446,7 +448,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private MeasurementRepresentation aSampleMeasurement(ManagedObjectRepresentation source) {
         MeasurementRepresentation rep = new MeasurementRepresentation();
-        rep.setTime(new Date());
+        rep.setTime(nowLocal());
         rep.setType("com.type1");
         rep.setSource(source);
 
@@ -481,7 +483,7 @@ public class MeasurementIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setSource(managedObjects.get(0));
             input.add(rep);
         }
@@ -492,7 +494,7 @@ public class MeasurementIT extends JavaSdkITBase {
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setType("com.type1");
             rep.setSource(managedObjects.get(0));
 
@@ -509,7 +511,7 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iHaveMeasurementsForSource(int n, int index) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setType("com.type1");
             rep.setSource(managedObjects.get(index));
             input.add(rep);
@@ -587,8 +589,8 @@ public class MeasurementIT extends JavaSdkITBase {
     @When("I query all measurements by time from '([^']*)' and time to '([^']*)'")
     public void iQueryAllByTime(String from, String to) throws SDKException {
         try {
-            Date fromDate = DateConverter.string2Date(from);
-            Date toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateConverter.string2Date(from);
+            DateTime toDate = DateConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -611,8 +613,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllBySourceAndTime(int index, String from, String to) throws SDKException {
         try {
             ManagedObjectRepresentation source = managedObjects.get(index);
-            Date fromDate = DateConverter.string2Date(from);
-            Date toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateConverter.string2Date(from);
+            DateTime toDate = DateConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).bySource(source);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -636,8 +638,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllByTypeAndTime(String fragmentType, String from, String to) throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
-            Date fromDate = DateConverter.string2Date(from);
-            Date toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateConverter.string2Date(from);
+            DateTime toDate = DateConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -651,8 +653,8 @@ public class MeasurementIT extends JavaSdkITBase {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
             ManagedObjectRepresentation source = managedObjects.get(index);
-            Date fromDate = DateConverter.string2Date(from);
-            Date toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateConverter.string2Date(from);
+            DateTime toDate = DateConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().bySource(source).byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {

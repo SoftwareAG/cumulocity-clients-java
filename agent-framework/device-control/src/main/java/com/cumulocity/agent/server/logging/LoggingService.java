@@ -85,9 +85,9 @@ public class LoggingService {
         }
         if (request.getDateFrom() != null && request.getDateTo() != null) {
             if (StringUtils.isEmpty(timestampFormat)) {
-                builder.withTimeRange(request.getDateFrom(), request.getDateTo());
+                builder.withTimeRange(request.getDateFrom().toDate(), request.getDateTo().toDate());
             } else {
-                builder.withTimeRangeAndFormat(request.getDateFrom(), request.getDateTo(), timestampFormat);
+                builder.withTimeRangeAndFormat(request.getDateFrom().toDate(), request.getDateTo().toDate(), timestampFormat);
             }
         }
         if (request.getSearchText() != null) {

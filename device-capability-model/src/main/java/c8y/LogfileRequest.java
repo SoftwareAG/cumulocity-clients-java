@@ -1,8 +1,8 @@
 package c8y;
 
 import java.io.Serializable;
-import java.util.Date;
 
+import org.joda.time.DateTime;
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
@@ -13,8 +13,8 @@ public class LogfileRequest extends AbstractDynamicProperties implements Seriali
 
     private static final long serialVersionUID = -6443811928706492241L;
     
-	private Date dateFrom;
-	private Date dateTo;
+	private DateTime dateFrom;
+	private DateTime dateTo;
 	private int maximumLines = 0;
 	private String file;
 	private String logFile;
@@ -26,21 +26,21 @@ public class LogfileRequest extends AbstractDynamicProperties implements Seriali
 	
 	@JSONProperty(ignoreIfNull = true)
 	@JSONConverter(type = DateConverter.class)
-	public Date getDateFrom() {
+	public DateTime getDateFrom() {
         return dateFrom;
     }
 
-    public void setDateFrom(Date dateFrom) {
+    public void setDateFrom(DateTime dateFrom) {
         this.dateFrom = dateFrom;
     }
 
     @JSONProperty(ignoreIfNull = true)
     @JSONConverter(type = DateConverter.class)
-    public Date getDateTo() {
+    public DateTime getDateTo() {
         return dateTo;
     }
 
-    public void setDateTo(Date dateTo) {
+    public void setDateTo(DateTime dateTo) {
         this.dateTo = dateTo;
     }
 

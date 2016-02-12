@@ -7,6 +7,7 @@ import static com.google.common.collect.FluentIterable.from;
 
 import java.util.Date;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class DeviceControlListener implements SubscriptionListener<GId, Operatio
         log.error("agent unable to subscribe for opeartion ", ex);
         final AlarmRepresentation alarm = new AlarmRepresentation();
         alarm.setType("c8y_agent_Connection");
-        alarm.setTime(new Date());
+        alarm.setTime(new DateTime(new Date()));
         alarm.setText(String.format("Agent %s unable to subscribe for operations. Cause : %s", applicationId, ex.getMessage()));
         alarm.setSeverity(CRITICAL.name());
         alarm.setStatus(ACTIVE.name());

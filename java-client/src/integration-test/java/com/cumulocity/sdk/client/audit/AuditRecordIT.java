@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client.audit;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,7 +30,6 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,7 +421,7 @@ public class AuditRecordIT {
         for (int i = 0; i < n; i++) {
             AuditRecordRepresentation rep = new AuditRecordRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setTime(nowLocal());
             rep.setSource(managedObjects.get(0));
             rep.setActivity("Some Activity");
             rep.setApplication(application);
