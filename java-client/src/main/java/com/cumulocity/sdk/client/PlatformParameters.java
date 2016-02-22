@@ -47,6 +47,8 @@ public class PlatformParameters {
     private String proxyHost;
 
     private String applicationKey;
+    
+    private String requestOrigin;
 
     private int proxyPort = -1;
 
@@ -86,6 +88,7 @@ public class PlatformParameters {
         this.password = credentials.getPassword();
         this.applicationKey = credentials.getApplicationKey();
         this.cumulocityLogin = credentials.getLogin();
+        this.requestOrigin = credentials.getRequestOrigin();
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
@@ -207,6 +210,14 @@ public class PlatformParameters {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public String getRequestOrigin() {
+        return requestOrigin;
+    }
+
+    public void setRequestOrigin(String requestOrigin) {
+        this.requestOrigin = requestOrigin;
     }
 
     BufferRequestService getBufferRequestService() {
