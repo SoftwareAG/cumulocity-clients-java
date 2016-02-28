@@ -27,8 +27,8 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.cumulocity" level="DEBUG" />
-	<logger name="c8y" level="DEBUG" />
+	<logger name="com.cumulocity" level="INFO" />
+	<logger name="c8y" level="INFO" />
 	<logger name="httpclient.wire" level="INFO" />
 
 	<root level="INFO">
