@@ -22,14 +22,9 @@ package com.cumulocity.sdk.client.cep;
 import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
 
 import java.io.InputStream;
-import java.io.Reader;
-
-import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.cep.CepMediaType;
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
 public class CepApiImpl implements CepApi {
@@ -58,6 +53,11 @@ public class CepApiImpl implements CepApi {
     @Override
     public CepModuleRepresentation create(InputStream content) {
         return restConnector.postStream(cepModulesUrl(), CEP_MODULE, content, CepModuleRepresentation.class);
+    }
+    
+    @Override
+    public CepModuleRepresentation create(String content) {
+        return restConnector.postText(cepModulesUrl(), content, CepModuleRepresentation.class);
     }
 
     private String cepModulesUrl() {

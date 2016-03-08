@@ -78,6 +78,8 @@ public class RestConnector {
     }
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
+    
+    public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
         ErrorMessageRepresentationReader.class};
@@ -125,6 +127,7 @@ public class RestConnector {
     private ClientResponse getClientResponse(String path, CumulocityMediaType mediaType) {
         Builder builder = client.resource(path).accept(mediaType);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.get(ClientResponse.class);
     }
 
@@ -132,6 +135,7 @@ public class RestConnector {
             Class<T> responseClass) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -140,11 +144,18 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
 
     }
+    
+    public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
+        builder = addApplicationKeyHeader(builder);
+        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+    }
 
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -155,6 +166,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -167,6 +179,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -240,6 +253,13 @@ public class RestConnector {
         }
         return builder;
     }
+    
+    private Builder addRequestOriginHeader(Builder builder) {
+        if (platformParameters.getRequestOrigin() != null) {
+            builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
+        }
+        return builder;
+    }
 
     private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
             throws SDKException {
@@ -252,6 +272,7 @@ public class RestConnector {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.post(ClientResponse.class, representation);
     }
 
@@ -262,6 +283,7 @@ public class RestConnector {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.put(ClientResponse.class, representation);
     }
 
@@ -269,6 +291,7 @@ public class RestConnector {
         Builder builder = client.resource(path).getRequestBuilder();
 
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }

@@ -77,9 +77,17 @@ public interface CepApi {
      * @return the created cep module with the generated id
      * @throws SDKException if the cep module could not be created
      */
+    @Deprecated
     CepModuleRepresentation create(InputStream content);
     
-
+    /**
+     * Creates an cep module in the platform.
+     *
+     * @param content of cep module definition 
+     * @return the created cep module with the generated id
+     * @throws SDKException if the cep module could not be created
+     */
+    CepModuleRepresentation create(String content);
     /**
      * Updates an cep module in the platform.
      * The cep module to be updated is identified by the id.
