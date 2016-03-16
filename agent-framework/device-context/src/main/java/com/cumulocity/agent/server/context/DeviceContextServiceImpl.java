@@ -133,9 +133,13 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         return withinContext(getContext(), task);
     }
     
-    private static String getContextUser(DeviceContext newContext) {
-        return newContext.getLogin().getUsername();
-    }
+	private static String getContextUser(DeviceContext newContext) {
+		if (newContext.getLoggingUser() == null) {
+			return newContext.getLogin().getUsername();
+		} else {
+			return newContext.getLoggingUser();
+		}
+	}
 
     private static String getContextTenant(DeviceContext newContext) {
         return newContext.getLogin().getTenant();
