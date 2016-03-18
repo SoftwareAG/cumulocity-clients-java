@@ -26,8 +26,13 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         }
         return context;
     }
+    
+    @Override
+	public boolean isInContext() {
+		return doGetContext() != null;
+	}
 
-    private DeviceContext doGetContext() {
+	private DeviceContext doGetContext() {
         return localContext.get();
     }
 
