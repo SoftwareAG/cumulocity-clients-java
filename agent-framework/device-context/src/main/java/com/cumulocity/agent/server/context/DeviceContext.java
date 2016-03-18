@@ -9,16 +9,9 @@ public class DeviceContext {
 
     private final ScopeContainer scope;
     
-    private final String loggingUser;
-
     public DeviceContext(DeviceCredentials login) {
-    	this(login, null);
-    }
-    
-    public DeviceContext(DeviceCredentials login, String loggingUser) {
     	this.login = login;
     	this.scope = new DefaultScopeContainer();
-		this.loggingUser = loggingUser;
 	}
 
 	public DeviceCredentials getLogin() {
@@ -29,10 +22,6 @@ public class DeviceContext {
         return scope;
     }
     
-    public String getLoggingUser() {
-		return loggingUser;
-	}
-
 	@Override
     public String toString() {
         return "DeviceContext [login=" + login + "]";
