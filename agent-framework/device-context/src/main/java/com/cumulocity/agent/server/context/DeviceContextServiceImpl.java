@@ -7,10 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.core.NamedThreadLocal;
 
+import com.cumulocity.model.idtype.GId;
+
 public class DeviceContextServiceImpl implements DeviceContextService {
 
     private static final String TENANT_LOG_FLAG = "tenant";
-    private static final String USER_LOG_FLAG = "user";
+    private static final String DEVICE_LOG_FLAG = "device";
     
     private final Logger log = LoggerFactory.getLogger(DeviceContextServiceImpl.class);
 
@@ -24,8 +26,13 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         }
         return context;
     }
+    
+    @Override
+	public boolean isInContext() {
+		return doGetContext() != null;
+	}
 
-    private DeviceContext doGetContext() {
+	private DeviceContext doGetContext() {
         return localContext.get();
     }
 
@@ -63,7 +70,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     public void enterContext(DeviceContext newContext) {
         // Add flags for logging framework
         MDC.put(TENANT_LOG_FLAG, getContextTenant(newContext));
-        MDC.put(USER_LOG_FLAG, getContextUser(newContext));
+        MDC.put(DEVICE_LOG_FLAG, getContextDevice(newContext));
         log.debug("entering to  {} ", newContext);
         DeviceContext contextCopy = new DeviceContext(newContext.getLogin());
         localContext.set(contextCopy);
@@ -72,7 +79,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     private void leaveContext(DeviceContext previousContext) {
         // Remove logging flags
         MDC.remove(TENANT_LOG_FLAG);
-        MDC.remove(USER_LOG_FLAG);
+        MDC.remove(DEVICE_LOG_FLAG);
         if (previousContext == null) {
             localContext.remove();
         } else {
@@ -84,7 +91,7 @@ public class DeviceContextServiceImpl implements DeviceContextService {
     public void leaveContext() {
         // Remove logging flags
         MDC.remove(TENANT_LOG_FLAG);
-        MDC.remove(USER_LOG_FLAG);
+        MDC.remove(DEVICE_LOG_FLAG);
         localContext.remove();
     }
 
@@ -133,12 +140,9 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         return withinContext(getContext(), task);
     }
     
-	private static String getContextUser(DeviceContext newContext) {
-		if (newContext.getLoggingUser() == null) {
-			return newContext.getLogin().getUsername();
-		} else {
-			return newContext.getLoggingUser();
-		}
+	private static String getContextDevice(DeviceContext newContext) {
+		GId deviceId = newContext.getLogin().getDeviceId();
+		return deviceId == null ? null : deviceId.getValue();
 	}
 
     private static String getContextTenant(DeviceContext newContext) {
