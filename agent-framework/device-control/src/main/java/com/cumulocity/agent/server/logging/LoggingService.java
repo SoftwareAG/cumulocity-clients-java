@@ -90,7 +90,7 @@ public class LoggingService {
                 builder.withTimeRangeAndFormat(request.getDateFrom().toDate(), request.getDateTo().toDate(), timestampFormat);
             }
         }
-        if (request.getSearchText() != null) {
+        if (request.getSearchText() != null && request.getSearchText().isEmpty()) {
             builder.withSearchText(request.getSearchText());
         }
         if (request.getMaximumLines() > 0) {

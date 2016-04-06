@@ -5,6 +5,8 @@ import java.util.concurrent.Callable;
 public interface DeviceContextService {
 
     DeviceContext getContext();
+    
+    boolean isInContext();
 
     DeviceCredentials getCredentials();
     

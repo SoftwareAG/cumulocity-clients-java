@@ -188,7 +188,7 @@ public class CumulocityClientFeature {
 
         private PlatformImpl create(DeviceCredentials login) throws Exception {
             final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
-                    login.getAppKey()), login.getPageSize());
+                    login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
             platformImpl.setForceInitialHost(forceInitialHost);
 
             return proxy(platformImpl);
