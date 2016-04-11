@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.is;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 
@@ -41,8 +41,8 @@ public class MeasurementFilterTest {
         assertThat(filter.getType(), is("type"));
         assertThat(filter.getSource(), is("1"));
         assertThat(filter.getFragmentType(), is(ExtensibilityConverter.classToStringRepresentation(NonRelevantFragmentType.class)));
-        assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));
-        assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
+        assertThat(filter.getFromDate(), is(DateTimeConverter.date2String(fromDate)));
+        assertThat(filter.getToDate(), is(DateTimeConverter.date2String(toDate)));
     }
 
     private static class NonRelevantFragmentType {

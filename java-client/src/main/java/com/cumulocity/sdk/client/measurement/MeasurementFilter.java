@@ -20,7 +20,7 @@
 
 package com.cumulocity.sdk.client.measurement;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -113,13 +113,13 @@ public class MeasurementFilter extends Filter {
     }
 
     public MeasurementFilter byDate(DateTime fromDate, DateTime toDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
-        this.dateTo = DateConverter.date2String(toDate);
+        this.dateFrom = DateTimeConverter.date2String(fromDate);
+        this.dateTo = DateTimeConverter.date2String(toDate);
         return this;
     }
 
     public MeasurementFilter byFromDate(DateTime fromDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateFrom = DateTimeConverter.date2String(fromDate);
         return this;
     }
 

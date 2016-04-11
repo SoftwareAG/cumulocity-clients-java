@@ -41,7 +41,7 @@ import com.cumulocity.me.rest.representation.inventory.ManagedObjectRepresentati
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.sdk.client.event.EventApi;
 import com.cumulocity.me.sdk.client.event.EventFilter;
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 import cucumber.api.java.en.Given;
@@ -410,8 +410,8 @@ public class EventIT extends JavaSdkITBase {
         EventRepresentation rep = new EventRepresentation();
         rep.setType(type);
         rep.setText(" Event of Managed Object : ");
-        rep.setTime(DateConverter.string2Date(time).toDate());
-        System.out.println("Time = " + DateConverter.date2String(new DateTime(rep.getTime())));
+        rep.setTime(DateTimeConverter.string2Date(time).toDate());
+        System.out.println("Time = " + DateTimeConverter.date2String(new DateTime(rep.getTime())));
         rep.setSource(managedObject);
         input.add(rep);
     }
@@ -477,7 +477,7 @@ public class EventIT extends JavaSdkITBase {
     @When("I query all Events by source '(\\d+)' and time '([^']*)'$")
     public void iQueryAllBySourceAndTime(int index, String time) throws SDKException, ClassNotFoundException {
         try {
-            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time).toDate(), DateConverter.string2Date(time).toDate());
+            EventFilter filter = new EventFilter().byDate(DateTimeConverter.string2Date(time).toDate(), DateTimeConverter.string2Date(time).toDate());
             collection = (EventCollectionRepresentation) eventApi.getEventsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();

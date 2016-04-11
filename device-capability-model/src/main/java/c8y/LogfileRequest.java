@@ -7,7 +7,7 @@ import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 
 public class LogfileRequest extends AbstractDynamicProperties implements Serializable {
 
@@ -25,7 +25,7 @@ public class LogfileRequest extends AbstractDynamicProperties implements Seriali
 	public LogfileRequest() {}
 	
 	@JSONProperty(ignoreIfNull = true)
-	@JSONConverter(type = DateConverter.class)
+	@JSONConverter(type = DateTimeConverter.class)
 	public DateTime getDateFrom() {
         return dateFrom;
     }
@@ -35,7 +35,7 @@ public class LogfileRequest extends AbstractDynamicProperties implements Seriali
     }
 
     @JSONProperty(ignoreIfNull = true)
-    @JSONConverter(type = DateConverter.class)
+    @JSONConverter(type = DateTimeConverter.class)
     public DateTime getDateTo() {
         return dateTo;
     }

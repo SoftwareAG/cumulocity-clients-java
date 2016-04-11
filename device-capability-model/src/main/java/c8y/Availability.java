@@ -25,7 +25,7 @@ import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 
 public class Availability extends AbstractDynamicProperties {
 
@@ -41,7 +41,7 @@ public class Availability extends AbstractDynamicProperties {
     }
 
     @JSONProperty(ignoreIfNull = true)
-    @JSONConverter(type = DateConverter.class)
+    @JSONConverter(type = DateTimeConverter.class)
     public DateTime getLastMessage() {
         return lastMessage;
     }

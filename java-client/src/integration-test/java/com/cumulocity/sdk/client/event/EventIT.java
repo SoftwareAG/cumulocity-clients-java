@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -417,7 +417,7 @@ public class EventIT extends JavaSdkITBase {
         EventRepresentation rep = new EventRepresentation();
         rep.setType(type);
         rep.setText(" Event of Managed Object : ");
-        rep.setTime(DateConverter.string2Date(time));
+        rep.setTime(DateTimeConverter.string2Date(time));
         rep.setSource(managedObject);
         input.add(rep);
     }
@@ -482,7 +482,7 @@ public class EventIT extends JavaSdkITBase {
     public void iQueryAllBySourceAndTime(int index, String time) throws SDKException, ClassNotFoundException {
         try {
             ManagedObjectRepresentation mo = managedObject;
-            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time), DateConverter.string2Date(time));
+            EventFilter filter = new EventFilter().byDate(DateTimeConverter.string2Date(time), DateTimeConverter.string2Date(time));
             collection = eventApi.getEventsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.sdk.client.alarm.AlarmFilter;
@@ -25,7 +25,7 @@ public class FilterTest {
     
     @Test
     public void shouldEncodeParamValue() throws Exception {
-        EventFilter eventFilter = new EventFilter().byFromDate(DateConverter.string2Date("2011-11-03T11:01:00.000+05:30"));
+        EventFilter eventFilter = new EventFilter().byFromDate(DateTimeConverter.string2Date("2011-11-03T11:01:00.000+05:30"));
         
         Map<String, String> queryParams = eventFilter.getQueryParams();
 

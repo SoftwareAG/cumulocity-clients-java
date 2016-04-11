@@ -49,7 +49,7 @@ import com.cumulocity.me.rest.representation.measurement.MeasurementRepresentati
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.me.sdk.client.measurement.MeasurementFilter;
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 import cucumber.api.java.en.Given;
@@ -443,7 +443,7 @@ public class MeasurementIT extends JavaSdkITBase {
             InstantiationException, IllegalAccessException {
         MeasurementRepresentation rep = new MeasurementRepresentation();
         rep.setType("com.type1");
-        rep.setTime(DateConverter.string2Date(time).toDate());
+        rep.setTime(DateTimeConverter.string2Date(time).toDate());
         rep.setSource((ManagedObjectRepresentation) managedObjects.get(index));
 
         // Set fragment
@@ -506,8 +506,8 @@ public class MeasurementIT extends JavaSdkITBase {
     @When("I query all measurements by time from '([^']*)' and time to '([^']*)'")
     public void iQueryAllByTime(String from, String to) throws SDKException {
         try {
-            Date fromDate = DateConverter.string2Date(from).toDate();
-            Date toDate = DateConverter.string2Date(to).toDate();
+            Date fromDate = DateTimeConverter.string2Date(from).toDate();
+            Date toDate = DateTimeConverter.string2Date(to).toDate();
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate);
             collection1 = (MeasurementCollectionRepresentation) measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -530,8 +530,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllBySourceAndTime(int index, String from, String to) throws SDKException {
         try {
             ManagedObjectRepresentation source = (ManagedObjectRepresentation) managedObjects.get(index);
-            Date fromDate = DateConverter.string2Date(from).toDate();
-            Date toDate = DateConverter.string2Date(to).toDate();
+            Date fromDate = DateTimeConverter.string2Date(from).toDate();
+            Date toDate = DateTimeConverter.string2Date(to).toDate();
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).bySource(source);
             collection1 = (MeasurementCollectionRepresentation) measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -555,8 +555,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllByTypeAndTime(String fragmentType, String from, String to) throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
-            Date fromDate = DateConverter.string2Date(from).toDate();
-            Date toDate = DateConverter.string2Date(to).toDate();
+            Date fromDate = DateTimeConverter.string2Date(from).toDate();
+            Date toDate = DateTimeConverter.string2Date(to).toDate();
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = (MeasurementCollectionRepresentation) measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -570,8 +570,8 @@ public class MeasurementIT extends JavaSdkITBase {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
             ManagedObjectRepresentation source = (ManagedObjectRepresentation) managedObjects.get(index);
-            Date fromDate = DateConverter.string2Date(from).toDate();
-            Date toDate = DateConverter.string2Date(to).toDate();
+            Date fromDate = DateTimeConverter.string2Date(from).toDate();
+            Date toDate = DateTimeConverter.string2Date(to).toDate();
             MeasurementFilter filter = new MeasurementFilter().bySource(source).byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = (MeasurementCollectionRepresentation) measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {

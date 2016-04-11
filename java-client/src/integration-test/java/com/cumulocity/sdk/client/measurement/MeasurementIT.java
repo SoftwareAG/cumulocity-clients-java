@@ -28,14 +28,13 @@ import static org.hamcrest.Matchers.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cumulocity.model.util.DateTimeUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
@@ -531,7 +530,7 @@ public class MeasurementIT extends JavaSdkITBase {
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         MeasurementRepresentation rep = new MeasurementRepresentation();
         rep.setType("com.type1");
-        rep.setTime(DateConverter.string2Date(time));
+        rep.setTime(DateTimeConverter.string2Date(time));
         rep.setSource(managedObjects.get(index));
 
         // Set fragment
@@ -589,8 +588,8 @@ public class MeasurementIT extends JavaSdkITBase {
     @When("I query all measurements by time from '([^']*)' and time to '([^']*)'")
     public void iQueryAllByTime(String from, String to) throws SDKException {
         try {
-            DateTime fromDate = DateConverter.string2Date(from);
-            DateTime toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateTimeConverter.string2Date(from);
+            DateTime toDate = DateTimeConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -613,8 +612,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllBySourceAndTime(int index, String from, String to) throws SDKException {
         try {
             ManagedObjectRepresentation source = managedObjects.get(index);
-            DateTime fromDate = DateConverter.string2Date(from);
-            DateTime toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateTimeConverter.string2Date(from);
+            DateTime toDate = DateTimeConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).bySource(source);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -638,8 +637,8 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iQueryAllByTypeAndTime(String fragmentType, String from, String to) throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
-            DateTime fromDate = DateConverter.string2Date(from);
-            DateTime toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateTimeConverter.string2Date(from);
+            DateTime toDate = DateTimeConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
@@ -653,8 +652,8 @@ public class MeasurementIT extends JavaSdkITBase {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
             ManagedObjectRepresentation source = managedObjects.get(index);
-            DateTime fromDate = DateConverter.string2Date(from);
-            DateTime toDate = DateConverter.string2Date(to);
+            DateTime fromDate = DateTimeConverter.string2Date(from);
+            DateTime toDate = DateTimeConverter.string2Date(to);
             MeasurementFilter filter = new MeasurementFilter().bySource(source).byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {

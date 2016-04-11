@@ -20,7 +20,7 @@
 
 package com.cumulocity.sdk.client.event;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -120,13 +120,13 @@ public class EventFilter extends Filter {
     }
 
     public EventFilter byDate(DateTime fromDate, DateTime toDate) {
-    	this.dateFrom = DateConverter.date2String(fromDate);
-    	this.dateTo = DateConverter.date2String(toDate);
+    	this.dateFrom = DateTimeConverter.date2String(fromDate);
+    	this.dateTo = DateTimeConverter.date2String(toDate);
     	return this;
     }
     
     public EventFilter byFromDate(DateTime fromDate) {
-    	this.dateFrom = DateConverter.date2String(fromDate);
+    	this.dateFrom = DateTimeConverter.date2String(fromDate);
     	return this;
     }
 
@@ -147,13 +147,13 @@ public class EventFilter extends Filter {
 	}
 	
 	public EventFilter byCreationDate(DateTime fromDate, DateTime toDate) {
-		this.createdFrom = DateConverter.date2String(fromDate);
-		this.createdTo = DateConverter.date2String(toDate);
+		this.createdFrom = DateTimeConverter.date2String(fromDate);
+		this.createdTo = DateTimeConverter.date2String(toDate);
 		return this;
 	}
 	
 	public EventFilter byFromCreationDate(DateTime fromDate) {
-		this.createdFrom = DateConverter.date2String(fromDate);
+		this.createdFrom = DateTimeConverter.date2String(fromDate);
 		return this;
 	}
 }

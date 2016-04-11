@@ -20,7 +20,7 @@
 
 package com.cumulocity.sdk.client.alarm;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.event.CumulocitySeverities;
 import com.cumulocity.model.idtype.GId;
@@ -146,8 +146,8 @@ public class AlarmFilter extends Filter {
      * @return the alarm filter with {@code fromDate} and {@code toDate} set.
      */
     public AlarmFilter byDate(DateTime fromDate, DateTime toDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
-        this.dateTo = DateConverter.date2String(toDate);
+        this.dateFrom = DateTimeConverter.date2String(fromDate);
+        this.dateTo = DateTimeConverter.date2String(toDate);
         return this;
     }
 
@@ -159,7 +159,7 @@ public class AlarmFilter extends Filter {
      * @return the alarm filter with {@code fromDate} set
      */
     public AlarmFilter byFromDate(DateTime fromDate) {
-        this.dateFrom = DateConverter.date2String(fromDate);
+        this.dateFrom = DateTimeConverter.date2String(fromDate);
         return this;
     }
     

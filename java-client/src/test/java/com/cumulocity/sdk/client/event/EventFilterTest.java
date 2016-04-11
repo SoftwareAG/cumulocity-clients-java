@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.is;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.idtype.GId;
 
 public class EventFilterTest {
@@ -44,7 +44,7 @@ public class EventFilterTest {
         DateTime toDate = nowLocal();
         EventFilter filter = new EventFilter().byFragmentType(Object.class).byDate(fromDate, toDate);
         assertThat(filter.getFragmentType(), is(Object.class));
-        assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));
-        assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
+        assertThat(filter.getFromDate(), is(DateTimeConverter.date2String(fromDate)));
+        assertThat(filter.getToDate(), is(DateTimeConverter.date2String(toDate)));
     }
 }
