@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client.alarm;
 
+import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentation.ALARM_REPRESENTATION;
@@ -27,7 +28,6 @@ import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
@@ -305,6 +305,6 @@ public class AlarmIT extends JavaSdkITBase {
                 .withSeverity("major")
                 .withSource(source)
                 .withText("Alarm for mo")
-                .withTime(new Date()).build();
+                .withTime(nowLocal()).build();
     }
 }
