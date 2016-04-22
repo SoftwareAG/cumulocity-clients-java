@@ -305,6 +305,6 @@ public class AlarmIT extends JavaSdkITBase {
                 .withSeverity("major")
                 .withSource(source)
                 .withText("Alarm for mo")
-                .withTime(nowLocal()).build();
+                .withDateTime(nowLocal()).build();
     }
 }
