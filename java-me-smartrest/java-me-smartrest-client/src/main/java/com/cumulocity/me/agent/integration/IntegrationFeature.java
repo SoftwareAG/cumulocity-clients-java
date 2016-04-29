@@ -1,7 +1,8 @@
 package com.cumulocity.me.agent.integration;
 
 import com.cumulocity.me.agent.feature.BaseFeature;
-import com.cumulocity.me.agent.feature.InternalAgentApi;
+import com.cumulocity.me.agent.integration.impl.IntegrationHandler;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
 
 public class IntegrationFeature extends BaseFeature{
     private IntegrationHandler handler;

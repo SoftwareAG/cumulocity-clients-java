@@ -1,8 +1,8 @@
 package com.cumulocity.me.agent.bootstrap;
 
-import com.cumulocity.me.agent.InternalAgentInfo;
 import com.cumulocity.me.agent.feature.BaseFeature;
-import com.cumulocity.me.agent.feature.InternalAgentApi;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
 
 public class BootstrapFeature extends BaseFeature{
 

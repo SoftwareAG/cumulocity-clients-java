@@ -1,8 +1,8 @@
 package com.cumulocity.me.agent;
 
 import com.cumulocity.me.agent.feature.AgentFeature;
-import com.cumulocity.me.agent.feature.InternalAgentApi;
 import com.cumulocity.me.agent.plugin.AgentPlugin;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
 
 public class CumulocityAgent {
 

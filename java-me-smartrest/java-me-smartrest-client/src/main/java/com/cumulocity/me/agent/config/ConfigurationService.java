@@ -2,6 +2,10 @@ package com.cumulocity.me.agent.config;
 
 import java.io.IOException;
 
+import com.cumulocity.me.agent.config.model.Configuration;
+import com.cumulocity.me.agent.config.model.ConfigurationKey;
+import com.cumulocity.me.agent.config.model.DefaultConfiguration;
+
 public class ConfigurationService {
     private static final Configuration DEFAULT_CONFIG = DefaultConfiguration.build();
     

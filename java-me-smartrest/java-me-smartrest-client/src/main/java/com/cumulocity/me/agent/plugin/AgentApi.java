@@ -1,9 +1,9 @@
 package com.cumulocity.me.agent.plugin;
 
-import com.cumulocity.me.agent.InternalAgentInfo;
-import com.cumulocity.me.agent.bootstrap.ExternalIdProvider;
 import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
+import com.cumulocity.me.agent.provider.ExternalIdProvider;
 import com.cumulocity.me.agent.push.DevicePushService;
 import com.cumulocity.me.agent.smartrest.SmartrestService;
 

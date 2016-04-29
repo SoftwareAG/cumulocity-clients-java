@@ -1,9 +1,10 @@
 package com.cumulocity.me.agent.smartrest;
 
 import com.cumulocity.me.agent.AgentTemplates;
-import com.cumulocity.me.agent.InternalAgentInfo;
-import com.cumulocity.me.agent.config.ConfigurationKey;
 import com.cumulocity.me.agent.config.ConfigurationService;
+import com.cumulocity.me.agent.config.model.ConfigurationKey;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
+import com.cumulocity.me.agent.smartrest.impl.RequestBuffer;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;

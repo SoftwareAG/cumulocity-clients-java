@@ -1,7 +1,7 @@
 package com.cumulocity.me.agent.config;
 
 import com.cumulocity.me.agent.feature.BaseFeature;
-import com.cumulocity.me.agent.feature.InternalAgentApi;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
 
 import java.io.IOException;
 
