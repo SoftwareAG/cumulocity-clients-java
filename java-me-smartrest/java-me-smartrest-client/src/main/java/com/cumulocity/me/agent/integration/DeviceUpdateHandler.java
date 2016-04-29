@@ -2,7 +2,6 @@ package com.cumulocity.me.agent.integration;
 
 import com.cumulocity.me.agent.AgentTemplates;
 import com.cumulocity.me.agent.plugin.AgentApi;
-import com.cumulocity.me.agent.push.DevicePushManager;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 

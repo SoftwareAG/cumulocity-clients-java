@@ -17,6 +17,7 @@ public class ConfigurationKey {
         return new ConfigurationKey[]{
             CONNECTION_HOST_URL,
             CONNECTION_SETUP_PARAMS_STANDARD,
+            CONNECTION_SETUP_PARAMS_REALTIME,
             AGENT_USER_CREDENTIALS,
             AGENT_BUFFER_SEND_INTERVAL,
             AGENT_MONITORING_REQUIRED_INTERVAL

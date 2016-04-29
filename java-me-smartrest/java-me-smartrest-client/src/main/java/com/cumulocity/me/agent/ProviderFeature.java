@@ -2,7 +2,6 @@ package com.cumulocity.me.agent;
 
 import com.cumulocity.me.agent.bootstrap.ExternalIdProvider;
 import com.cumulocity.me.agent.feature.BaseFeature;
-import com.cumulocity.me.agent.feature.FeatureInitializationException;
 import com.cumulocity.me.agent.feature.InternalAgentApi;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 
@@ -15,7 +14,7 @@ public class ProviderFeature extends BaseFeature{
         this.deviceInfoProvider = deviceInfoProvider;
     }
     
-    public void init(InternalAgentApi agentApi) throws FeatureInitializationException {
+    public void init(InternalAgentApi agentApi) {
         super.init(agentApi);
         agentApi.setExternalIdProvider(idProvider);
         agentApi.setDeviceInformationProvider(deviceInfoProvider);

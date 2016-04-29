@@ -1,9 +1,8 @@
 package com.cumulocity.me.agent.config;
 
-import com.cumulocity.me.agent.feature.AgentFeature;
 import com.cumulocity.me.agent.feature.BaseFeature;
-import com.cumulocity.me.agent.feature.FeatureInitializationException;
 import com.cumulocity.me.agent.feature.InternalAgentApi;
+
 import java.io.IOException;
 
 public class ConfigurationFeature extends BaseFeature{
@@ -17,12 +16,12 @@ public class ConfigurationFeature extends BaseFeature{
         this.writer = writer;
     }
     
-    public void init(InternalAgentApi agentApi) throws FeatureInitializationException{
+    public void init(InternalAgentApi agentApi){
         try {
             configurationService = new ConfigurationService(reader, writer);
             agentApi.setConfigurationService(configurationService);
         } catch (IOException ex) {
-            throw new FeatureInitializationException("Could not initialize config service: " + ex.getMessage());
+            throw new RuntimeException("Could not initialize config service: " + ex.getMessage());
         }
     }
 

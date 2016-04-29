@@ -2,7 +2,7 @@ package com.cumulocity.me.agent.util;
 
 public class PeriodicExecutor {
 
-    private int interval;
+	private int interval;
     private volatile boolean run;
     private PeriodicTask task;
     int failureCount = 0;

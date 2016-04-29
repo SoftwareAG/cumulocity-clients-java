@@ -4,7 +4,6 @@ import com.cumulocity.me.agent.AgentTemplates;
 import com.cumulocity.me.agent.bootstrap.ExternalIdProvider;
 import com.cumulocity.me.agent.config.ConfigurationKey;
 import com.cumulocity.me.agent.config.ConfigurationService;
-import com.cumulocity.me.agent.feature.FeatureInitializationException;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
@@ -23,7 +22,7 @@ public class IntegrationHandler {
         this.connection = connection;
     }
 
-    public String integrate() throws FeatureInitializationException{
+    public String integrate(){
         // get external ID reference
         String externalId = idProvider.getExternalId();
         String externalIdType = idProvider.getExternalIdType();
