@@ -18,7 +18,7 @@ public class IntegrationHandler {
 
     public IntegrationHandler(ExternalIdProvider idProvider, SmartHttpConnection connection, ConfigurationService configService) {
         this.idProvider = idProvider;
-        this.requiredInterval = configService.getInt(ConfigurationKey.AGENT_MONITORING_REQUIRED_INTERVAL);
+        this.requiredInterval = configService.getInt(ConfigurationKey.AGENT_MONITORING_REQUIRED_INTERVAL).intValue();
         this.connection = connection;
     }
 

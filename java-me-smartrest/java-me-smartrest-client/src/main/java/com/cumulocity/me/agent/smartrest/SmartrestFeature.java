@@ -33,7 +33,7 @@ public class SmartrestFeature extends BaseFeature{
         ConfigurationService config = agentApi.getConfigurationService();
         setupConnection();
         manager = new SmartrestManager(buffer, connection);
-        executor = new PeriodicExecutor(config.getInt(ConfigurationKey.AGENT_BUFFER_SEND_INTERVAL), new SmartrestManagerTask(manager));
+        executor = new PeriodicExecutor(config.getInt(ConfigurationKey.AGENT_BUFFER_SEND_INTERVAL).intValue(), new SmartrestManagerTask(manager));
         executor.start();
     }
     

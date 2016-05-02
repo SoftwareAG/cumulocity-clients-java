@@ -27,20 +27,36 @@ public class ConfigurationService {
         return firstNonNull(key.getKey());
     }
     
-    public int getInt(String key){
-        return Integer.parseInt(firstNonNull(key));
+    public Integer getInt(String key){
+        String string = firstNonNull(key);
+        if (string == null) {
+			return null;
+		}
+    	return new Integer(Integer.parseInt(string));
     }
     
-    public int getInt(ConfigurationKey key){
-        return Integer.parseInt(firstNonNull(key.getKey()));
+    public Integer getInt(ConfigurationKey key){
+    	String string = firstNonNull(key.getKey());
+        if (string == null) {
+			return null;
+		}
+    	return new Integer(Integer.parseInt(string));
     }
     
-    public double getDouble(String key){
-        return Double.parseDouble(firstNonNull(key));
+    public Double getDouble(String key){
+    	String string = firstNonNull(key);
+        if (string == null) {
+			return null;
+		}
+    	return new Double(Double.parseDouble(string));
     }
     
-    public double getDouble(ConfigurationKey key){
-        return Double.parseDouble(firstNonNull(key.getKey()));
+    public Double getDouble(ConfigurationKey key){
+    	String string = firstNonNull(key.getKey());
+        if (string == null) {
+			return null;
+		}
+    	return new Double(Double.parseDouble(string));
     }
      
     public void set(String key, String value){
