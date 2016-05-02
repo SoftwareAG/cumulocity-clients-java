@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.cumulocity.me.agent.config.model.Configuration;
 import com.cumulocity.me.agent.config.model.ConfigurationKey;
 import com.cumulocity.me.agent.config.model.DefaultConfiguration;
+import com.cumulocity.me.agent.util.BooleanParser;
 
 public class ConfigurationService {
     private static final Configuration DEFAULT_CONFIG = DefaultConfiguration.build();
@@ -58,6 +59,22 @@ public class ConfigurationService {
 		}
     	return new Double(Double.parseDouble(string));
     }
+    
+    public Boolean getBoolean(String key) {
+    	String string = firstNonNull(key);
+        if (string == null) {
+			return null;
+		}
+    	return BooleanParser.parse(string);
+	}
+    
+    public Boolean getBoolean(ConfigurationKey key) {
+    	String string = firstNonNull(key.getKey());
+        if (string == null) {
+			return null;
+		}
+    	return BooleanParser.parse(string);
+	}
      
     public void set(String key, String value){
         configuration.set(key, value);
@@ -81,6 +98,14 @@ public class ConfigurationService {
     
     public void set(ConfigurationKey key, double value){
         configuration.set(key.getKey(), Double.toString(value));
+    }
+    
+    public void set(String key, boolean value){
+        configuration.set(key, BooleanParser.parse(value));
+    }
+    
+    public void set(ConfigurationKey key, boolean value){
+        configuration.set(key.getKey(), BooleanParser.parse(value));
     }
     
     public void remove(String key){
