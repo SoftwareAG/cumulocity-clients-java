@@ -37,7 +37,6 @@ public abstract class TemplateType extends EnumType {
             final StringBuffer sb = new StringBuffer();
             addEntry(templateBuilder.templateType, sb);
             addEntry(templateBuilder.messageId, sb);
-            addEntry(templateBuilder.json, sb);
             addEntry(templateBuilder.jsonPaths, sb, ',');
             addNewLine(sb);
             return sb.toString();

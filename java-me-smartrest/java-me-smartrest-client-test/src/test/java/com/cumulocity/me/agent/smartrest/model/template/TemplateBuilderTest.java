@@ -27,6 +27,7 @@ public class TemplateBuilderTest {
     public void shouldBuldEmptyResponseTemplate() {
         final String result = responseTemplate()
                 .messageId(1000)
+                .jsonPath("")
                 .jsonPath("$.c8y_IsDevice")
                 .jsonPath("$.id")
                 .build();
