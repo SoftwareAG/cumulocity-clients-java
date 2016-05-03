@@ -1,35 +1,8 @@
 package com.cumulocity.me.agent.smartrest.model.template;
 
-import com.cumulocity.me.util.EnumType;
-
 import java.util.Vector;
 
 public class TemplateBuilder {
-
-    public static final class PlaceholderType extends EnumType {
-
-        public static final PlaceholderType STRING = new PlaceholderType("STRING", 0);
-        public static final PlaceholderType UNSIGNED = new PlaceholderType("UNSIGNED", 1);
-        public static final PlaceholderType INTEGER = new PlaceholderType("INTEGER", 2);
-        public static final PlaceholderType NUMBER = new PlaceholderType("NUMBER", 3);
-        public static final PlaceholderType DATE = new PlaceholderType("DATE", 4);
-        public static final PlaceholderType NOW = new PlaceholderType("NOW", 5);
-
-        private PlaceholderType(String name, int ordinal) {
-            super(name, ordinal);
-        }
-    }
-
-    public static final class Method extends EnumType{
-        public static final Method GET = new Method("GET", 0);
-        public static final Method POST = new Method("POST", 1);
-        public static final Method PUT = new Method("PUT", 2);
-        public static final Method DELETE = new Method("DELETE", 3);
-
-        private Method(String name, int ordinal) {
-            super(name, ordinal);
-        }
-    }
 
     public static final String PLACEHOLDER = "&&";
 
@@ -71,6 +44,11 @@ public class TemplateBuilder {
 
     public TemplateBuilder messageId(Integer messageId) {
         this.messageId = messageId;
+        return this;
+    }
+
+    public TemplateBuilder messageId(int messageId) {
+        this.messageId = new Integer(messageId);
         return this;
     }
 

@@ -4,10 +4,10 @@ import org.junit.Test;
 
 import static com.cumulocity.me.agent.smartrest.model.template.Json.json;
 import static com.cumulocity.me.agent.smartrest.model.template.Path.path;
-import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.Method.*;
+import static com.cumulocity.me.agent.smartrest.model.template.Method.*;
 import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.*;
-import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.PlaceholderType.STRING;
-import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.PlaceholderType.UNSIGNED;
+import static com.cumulocity.me.agent.smartrest.model.template.PlaceholderType.STRING;
+import static com.cumulocity.me.agent.smartrest.model.template.PlaceholderType.UNSIGNED;
 import static org.fest.assertions.Assertions.assertThat;
 
 public class TemplateBuilderTest {
