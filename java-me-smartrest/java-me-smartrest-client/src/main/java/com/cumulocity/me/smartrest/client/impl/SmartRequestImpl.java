@@ -39,4 +39,28 @@ public class SmartRequestImpl implements SmartRequest {
     private void addMessageIdToBody(int messageId, String data) {
         this.data = messageId + "," + data;
     }
+
+    public String toString() {
+        return "SmartRequestImpl{" +
+                "path='" + path + '\'' +
+                ", data='" + data + '\'' +
+                '}';
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SmartRequestImpl that = (SmartRequestImpl) o;
+
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
+        return !(data != null ? !data.equals(that.data) : that.data != null);
+
+    }
+
+    public int hashCode() {
+        int result = path != null ? path.hashCode() : 0;
+        result = 31 * result + (data != null ? data.hashCode() : 0);
+        return result;
+    }
 }
