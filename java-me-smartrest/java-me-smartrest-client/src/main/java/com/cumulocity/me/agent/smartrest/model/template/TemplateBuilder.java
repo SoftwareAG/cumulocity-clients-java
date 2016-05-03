@@ -112,4 +112,11 @@ public class TemplateBuilder {
         this.placeholderTypes.addElement(type4);
         return this;
     }
+    
+    public TemplateBuilder placeholderType(PlaceholderType[] types){
+    	for (int i = 0; i < types.length; i++) {
+			this.placeholderTypes.addElement(types[i]);
+		}
+    	return this;
+    }
 }
