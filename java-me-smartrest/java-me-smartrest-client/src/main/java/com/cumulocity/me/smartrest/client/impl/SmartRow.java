@@ -14,7 +14,7 @@ public class SmartRow {
         int messageId;
         int rowNumber;
         String[] data;
-        String[] values = StringUtils.split(row, ",");
+        String[] values = StringUtils.splitQuoted(row, ",");
         if (values.length == 1) {
             if (values[0].equals("")) {
                 return null;
