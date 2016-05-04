@@ -233,6 +233,7 @@ public class SmartHttpConnection implements SmartConnection {
 	        if (body.endsWith("\r\n")) {
 	            body = body.substring(0, body.length() -2);
 	        }
+	        LOG.debug(new StringBuffer("Received response: ").append(responseCode).append(" ").append(responseMessage).append("\n").append(body));
 	        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
 	        return response;
     	} finally {

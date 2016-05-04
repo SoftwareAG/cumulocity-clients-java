@@ -53,7 +53,11 @@ public class SmartrestService {
     }
     
     public void setOperationFailed(String operationId, String reason) {
-        SmartRequest request = new SmartRequestImpl(AgentTemplates.UPDATE_OPERATION_FAILED_REQUEST_MESSAGE_ID, operationId + "," + reason);
-        sendRequest(request, AgentTemplates.XID);
+    	if (reason == null) {
+			setOperationFailed(operationId);
+		} else {
+			SmartRequest request = new SmartRequestImpl(AgentTemplates.UPDATE_OPERATION_FAILED_WITH_REASON_REQUEST_MESSAGE_ID, operationId + "," + reason);
+			sendRequest(request, AgentTemplates.XID);
+		}
     }
 }
