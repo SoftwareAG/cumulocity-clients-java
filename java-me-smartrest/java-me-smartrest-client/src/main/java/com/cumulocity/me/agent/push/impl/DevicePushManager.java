@@ -5,21 +5,26 @@ import java.util.Hashtable;
 
 import com.cumulocity.me.agent.plugin.AgentInfo;
 import com.cumulocity.me.agent.push.DevicePushService;
+import com.cumulocity.me.agent.smartrest.SmartrestService;
+import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
+import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartCometClient;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
+import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import com.cumulocity.me.util.SmartCometChannel;
 
 public class DevicePushManager implements DevicePushService{
-
+	
     private final SmartHttpConnection connection;
     private final SmartCometClient client;
     private final CombinedEvaluator combinedEvaluator;
     private final Hashtable supportedOperations;
     private final Hashtable xIds;
     private final AgentInfo agentInfo;
+    private final SmartrestService smartrestService;
     
-    public DevicePushManager(SmartHttpConnection connection, AgentInfo agentInfo) {
+    public DevicePushManager(SmartHttpConnection connection, AgentInfo agentInfo, SmartrestService smartrestService) {
         this.connection = connection;
         this.combinedEvaluator = new CombinedEvaluator();
         this.client = new SmartCometClient(connection, combinedEvaluator);
@@ -27,6 +32,7 @@ public class DevicePushManager implements DevicePushService{
         this.supportedOperations = new Hashtable();
         this.agentInfo = agentInfo;
         this.xIds = new Hashtable();
+        this.smartrestService = smartrestService;
     }
     
     public void registerOperation(String name, String xId, int messageId, SmartResponseEvaluator callback) {
@@ -38,9 +44,24 @@ public class DevicePushManager implements DevicePushService{
     public void start(){
         String channel = buildChannelString();
         client.startListenTo(SmartCometChannel.DEVICE_PUSH_ENDPOINT, new String[]{channel});
+
+        handleAlreadyExistingOperations();
     }
     
-    public void stop(){
+    private void handleAlreadyExistingOperations() {
+		SmartRequest executingRequest = new SmartRequestImpl(TemplateCollection.GET_EXECUTING_OPERATIONS_MESSAGE_ID, agentInfo.getDeviceId());
+		SmartRequest pendingRequest = new SmartRequestImpl(TemplateCollection.GET_PENDING_OPERATIONS_MESSAGE_ID, agentInfo.getDeviceId());
+
+    	Enumeration xIdEnumeration = xIds.keys();
+        while (xIdEnumeration.hasMoreElements()) {
+			String nextXId = (String) xIdEnumeration.nextElement();
+			FixedXidCombinedEvaluator evaluator = new FixedXidCombinedEvaluator(combinedEvaluator, nextXId);
+			smartrestService.sendRequest(executingRequest, nextXId, evaluator);
+			smartrestService.sendRequest(pendingRequest, nextXId, evaluator);
+		}
+	}
+
+	public void stop(){
         client.stopListenTo();
     }
 

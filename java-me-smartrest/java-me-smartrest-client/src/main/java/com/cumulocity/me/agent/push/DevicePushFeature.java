@@ -16,7 +16,7 @@ public class DevicePushFeature extends BaseFeature{
     public void init(InternalAgentApi agentApi) {
         super.init(agentApi);
         setupConnection();
-        pushManager = new DevicePushManager(connection, agentApi.getInternalAgentInfo());
+        pushManager = new DevicePushManager(connection, agentApi.getInternalAgentInfo(), agentApi.getSmartrestService());
         agentApi.setPushService(pushManager);
     }
     

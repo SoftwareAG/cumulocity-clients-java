@@ -5,6 +5,7 @@ import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.config.model.ConfigurationKey;
 import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
 import com.cumulocity.me.agent.smartrest.impl.RequestBuffer;
+import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
@@ -30,10 +31,10 @@ public class SmartrestService {
         buffer.add(request, xId, null);
     }
 
-    public void registerTemplates(String xId, String templates) {
-        SmartHttpConnection connection = new SmartHttpConnection(configService.get(ConfigurationKey.CONNECTION_HOST_URL), xId, agentInfo.getCredentials());
+    public void registerTemplates(TemplateCollection collection) {
+        SmartHttpConnection connection = new SmartHttpConnection(configService.get(ConfigurationKey.CONNECTION_HOST_URL), collection.getXid(), agentInfo.getCredentials());
         connection.setupConnection(configService.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
-        connection.templateRegistration(templates);
+        connection.templateRegistration(collection.buildTemplates());
         connection.closeConnection();
     }
 

@@ -28,8 +28,9 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
         }
     }
 
-    private void callEvaluator(String xId, SmartRow row) {
-        CallbackMapKey key = new CallbackMapKey(xId, row.getMessageId());
+    protected void callEvaluator(String xId, SmartRow row) {
+        System.out.println("Calling evaluator for xid: " + xId + " messageId: " + row.getMessageId());
+    	CallbackMapKey key = new CallbackMapKey(xId, row.getMessageId());
         SmartResponseEvaluator evaluator = (SmartResponseEvaluator) callbackMap.get(key);
         if (evaluator != null) {
             SmartResponse response = new SmartResponseImpl(200, "OK", new SmartRow[]{row});
