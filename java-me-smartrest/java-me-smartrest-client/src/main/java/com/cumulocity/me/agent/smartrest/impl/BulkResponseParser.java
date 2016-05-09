@@ -20,11 +20,9 @@ public class BulkResponseParser {
     }
 
     public SmartResponseList parse() {
-        System.out.println("parsing bulk response");
         SmartRow[] rows = original.getDataRows();
         for (int i = 0; i < rows.length; i++) {
             SmartRow row = rows[i];
-            System.out.println("parsing row: " + row.toString());
             if (isSetXIdRow(row)) {
                 handleSetXIdRow(row);
             } else {
@@ -43,7 +41,6 @@ public class BulkResponseParser {
     }
 
     public void handleSetXIdRow(SmartRow row) {
-        System.out.println("handling set xid row");
         appendSingleRequestResponse();
         xId = row.getData(0);
         lineNumber = Integer.MIN_VALUE;
@@ -51,10 +48,8 @@ public class BulkResponseParser {
 
     public void handleStandardRow(SmartRow row) {
         if (lineNumber == row.getRowNumber()) {
-            System.out.println("handling standard row for same request row");
             rows.addElement(row);
         } else {
-            System.out.println("handling standard row for new request row");
             appendSingleRequestResponse();
             rows.addElement(row);
             lineNumber = row.getRowNumber();

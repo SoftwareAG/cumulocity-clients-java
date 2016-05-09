@@ -4,11 +4,16 @@ import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
+
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 public class BulkRequest {
-    
+    private static final Logger LOG = LoggerFactory.getLogger(BulkRequest.class);
+	
     private final Hashtable requestMap = new Hashtable();
     
     public BulkRequest(RequestBufferItem[] buffer) {
@@ -51,7 +56,8 @@ public class BulkRequest {
     }
     
     public void callEvaluator(int line, SmartResponse response){
-        Enumeration xIdEnumeration = requestMap.elements();
+        LOG.debug("Calling evaluator for line " + line);
+    	Enumeration xIdEnumeration = requestMap.elements();
         while (xIdEnumeration.hasMoreElements()) {
             RequestBufferItemList nextList = (RequestBufferItemList) xIdEnumeration.nextElement();
             Enumeration requestEnumeration = nextList.elements();

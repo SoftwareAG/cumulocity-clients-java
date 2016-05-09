@@ -25,15 +25,10 @@ public class DevicePushFeature extends BaseFeature{
     }
 
     private void setupConnection(){
-        System.out.println("DPF setup connection");
         ConfigurationService config = agentApi.getConfigurationService();
-        System.out.println("got config");
         String credentials = agentApi.getInternalAgentInfo().getCredentials();
-        System.out.println("got credentials");
         connection = new SmartHttpConnection(config.get(ConfigurationKey.CONNECTION_HOST_URL), AgentTemplates.XID, credentials);
-        System.out.println("created credentials");
         connection.setupConnection(config.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
-        System.out.println("setup connection");
     }
     
     public void stop() {

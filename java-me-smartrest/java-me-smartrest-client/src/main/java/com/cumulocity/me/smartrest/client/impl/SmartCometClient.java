@@ -229,7 +229,6 @@ public class SmartCometClient {
             SmartRow row = rows[index];
             if (SMARTREST_RELIABLE_COUNT_CODE == row.getMessageId()) {
                 reliableRequestNumber = Integer.parseInt(row.getData(0));
-                System.out.println("extracted reliable request count: " + reliableRequestNumber);
                 break;
             }
         }

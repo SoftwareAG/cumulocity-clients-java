@@ -14,7 +14,11 @@ import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import com.cumulocity.me.util.SmartCometChannel;
 
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
+
 public class DevicePushManager implements DevicePushService{
+	private static final Logger LOG = LoggerFactory.getLogger(DevicePushManager.class);
 	
     private final SmartHttpConnection connection;
     private final SmartCometClient client;
@@ -44,14 +48,14 @@ public class DevicePushManager implements DevicePushService{
     public void start(){
         String channel = buildChannelString();
         client.startListenTo(SmartCometChannel.DEVICE_PUSH_ENDPOINT, new String[]{channel});
-
+        LOG.info("Start device push");
         handleAlreadyExistingOperations();
     }
     
     private void handleAlreadyExistingOperations() {
 		SmartRequest executingRequest = new SmartRequestImpl(TemplateCollection.GET_EXECUTING_OPERATIONS_MESSAGE_ID, agentInfo.getDeviceId());
 		SmartRequest pendingRequest = new SmartRequestImpl(TemplateCollection.GET_PENDING_OPERATIONS_MESSAGE_ID, agentInfo.getDeviceId());
-
+		LOG.info("Getting already existing operations");
     	Enumeration xIdEnumeration = xIds.keys();
         while (xIdEnumeration.hasMoreElements()) {
 			String nextXId = (String) xIdEnumeration.nextElement();

@@ -1,8 +1,6 @@
 package com.cumulocity.me.agent.push.impl;
 
-import com.cumulocity.me.agent.smartrest.model.MessageId;
 import com.cumulocity.me.smartrest.client.SmartResponse;
-import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
 
 public class FixedXidCombinedEvaluator extends CombinedEvaluator{

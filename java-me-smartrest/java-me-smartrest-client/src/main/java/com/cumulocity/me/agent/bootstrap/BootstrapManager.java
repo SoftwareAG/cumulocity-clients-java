@@ -6,10 +6,15 @@ import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.config.model.ConfigurationKey;
 import com.cumulocity.me.agent.provider.ExternalIdProvider;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
+
 import java.io.IOException;
 
 public class BootstrapManager {
 
+	private static final Logger LOG = LoggerFactory.getLogger(BootstrapManager.class);
+	
     private static final String BOOTSTRAP_CREDENTIALS = "Basic bWFuYWdlbWVudC9kZXZpY2Vib290c3RyYXA6RmhkdDFiYjFm";
 
     private final ConfigurationService configService;
@@ -25,7 +30,7 @@ public class BootstrapManager {
     }
 
     private void loadCredentials() {
-        System.out.println("loading credentials from file");
+        LOG.info("loading credentials from file");
         credentials = configService.get(ConfigurationKey.AGENT_USER_CREDENTIALS);
     }
     
@@ -40,23 +45,21 @@ public class BootstrapManager {
 
     public SmartHttpConnection bootstrap() throws BootstrapFailedException {
         loadCredentials();
-        System.out.println("Bootstrapping connection to " + configService.get(ConfigurationKey.CONNECTION_HOST_URL));
+        LOG.info("Bootstrapping connection to " + configService.get(ConfigurationKey.CONNECTION_HOST_URL));
         if (credentials == null) {
-            System.out.println("requesting credentials");
+        	LOG.debug("requesting credentials");
             connection = new SmartHttpConnection(configService.get(ConfigurationKey.CONNECTION_HOST_URL), AgentTemplates.XID,  BOOTSTRAP_CREDENTIALS);
             connection.setupConnection(configService.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
             credentials = connection.bootstrap(deviceXIdProvider.getExternalId());
-            System.out.println("received credentials");
+            LOG.debug("received credentials");
             saveCredentials(credentials);
         } else {
-            System.out.println("credentials already found, setting up connection");
+        	LOG.debug("credentials already found, setting up connection");
             connection = new SmartHttpConnection(configService.get(ConfigurationKey.CONNECTION_HOST_URL), AgentTemplates.XID, credentials);
             connection.setupConnection(configService.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
-            System.out.println("connection setup done");
+            LOG.debug("connection setup done");
         }
-        System.out.println("registering templates");
         connection.templateRegistration(AgentTemplates.TEMPLATES);
-        System.out.println("templates registered");
         return connection;
     }
 

@@ -7,10 +7,15 @@ import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
+
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
+
 import java.util.Enumeration;
 
 public class SmartrestManager {
-
+	private static final Logger LOG = LoggerFactory.getLogger(SmartrestManager.class);
+	
     private final RequestBuffer buffer;
     private final SmartHttpConnection connection;
 
@@ -20,44 +25,25 @@ public class SmartrestManager {
     }
 
     public void send() {
-        System.out.println("Send call");
         BulkRequest bulkRequest = buffer.extractBulkRequest();
-        System.out.println("tried to extract bulk request");
         if (bulkRequest != null) {
-            System.out.println("bulk request not empty");
+            LOG.info("Sending bulk request");
             SmartRequest smartRequest = bulkRequest.buildSmartRequest();
-            System.out.println("smart request built from bulk request");
-            System.out.println("------------");
-            System.out.println(smartRequest.getData());
-            System.out.println("------------");
             try {
                 SmartResponse response = connection.executeRequest(smartRequest);
-                System.out.println("request sent response received");
+                LOG.debug("Bulk request sent successfully");
                 buffer.acknowledgeExtracted();
-                SmartRow[] rows = response.getDataRows();
-                System.out.println("------------");
-                for (int i = 0; i < rows.length; i++) {
-                    SmartRow row = rows[i];
-                    System.out.println(row.toString());
-                }
-                System.out.println("------------");
                 BulkResponseParser parser = new BulkResponseParser(response);
                 SmartResponseList responseList = parser.parse();
-                System.out.println("bulk response parsed length: " + responseList.size());
+                LOG.debug("bulk response parsed. length: " + responseList.size());
                 Enumeration responseListEnumeration = responseList.elements();
                 while (responseListEnumeration.hasMoreElements()) {
                     SmartResponse nextResponse = (SmartResponse) responseListEnumeration.nextElement();
-                    SmartRow[] innerRows = nextResponse.getDataRows();
-                    System.out.println("------------");
-                    for (int i = 0; i < innerRows.length; i++) {
-                        SmartRow row = innerRows[i];
-                        System.out.println(row.toString());
-                    }
-                    System.out.println("------------");
                     bulkRequest.callEvaluator(nextResponse.getDataRows()[0].getRowNumber(), nextResponse);
                 }
             } catch (SDKException e) {
                 //skip & ignore
+            	//resend is handled by not acknowledging extracted from buffer
             }
         }
     }
