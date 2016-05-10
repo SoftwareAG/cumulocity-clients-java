@@ -16,7 +16,7 @@ public class SmartResponseImpl implements SmartResponse {
         this.status = status;
         this.message = message;
         if (isSuccessful()) {
-            this.dataRows = readData(StringUtils.split(input, "\n"));
+            this.dataRows = readData(StringUtils.splitQuoted(input, "\n"));
         } else {
             this.dataRows = null;
         }

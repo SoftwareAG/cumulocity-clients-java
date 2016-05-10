@@ -48,6 +48,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>net.sf.microlog</groupId>
+			<artifactId>microlog-logger-core</artifactId>
+			<version>2.3.2</version>
+		</dependency>
+		<dependency>
 			<groupId>org.microemu</groupId>
 			<artifactId>cldcapi11</artifactId>
 			<scope>provided</scope>

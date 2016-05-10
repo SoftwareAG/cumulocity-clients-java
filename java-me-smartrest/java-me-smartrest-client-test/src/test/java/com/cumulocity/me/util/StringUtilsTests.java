@@ -36,6 +36,46 @@ public class StringUtilsTests {
 	}
 	
 	@Test
+	public void testSplitQuotedWithoutQuotes() {
+		String multilineString="this is line one\nthis is line two";
+		String delimiter = "\n";
+		String[] result = StringUtils.splitQuoted(multilineString, delimiter);
+
+		assertThat(  result.length, is( equalTo(2) )  );
+		
+		assertThat(  result[0], is( equalTo("this is line one") )  );
+		assertThat(  result[1], is( equalTo("this is line two") )  );
+		   
+	}
+	
+	@Test
+	public void testSplitQuotedWithQuotes() {
+		String multilineString="this is line one\n\"this is a quoted line with a line\nbreak\"\nthis is line 3";
+		String delimiter = "\n";
+		String[] result = StringUtils.splitQuoted(multilineString, delimiter);
+
+		assertThat(  result.length, is( equalTo(3) )  );
+		
+		assertThat(  result[0], is( equalTo("this is line one") )  );
+		assertThat(  result[1], is( equalTo("\"this is a quoted line with a line\nbreak\"") )  );
+		assertThat(  result[2], is( equalTo("this is line 3") )  );
+	}
+	
+	@Test
+	public void testSplitQuotedWithUnevenQuotes() {
+		String multilineString="this is line one\n\"this is a badly quoted line with a line\nbreak\nthis is line 3";
+		String delimiter = "\n";
+		String[] result = StringUtils.splitQuoted(multilineString, delimiter);
+
+		assertThat(  result.length, is( equalTo(4) )  );
+		
+		assertThat(  result[0], is( equalTo("this is line one") )  );
+		assertThat(  result[1], is( equalTo("\"this is a badly quoted line with a line") )  );
+		assertThat(  result[2], is( equalTo("break") )  );
+		assertThat(  result[3], is( equalTo("this is line 3") )  );
+	}
+	
+	@Test
 	public void testStringWithoutAnythingToSplit() {
 		String withoutANewlineString = "this is a plain line";
 		String delimiter = "§$%&/(";
@@ -77,4 +117,63 @@ public class StringUtilsTests {
 	    Assert.assertEquals("myNewString", newString);
 	}
 	
+	@Test
+	public void testGetQuoteIndexesWithoutQuotes() {
+	    String origString = "myString,myOtherString";
+	    Integer[] result = StringUtils.getQuoteIndexes(origString);
+	    
+	    Assert.assertEquals(0, result.length);
+	}
+	
+	@Test
+	public void testGetQuoteIndexesWithQuotes() {
+	    String origString = "myString,\"myOtherString\",\"something quoted\"";
+	    Integer[] result = StringUtils.getQuoteIndexes(origString);
+	    
+	    Assert.assertEquals(4, result.length);
+	    Assert.assertEquals(9, result[0].intValue());
+	    Assert.assertEquals(23, result[1].intValue());
+	    Assert.assertEquals(25, result[2].intValue());
+	    Assert.assertEquals(42, result[3].intValue());
+	}
+	
+	@Test
+	public void testIsInsideQuotesWithoutQuotes() {
+	    
+		boolean insideQuotes = StringUtils.isInsideQuotes(11, new Integer[0]);
+	    
+	    Assert.assertEquals(false, insideQuotes);
+	}
+	
+	@Test
+	public void testIsInsideQuotesInside() {
+	    
+		boolean insideQuotes = StringUtils.isInsideQuotes(11, new Integer[]{9, 12, 22, 40});
+	    
+	    Assert.assertEquals(true, insideQuotes);
+	}
+	
+	@Test
+	public void testIsInsideQuotesOutside() {
+	    
+		boolean insideQuotes = StringUtils.isInsideQuotes(15, new Integer[]{9, 12, 22, 40});
+	    
+	    Assert.assertEquals(false, insideQuotes);
+	}
+	
+	@Test
+	public void testIsInsideQuotesEnd() {
+	    
+		boolean insideQuotes = StringUtils.isInsideQuotes(44, new Integer[]{9, 12, 22, 40});
+	    
+	    Assert.assertEquals(false, insideQuotes);
+	}
+	
+	@Test
+	public void testIsInsideQuotesUnevenEnd() {
+	    
+		boolean insideQuotes = StringUtils.isInsideQuotes(44, new Integer[]{9, 12, 22});
+	    
+	    Assert.assertEquals(false, insideQuotes);
+	}
 }
