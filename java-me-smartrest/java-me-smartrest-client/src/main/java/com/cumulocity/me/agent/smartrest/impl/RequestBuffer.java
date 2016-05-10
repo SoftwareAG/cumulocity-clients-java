@@ -7,14 +7,13 @@ import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 
 public class RequestBuffer {
-    private RequestBufferItemList buffer = new RequestBufferItemList();
+    private volatile RequestBufferItemList buffer = new RequestBufferItemList();
     private int extractedUntil;
     
-    public synchronized void add(SmartRequest request, String xId, SmartResponseEvaluator callback){ 
-        buffer.addElement(new RequestBufferItem(xId, request, callback));
+    public void add(SmartRequest request, String xId, SmartResponseEvaluator callback){ 
+    	buffer.addElement(new RequestBufferItem(xId, request, callback));
     }
 
-    
     public BulkRequest extractBulkRequest(){
         if (buffer.isEmpty()) {
             return null;
@@ -32,6 +31,4 @@ public class RequestBuffer {
             buffer.removeElementAt(0);
         }
     }
-    
-    
 }

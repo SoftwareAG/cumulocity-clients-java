@@ -6,16 +6,19 @@ import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartResponseImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
+
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
+
 import java.util.Hashtable;
 
 public class CombinedEvaluator implements SmartResponseEvaluator {
-
+	private static final Logger LOG = LoggerFactory.getLogger(CombinedEvaluator.class);
+	
     private final Hashtable callbackMap = new Hashtable();
 
     public void evaluate(SmartResponse response) {
-        System.out.println("Evaluating response: " + response.getStatus() + ", " + response.getMessage());
         SmartRow[] rows = response.getDataRows();
-        System.out.println("data rows: length=" + rows.length);
         String xId = "";
         for (int i = 0; i < rows.length; i++) {
             SmartRow row = rows[i];
@@ -29,12 +32,15 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
     }
 
     protected void callEvaluator(String xId, SmartRow row) {
-        System.out.println("Calling evaluator for xid: " + xId + " messageId: " + row.getMessageId());
     	CallbackMapKey key = new CallbackMapKey(xId, row.getMessageId());
-        SmartResponseEvaluator evaluator = (SmartResponseEvaluator) callbackMap.get(key);
+        final SmartResponseEvaluator evaluator = (SmartResponseEvaluator) callbackMap.get(key);
         if (evaluator != null) {
-            SmartResponse response = new SmartResponseImpl(200, "OK", new SmartRow[]{row});
-            evaluator.evaluate(response);
+            final SmartResponse response = new SmartResponseImpl(200, "OK", new SmartRow[]{row});
+            new Thread(new Runnable() {
+				public void run() {
+					evaluator.evaluate(response);
+				}
+			}).start();
         }
     }
 
