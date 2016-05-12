@@ -19,25 +19,6 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
-import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
@@ -61,6 +42,21 @@ import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+
+import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 public class RestConnector {
 
@@ -230,14 +226,23 @@ public class RestConnector {
 
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, representation);
+        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation)
-            throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, representation);
+    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
+    }
+
+    public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(
+            final String path,
+            final CumulocityMediaType contentType,
+            final CumulocityMediaType accept,
+            final Param representation,
+            final Class<Result> clazz) {
+        ClientResponse response = httpPost(path, contentType, accept, representation);
+        return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode());
     }
 
     @SuppressWarnings("unchecked")
@@ -266,10 +271,10 @@ public class RestConnector {
         return responseParser.parse(response, responseCode, type);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType mediaType, T representation) {
-        WebResource.Builder builder = client.resource(path).type(mediaType);
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType, CumulocityMediaType accept, T representation) {
+        WebResource.Builder builder = client.resource(path).type(contentType);
         if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
+            builder.accept(accept);
         }
         builder = addApplicationKeyHeader(builder);
         builder = addRequestOriginHeader(builder);

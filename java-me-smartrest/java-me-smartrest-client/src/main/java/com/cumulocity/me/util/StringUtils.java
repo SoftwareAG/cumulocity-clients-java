@@ -19,10 +19,10 @@
  */
 package com.cumulocity.me.util;
 
+import com.cumulocity.me.sdk.SDKException;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Vector;
-
-import com.cumulocity.me.sdk.SDKException;
 
 public abstract class StringUtils {
 
@@ -31,6 +31,10 @@ public abstract class StringUtils {
     
     public static final String toString(Object obj) {
         return obj == null ? null : obj.toString();
+    }
+
+    public static final boolean isNotBlank(String string) {
+        return string != null && string.length() > 0;
     }
 
     public static final String valueOf(byte[] data) {

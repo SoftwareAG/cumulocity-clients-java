@@ -9,6 +9,8 @@ public class ConfigurationKey {
     public static final ConfigurationKey AGENT_BUFFER_SEND_INTERVAL = new ConfigurationKey("agent.buffer.send.interval", "1000");
     public static final ConfigurationKey AGENT_MONITORING_REQUIRED_INTERVAL = new ConfigurationKey("agent.monitoring.required.interval", "60");
 
+    public static final ConfigurationKey AGENT_LOGGER_APPENDER =  new ConfigurationKey("agent.logger.appender", null);
+
     
     private final String key;
     private final String defaultValue;
@@ -20,7 +22,8 @@ public class ConfigurationKey {
             CONNECTION_SETUP_PARAMS_REALTIME,
             AGENT_USER_CREDENTIALS,
             AGENT_BUFFER_SEND_INTERVAL,
-            AGENT_MONITORING_REQUIRED_INTERVAL
+            AGENT_MONITORING_REQUIRED_INTERVAL,
+            AGENT_LOGGER_APPENDER
         };
     }
     

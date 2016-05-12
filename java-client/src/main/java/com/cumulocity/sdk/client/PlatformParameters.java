@@ -108,7 +108,7 @@ public class PlatformParameters {
         }
     }
 
-    protected synchronized RestConnector createRestConnector() {
+    public synchronized RestConnector createRestConnector() {
         if (restConnector == null) {
             restConnector = new RestConnector(this, new ResponseParser());
             startBufferProcessing();
