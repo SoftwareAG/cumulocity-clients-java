@@ -7,6 +7,7 @@ import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import com.cumulocity.me.util.Preconditions;
 import net.sf.microlog.core.Formatter;
 import net.sf.microlog.core.Level;
+import net.sf.microlog.core.Logger;
 
 public class EventAppender extends AbstractAppender {
     public static final String XID = "c8y_LoggerTemplate";
@@ -24,11 +25,13 @@ public class EventAppender extends AbstractAppender {
     }
 
     public void doLog(String clientID, String name, long time, Level level, Object message, Throwable t) {
-        final AgentInfo agentInfo = agentApi.getAgentInfo();
-        Preconditions.checkState(agentInfo != null, "Agent info is null.");
+        if (level.toInt() > Level.DEBUG_INT) {
+        	final AgentInfo agentInfo = agentApi.getAgentInfo();
+        	Preconditions.checkState(agentInfo != null, "Agent info is null.");
 
-        final String text = getFormatter().format(clientID, name, time, level, message, t);
-        final SmartRequest request = new SmartRequestImpl(MESSAGE_ID, agentInfo.getDeviceId() + "," + "cy8_LoggerEvent" + "," + text);
-        agentApi.getSmartrestService().sendRequest(request, XID, null);
+        	final String text = getFormatter().format(clientID, name, time, level, message, t);
+        	final SmartRequest request = new SmartRequestImpl(MESSAGE_ID, agentInfo.getDeviceId() + "," + "cy8_LoggerEvent" + "," + text);
+        	agentApi.getSmartrestService().sendRequest(request, XID, null);
+		}
     }
 }
