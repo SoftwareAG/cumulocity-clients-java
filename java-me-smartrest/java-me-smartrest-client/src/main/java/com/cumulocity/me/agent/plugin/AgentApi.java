@@ -1,5 +1,6 @@
 package com.cumulocity.me.agent.plugin;
 
+import com.cumulocity.me.agent.binary.BinaryService;
 import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
@@ -14,6 +15,7 @@ public abstract class AgentApi {
     protected ConfigurationService configurationService;
     protected SmartrestService smartrestService;
     protected DevicePushService pushService;
+    protected BinaryService binaryService;
 
     public AgentInfo getAgentInfo(){
         return agentInfo;
@@ -37,5 +39,9 @@ public abstract class AgentApi {
 
     public DevicePushService getPushService() {
         return pushService;
+    }
+
+    public BinaryService getBinaryService() {
+        return binaryService;
     }
 }
