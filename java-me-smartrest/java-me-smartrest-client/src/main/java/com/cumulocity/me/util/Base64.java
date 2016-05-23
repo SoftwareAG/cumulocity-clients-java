@@ -23,7 +23,7 @@ package com.cumulocity.me.util;
  * Base64.java
  *
  * Brazil project web application toolkit,
- * export version: 2.0 
+ * export agentVersion: 2.0
  * Copyright (c) 2000-2002 Sun Microsystems, Inc.
  *
  * Sun Public License Notice

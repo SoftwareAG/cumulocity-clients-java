@@ -5,6 +5,8 @@ import com.cumulocity.me.agent.binary.impl.BinaryHttpConnection;
 import com.cumulocity.me.agent.binary.impl.BinaryMetadataVerifier;
 import com.cumulocity.me.agent.binary.model.BinaryMetadata;
 
+import java.io.InputStream;
+
 public class BinaryService {
 
     private final String baseUrl;
@@ -15,7 +17,7 @@ public class BinaryService {
         this.authHeader = authHeader;
     }
 
-    public byte[] get(BinaryMetadata metadata) throws VerificationException {
+    public InputStream get(BinaryMetadata metadata) throws VerificationException {
         BinaryMetadataVerifier.verifyGet(metadata);
         BinaryHttpConnection connection = new BinaryHttpConnection(baseUrl, authHeader);
         return connection.get(metadata);

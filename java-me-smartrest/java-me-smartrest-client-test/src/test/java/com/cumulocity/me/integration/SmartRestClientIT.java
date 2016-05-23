@@ -20,11 +20,11 @@ public class SmartRestClientIT {
     
     private static String templateString =  "10,100,GET,/inventory/managedObjects/&&,,,&&,,\n" +
                                               "10,101,GET,/inventory/managedObjects/,,,,,\n" +
-                                              "10,200,POST,/inventory/managedObjects/,application/vnd.com.nsn.cumulocity.managedObject+json,application/vnd.com.nsn.cumulocity.managedObject+json,&&,,\"{\"\"c8y_J2METestFragment\"\":{},\"\"name\"\":\"\"&&\"\",\"\"c8y_IsDevice\"\":{},\"\"c8y_SupportedMeasurements\"\":[\"\"c8y_TemperatureMeasurement\"\"]}\"\n" +
+                                              "10,200,POST,/inventory/managedObjects/,application/vnd.com.nsn.cumulocity.managedObject+json,application/vnd.com.nsn.cumulocity.managedObject+json,&&,,\"{\"\"c8y_J2METestFragment\"\":{},\"\"agentName\"\":\"\"&&\"\",\"\"c8y_IsDevice\"\":{},\"\"c8y_SupportedMeasurements\"\":[\"\"c8y_TemperatureMeasurement\"\"]}\"\n" +
                                               "10,201,POST,/measurement/measurements/,application/vnd.com.nsn.cumulocity.measurement+json,application/vnd.com.nsn.cumulocity.measurement+json,&&,,\"{\"\"time\"\":\"\"2013-06-22T17:03:14.000+02:00\"\",\"\"source\"\":{\"\"id\"\":\"\"&&\"\"},\"\"type\"\":\"\"c8y_TemperatureMeasurement\"\",\"\"c8y_TemperatureMeasurement\"\":{\"\"T\"\":{\"\"value\"\":&&,\"\"unit\"\":\"\"C\"\"}}}\"\n" +
                                               "10,999,DELETE,/inventory/managedObjects/&&,,,&&,,\n" +
                                               "11,300,,$.c8y_J2METestFragment,\"$.id\"\n" +
-                                              "11,311,managedObjects,,\"$.name\",\"$.id\"\n" +
+                                              "11,311,managedObjects,,\"$.agentName\",\"$.id\"\n" +
                                               "11,312,,$.c8y_TemperatureMeasurement,\"$.id\"";
                                               
     private static SmartConnection con = null;

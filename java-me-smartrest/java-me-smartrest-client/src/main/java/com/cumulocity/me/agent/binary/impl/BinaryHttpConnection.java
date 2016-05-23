@@ -42,7 +42,7 @@ public class BinaryHttpConnection {
         return url.toString();
     }
 
-    public byte[] get(BinaryMetadata metadata){
+    public InputStream get(BinaryMetadata metadata){
         try {
             open(metadata.getId());
             connection.setRequestMethod("GET");
@@ -50,14 +50,7 @@ public class BinaryHttpConnection {
             if (responseCode != HttpConnection.HTTP_OK){
                 throw new SDKException(responseCode, "Unexpected response for binary GET");
             }
-            InputStream input = connection.openInputStream();
-            Vector bytes = new Vector();
-            int singleByte = input.read();
-            while (singleByte != -1){
-                bytes.addElement(new Byte((byte) singleByte));
-                singleByte = input.read();
-            }
-            return copyIntoByteArray(bytes);
+            return connection.openInputStream();
         } catch (IOException e) {
             throw new SDKException("IO Error BinaryHttpConnection", e);
         } finally {
@@ -117,13 +110,13 @@ public class BinaryHttpConnection {
 
     private void writePostBody(OutputStream output, String fileName, String type, byte[] data) throws IOException {
         output.write((BOUNDARY + "\n").getBytes());
-        output.write("Content-Disposition: form-data; name=\"object\"\n\n".getBytes());
+        output.write("Content-Disposition: form-data; agentName=\"object\"\n\n".getBytes());
         output.write(Json.json("\"")
                 .addString("name", fileName)
                 .addString("type", type)
                 .get().getBytes());
         output.write((BOUNDARY + "\n").getBytes());
-        output.write("Content-Disposition: form-data; name=\"file\"\n".getBytes());
+        output.write("Content-Disposition: form-data; agentName=\"file\"\n".getBytes());
         output.write(data);
         output.write((BOUNDARY + "\n").getBytes());
     }
