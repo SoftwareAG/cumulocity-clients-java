@@ -64,13 +64,20 @@ public class BulkRequest {
             while (requestEnumeration.hasMoreElements()) {
                 RequestBufferItem nextItem = (RequestBufferItem) requestEnumeration.nextElement();
                 if (line == nextItem.getLineNumber()) {
-                    SmartResponseEvaluator evaluator = nextItem.getCallback();
-                    if (evaluator != null) {
-                        evaluator.evaluate(response);
-                    }                    
+                    callInNewThread(nextItem.getCallback(), response);
                     return;
                 }
             }
+        }
+    }
+
+    private void callInNewThread(final SmartResponseEvaluator evaluator, final SmartResponse response){
+        if (evaluator != null) {
+            new Thread(new Runnable() {
+                public void run() {
+                    evaluator.evaluate(response);
+                }
+            }).start();
         }
     }
 }
