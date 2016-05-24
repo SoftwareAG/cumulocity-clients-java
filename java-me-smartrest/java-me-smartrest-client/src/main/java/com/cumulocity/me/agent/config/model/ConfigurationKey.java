@@ -27,7 +27,7 @@ public class ConfigurationKey {
         };
     }
     
-    private ConfigurationKey(String key, String defaultValue) {
+    public ConfigurationKey(String key, String defaultValue) {
         this.key = key;
         this.defaultValue = defaultValue;
     }

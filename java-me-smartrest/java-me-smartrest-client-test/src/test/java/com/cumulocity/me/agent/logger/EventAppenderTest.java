@@ -2,6 +2,7 @@ package com.cumulocity.me.agent.logger;
 
 import com.cumulocity.me.agent.plugin.AgentApi;
 import com.cumulocity.me.agent.plugin.AgentInfo;
+import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
 import com.cumulocity.me.agent.smartrest.SmartrestService;
 import com.cumulocity.me.smartrest.client.impl.SmartRequestImpl;
 import net.sf.microlog.core.Formatter;
@@ -17,7 +18,7 @@ public class EventAppenderTest {
 
     @Test
     public void shouldLog() {
-        final AgentInfo givenInfo = new AgentInfo("111");
+        final AgentInfo givenInfo = new InternalAgentInfo("111");
         final AgentApi givenApi = mock(AgentApi.class);
         final Formatter givenFormatter  = new SimpleFormatter();
         final EventAppender givenAppender = new EventAppender(givenApi, givenFormatter);

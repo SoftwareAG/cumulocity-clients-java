@@ -11,9 +11,16 @@ public class BootstrapFeature extends BaseFeature{
     public void init(InternalAgentApi agentApi) {
         super.init(agentApi);
         manager = new BootstrapManager(agentApi.getConfigurationService(), agentApi.getExternalIdProvider());
-        InternalAgentInfo agentInfo = new InternalAgentInfo();
+        ensureAgentInfoExists();
+        InternalAgentInfo agentInfo = agentApi.getInternalAgentInfo();
         agentInfo.setBootstrapConnection(manager.bootstrap());
         agentInfo.setCredentials(manager.getCredentials());
         agentApi.setAgentInfo(agentInfo);
+    }
+
+    private void ensureAgentInfoExists(){
+        if (agentApi.getInternalAgentInfo() == null){
+            agentApi.setAgentInfo(new InternalAgentInfo());
+        }
     }
 }

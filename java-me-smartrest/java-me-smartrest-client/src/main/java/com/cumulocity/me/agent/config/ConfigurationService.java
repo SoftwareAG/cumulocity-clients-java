@@ -25,7 +25,7 @@ public class ConfigurationService {
     }
     
     public String get(ConfigurationKey key){
-        return firstNonNull(key.getKey());
+        return firstNonNull(key);
     }
     
     public Integer getInt(String key){
@@ -37,7 +37,7 @@ public class ConfigurationService {
     }
     
     public Integer getInt(ConfigurationKey key){
-    	String string = firstNonNull(key.getKey());
+    	String string = firstNonNull(key);
         if (string == null) {
 			return null;
 		}
@@ -53,7 +53,7 @@ public class ConfigurationService {
     }
     
     public Double getDouble(ConfigurationKey key){
-    	String string = firstNonNull(key.getKey());
+    	String string = firstNonNull(key);
         if (string == null) {
 			return null;
 		}
@@ -69,7 +69,7 @@ public class ConfigurationService {
 	}
     
     public Boolean getBoolean(ConfigurationKey key) {
-    	String string = firstNonNull(key.getKey());
+    	String string = firstNonNull(key);
         if (string == null) {
 			return null;
 		}
@@ -124,6 +124,14 @@ public class ConfigurationService {
         String value = configuration.get(key);
         if (value == null) {
             return DEFAULT_CONFIG.get(key);
+        }
+        return value;
+    }
+
+    private String firstNonNull(ConfigurationKey key){
+        String value = firstNonNull(key.getKey());
+        if (value == null) {
+            return key.getDefaultValue();
         }
         return value;
     }

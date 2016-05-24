@@ -11,6 +11,7 @@ import net.sf.microlog.core.Logger;
 import net.sf.microlog.core.LoggerFactory;
 
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class CombinedEvaluator implements SmartResponseEvaluator {
 	private static final Logger LOG = LoggerFactory.getLogger(CombinedEvaluator.class);
@@ -19,23 +20,40 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
 
     public void evaluate(SmartResponse response) {
         SmartRow[] rows = response.getDataRows();
-        String xId = "";
+        String xId = null;
+        Vector currentRows = new Vector();
         for (int i = 0; i < rows.length; i++) {
             SmartRow row = rows[i];
-            System.out.println(row.toString());
             if (MessageId.SET_XID_RESPONSE.getValue() == row.getMessageId()) {
                 xId = row.getData(0);
+                callEvaluator(xId, currentRows);
+                currentRows = new Vector();
             } else {
-                callEvaluator(xId, row);
+                if (!currentRows.isEmpty() &&
+                        (row.getMessageId() != ((SmartRow)currentRows.elementAt(0)).getMessageId()
+                        || row.getRowNumber() != ((SmartRow)currentRows.elementAt(0)).getRowNumber())){
+                    callEvaluator(xId, currentRows);
+                    currentRows = new Vector();
+                }
+                currentRows.addElement(row);
             }
+        }
+        callEvaluator(xId, currentRows);
+    }
+
+    protected void callEvaluator(String xId, Vector rows){
+        if (!rows.isEmpty()){
+            SmartRow[] rowsArray = new SmartRow[rows.size()];
+            rows.copyInto(rowsArray);
+            callEvaluator(xId, rowsArray);
         }
     }
 
-    protected void callEvaluator(String xId, SmartRow row) {
-    	CallbackMapKey key = new CallbackMapKey(xId, row.getMessageId());
+    protected void callEvaluator(String xId, SmartRow[] rows) {
+    	CallbackMapKey key = new CallbackMapKey(xId, rows[0].getMessageId());
         final SmartResponseEvaluator evaluator = (SmartResponseEvaluator) callbackMap.get(key);
         if (evaluator != null) {
-            final SmartResponse response = new SmartResponseImpl(200, "OK", new SmartRow[]{row});
+            final SmartResponse response = new SmartResponseImpl(200, "OK", rows);
             new Thread(new Runnable() {
 				public void run() {
 					evaluator.evaluate(response);

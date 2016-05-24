@@ -1,5 +1,6 @@
 package com.cumulocity.me.agent.plugin.impl;
 
+import com.cumulocity.me.agent.binary.BinaryService;
 import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.AgentApi;
@@ -35,5 +36,9 @@ public class InternalAgentApi extends AgentApi{
 
     public void setExternalIdProvider(ExternalIdProvider externalIdProvider) {
         this.externalIdProvider = externalIdProvider;
+    }
+
+    public void setBinaryService(BinaryService binaryService){
+        this.binaryService = binaryService;
     }
 }
