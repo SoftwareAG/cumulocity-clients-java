@@ -25,7 +25,7 @@ import com.cumulocity.sdk.client.notification.*;
 
 public class InventoryRealtimeNotificationsSubscriber implements Subscriber<String, ManagedObjectNotification> {
     
-    private static final String REALTIME_NOTIFICATIONS_URL = "cep/realtime";
+    private static final String REALTIME_NOTIFICATIONS_URL = "devicecontrol/realtime";
 
     private final Subscriber<String, ManagedObjectNotification> subscriber;
     
