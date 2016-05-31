@@ -3,14 +3,14 @@ package com.cumulocity.me.agent.fieldbus.model;
 import java.util.Vector;
 
 public class AlarmSeverity {
+    private static final Vector VALUES = new Vector();
+
     public static final AlarmSeverity WARNING = new AlarmSeverity("warning");
     public static final AlarmSeverity MINOR = new AlarmSeverity("minor");
     public static final AlarmSeverity MAJOR = new AlarmSeverity("major");
     public static final AlarmSeverity CRITICAL = new AlarmSeverity("critical");
 
-    private static final Vector VALUES = new Vector();
-
-    private static AlarmSeverity get(String value){
+    public static AlarmSeverity get(String value){
         for (int i = 0; i < VALUES.size(); i++) {
             AlarmSeverity alarmSeverity = (AlarmSeverity) VALUES.elementAt(i);
             if (alarmSeverity.getValue().equalsIgnoreCase(value)){
@@ -24,7 +24,7 @@ public class AlarmSeverity {
 
     private AlarmSeverity(String value) {
         this.value = value;
-        VALUES.add(this);
+        VALUES.addElement(this);
     }
 
     public String getValue() {

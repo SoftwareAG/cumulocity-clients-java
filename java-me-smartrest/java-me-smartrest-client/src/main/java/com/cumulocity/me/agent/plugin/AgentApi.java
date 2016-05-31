@@ -1,6 +1,8 @@
 package com.cumulocity.me.agent.plugin;
 
 import com.cumulocity.me.agent.config.ConfigurationService;
+import com.cumulocity.me.agent.fieldbus.FieldbusService;
+import com.cumulocity.me.agent.fieldbus.model.FieldbusDevice;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
 import com.cumulocity.me.agent.provider.ExternalIdProvider;
@@ -14,6 +16,7 @@ public abstract class AgentApi {
     protected ConfigurationService configurationService;
     protected SmartrestService smartrestService;
     protected DevicePushService pushService;
+    protected FieldbusService fieldbusService;
 
     public AgentInfo getAgentInfo(){
         return agentInfo;
@@ -37,5 +40,9 @@ public abstract class AgentApi {
 
     public DevicePushService getPushService() {
         return pushService;
+    }
+
+    public FieldbusService getFieldbusService() {
+        return fieldbusService;
     }
 }

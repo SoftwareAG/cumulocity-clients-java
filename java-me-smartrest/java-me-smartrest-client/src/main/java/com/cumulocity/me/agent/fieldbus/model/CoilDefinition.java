@@ -3,15 +3,17 @@ package com.cumulocity.me.agent.fieldbus.model;
 public class CoilDefinition {
     private final String name;
     private final int number;
+    private final boolean input;
 
     private final StatusMapping statusMapping;
     private final EventMapping eventMapping;
     private final AlarmMapping alarmMapping;
 
 
-    public CoilDefinition(String name, int number, StatusMapping statusMapping, EventMapping eventMapping, AlarmMapping alarmMapping) {
+    public CoilDefinition(String name, int number, boolean input, StatusMapping statusMapping, EventMapping eventMapping, AlarmMapping alarmMapping) {
         this.name = name;
         this.number = number;
+        this.input = input;
         this.statusMapping = statusMapping;
         this.eventMapping = eventMapping;
         this.alarmMapping = alarmMapping;
@@ -23,6 +25,10 @@ public class CoilDefinition {
 
     public int getNumber() {
         return number;
+    }
+
+    public boolean isInput() {
+        return input;
     }
 
     public StatusMapping getStatusMapping() {

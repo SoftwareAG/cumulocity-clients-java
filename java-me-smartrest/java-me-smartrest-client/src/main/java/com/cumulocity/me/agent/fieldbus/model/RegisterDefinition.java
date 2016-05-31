@@ -5,8 +5,8 @@ public class RegisterDefinition {
     private final int number;
     private final int startBit;
     private final int length;
-    private final String unit;
     private final boolean signed;
+    private final boolean input;
 
     private final Conversion conversion;
     private final StatusMapping statusMapping;
@@ -14,13 +14,13 @@ public class RegisterDefinition {
     private final AlarmMapping alarmMapping;
     private final MeasurementMapping measurementMapping;
 
-    public RegisterDefinition(String name, int number, int startBit, int length, String unit, boolean signed, Conversion conversion, StatusMapping statusMapping, EventMapping eventMapping, AlarmMapping alarmMapping, MeasurementMapping measurementMapping) {
+    public RegisterDefinition(String name, int number, int startBit, int length, boolean signed, boolean input, Conversion conversion, StatusMapping statusMapping, EventMapping eventMapping, AlarmMapping alarmMapping, MeasurementMapping measurementMapping) {
         this.name = name;
         this.number = number;
         this.startBit = startBit;
         this.length = length;
-        this.unit = unit;
         this.signed = signed;
+        this.input = input;
         this.conversion = conversion;
         this.statusMapping = statusMapping;
         this.eventMapping = eventMapping;
@@ -44,12 +44,12 @@ public class RegisterDefinition {
         return length;
     }
 
-    public String getUnit() {
-        return unit;
-    }
-
     public boolean isSigned() {
         return signed;
+    }
+
+    public boolean isInput() {
+        return input;
     }
 
     public StatusMapping getStatusMapping() {

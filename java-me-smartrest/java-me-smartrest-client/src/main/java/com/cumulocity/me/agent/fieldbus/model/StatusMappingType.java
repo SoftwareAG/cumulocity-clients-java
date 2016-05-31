@@ -3,10 +3,10 @@ package com.cumulocity.me.agent.fieldbus.model;
 import java.util.Vector;
 
 public class StatusMappingType {
+    private static final Vector VALUES = new Vector();
+
     public static final StatusMappingType READ = new StatusMappingType("read");
     public static final StatusMappingType WRITE = new StatusMappingType("write");
-
-    private static final Vector VALUES = new Vector();
 
     public static StatusMappingType get(String string){
         for (int i = 0; i < VALUES.size(); i++) {
@@ -22,7 +22,7 @@ public class StatusMappingType {
 
     private StatusMappingType(String value) {
         this.value = value;
-        VALUES.add(this);
+        VALUES.addElement(this);
     }
 
     public String getValue() {
