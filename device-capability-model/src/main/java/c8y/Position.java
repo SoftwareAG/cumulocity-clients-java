@@ -23,6 +23,7 @@ package c8y;
 import java.math.BigDecimal;
 
 import org.svenson.AbstractDynamicProperties;
+import org.svenson.JSONProperty;
 
 public class Position extends AbstractDynamicProperties {
 	private static final long serialVersionUID = -8365376637780307348L;
@@ -56,6 +57,7 @@ public class Position extends AbstractDynamicProperties {
 		this.alt = altitude;
 	}
 	
+	@JSONProperty(ignoreIfNull = true)
 	public long getAccuracy() {
         return accuracy;
     }
