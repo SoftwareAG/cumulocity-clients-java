@@ -31,7 +31,7 @@ public class Position extends AbstractDynamicProperties {
 	private BigDecimal lat;
     private BigDecimal lng;
     private BigDecimal alt;
-    private long accuracy;
+    private Long accuracy;
 
 	public BigDecimal getLat() {
 		return lat;
@@ -58,11 +58,15 @@ public class Position extends AbstractDynamicProperties {
 	}
 	
 	@JSONProperty(ignoreIfNull = true)
-	public long getAccuracy() {
+	public Long getAccuracy() {
         return accuracy;
     }
 
     public void setAccuracy(long accuracy) {
+        this.accuracy = new Long(accuracy);
+    }
+    
+    public void setAccuracy(Long accuracy) {
         this.accuracy = accuracy;
     }
 
