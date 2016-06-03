@@ -66,8 +66,9 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
                 typeBuilder.withRegister(uniqueId, registerNumber, registerName, registerInput, registerSigned, registerStartBit, registerNoBits);
                 int registerMultiplier = Integer.parseInt(row.getData(7));
                 int registerDivisor = Integer.parseInt(row.getData(8));
-                int registerDecimalPlaces = Integer.parseInt(row.getData(9));
-                typeBuilder.withRegister(uniqueId, registerMultiplier, registerDivisor, registerDecimalPlaces);
+                int registerOffset = Integer.parseInt(row.getData(9));
+                int registerDecimalPlaces = Integer.parseInt(row.getData(10));
+                typeBuilder.withRegister(uniqueId, registerMultiplier, registerDivisor, registerOffset, registerDecimalPlaces);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID:
                 StatusMapping registerStatusMapping = parseStatusMapping(row);

@@ -88,10 +88,10 @@ public class DeviceTypeBuilder {
         return this;
     }
 
-    public DeviceTypeBuilder withRegister(String id, int multiplier, int divisor, int decimalPlaces){
+    public DeviceTypeBuilder withRegister(String id, int multiplier, int divisor, int offset, int decimalPlaces){
         ensureRegisterBuilderExists(id);
         RegisterDefinitionBuilder builder = (RegisterDefinitionBuilder) registerBuilderMap.get(id);
-        builder.withConversion(new Conversion(multiplier, divisor, decimalPlaces));
+        builder.withConversion(new Conversion(multiplier, divisor, decimalPlaces, offset));
         return this;
     }
 

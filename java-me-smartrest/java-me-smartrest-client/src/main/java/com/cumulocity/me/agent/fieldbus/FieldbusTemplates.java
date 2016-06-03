@@ -109,6 +109,7 @@ public class FieldbusTemplates {
                     .jsonPath("$.noBits")
                     .jsonPath("$.multiplier")
                     .jsonPath("$.divisor")
+                    .jsonPath("$.offset")
                     .jsonPath("$.decimalPlaces")
             )
             .template(TemplateBuilder.responseTemplate()
