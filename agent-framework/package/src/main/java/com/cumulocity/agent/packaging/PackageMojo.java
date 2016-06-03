@@ -145,8 +145,13 @@ public class PackageMojo extends AbstractMojo {
     }
 
     public void initializeTemplates() throws IOException, FileNotFoundException {
+        boolean customLoggingConfigExists = customLoggingConfigExists();
         getLog().debug("initialize templates");
         for (ResourceInfo resource : loadTemplates()) {
+            //ugly workaround to not overwrite custom logging configuration
+            if (resource.getResourceName().endsWith("logging.xml") && customLoggingConfigExists) {
+                continue;
+            }
             final URL url = resource.url();
             getLog().debug("template found " + resource.getResourceName());
             final File destination = new File(rpmTemporaryDirectory, new File(resource.getResourceName()).getPath().substring(4));
@@ -158,6 +163,15 @@ public class PackageMojo extends AbstractMojo {
         createDirectories(etc.toPath());
         walkFileTree(configurationDirectory.toPath(), new CopyFileVisitor(etc.toPath()));
 
+    }
+
+    private boolean customLoggingConfigExists() {
+        for (File file : configurationDirectory.listFiles()) {
+            if (file.getName().endsWith("logging.xml")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void copyBaseArtifact() throws IOException {
