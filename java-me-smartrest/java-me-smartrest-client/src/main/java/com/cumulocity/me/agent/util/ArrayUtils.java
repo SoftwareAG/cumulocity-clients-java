@@ -87,4 +87,13 @@ public class ArrayUtils {
         }
         return result;
     }
+
+    public static byte[] toBitArray(int source) {
+        byte[] result = new byte[32];
+        for (int i = 0; i < result.length; i++) {
+            int shift = 31 - i;
+            result[i] = (byte) ((source >>> shift) & 0x01);
+        }
+        return result;
+    }
 }

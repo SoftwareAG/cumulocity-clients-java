@@ -1,5 +1,6 @@
 package com.cumulocity.me.agent.plugin;
 
+import com.cumulocity.me.agent.binary.BinaryService;
 import com.cumulocity.me.agent.config.ConfigurationService;
 import com.cumulocity.me.agent.fieldbus.FieldbusService;
 import com.cumulocity.me.agent.fieldbus.model.FieldbusDevice;
@@ -17,6 +18,7 @@ public abstract class AgentApi {
     protected SmartrestService smartrestService;
     protected DevicePushService pushService;
     protected FieldbusService fieldbusService;
+    protected BinaryService binaryService;
 
     public AgentInfo getAgentInfo(){
         return agentInfo;
@@ -40,6 +42,10 @@ public abstract class AgentApi {
 
     public DevicePushService getPushService() {
         return pushService;
+    }
+
+    public BinaryService getBinaryService() {
+        return binaryService;
     }
 
     public FieldbusService getFieldbusService() {
