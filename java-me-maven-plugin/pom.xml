@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>7.27.0-SNAPSHOT</version>
+        <version>7.28.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.cumulocity.me</groupId>
     <artifactId>java-me-maven-plugin</artifactId>
-    <version>7.27.0-SNAPSHOT</version>
+    <version>7.28.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Cumulocity :: Clients Java :: Java ME Maven Plugin</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
@@ -200,7 +197,7 @@
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.4</version>
-                    <configuration combine.self="override"/>
+                    <configuration combine.self="override" />
                 </plugin>
             </plugins>
         </pluginManagement>
