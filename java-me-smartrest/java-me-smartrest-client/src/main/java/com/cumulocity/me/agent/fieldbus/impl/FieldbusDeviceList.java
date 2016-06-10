@@ -85,6 +85,9 @@ public class FieldbusDeviceList {
     }
 
     public synchronized void addElement(FieldbusDevice obj) {
+        if (delegate.contains(obj)) {
+            delegate.removeElement(obj);
+        }
         delegate.addElement(obj);
     }
 

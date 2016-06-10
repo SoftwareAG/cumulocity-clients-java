@@ -1,10 +1,8 @@
 package com.cumulocity.me.agent.fieldbus;
 
+import com.cumulocity.me.agent.fieldbus.model.AlarmSeverity;
 import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
-import com.cumulocity.me.agent.smartrest.model.template.Method;
-import com.cumulocity.me.agent.smartrest.model.template.Path;
-import com.cumulocity.me.agent.smartrest.model.template.PlaceholderType;
-import com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder;
+import com.cumulocity.me.agent.smartrest.model.template.*;
 
 public class FieldbusTemplates {
     public static final String XID = "J2ME_FieldbusTemplates_v1";
@@ -12,6 +10,7 @@ public class FieldbusTemplates {
     public static final int GET_CHILD_DEVICES_REQUEST_MESSAGE_ID = 100;
     public static final int MODBUS_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1000;
     public static final int CAN_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1001;
+
     public static final int GET_FIELDBUS_DEVICE_TYPE_REQUEST_MESSAGE_ID = 101;
     public static final int DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID = 1010;
     public static final int DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID = 1011;
@@ -23,7 +22,16 @@ public class FieldbusTemplates {
     public static final int DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID = 1023;
     public static final int DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID = 1024;
     public static final int DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID = 1025;
-    private static final TemplateCollection INSTANCE = TemplateCollection.templateCollection()
+
+    public static final int GET_ACTIVE_ALARMS_REQUEST_MESSAGE_ID = 103;
+        public static final int ALARMS_ARRAY_ID_TYPE_RESPONSE_MESSAGE_ID = 1030;
+
+    public static final int CREATE_ALARM_REQUEST_MESSAGE_ID = 104;
+    public static final int CREATE_ALARM_RESPONSE_MESSAGE_ID = 1040;
+
+    public static final int CLEAR_ALARM_REQUEST_MESSAGE_ID = 105;
+
+    public static final TemplateCollection INSTANCE = TemplateCollection.templateCollection()
             .xid(XID)
             .template(TemplateBuilder.requestTemplate()
                     .messageId(GET_CHILD_DEVICES_REQUEST_MESSAGE_ID)
@@ -147,5 +155,54 @@ public class FieldbusTemplates {
                     .jsonPath("$.measurementMapping.type")
                     .jsonPath("$.measurementMapping.series")
             )
+            .template(TemplateBuilder.requestTemplate()
+                    .messageId(GET_ACTIVE_ALARMS_REQUEST_MESSAGE_ID)
+                    .method(Method.GET)
+                    .path(Path.path("alarm/alarms?source=%%&status=ACTIVE"))
+                    .placeholder("%%")
+                    .placeholderType(PlaceholderType.UNSIGNED)
+            )
+            .template(TemplateBuilder.responseTemplate()
+                    .messageId(ALARMS_ARRAY_ID_TYPE_RESPONSE_MESSAGE_ID)
+                    .jsonPath("$.alarms")
+                    .jsonPath("")
+                    .jsonPath("$.id")
+                    .jsonPath("$.type")
+            )
+            .template(TemplateBuilder.requestTemplate()
+                    .messageId(CREATE_ALARM_REQUEST_MESSAGE_ID)
+                    .method(Method.POST)
+                    .path(Path.path("alarm/alarms"))
+                    .content("application/vnd.com.nsn.cumulocity.alarm+json")
+                    .accept("application/vnd.com.nsn.cumulocity.alarm+json")
+                    .placeholderType(new PlaceholderType[]{PlaceholderType.UNSIGNED, PlaceholderType.STRING, PlaceholderType.STRING, PlaceholderType.STRING, PlaceholderType.NOW})
+                    .json(Json.json()
+                            .addJson("source", Json.json()
+                                    .addString("id", TemplateBuilder.PLACEHOLDER)
+                            )
+                            .addString("type", TemplateBuilder.PLACEHOLDER)
+                            .addString("text", TemplateBuilder.PLACEHOLDER)
+                            .addString("severity", TemplateBuilder.PLACEHOLDER)
+                            .addString("time", TemplateBuilder.PLACEHOLDER)
+                    )
+            )
+            .template(TemplateBuilder.responseTemplate()
+                    .messageId(CREATE_ALARM_RESPONSE_MESSAGE_ID)
+                    .jsonPath("")
+                    .jsonPath("$.severity")
+                    .jsonPath("$.id")
+            )
+            .template(TemplateBuilder.requestTemplate()
+                    .messageId(CLEAR_ALARM_REQUEST_MESSAGE_ID)
+                    .method(Method.PUT)
+                    .path(Path.path("alarm/alarms/&&"))
+                    .content("application/vnd.com.nsn.cumulocity.alarm+json")
+                    .placeholderType(PlaceholderType.UNSIGNED)
+                    .json(Json.json()
+                            .addString("status", "CLEARED")
+                    )
+            )
             .build();
+
+
 }

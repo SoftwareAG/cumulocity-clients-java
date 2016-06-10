@@ -5,6 +5,7 @@ import com.cumulocity.me.agent.fieldbus.impl.DeviceTypeBuilder;
 import com.cumulocity.me.agent.fieldbus.impl.FieldbusDeviceList;
 import com.cumulocity.me.agent.fieldbus.model.*;
 import com.cumulocity.me.agent.util.BooleanParser;
+import com.cumulocity.me.agent.util.Callback;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
@@ -14,10 +15,12 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
     private final FieldbusChild child;
     private final FieldbusDeviceList toAppend;
     private final DeviceTypeBuilder typeBuilder = new DeviceTypeBuilder();
+    private final Callback onFinished;
 
-    public FieldbusTypeEvaluator(FieldbusChild child, FieldbusDeviceList toAppend) {
+    public FieldbusTypeEvaluator(FieldbusChild child, FieldbusDeviceList toAppend, Callback onFinished) {
         this.child = child;
         this.toAppend = toAppend;
+        this.onFinished = onFinished;
     }
 
     public void evaluate(SmartResponse response) {
@@ -33,6 +36,8 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         typeBuilder.withType(child.getType());
         FieldbusDevice device = new FieldbusDevice(child.getId(), child.getName(), child.getAddress(), typeBuilder.build());
         toAppend.addElement(device);
+        Callback.execute(onFinished);
+
     }
 
     private void handleDefinitionRow(SmartRow row) {

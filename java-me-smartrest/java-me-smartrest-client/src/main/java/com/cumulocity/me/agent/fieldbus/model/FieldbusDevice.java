@@ -28,4 +28,18 @@ public class FieldbusDevice {
     public String getName() {
         return name;
     }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FieldbusDevice device = (FieldbusDevice) o;
+
+        return id != null ? id.equals(device.id) : device.id == null;
+
+    }
+
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

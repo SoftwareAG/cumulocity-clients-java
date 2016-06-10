@@ -1,6 +1,7 @@
 package com.cumulocity.me.agent.fieldbus.impl;
 
 import com.cumulocity.me.agent.fieldbus.model.*;
+import com.cumulocity.me.agent.util.Arrays;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -134,8 +135,10 @@ public class DeviceTypeBuilder {
         includeSubBuilders();
         CoilDefinition[] coilDefinitionsArray = new CoilDefinition[coilDefinitions.size()];
         coilDefinitions.copyInto(coilDefinitionsArray);
+        Arrays.bubbleSort(coilDefinitionsArray, new CoilDefinitionComparator());
         RegisterDefinition[] registerDefinitionArray = new RegisterDefinition[registerDefinitions.size()];
         registerDefinitions.copyInto(registerDefinitionArray);
+        Arrays.bubbleSort(registerDefinitionArray, new RegisterDefinitionComparator());
 
         return new FieldbusDeviceType(name, useServerTime, type, coilDefinitionsArray, registerDefinitionArray);
     }

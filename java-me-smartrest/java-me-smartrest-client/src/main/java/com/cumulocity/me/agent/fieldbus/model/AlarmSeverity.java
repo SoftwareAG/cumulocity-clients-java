@@ -5,10 +5,10 @@ import java.util.Vector;
 public class AlarmSeverity {
     private static final Vector VALUES = new Vector();
 
-    public static final AlarmSeverity WARNING = new AlarmSeverity("warning");
-    public static final AlarmSeverity MINOR = new AlarmSeverity("minor");
-    public static final AlarmSeverity MAJOR = new AlarmSeverity("major");
-    public static final AlarmSeverity CRITICAL = new AlarmSeverity("critical");
+    public static final AlarmSeverity WARNING = new AlarmSeverity("WARNING");
+    public static final AlarmSeverity MINOR = new AlarmSeverity("MINOR");
+    public static final AlarmSeverity MAJOR = new AlarmSeverity("MAJOR");
+    public static final AlarmSeverity CRITICAL = new AlarmSeverity("CRITICAL");
 
     public static AlarmSeverity get(String value){
         for (int i = 0; i < VALUES.size(); i++) {

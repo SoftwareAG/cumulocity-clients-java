@@ -5,14 +5,10 @@ import com.cumulocity.me.agent.fieldbus.impl.FieldbusDeviceList;
 import com.cumulocity.me.agent.fieldbus.model.*;
 import com.cumulocity.me.smartrest.client.impl.SmartResponseImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
-import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 public class FieldbusTypeEvaluatorTest {
 
@@ -22,7 +18,7 @@ public class FieldbusTypeEvaluatorTest {
     @Before
     public void before(){
         FieldbusDeviceList list = new FieldbusDeviceList();
-        FieldbusTypeEvaluator evaluator = new FieldbusTypeEvaluator(child, list);
+        FieldbusTypeEvaluator evaluator = new FieldbusTypeEvaluator(child, list, onFinished);
         evaluator.evaluate(new SmartResponseImpl(200, "OK", new SmartRow[]{
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID, 2, new String[]{"typeName", "true"}),
 
