@@ -117,4 +117,13 @@ public abstract class IOUtils {
     public static final boolean isHeartbeat(int c) {
         return c == 32;
     }
+
+    public static void transferStreams(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[500];
+        int count = input.read(buffer);
+        while (count > -1){
+            output.write(buffer, 0, count);
+            count = input.read(buffer);
+        }
+    }
 }

@@ -4,7 +4,7 @@
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>/var/log/@package.directory@/@package.name@.log</file>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %X{device} - %X{device} - %msg%n
 			</pattern>
 		</encoder>
 
@@ -23,12 +23,12 @@
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<!-- encoder defaults to ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
 		<encoder>
-			<pattern>%-5level %logger{36} - %msg%n</pattern>
+			<pattern>%-5level %logger{36} - %X{tenant} - %X{device} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<logger name="com.cumulocity" level="DEBUG" />
-	<logger name="c8y" level="DEBUG" />
+	<logger name="com.cumulocity" level="INFO" />
+	<logger name="c8y" level="INFO" />
 	<logger name="httpclient.wire" level="INFO" />
 
 	<root level="INFO">

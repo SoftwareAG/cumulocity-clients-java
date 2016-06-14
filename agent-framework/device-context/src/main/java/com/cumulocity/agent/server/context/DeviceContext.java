@@ -8,24 +8,23 @@ public class DeviceContext {
     private final DeviceCredentials login;
 
     private final ScopeContainer scope;
-
+    
     public DeviceContext(DeviceCredentials login) {
-        this.login = login;
-        this.scope = new DefaultScopeContainer();
-    }
+    	this.login = login;
+    	this.scope = new DefaultScopeContainer();
+	}
 
-    public DeviceCredentials getLogin() {
+	public DeviceCredentials getLogin() {
         return login;
     }
 
     public ScopeContainer getScope() {
         return scope;
     }
-
-    @Override
+    
+	@Override
     public String toString() {
         return "DeviceContext [login=" + login + "]";
     }
-    
     
 }

@@ -27,8 +27,13 @@ public class MockDeviceContextService implements DeviceContextService {
     public DeviceContext getContext() {
         return context;
     }
-
+    
     @Override
+	public boolean isInContext() {
+		return context != null;
+	}
+
+	@Override
     public DeviceCredentials getCredentials() {
         return context.getLogin();
     }

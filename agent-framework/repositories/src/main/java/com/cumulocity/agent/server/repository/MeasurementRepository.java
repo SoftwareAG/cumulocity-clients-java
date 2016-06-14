@@ -33,7 +33,7 @@ public class MeasurementRepository {
 
     public void save(Collection<MeasurementRepresentation> measurments) {
         for (MeasurementRepresentation measurement : measurments) {
-            measurementApi.createAsync(measurement);
+            measurementApi.create(measurement);
         }
     }
 }

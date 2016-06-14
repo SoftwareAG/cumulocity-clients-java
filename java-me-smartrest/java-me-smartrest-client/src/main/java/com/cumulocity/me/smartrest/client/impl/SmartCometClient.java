@@ -16,6 +16,7 @@ public class SmartCometClient {
     public static final int SMARTREST_CONNECT_CODE = 83;
     public static final int SMARTREST_DISCONNECT_CODE = 84;
     public static final int SMARTREST_ADVICE_CODE = 86;
+    public static final int SMARTREST_RELIABLE_COUNT_CODE = 88;
     
     private final SmartConnection connection;    
     private final SmartResponseEvaluator evaluator;    
@@ -28,6 +29,8 @@ public class SmartCometClient {
     private long interval;
     // 0: do nothing; 1: do handshake; 2: do connect
     private int reconnectAdvice;
+    private boolean reliable;
+    private int reliableRequestNumber = -1;
     
     public SmartCometClient(SmartConnection connection, SmartResponseEvaluator evaluator, long interval, SmartExecutorService executorService) {
         this.clientId = null;
@@ -83,7 +86,12 @@ public class SmartCometClient {
     }
     
     protected String handshake() {
-        SmartRequestImpl request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
+        SmartRequestImpl request;
+        if (isReliable()) {
+            request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE) + ",true");
+        } else {
+            request = new SmartRequestImpl(path, Integer.toString(SMARTREST_HANDSHAKE_CODE));
+        }
         SmartResponse response = connection.executeRequest(request);
         if (!response.isSuccessful()) {
             return null;
@@ -115,7 +123,13 @@ public class SmartCometClient {
     }
    
     protected void connect() {
-        SmartRequestImpl request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
+        SmartRequestImpl request;
+        if (isReliable()) {
+            request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId + "," + reliableRequestNumber);
+        } else {
+            request = new SmartRequestImpl(path, SMARTREST_CONNECT_CODE + "," + clientId);
+        }
+
         try {
             final SmartResponse response = connection.executeLongPollingRequest(request);
             if (response == null || response.isTimeout()) {
@@ -123,10 +137,14 @@ public class SmartCometClient {
             } else if (!response.isSuccessful()){
                 return;
             }
-            final SmartRow[] rows = extractAdvice(response.getDataRows());
+            SmartRow[] rows = extractAdvice(response.getDataRows());
+            if (isReliable()) {
+                rows = extractReliableNumber(rows);
+            }
+            final SmartRow[] finalRows = rows;
             executorService.execute(new Runnable() {
                 public void run() {
-                    evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), rows));
+                    evaluator.evaluate(new SmartResponseImpl(response.getStatus(), response.getMessage(), finalRows));
                 }
             });
         } catch (SDKException e) {
@@ -205,6 +223,24 @@ public class SmartCometClient {
         return newRows;
     }
     
+    private SmartRow[] extractReliableNumber(SmartRow[] rows){
+        int index = -1;
+        for (index = 0; index < rows.length; index++) {
+            SmartRow row = rows[index];
+            if (SMARTREST_RELIABLE_COUNT_CODE == row.getMessageId()) {
+                reliableRequestNumber = Integer.parseInt(row.getData(0));
+                break;
+            }
+        }
+        if (index == -1) {
+            return rows;
+        }
+        SmartRow[] newRows = new SmartRow[rows.length - 1];
+        System.arraycopy(rows, 0, newRows, 0, index);
+        System.arraycopy(rows, index + 1, newRows, index, newRows.length - index);
+        return newRows;
+    }
+    
     private void setAdvice(SmartRow adviceRow) {
         String interval;
         String reconnectAdvice;
@@ -223,5 +259,13 @@ public class SmartCometClient {
                 this.reconnectAdvice = 0;
             }
         }
+    }
+
+    public void setReliable(boolean reliable) {
+        this.reliable = reliable;
+    }
+
+    public boolean isReliable() {
+        return reliable;
     }
 }

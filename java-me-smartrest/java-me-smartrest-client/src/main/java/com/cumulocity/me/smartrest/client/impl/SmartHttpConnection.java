@@ -11,9 +11,13 @@ import com.cumulocity.me.smartrest.client.*;
 import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.ConnectorWrapper;
 import com.cumulocity.me.util.IOUtils;
-import com.cumulocity.me.util.StringUtils;
+
+import net.sf.microlog.core.Level;
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
 
 public class SmartHttpConnection implements SmartConnection {
+	private static final Logger LOG = LoggerFactory.getLogger(SmartHttpConnection.class);
     
     private final String host;
     private String authorization; 
@@ -26,7 +30,7 @@ public class SmartHttpConnection implements SmartConnection {
     private OutputStream output;
     private SmartHeartBeatWatcher heartBeatWatcher;
     private final SmartExecutorService executorService;
-    private boolean isBootstrapping = false;
+    private boolean addXIdHeader = true;
     private ConnectorWrapper connectorWrapper = new ConnectorWrapper();
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
@@ -73,9 +77,10 @@ public class SmartHttpConnection implements SmartConnection {
                 continue;
             }
 
-            isBootstrapping = true; //setting to true in order for the writeHeaders method to not add the X-Id header
+            boolean oldSetting = addXIdHeader;
+            addXIdHeader = false;
             response = executeRequest(new SmartRequestImpl(SmartConnection.BOOTSTRAP_REQUEST_CODE, id));
-            isBootstrapping = false;
+            addXIdHeader = oldSetting;
             
             if (response != null) {
                 responseRow = response.getRow(0);
@@ -189,11 +194,15 @@ public class SmartHttpConnection implements SmartConnection {
     }
 
     private SmartHttpConnection writeHeaders(SmartRequest request) throws IOException {
+    	LOG.debug("Writing headers");
         connection.setRequestProperty("Authorization", authorization);
+        LOG.debug("Authorization: " + authorization);
         connection.setRequestProperty("Content-Type", "text/plain");
-        if (! isBootstrapping) {
+        if (addXIdHeader) {
             connection.setRequestProperty("X-Id", xid);
+            LOG.debug("X-Id: " + xid);
         }
+
         return this;
     }
     
@@ -202,6 +211,7 @@ public class SmartHttpConnection implements SmartConnection {
             return this;
         }
         output = connection.openOutputStream();
+        LOG.debug("Writing body: " + request.getData());
         IOUtils.writeData(request.getData().getBytes(), output);
         return this;
     }
@@ -223,6 +233,7 @@ public class SmartHttpConnection implements SmartConnection {
 	        if (body.endsWith("\r\n")) {
 	            body = body.substring(0, body.length() -2);
 	        }
+	        LOG.debug(new StringBuffer("Received response: ").append(responseCode).append(" ").append(responseMessage).append("\n").append(body));
 	        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
 	        return response;
     	} finally {
@@ -277,5 +288,13 @@ public class SmartHttpConnection implements SmartConnection {
         heartBeatWatcher = new SmartHeartBeatWatcher(this, Thread.currentThread());
         heartBeatWatcher.start();
         return this;
+    }
+    
+    public boolean isAddXIdHeader() {
+        return addXIdHeader;
+    }
+
+    public void setAddXIdHeader(boolean addXIdHeader) {
+        this.addXIdHeader = addXIdHeader;
     }
 }

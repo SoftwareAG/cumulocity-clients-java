@@ -49,7 +49,7 @@ public class ResponseParser {
         }
     }
 
-    private String getErrorMessage(ClientResponse response, int status) {
+    protected String getErrorMessage(ClientResponse response, int status) {
         String errorMessage = "Http status code: " + status;
 
         if (response.hasEntity()) {
@@ -62,7 +62,7 @@ public class ResponseParser {
         return errorMessage;
     }
 
-    private String getErrorRepresentation(ClientResponse response) {
+    protected String getErrorRepresentation(ClientResponse response) {
         try {
             if (isJsonResponse(response)) {
                 return response.getEntity(ErrorMessageRepresentation.class).toString();
@@ -76,7 +76,7 @@ public class ResponseParser {
         return null;
     }
 
-    private boolean isJsonResponse(ClientResponse response){
+    protected boolean isJsonResponse(ClientResponse response){
         MediaType contentType = response.getType();
         if (contentType == null) {
             return false;
