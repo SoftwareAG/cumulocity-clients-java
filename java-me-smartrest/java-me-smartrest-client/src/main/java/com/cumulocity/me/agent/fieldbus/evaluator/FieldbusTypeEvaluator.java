@@ -44,7 +44,7 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         String uniqueId = row.getData(0);
         switch (row.getMessageId()) {
             case FieldbusTemplates.DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID:
-                int coilNumber = Integer.parseInt(row.getData(1));
+                int coilNumber = parseNumber(row.getData(1));
                 String coilName = row.getData(2);
                 boolean coilInput = BooleanParser.parse(row.getData(3)).booleanValue();
                 typeBuilder.withCoil(uniqueId, coilNumber, coilName, coilInput);
@@ -62,7 +62,7 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
                 typeBuilder.withCoil(uniqueId, coilEventMapping);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID:
-                int registerNumber = Integer.parseInt(row.getData(1));
+                int registerNumber = parseNumber(row.getData(1));
                 String registerName = row.getData(2);
                 boolean registerInput = BooleanParser.parse(row.getData(3)).booleanValue();
                 boolean registerSigned = BooleanParser.parse(row.getData(4)).booleanValue();
@@ -125,5 +125,12 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         String eventType = row.getData(2);
         String eventText = row.getData(3);
         return new EventMapping(eventTemplate, eventType, eventText);
+    }
+
+    private int parseNumber(String source) {
+        if (source.startsWith("0x")){
+            return Integer.parseInt(source.substring(2), 16);
+        }
+        return Integer.parseInt(source);
     }
 }

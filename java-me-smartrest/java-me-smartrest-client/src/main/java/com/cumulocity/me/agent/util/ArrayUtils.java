@@ -97,7 +97,7 @@ public class ArrayUtils {
         return result;
     }
 
-    public byte[] toByteArray(int source) {
+    public static byte[] toByteArray(int source) {
         byte[] bytes = new byte[4];
         bytes[0] = (byte) ((source & 0xFF000000) >> 24);
         bytes[1] = (byte) ((source & 0xFF0000) >> 16);

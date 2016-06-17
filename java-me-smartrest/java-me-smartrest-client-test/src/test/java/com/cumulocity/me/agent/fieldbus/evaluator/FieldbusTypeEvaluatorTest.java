@@ -3,10 +3,12 @@ package com.cumulocity.me.agent.fieldbus.evaluator;
 import com.cumulocity.me.agent.fieldbus.FieldbusTemplates;
 import com.cumulocity.me.agent.fieldbus.impl.FieldbusDeviceList;
 import com.cumulocity.me.agent.fieldbus.model.*;
+import com.cumulocity.me.agent.util.Callback;
 import com.cumulocity.me.smartrest.client.impl.SmartResponseImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -18,7 +20,8 @@ public class FieldbusTypeEvaluatorTest {
     @Before
     public void before(){
         FieldbusDeviceList list = new FieldbusDeviceList();
-        FieldbusTypeEvaluator evaluator = new FieldbusTypeEvaluator(child, list, onFinished);
+        Callback mockedCallback = Mockito.mock(Callback.class);
+        FieldbusTypeEvaluator evaluator = new FieldbusTypeEvaluator(child, list, mockedCallback);
         evaluator.evaluate(new SmartResponseImpl(200, "OK", new SmartRow[]{
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID, 2, new String[]{"typeName", "true"}),
 

@@ -44,7 +44,7 @@ public class ValueHelper {
         byte[] newBits = ArrayUtils.toBitArray(convertedNewValue);
         byte[] mergedBits = new byte[oldBits.length];
         System.arraycopy(oldBits, 0, mergedBits, 0, oldBits.length);
-        System.arraycopy(newBits, 63 - definition.getLength(), mergedBits, definition.getStartBit(), definition.getLength());
+        System.arraycopy(newBits, 64 - definition.getLength(), mergedBits, definition.getStartBit(), definition.getLength());
         return ArrayUtils.toByteArray(mergedBits);
     }
 

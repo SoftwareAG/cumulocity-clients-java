@@ -92,7 +92,7 @@ public class DeviceTypeBuilder {
     public DeviceTypeBuilder withRegister(String id, int multiplier, int divisor, int offset, int decimalPlaces){
         ensureRegisterBuilderExists(id);
         RegisterDefinitionBuilder builder = (RegisterDefinitionBuilder) registerBuilderMap.get(id);
-        builder.withConversion(new Conversion(multiplier, divisor, decimalPlaces, offset));
+        builder.withConversion(new Conversion(multiplier, divisor, offset, decimalPlaces));
         return this;
     }
 

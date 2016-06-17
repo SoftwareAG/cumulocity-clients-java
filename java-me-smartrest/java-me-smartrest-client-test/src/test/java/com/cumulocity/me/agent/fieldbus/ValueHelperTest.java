@@ -50,6 +50,15 @@ public class ValueHelperTest {
     }
 
     @Test
+    public void shouldMergeFullSizeCorrectly() throws Exception {
+        RegisterDefinition definition = new RegisterDefinitionBuilder().withStartBit(0).withLength(64).build();
+        byte[] merged = ValueHelper.merge("-1", new byte[8], definition);
+        for (byte b : merged) {
+            assertThat(b).isEqualTo((byte) 0xFF);
+        }
+    }
+
+    @Test
     public void shouldConvertBackwardsCorrectly(){
         long converted = ValueHelper.convertBackwards("12345.6789", new Conversion(2, 3, 4, 5));
         assertThat(converted).isEqualTo(1851851829L);
