@@ -26,4 +26,34 @@ public class Arrays {
             }
         }
     }
+
+    public static String toString(Object[] array){
+        StringBuffer buffer = new StringBuffer("Object[]{[");
+        for (int i = 0; i < array.length; i++) {
+            if (i != 0) {
+                buffer.append(", ");
+            }
+            Object object = array[i];
+            if (object == null) {
+                buffer.append("null");
+            } else {
+                buffer.append(object.toString());
+            }
+        }
+        buffer.append("]}");
+        return buffer.toString();
+    }
+
+    public static String toString(byte[] array){
+        StringBuffer buffer = new StringBuffer("byte[]{[");
+        for (int i = 0; i < array.length; i++) {
+            if (i != 0) {
+                buffer.append(", ");
+            }
+            byte currentByte = array[i];
+            buffer.append(currentByte);
+        }
+        buffer.append("]}");
+        return buffer.toString();
+    }
 }

@@ -5,7 +5,7 @@ import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
 import com.cumulocity.me.agent.smartrest.model.template.*;
 
 public class FieldbusTemplates {
-    public static final String XID = "J2ME_FieldbusTemplates_v1";
+    public static final String XID = "J2ME_FieldbusTemplates_v3";
 
     public static final int GET_CHILD_DEVICES_REQUEST_MESSAGE_ID = 100;
     public static final int MODBUS_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1000;
@@ -24,7 +24,7 @@ public class FieldbusTemplates {
     public static final int DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID = 1025;
 
     public static final int GET_ACTIVE_ALARMS_REQUEST_MESSAGE_ID = 103;
-        public static final int ALARMS_ARRAY_ID_TYPE_RESPONSE_MESSAGE_ID = 1030;
+    public static final int ALARMS_ARRAY_ID_TYPE_RESPONSE_MESSAGE_ID = 1030;
 
     public static final int CREATE_ALARM_REQUEST_MESSAGE_ID = 104;
     public static final int CREATE_ALARM_RESPONSE_MESSAGE_ID = 1040;
@@ -53,7 +53,7 @@ public class FieldbusTemplates {
                     .jsonPath("$.references")
                     .jsonPath("")
                     .jsonPath("$.managedObject.id")
-                    .jsonPath("$.managedObject.name")
+                    //TODO FIX .jsonPath("$.managedObject.name")
                     .jsonPath("$.managedObject.c8y_CanDevice.type")
             )
             .template(TemplateBuilder.requestTemplate()
@@ -158,7 +158,7 @@ public class FieldbusTemplates {
             .template(TemplateBuilder.requestTemplate()
                     .messageId(GET_ACTIVE_ALARMS_REQUEST_MESSAGE_ID)
                     .method(Method.GET)
-                    .path(Path.path("alarm/alarms?source=%%&status=ACTIVE"))
+                    .path(Path.path("/alarm/alarms?source=%%&status=ACTIVE"))
                     .placeholder("%%")
                     .placeholderType(PlaceholderType.UNSIGNED)
             )
@@ -172,7 +172,7 @@ public class FieldbusTemplates {
             .template(TemplateBuilder.requestTemplate()
                     .messageId(CREATE_ALARM_REQUEST_MESSAGE_ID)
                     .method(Method.POST)
-                    .path(Path.path("alarm/alarms"))
+                    .path(Path.path("/alarm/alarms"))
                     .content("application/vnd.com.nsn.cumulocity.alarm+json")
                     .accept("application/vnd.com.nsn.cumulocity.alarm+json")
                     .placeholderType(new PlaceholderType[]{PlaceholderType.UNSIGNED, PlaceholderType.STRING, PlaceholderType.STRING, PlaceholderType.STRING, PlaceholderType.NOW})
@@ -195,7 +195,7 @@ public class FieldbusTemplates {
             .template(TemplateBuilder.requestTemplate()
                     .messageId(CLEAR_ALARM_REQUEST_MESSAGE_ID)
                     .method(Method.PUT)
-                    .path(Path.path("alarm/alarms/&&"))
+                    .path(Path.path("/alarm/alarms/&&"))
                     .content("application/vnd.com.nsn.cumulocity.alarm+json")
                     .placeholderType(PlaceholderType.UNSIGNED)
                     .json(Json.json()
