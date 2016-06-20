@@ -53,7 +53,6 @@ public class FieldbusTemplates {
                     .jsonPath("$.references")
                     .jsonPath("")
                     .jsonPath("$.managedObject.id")
-                    //TODO FIX .jsonPath("$.managedObject.name")
                     .jsonPath("$.managedObject.c8y_CanDevice.type")
             )
             .template(TemplateBuilder.requestTemplate()
