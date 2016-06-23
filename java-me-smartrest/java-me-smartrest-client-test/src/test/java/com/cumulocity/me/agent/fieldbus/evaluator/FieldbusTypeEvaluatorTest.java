@@ -30,7 +30,7 @@ public class FieldbusTypeEvaluatorTest {
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_ALARM_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "300", "alarmTypeCoil1", "alarmTextCoil1", "MAJOR"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_EVENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "301", "eventTypeCoil1", "eventTextCoil1"}),
 
-                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "1", "registerName1", "true", "false", "0", "16", "1", "2", "0"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "1", "registerName1", "true", "false", "0", "16", "1", "2", "3", "0"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "write"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "302", "alarmTypeRegister1", "alarmTextRegister1", "MINOR"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "303", "eventTypeRegister1", "eventTextRegister1"}),
@@ -125,6 +125,7 @@ public class FieldbusTypeEvaluatorTest {
         RegisterDefinition parsedRegister = parsedDevice.getType().getRegisters()[0];
         assertThat(parsedRegister.getConversion().getMultiplier()).isEqualTo(1);
         assertThat(parsedRegister.getConversion().getDivisor()).isEqualTo(2);
+        assertThat(parsedRegister.getConversion().getOffset()).isEqualTo(3);
         assertThat(parsedRegister.getConversion().getDecimalPlaces()).isEqualTo(0);
     }
 }
