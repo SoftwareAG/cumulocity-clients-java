@@ -44,53 +44,89 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         String uniqueId = row.getData(0);
         switch (row.getMessageId()) {
             case FieldbusTemplates.DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID:
-                int coilNumber = parseNumber(row.getData(1));
-                String coilName = row.getData(2);
-                boolean coilInput = BooleanParser.parse(row.getData(3)).booleanValue();
-                typeBuilder.withCoil(uniqueId, coilNumber, coilName, coilInput);
+                parseCoilBaseParameters(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_COIL_STATUS_RESPONSE_MESSAGE_ID:
-                StatusMapping coilStatusMapping = parseStatusMapping(row);
-                typeBuilder.withCoil(uniqueId, coilStatusMapping);
+                parseCoilStatusMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_COIL_ALARM_RESPONSE_MESSAGE_ID:
-                AlarmMapping coilAlarmMapping = parseAlarmMapping(row);
-                typeBuilder.withCoil(uniqueId, coilAlarmMapping);
+                parseCoilAlarmMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_COIL_EVENT_RESPONSE_MESSAGE_ID:
-                EventMapping coilEventMapping = parseEventMapping(row);
-                typeBuilder.withCoil(uniqueId, coilEventMapping);
+                parseCoilEventMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID:
-                int registerNumber = parseNumber(row.getData(1));
-                String registerName = row.getData(2);
-                boolean registerInput = BooleanParser.parse(row.getData(3)).booleanValue();
-                boolean registerSigned = BooleanParser.parse(row.getData(4)).booleanValue();
-                int registerStartBit = Integer.parseInt(row.getData(5));
-                int registerNoBits = Integer.parseInt(row.getData(6));
-                typeBuilder.withRegister(uniqueId, registerNumber, registerName, registerInput, registerSigned, registerStartBit, registerNoBits);
-                int registerMultiplier = Integer.parseInt(row.getData(7));
-                int registerDivisor = Integer.parseInt(row.getData(8));
-                int registerOffset = Integer.parseInt(row.getData(9));
-                int registerDecimalPlaces = Integer.parseInt(row.getData(10));
-                typeBuilder.withRegister(uniqueId, registerMultiplier, registerDivisor, registerOffset, registerDecimalPlaces);
+                parseRegisterBaseParameters(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID:
-                StatusMapping registerStatusMapping = parseStatusMapping(row);
-                typeBuilder.withRegister(uniqueId, registerStatusMapping);
+                parseRegisterStatusMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID:
-                AlarmMapping registerAlarmMapping = parseAlarmMapping(row);
-                typeBuilder.withRegister(uniqueId, registerAlarmMapping);
+                parseRegisterAlarmMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID:
-                EventMapping registerEventMapping = parseEventMapping(row);
-                typeBuilder.withRegister(uniqueId, registerEventMapping);
+                parseRegisterEventMapping(row, uniqueId);
                 break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID:
-                MeasurementMapping registerMeasurementMapping = parseMeasurementMapping(row);
-                typeBuilder.withRegister(uniqueId, registerMeasurementMapping);
+                parseRegisterMeasurementMapping(row, uniqueId);
         }
+    }
+
+    private void parseRegisterMeasurementMapping(SmartRow row, String uniqueId) {
+        MeasurementMapping measurementMapping = parseMeasurementMapping(row);
+        typeBuilder.withRegister(uniqueId, measurementMapping);
+    }
+
+    private void parseRegisterEventMapping(SmartRow row, String uniqueId) {
+        EventMapping eventMapping = parseEventMapping(row);
+        typeBuilder.withRegister(uniqueId, eventMapping);
+    }
+
+    private void parseRegisterAlarmMapping(SmartRow row, String uniqueId) {
+        AlarmMapping alarmMapping = parseAlarmMapping(row);
+        typeBuilder.withRegister(uniqueId, alarmMapping);
+    }
+
+    private void parseRegisterStatusMapping(SmartRow row, String uniqueId) {
+        StatusMapping statusMapping = parseStatusMapping(row);
+        typeBuilder.withRegister(uniqueId, statusMapping);
+    }
+
+    private void parseRegisterBaseParameters(SmartRow row, String uniqueId) {
+        int number = parseNumber(row.getData(1));
+        String name = row.getData(2);
+        boolean isInput = BooleanParser.parse(row.getData(3)).booleanValue();
+        boolean isSigned = BooleanParser.parse(row.getData(4)).booleanValue();
+        int startBit = Integer.parseInt(row.getData(5));
+        int noBits = Integer.parseInt(row.getData(6));
+        typeBuilder.withRegister(uniqueId, number, name, isInput, isSigned, startBit, noBits);
+        int multiplier = Integer.parseInt(row.getData(7));
+        int divisor = Integer.parseInt(row.getData(8));
+        int offset = Integer.parseInt(row.getData(9));
+        int decimalPlaces = Integer.parseInt(row.getData(10));
+        typeBuilder.withRegister(uniqueId, multiplier, divisor, offset, decimalPlaces);
+    }
+
+    private void parseCoilEventMapping(SmartRow row, String uniqueId) {
+        EventMapping eventMapping = parseEventMapping(row);
+        typeBuilder.withCoil(uniqueId, eventMapping);
+    }
+
+    private void parseCoilAlarmMapping(SmartRow row, String uniqueId) {
+        AlarmMapping alarmMapping = parseAlarmMapping(row);
+        typeBuilder.withCoil(uniqueId, alarmMapping);
+    }
+
+    private void parseCoilStatusMapping(SmartRow row, String uniqueId) {
+        StatusMapping statusMapping = parseStatusMapping(row);
+        typeBuilder.withCoil(uniqueId, statusMapping);
+    }
+
+    private void parseCoilBaseParameters(SmartRow row, String uniqueId) {
+        int number = parseNumber(row.getData(1));
+        String name = row.getData(2);
+        boolean isInput = BooleanParser.parse(row.getData(3)).booleanValue();
+        typeBuilder.withCoil(uniqueId, number, name, isInput);
     }
 
     private void handleBaseRow(SmartRow row) {
@@ -101,30 +137,30 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
     }
 
     private MeasurementMapping parseMeasurementMapping(SmartRow row) {
-        int measurementTemplate = Integer.parseInt(row.getData(1));
-        String measurementType = row.getData(2);
-        String measurementSeries = row.getData(3);
-        return new MeasurementMapping(measurementTemplate, measurementType, measurementSeries);
+        int template = Integer.parseInt(row.getData(1));
+        String type = row.getData(2);
+        String series = row.getData(3);
+        return new MeasurementMapping(template, type, series);
     }
 
     private StatusMapping parseStatusMapping(SmartRow row) {
-        StatusMappingType coilStatusMappingType = StatusMappingType.get(row.getData(1));
-        return new StatusMapping(coilStatusMappingType);
+        StatusMappingType statusMappingType = StatusMappingType.get(row.getData(1));
+        return new StatusMapping(statusMappingType);
     }
 
     private AlarmMapping parseAlarmMapping(SmartRow row) {
-        int alarmTemplate = Integer.parseInt(row.getData(1));
-        String alarmType = row.getData(2);
-        String alarmText = row.getData(3);
-        AlarmSeverity alarmSeverity = AlarmSeverity.get(row.getData(4));
-        return new AlarmMapping(alarmTemplate, alarmType, alarmText, alarmSeverity);
+        int template = Integer.parseInt(row.getData(1));
+        String type = row.getData(2);
+        String text = row.getData(3);
+        AlarmSeverity severity = AlarmSeverity.get(row.getData(4));
+        return new AlarmMapping(template, type, text, severity);
     }
 
     private EventMapping parseEventMapping(SmartRow row) {
-        int eventTemplate = Integer.parseInt(row.getData(1));
-        String eventType = row.getData(2);
-        String eventText = row.getData(3);
-        return new EventMapping(eventTemplate, eventType, eventText);
+        int template = Integer.parseInt(row.getData(1));
+        String type = row.getData(2);
+        String text = row.getData(3);
+        return new EventMapping(template, type, text);
     }
 
     private int parseNumber(String source) {
