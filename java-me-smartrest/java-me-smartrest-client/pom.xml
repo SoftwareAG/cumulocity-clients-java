@@ -4,7 +4,7 @@
   	<parent>
 		<groupId>com.nsn.cumulocity.sdk.me</groupId>
 	<artifactId>java-me-smartrest</artifactId>
-		<version>6.18.0-SNAPSHOT</version>
+		<version>7.29.0-SNAPSHOT</version>
 	</parent>
 	
   	<groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -47,6 +47,11 @@
 	</organization>
 
 	<dependencies>
+		<dependency>
+			<groupId>net.sf.microlog</groupId>
+			<artifactId>microlog-logger-core</artifactId>
+			<version>2.3.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.microemu</groupId>
 			<artifactId>cldcapi11</artifactId>

@@ -19,25 +19,6 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
-import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
@@ -61,6 +42,21 @@ import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+
+import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 public class RestConnector {
 
@@ -78,6 +74,8 @@ public class RestConnector {
     }
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
+    
+    public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
         ErrorMessageRepresentationReader.class};
@@ -125,6 +123,7 @@ public class RestConnector {
     private ClientResponse getClientResponse(String path, CumulocityMediaType mediaType) {
         Builder builder = client.resource(path).accept(mediaType);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.get(ClientResponse.class);
     }
 
@@ -132,6 +131,7 @@ public class RestConnector {
             Class<T> responseClass) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -140,11 +140,18 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
 
     }
+    
+    public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
+        builder = addApplicationKeyHeader(builder);
+        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+    }
 
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -155,6 +162,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -167,6 +175,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -217,14 +226,23 @@ public class RestConnector {
 
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, representation);
+        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation)
-            throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, representation);
+    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
+    }
+
+    public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(
+            final String path,
+            final CumulocityMediaType contentType,
+            final CumulocityMediaType accept,
+            final Param representation,
+            final Class<Result> clazz) {
+        ClientResponse response = httpPost(path, contentType, accept, representation);
+        return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode());
     }
 
     @SuppressWarnings("unchecked")
@@ -240,18 +258,26 @@ public class RestConnector {
         }
         return builder;
     }
+    
+    private Builder addRequestOriginHeader(Builder builder) {
+        if (platformParameters.getRequestOrigin() != null) {
+            builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
+        }
+        return builder;
+    }
 
     private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
             throws SDKException {
         return responseParser.parse(response, responseCode, type);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType mediaType, T representation) {
-        WebResource.Builder builder = client.resource(path).type(mediaType);
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType, CumulocityMediaType accept, T representation) {
+        WebResource.Builder builder = client.resource(path).type(contentType);
         if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
+            builder.accept(accept);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.post(ClientResponse.class, representation);
     }
 
@@ -262,6 +288,7 @@ public class RestConnector {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         return builder.put(ClientResponse.class, representation);
     }
 
@@ -269,6 +296,7 @@ public class RestConnector {
         Builder builder = client.resource(path).getRequestBuilder();
 
         builder = addApplicationKeyHeader(builder);
+        builder = addRequestOriginHeader(builder);
         ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
@@ -300,6 +328,7 @@ public class RestConnector {
         MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
         httpConnectionManager.setMaxConnectionsPerHost(20);
         final HttpClient client = new HttpClient(httpConnectionManager);
+        client.getParams().setConnectionManagerTimeout(10000);
         return new ApacheHttpClientHandler(client, cc);
     }
 

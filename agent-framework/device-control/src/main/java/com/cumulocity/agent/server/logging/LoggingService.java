@@ -147,6 +147,7 @@ public class LoggingService {
     private ManagedObjectRepresentation uploadFileDummy(String filename) {
         ManagedObjectRepresentation container = new ManagedObjectRepresentation();
         container.setName(filename);
+        container.setType(LOGFILE_CONTENT_TYPE);
         return binaries.uploadFile(container, new byte[] { 0x00 });
     }
     

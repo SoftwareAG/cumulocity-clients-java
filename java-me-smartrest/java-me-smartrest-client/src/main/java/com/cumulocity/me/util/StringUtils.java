@@ -19,10 +19,10 @@
  */
 package com.cumulocity.me.util;
 
+import com.cumulocity.me.sdk.SDKException;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Vector;
-
-import com.cumulocity.me.sdk.SDKException;
 
 public abstract class StringUtils {
 
@@ -31,6 +31,10 @@ public abstract class StringUtils {
     
     public static final String toString(Object obj) {
         return obj == null ? null : obj.toString();
+    }
+
+    public static final boolean isNotBlank(String string) {
+        return string != null && string.length() > 0;
     }
 
     public static final String valueOf(byte[] data) {
@@ -78,7 +82,62 @@ public abstract class StringUtils {
 
         return result;
     }
+    
+    public static final String[] splitQuoted(String source, String delimiter) {
+        Vector resultBuilder = new Vector();
 
+        int currentIndex;
+        int previousIndex = 0;
+        int substringStart = 0;
+        Integer[] quoteIndexes = getQuoteIndexes(source);
+        
+        while ( source.indexOf(delimiter, previousIndex) > -1 ) {
+        	currentIndex = source.indexOf(delimiter, previousIndex);
+        	if (!isInsideQuotes(currentIndex, quoteIndexes)) {
+        		resultBuilder.addElement(source.substring(substringStart, currentIndex));
+        		substringStart = currentIndex + delimiter.length();
+        		previousIndex = substringStart;
+			} else {
+				previousIndex = currentIndex + delimiter.length();
+			}
+        }
+
+        // also add everything after the final delimiter occurrence
+        resultBuilder.addElement( source.substring(previousIndex) );
+
+        String[] result = new String[resultBuilder.size()];
+        resultBuilder.copyInto(result);
+
+        return result;
+    }
+
+    public static final Integer[] getQuoteIndexes(String source){
+        Vector indexes = new Vector();
+        int currentIndex;
+        int previousIndex = 0;
+    	while (source.indexOf('"', previousIndex) > -1) {
+    		currentIndex = source.indexOf('"', previousIndex);
+    		indexes.addElement(new Integer(currentIndex));
+    		previousIndex = currentIndex + 1;
+		}
+    	Integer[] indexesArray = new Integer[indexes.size()];
+    	indexes.copyInto(indexesArray);
+    	return indexesArray;
+    }
+    
+    public static final boolean isInsideQuotes(int index, Integer[] quoteIndexes){
+    	int i;
+        for (i = 0; i < quoteIndexes.length; i++) {
+			int currentQuoteIndex = quoteIndexes[i].intValue();
+        	if (currentQuoteIndex > index) {
+        		return (i & 1) == 1;
+			}
+		}
+        return false;
+    }
+    
+    
+    
     public static final String replaceAll(String source, String pattern, String replacement) {
         if (source == null) {
             return "";
