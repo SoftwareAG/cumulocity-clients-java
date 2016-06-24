@@ -328,6 +328,7 @@ public class RestConnector {
         MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
         httpConnectionManager.setMaxConnectionsPerHost(20);
         final HttpClient client = new HttpClient(httpConnectionManager);
+        client.getParams().setConnectionManagerTimeout(10000);
         return new ApacheHttpClientHandler(client, cc);
     }
 

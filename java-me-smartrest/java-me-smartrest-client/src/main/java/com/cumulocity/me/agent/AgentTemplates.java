@@ -1,9 +1,9 @@
 package com.cumulocity.me.agent;
 
 public interface AgentTemplates {
-    public static final String XID = "c8y_j2me_base_templates_v9";
+    public static final String XID = "c8y_j2me_base_templates_v10";
     public static final String TEMPLATES 
-            = "10,100,POST,/inventory/managedObjects,application/vnd.com.nsn.cumulocity.managedObject+json,application/vnd.com.nsn.cumulocity.managedObject+json,&&,,\"{\"\"agentName\"\":\"\"&&\"\",\"\"c8y_IsDevice\"\":{},\"\"com_cumulocity_model_Agent\"\":{},\"\"c8y_RequiredAvailability\"\":{\"\"responseInterval\"\":&&},\"\"type\"\":\"\"J2ME-Agent\"\"}\"\r\n"
+            = "10,100,POST,/inventory/managedObjects,application/vnd.com.nsn.cumulocity.managedObject+json,application/vnd.com.nsn.cumulocity.managedObject+json,&&,,\"{\"\"name\"\":\"\"&&\"\",\"\"c8y_IsDevice\"\":{},\"\"com_cumulocity_model_Agent\"\":{},\"\"c8y_RequiredAvailability\"\":{\"\"responseInterval\"\":&&},\"\"type\"\":\"\"J2ME-Agent\"\"}\"\r\n"
             + "10,101,GET,/identity/externalIds/&&/&&,,,&&,,\r\n"
             + "10,110,POST,/identity/globalIds/&&/externalIds,application/vnd.com.nsn.cumulocity.externalId+json,application/vnd.com.nsn.cumulocity.externalId+json,&&,,\"{\"\"externalId\"\":\"\"&&\"\",\"\"type\"\":\"\"&&\"\"}\"\r\n"
             + "10,120,PUT,/inventory/managedObjects/&&,application/vnd.com.nsn.cumulocity.managedObject+json,,&&,UNSIGNED STRING STRING STRING,\"{\"\"c8y_Hardware\"\":{\"\"model\"\":\"\"&&\"\",\"\"revision\"\":\"\"&&\"\",\"\"serialNumber\"\":\"\"&&\"\"}}\"\r\n"

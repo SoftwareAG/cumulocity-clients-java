@@ -23,6 +23,7 @@ package c8y;
 import java.math.BigDecimal;
 
 import org.svenson.AbstractDynamicProperties;
+import org.svenson.JSONProperty;
 
 public class Position extends AbstractDynamicProperties {
 	private static final long serialVersionUID = -8365376637780307348L;
@@ -30,7 +31,7 @@ public class Position extends AbstractDynamicProperties {
 	private BigDecimal lat;
     private BigDecimal lng;
     private BigDecimal alt;
-    private long accuracy;
+    private Long accuracy;
 
 	public BigDecimal getLat() {
 		return lat;
@@ -56,11 +57,16 @@ public class Position extends AbstractDynamicProperties {
 		this.alt = altitude;
 	}
 	
-	public long getAccuracy() {
+	@JSONProperty(ignoreIfNull = true)
+	public Long getAccuracy() {
         return accuracy;
     }
 
     public void setAccuracy(long accuracy) {
+        this.accuracy = new Long(accuracy);
+    }
+    
+    public void setAccuracy(Long accuracy) {
         this.accuracy = accuracy;
     }
 

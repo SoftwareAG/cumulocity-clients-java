@@ -2,7 +2,7 @@ package com.cumulocity.me.agent.config.model;
 public class ConfigurationKey {
     public static final ConfigurationKey CONNECTION_HOST_URL = new ConfigurationKey("connection.host.url", "http://developer.cumulocity.com");
     public static final ConfigurationKey CONNECTION_SETUP_PARAMS_STANDARD = new ConfigurationKey("connection.setup.params", ";bearer_type=gprs;access_point=internet.m2mportal.de;username=m2m;password=sim");
-    public static final ConfigurationKey CONNECTION_SETUP_PARAMS_REALTIME = new ConfigurationKey("connection.setup.params", ";bearer_type=gprs;access_point=internet.m2mportal.de;username=m2m;password=sim;timeout=7200");
+    public static final ConfigurationKey CONNECTION_SETUP_PARAMS_REALTIME = new ConfigurationKey("connection.setup.params.realtime", ";bearer_type=gprs;access_point=internet.m2mportal.de;username=m2m;password=sim;timeout=7200");
 
     
     public static final ConfigurationKey AGENT_USER_CREDENTIALS = new ConfigurationKey("agent.user.credentials", null);

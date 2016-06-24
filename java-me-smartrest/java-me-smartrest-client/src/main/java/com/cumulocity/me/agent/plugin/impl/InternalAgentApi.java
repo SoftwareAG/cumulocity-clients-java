@@ -2,6 +2,8 @@ package com.cumulocity.me.agent.plugin.impl;
 
 import com.cumulocity.me.agent.binary.BinaryService;
 import com.cumulocity.me.agent.config.ConfigurationService;
+import com.cumulocity.me.agent.fieldbus.FieldbusService;
+import com.cumulocity.me.agent.fieldbus.model.FieldbusDevice;
 import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.AgentApi;
 import com.cumulocity.me.agent.provider.ExternalIdProvider;
@@ -40,5 +42,9 @@ public class InternalAgentApi extends AgentApi{
 
     public void setBinaryService(BinaryService binaryService){
         this.binaryService = binaryService;
+    }
+
+    public void setFieldbusService(FieldbusService fieldbusService) {
+        this.fieldbusService = fieldbusService;
     }
 }
