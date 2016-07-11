@@ -27,7 +27,7 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         SmartRow[] rows = response.getDataRows();
         for (int i = 0; i < rows.length; i++) {
             SmartRow row = rows[i];
-            if (FieldbusTemplates.DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID == row.getMessageId()) {
+            if (isBaseRow(row)) {
                 handleBaseRow(row);
             } else {
                 handleDefinitionRow(row);
@@ -38,6 +38,10 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         toAppend.addElement(device);
         Callback.execute(onFinished);
 
+    }
+
+    private boolean isBaseRow(SmartRow row) {
+        return FieldbusTemplates.DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID == row.getMessageId() || FieldbusTemplates.DEVICE_TYPE_TIME_RESPONSE_MESSAGE_ID == row.getMessageId();
     }
 
     private void handleDefinitionRow(SmartRow row) {
@@ -130,10 +134,23 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
     }
 
     private void handleBaseRow(SmartRow row) {
+        switch (row.getMessageId()) {
+            case FieldbusTemplates.DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID:
+                parseDeviceTypeName(row);
+                break;
+            case FieldbusTemplates.DEVICE_TYPE_TIME_RESPONSE_MESSAGE_ID:
+                parseDeviceTypeTime(row);
+        }
+    }
+
+    private void parseDeviceTypeTime(SmartRow row) {
+        boolean useServerTime = BooleanParser.parse(row.getData(0)).booleanValue();
+        typeBuilder.withUseServerTime(useServerTime);
+    }
+
+    private void parseDeviceTypeName(SmartRow row) {
         String name = row.getData(0);
         typeBuilder.withName(name);
-        boolean useServerTime = BooleanParser.parse(row.getData(1)).booleanValue();
-        typeBuilder.withUseServerTime(useServerTime);
     }
 
     private MeasurementMapping parseMeasurementMapping(SmartRow row) {

@@ -9,7 +9,7 @@ import java.util.Vector;
 
 public class DeviceTypeBuilder {
     private String name;
-    private boolean useServerTime;
+    private boolean useServerTime = false;
     private String type;
     private Vector coilDefinitions = new Vector();
     private Vector registerDefinitions = new Vector();

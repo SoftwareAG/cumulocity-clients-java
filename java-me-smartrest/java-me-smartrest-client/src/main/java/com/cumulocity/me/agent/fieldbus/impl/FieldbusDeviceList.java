@@ -5,7 +5,7 @@ import com.cumulocity.me.agent.fieldbus.model.FieldbusDevice;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class FieldbusDeviceList {
+public class FieldbusDeviceList{
     private final Vector delegate = new Vector();
 
     public synchronized void copyInto(FieldbusDevice[] anArray) {
@@ -102,5 +102,12 @@ public class FieldbusDeviceList {
     public synchronized String toString() {
         return delegate.toString();
     }
-    
+
+    public synchronized void removeAll(FieldbusDeviceList toRemove){
+        for (int i = 0; i < toRemove.size(); i++) {
+            FieldbusDevice device = toRemove.elementAt(i);
+            removeElement(device);
+        }
+    }
+
 }

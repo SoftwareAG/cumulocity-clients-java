@@ -5,18 +5,19 @@ import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
 import com.cumulocity.me.agent.smartrest.model.template.*;
 
 public class FieldbusTemplates {
-    public static final String XID = "J2ME_FieldbusTemplates_v3";
+    public static final String XID = "J2ME_FieldbusTemplates_v5";
 
     public static final int GET_CHILD_DEVICES_REQUEST_MESSAGE_ID = 100;
     public static final int MODBUS_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1000;
     public static final int CAN_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1001;
 
     public static final int GET_FIELDBUS_DEVICE_TYPE_REQUEST_MESSAGE_ID = 101;
-    public static final int DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID = 1010;
-    public static final int DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID = 1011;
-    public static final int DEVICE_TYPE_COIL_STATUS_RESPONSE_MESSAGE_ID = 1012;
-    public static final int DEVICE_TYPE_COIL_ALARM_RESPONSE_MESSAGE_ID = 1013;
-    public static final int DEVICE_TYPE_COIL_EVENT_RESPONSE_MESSAGE_ID = 1014;
+    public static final int DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID = 1010;
+    public static final int DEVICE_TYPE_TIME_RESPONSE_MESSAGE_ID = 1011;
+    public static final int DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID = 1012;
+    public static final int DEVICE_TYPE_COIL_STATUS_RESPONSE_MESSAGE_ID = 1013;
+    public static final int DEVICE_TYPE_COIL_ALARM_RESPONSE_MESSAGE_ID = 1014;
+    public static final int DEVICE_TYPE_COIL_EVENT_RESPONSE_MESSAGE_ID = 1015;
     public static final int DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID = 1021;
     public static final int DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID = 1022;
     public static final int DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID = 1023;
@@ -62,10 +63,15 @@ public class FieldbusTemplates {
                     .placeholderType(PlaceholderType.STRING)
             )
             .template(TemplateBuilder.responseTemplate()
-                    .messageId(DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID)
+                    .messageId(DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID)
                     .jsonPath("")
                     .jsonPath("")
                     .jsonPath("$.name")
+            )
+            .template(TemplateBuilder.responseTemplate()
+                    .messageId(DEVICE_TYPE_TIME_RESPONSE_MESSAGE_ID)
+                    .jsonPath("")
+                    .jsonPath("")
                     .jsonPath("$.c8y_useServerTime")
             )
             .template(TemplateBuilder.responseTemplate()
