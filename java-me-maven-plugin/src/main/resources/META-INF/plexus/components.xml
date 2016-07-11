@@ -43,9 +43,7 @@
                 </phases>
             </configuration>
         </component>
-    </components>
 
-    <components>
         <component>
             <role-hint>micro-edition-library</role-hint>
             <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
@@ -66,8 +64,11 @@
                         com.cumulocity.me:java-me-maven-plugin:testCompile
                     </test-compile>
                     <test>
-                        org.apache.maven.plugins:java-maven-surefire-plugin:test
+                        org.apache.maven.plugins:maven-surefire-plugin:test
                     </test>
+                    <package>
+                        com.cumulocity.me:java-me-maven-plugin:package-library
+                    </package>
                     <install>
                         org.apache.maven.plugins:maven-install-plugin:install
                     </install>
