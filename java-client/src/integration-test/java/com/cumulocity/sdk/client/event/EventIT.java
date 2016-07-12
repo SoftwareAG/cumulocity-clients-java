@@ -306,11 +306,7 @@ public class EventIT extends JavaSdkITBase {
         iQueryAllByPageNumber(3);
 //    Then I should get '5' Events of paging
         iShouldGetNumberOfEventsOfPaging(5);
-//    Then I should get next page which has current page '4' and events '2'
-        iQueryAllByNextPage(4, 2);
-//    Then I should get previous page which has current page '2' and events '5'
-        iQueryAllByPreviousPage(2, 5);
-//    And I query all Events by page '4'
+//      And I query all Events by page '4'
         iQueryAllByPageNumber(4);
 //    Then I should get '2' Events of paging
         iShouldGetNumberOfEventsOfPaging(2);
@@ -319,7 +315,6 @@ public class EventIT extends JavaSdkITBase {
 //    Then I should get '0' Events of paging
         iShouldGetNumberOfEventsOfPaging(0);
 //    Then I should get previous page which has current page '4' and events '2'
-        iQueryAllByPreviousPage(4, 2);
     }
 
     private static final int OK = 200;

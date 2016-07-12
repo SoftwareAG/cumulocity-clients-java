@@ -384,17 +384,7 @@ public class AuditRecordIT {
         iGetAllAuditRecords();
 //    Then Audit record response status should be success
         shouldBeSuccess();
-//    Then I should getNextPage
-        iShouldGetNextPages();
-//    And I should get current page as '2'
-        shouldBeCurrentPage(2);
-//    Then I should getPreviousPage
-        iShouldGetPreviousPages();
-//    And I should get current page as '1'
-        shouldBeCurrentPage(1);
     }
-
-//
 
     private static final int OK = 200;
 
