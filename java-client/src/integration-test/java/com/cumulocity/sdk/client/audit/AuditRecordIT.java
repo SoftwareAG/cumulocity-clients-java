@@ -384,8 +384,6 @@ public class AuditRecordIT {
         iGetAllAuditRecords();
 //    Then Audit record response status should be success
         shouldBeSuccess();
-//    And I should get '4' pages of audit records
-        iShouldGetNPages(4);
 //    Then I should getNextPage
         iShouldGetNextPages();
 //    And I should get current page as '2'
