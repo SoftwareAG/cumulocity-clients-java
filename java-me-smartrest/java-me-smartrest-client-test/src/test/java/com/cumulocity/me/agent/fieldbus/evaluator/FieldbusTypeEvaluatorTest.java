@@ -4,6 +4,7 @@ import com.cumulocity.me.agent.fieldbus.FieldbusTemplates;
 import com.cumulocity.me.agent.fieldbus.impl.FieldbusDeviceList;
 import com.cumulocity.me.agent.fieldbus.model.*;
 import com.cumulocity.me.agent.util.Callback;
+import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.impl.SmartResponseImpl;
 import com.cumulocity.me.smartrest.client.impl.SmartRow;
 import org.junit.Before;
@@ -18,12 +19,24 @@ public class FieldbusTypeEvaluatorTest {
     private FieldbusDevice parsedDevice;
 
     @Before
-    public void before(){
+    public void before() {
+        parseResponse(aDefaultResponse());
+    }
+
+
+    public void parseResponse(SmartResponse response) {
         FieldbusDeviceList list = new FieldbusDeviceList();
         Callback mockedCallback = Mockito.mock(Callback.class);
         FieldbusTypeEvaluator evaluator = new FieldbusTypeEvaluator(child, list, mockedCallback);
-        evaluator.evaluate(new SmartResponseImpl(200, "OK", new SmartRow[]{
-                new SmartRow(FieldbusTemplates.DEVICE_TYPE_BASE_RESPONSE_MESSAGE_ID, 2, new String[]{"typeName", "true"}),
+        evaluator.evaluate(response);
+        assertThat(list.size()).isEqualTo(1);
+        parsedDevice = list.elementAt(0);
+    }
+
+    private SmartResponse aDefaultResponse() {
+        return new SmartResponseImpl(200, "OK", new SmartRow[]{
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID, 2, new String[]{"typeName"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_TIME_RESPONSE_MESSAGE_ID, 2, new String[]{"true"}),
 
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "1", "coilName1", "false"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_STATUS_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "read"}),
@@ -35,26 +48,19 @@ public class FieldbusTypeEvaluatorTest {
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "302", "alarmTypeRegister1", "alarmTextRegister1", "MINOR"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "303", "eventTypeRegister1", "eventTextRegister1"}),
                 new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "304", "measurementTypeRegister1", "measurementSeriesRegister1"}),
-        }));
-        assertThat(list.size()).isEqualTo(1);
-        parsedDevice = list.elementAt(0);
+        });
     }
 
     @Test
     public void shouldParseDeviceParametersCorrectly() throws Exception {
+
         assertThat(parsedDevice.getAddress()).isEqualTo(1);
         assertThat(parsedDevice.getId()).isEqualTo("12345");
         assertThat(parsedDevice.getName()).isEqualTo("myName");
-
-
-
-
-
-
     }
 
     @Test
-    public void shouldParseTypeParametersCorrectly(){
+    public void shouldParseTypeParametersCorrectly() {
         assertThat(parsedDevice.getType()).isNotNull();
         FieldbusDeviceType parsedType = parsedDevice.getType();
 
@@ -64,7 +70,7 @@ public class FieldbusTypeEvaluatorTest {
     }
 
     @Test
-    public void shouldParseCoilParametersCorrectly(){
+    public void shouldParseCoilParametersCorrectly() {
         FieldbusDeviceType parsedType = parsedDevice.getType();
         assertThat(parsedType.getCoils().length).isEqualTo(1);
         CoilDefinition parsedCoil = parsedType.getCoils()[0];
@@ -74,7 +80,7 @@ public class FieldbusTypeEvaluatorTest {
     }
 
     @Test
-    public void shouldParseCoilMappingsCorrectly(){
+    public void shouldParseCoilMappingsCorrectly() {
         CoilDefinition parsedCoil = parsedDevice.getType().getCoils()[0];
         assertThat(parsedCoil.getStatusMapping().getType()).isEqualTo(StatusMappingType.READ);
 
@@ -89,7 +95,7 @@ public class FieldbusTypeEvaluatorTest {
     }
 
     @Test
-    public void shouldParseRegisterParametersCorrectly(){
+    public void shouldParseRegisterParametersCorrectly() {
         FieldbusDeviceType parsedType = parsedDevice.getType();
         assertThat(parsedType.getRegisters().length).isEqualTo(1);
         RegisterDefinition parsedRegister = parsedType.getRegisters()[0];
@@ -102,7 +108,7 @@ public class FieldbusTypeEvaluatorTest {
     }
 
     @Test
-    public void shouldParseRegisterMappingsCorrectly(){
+    public void shouldParseRegisterMappingsCorrectly() {
         RegisterDefinition parsedRegister = parsedDevice.getType().getRegisters()[0];
         assertThat(parsedRegister.getStatusMapping().getType()).isEqualTo(StatusMappingType.WRITE);
 
@@ -121,11 +127,37 @@ public class FieldbusTypeEvaluatorTest {
     }
 
     @Test
-    public void shouldParseRegisterConversionCorrectly(){
+    public void shouldParseRegisterConversionCorrectly() {
         RegisterDefinition parsedRegister = parsedDevice.getType().getRegisters()[0];
         assertThat(parsedRegister.getConversion().getMultiplier()).isEqualTo(1);
         assertThat(parsedRegister.getConversion().getDivisor()).isEqualTo(2);
         assertThat(parsedRegister.getConversion().getOffset()).isEqualTo(3);
         assertThat(parsedRegister.getConversion().getDecimalPlaces()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldParseWithoutUseServerTimeCorrectly() {
+        parseResponse(aResponseWithoutUseServerTime());
+
+        FieldbusDeviceType parsedType = parsedDevice.getType();
+        assertThat(parsedType.getName()).isEqualTo("typeName");
+        assertThat(parsedType.isUseServerTime()).isFalse();
+    }
+
+    private SmartResponse aResponseWithoutUseServerTime() {
+        return new SmartResponseImpl(200, "OK", new SmartRow[]{
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_NAME_RESPONSE_MESSAGE_ID, 2, new String[]{"typeName"}),
+
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "1", "coilName1", "false"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_STATUS_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "read"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_ALARM_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "300", "alarmTypeCoil1", "alarmTextCoil1", "MAJOR"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_COIL_EVENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID1", "301", "eventTypeCoil1", "eventTextCoil1"}),
+
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "1", "registerName1", "true", "false", "0", "16", "1", "2", "3", "0"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "write"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "302", "alarmTypeRegister1", "alarmTextRegister1", "MINOR"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "303", "eventTypeRegister1", "eventTextRegister1"}),
+                new SmartRow(FieldbusTemplates.DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID, 2, new String[]{"ID2", "304", "measurementTypeRegister1", "measurementSeriesRegister1"}),
+        });
     }
 }
