@@ -155,4 +155,8 @@ public class DeviceTypeBuilder {
             registerDefinitions.addElement(builder.build());
         }
     }
+
+    public RegisterDefinitionBuilder getRegisterDefinitionBuilder(String id) {
+        return (RegisterDefinitionBuilder) registerBuilderMap.get(id);
+    }
 }

@@ -5,7 +5,7 @@ import com.cumulocity.me.agent.smartrest.model.TemplateCollection;
 import com.cumulocity.me.agent.smartrest.model.template.*;
 
 public class FieldbusTemplates {
-    public static final String XID = "J2ME_FieldbusTemplates_v5";
+    public static final String XID = "J2ME_FieldbusTemplates_v6";
 
     public static final int GET_CHILD_DEVICES_REQUEST_MESSAGE_ID = 100;
     public static final int MODBUS_CHILD_DEVICE_RESPONSE_MESSAGE_ID = 1000;
@@ -23,6 +23,7 @@ public class FieldbusTemplates {
     public static final int DEVICE_TYPE_REGISTER_ALARM_RESPONSE_MESSAGE_ID = 1023;
     public static final int DEVICE_TYPE_REGISTER_EVENT_RESPONSE_MESSAGE_ID = 1024;
     public static final int DEVICE_TYPE_REGISTER_MEASUREMENT_RESPONSE_MESSAGE_ID = 1025;
+    public static final int DEVICE_TYPE_REGISTER_WITHOUT_OFFSET_RESPONSE_MESSAGE_ID = 1026;
 
     public static final int GET_ACTIVE_ALARMS_REQUEST_MESSAGE_ID = 103;
     public static final int ALARMS_ARRAY_ID_TYPE_RESPONSE_MESSAGE_ID = 1030;
@@ -123,6 +124,21 @@ public class FieldbusTemplates {
                     .jsonPath("$.multiplier")
                     .jsonPath("$.divisor")
                     .jsonPath("$.offset")
+                    .jsonPath("$.decimalPlaces")
+            )
+            .template(TemplateBuilder.responseTemplate()
+                    .messageId(DEVICE_TYPE_REGISTER_WITHOUT_OFFSET_RESPONSE_MESSAGE_ID)
+                    .jsonPath("$.c8y_Registers")
+                    .jsonPath("")
+                    .jsonPath("$.id")
+                    .jsonPath("$.number")
+                    .jsonPath("$.name")
+                    .jsonPath("$.input")
+                    .jsonPath("$.signed")
+                    .jsonPath("$.startBit")
+                    .jsonPath("$.noBits")
+                    .jsonPath("$.multiplier")
+                    .jsonPath("$.divisor")
                     .jsonPath("$.decimalPlaces")
             )
             .template(TemplateBuilder.responseTemplate()

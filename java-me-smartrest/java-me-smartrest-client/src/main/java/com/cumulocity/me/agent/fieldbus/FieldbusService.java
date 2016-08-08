@@ -16,7 +16,7 @@ import java.util.Hashtable;
 
 public class FieldbusService {
 
-    private final FieldbusDeviceList devices;
+    private volatile FieldbusDeviceList devices;
     private final ChildDeviceScanner childDeviceScanner;
     private final FieldbusBuffer buffer;
     private final SmartrestService smartrestService;
@@ -34,6 +34,7 @@ public class FieldbusService {
         childDeviceScanner.scan(devices, onFinished);
 
     }
+
 
     public void addDevice(FieldbusChild child, Callback onFinished) {
         childDeviceScanner.scanSingleDevice(child, devices, onFinished);
