@@ -74,4 +74,52 @@ public class RegisterDefinitionBuilder {
     public RegisterDefinition build() {
         return new RegisterDefinition(name, number, startBit, length, signed, input, conversion, statusMapping, eventMapping, alarmMapping, measurementMapping);
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public int getStartBit() {
+        return startBit;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public boolean isSigned() {
+        return signed;
+    }
+
+    public boolean isInput() {
+        return input;
+    }
+
+    public Conversion getConversion() {
+        return conversion;
+    }
+
+    public StatusMapping getStatusMapping() {
+        return statusMapping;
+    }
+
+    public EventMapping getEventMapping() {
+        return eventMapping;
+    }
+
+    public AlarmMapping getAlarmMapping() {
+        return alarmMapping;
+    }
+
+    public MeasurementMapping getMeasurementMapping() {
+        return measurementMapping;
+    }
 }
