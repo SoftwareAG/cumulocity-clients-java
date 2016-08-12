@@ -3,73 +3,92 @@ package com.cumulocity.me.agent;
 import com.cumulocity.me.agent.feature.AgentFeature;
 import com.cumulocity.me.agent.plugin.AgentPlugin;
 import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
+import com.cumulocity.me.sdk.SDKException;
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
 
 public class CumulocityAgent {
 
-	private final AgentPlugin[] plugins;
-	private final AgentFeature[] features;
-	private final InternalAgentApi agentApi;
+    private static final Logger LOG = LoggerFactory.getLogger(CumulocityAgent.class);
 
-	public CumulocityAgent(AgentFeature[] features, AgentPlugin[] plugins) {
-		this.plugins = plugins;
-		this.features = features;
-		this.agentApi = new InternalAgentApi();
-	}
+    private final AgentPlugin[] plugins;
+    private final AgentFeature[] features;
+    private final InternalAgentApi agentApi;
 
-	public void launch(){
-		initFeatures();
-		initPlugins();
-		startFeatures();
-		startPlugins();
-	}
+    public CumulocityAgent(AgentFeature[] features, AgentPlugin[] plugins) {
+        this.plugins = plugins;
+        this.features = features;
+        this.agentApi = new InternalAgentApi();
+    }
 
-	public void stop() {
-		stopPlugins();
-		stopFeatures();
-	}
+    public void launch() {
+        try {
+            initFeatures();
+            initPlugins();
+            startFeatures();
+            startPlugins();
+        } catch (SDKException e) {
+            LOG.warn("Starting agent failed", e);
+            sleepQuietly(10000);
+            launch();
+        }
+    }
 
-	private void initFeatures() {
-		for (int i = 0; i < features.length; i++) {
-			AgentFeature feature = features[i];
-			feature.init(agentApi);
-		}
-	}
+    private void sleepQuietly(int duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            //ignore
+        }
+    }
 
-	private void initPlugins() {
-		for (int i = 0; i < plugins.length; i++) {
-			AgentPlugin plugin = plugins[i];
-			plugin.init(agentApi);
-		}
-	}
+    public void stop() {
+        stopPlugins();
+        stopFeatures();
+    }
 
-	private void startFeatures() {
-		for (int i = 0; i < features.length; i++) {
-			AgentFeature feature = features[i];
-			feature.start();
-		}
-	}
+    private void initFeatures() {
+        for (int i = 0; i < features.length; i++) {
+            AgentFeature feature = features[i];
+            feature.init(agentApi);
+        }
+    }
 
-	private void startPlugins() {
-		for (int i = 0; i < plugins.length; i++) {
-			AgentPlugin plugin = plugins[i];
-			plugin.start();
-		}
-	}
+    private void initPlugins() {
+        for (int i = 0; i < plugins.length; i++) {
+            AgentPlugin plugin = plugins[i];
+            plugin.init(agentApi);
+        }
+    }
 
-	private void stopPlugins() {
-		for (int i = 0; i < plugins.length; i++) {
-			AgentPlugin plugin = plugins[i];
-			plugin.stop();
+    private void startFeatures() {
+        for (int i = 0; i < features.length; i++) {
+            AgentFeature feature = features[i];
+            feature.start();
+        }
+    }
 
-		}
-	}
+    private void startPlugins() {
+        for (int i = 0; i < plugins.length; i++) {
+            AgentPlugin plugin = plugins[i];
+            plugin.start();
+        }
+    }
 
-	private void stopFeatures() {
-		for (int i = features.length - 1; i >= 0; i--) {
+    private void stopPlugins() {
+        for (int i = 0; i < plugins.length; i++) {
+            AgentPlugin plugin = plugins[i];
+            plugin.stop();
 
-			AgentFeature feature = features[i];
-			feature.stop();
+        }
+    }
 
-		}
-	}
+    private void stopFeatures() {
+        for (int i = features.length - 1; i >= 0; i--) {
+
+            AgentFeature feature = features[i];
+            feature.stop();
+
+        }
+    }
 }
