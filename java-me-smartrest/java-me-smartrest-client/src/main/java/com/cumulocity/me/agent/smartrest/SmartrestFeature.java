@@ -41,7 +41,7 @@ public class SmartrestFeature extends BaseFeature{
         ConfigurationService config = agentApi.getConfigurationService();
         String credentials = agentApi.getInternalAgentInfo().getCredentials();
         connection = new SmartHttpConnection(config.get(ConfigurationKey.CONNECTION_HOST_URL), AgentTemplates.XID, credentials);
-        connection.setupConnection(config.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_REALTIME));
+        connection.setupConnection(config.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
         connection.setAddXIdHeader(false);
     }
 

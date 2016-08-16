@@ -276,6 +276,7 @@ public class SmartHttpConnection implements SmartConnection {
     
     private synchronized boolean isHeartbeat(int c) {
         if (c == 32) {
+            LOG.debug("Heartbeat received");
             if (heartBeatWatcher != null) {
                 heartBeatWatcher.heartbeat();
             }

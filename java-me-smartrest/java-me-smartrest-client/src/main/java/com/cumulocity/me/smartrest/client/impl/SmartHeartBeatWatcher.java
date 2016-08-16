@@ -1,10 +1,12 @@
 package com.cumulocity.me.smartrest.client.impl;
 
 import com.cumulocity.me.smartrest.client.SmartConnection;
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
 
 public class SmartHeartBeatWatcher {
-    
-    public static int HEARTBEAT_CHECK_INTERVAL = 12 * 60 * 1000;
+    public static final Logger LOG = LoggerFactory.getLogger(SmartHeartBeatWatcher.class);
+    public static final int HEARTBEAT_CHECK_INTERVAL = 12 * 60 * 1000;
     
     private SmartConnection connection;
     private Thread watcherThread;
@@ -29,6 +31,7 @@ public class SmartHeartBeatWatcher {
     
     public synchronized void heartbeat() {
         heartbeat = true;
+        LOG.debug("Heartbeat called");
     }
     
     private class HeartBeatWatcher implements Runnable {
