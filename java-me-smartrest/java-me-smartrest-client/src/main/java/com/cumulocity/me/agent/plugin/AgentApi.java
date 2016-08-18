@@ -8,6 +8,7 @@ import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.impl.InternalAgentInfo;
 import com.cumulocity.me.agent.provider.ExternalIdProvider;
 import com.cumulocity.me.agent.push.DevicePushService;
+import com.cumulocity.me.agent.restart.DeviceRestarter;
 import com.cumulocity.me.agent.smartrest.SmartrestService;
 
 public abstract class AgentApi {
@@ -19,6 +20,7 @@ public abstract class AgentApi {
     protected DevicePushService pushService;
     protected FieldbusService fieldbusService;
     protected BinaryService binaryService;
+    protected DeviceRestarter restarter;
 
     public AgentInfo getAgentInfo(){
         return agentInfo;
@@ -50,5 +52,9 @@ public abstract class AgentApi {
 
     public FieldbusService getFieldbusService() {
         return fieldbusService;
+    }
+
+    public DeviceRestarter getRestarter() {
+        return restarter;
     }
 }
