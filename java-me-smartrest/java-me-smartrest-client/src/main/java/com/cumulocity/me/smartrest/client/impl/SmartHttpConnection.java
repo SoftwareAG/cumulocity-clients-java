@@ -12,7 +12,6 @@ import com.cumulocity.me.util.Base64;
 import com.cumulocity.me.util.ConnectorWrapper;
 import com.cumulocity.me.util.IOUtils;
 
-import net.sf.microlog.core.Level;
 import net.sf.microlog.core.Logger;
 import net.sf.microlog.core.LoggerFactory;
 
@@ -32,6 +31,7 @@ public class SmartHttpConnection implements SmartConnection {
     private final SmartExecutorService executorService;
     private boolean addXIdHeader = true;
     private ConnectorWrapper connectorWrapper = new ConnectorWrapper();
+    private int heartbeatCheckInterval = -1;
     
     public SmartHttpConnection(String host, String xid, String authorization, SmartExecutorService executorService) {
         this.host = host;
@@ -151,6 +151,7 @@ public class SmartHttpConnection implements SmartConnection {
                         .buildResponse();
             }
         } catch (IOException e) {
+            LOG.warn("Connection broke ", e);
             throw new SDKException("I/O error!", e);
         } finally {
             if (heartBeatWatcher != null) {
@@ -226,17 +227,21 @@ public class SmartHttpConnection implements SmartConnection {
     
     private synchronized SmartResponse interruptableReading() throws InterruptedException, IOException {
     	try {
-	        input = connection.openInputStream();
-	        int responseCode = connection.getResponseCode();
-	        String responseMessage = connection.getResponseMessage();
-	        String body = readData();
-	        if (body.endsWith("\r\n")) {
-	            body = body.substring(0, body.length() -2);
-	        }
-	        LOG.debug(new StringBuffer("Received response: ").append(responseCode).append(" ").append(responseMessage).append("\n").append(body));
-	        SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
-	        return response;
-    	} finally {
+            input = connection.openInputStream();
+            LOG.debug("Opened input stream");
+            int responseCode = connection.getResponseCode();
+            LOG.debug("got response code");
+            String responseMessage = connection.getResponseMessage();
+            LOG.debug("got response message");
+            String body = readData();
+            LOG.debug("got body");
+            if (body.endsWith("\r\n")) {
+                body = body.substring(0, body.length() - 2);
+            }
+            LOG.debug(new StringBuffer("Received response: ").append(responseCode).append(" ").append(responseMessage).append("\n").append(body));
+            SmartResponse response = new SmartResponseImpl(responseCode, responseMessage, body);
+            return response;
+        } finally {
     		closeConnection();
     	}
     }
@@ -286,7 +291,7 @@ public class SmartHttpConnection implements SmartConnection {
     }
     
     private SmartHttpConnection startHeartBeatWatcher() {
-        heartBeatWatcher = new SmartHeartBeatWatcher(this, Thread.currentThread());
+        heartBeatWatcher = new SmartHeartBeatWatcher(this, Thread.currentThread(), heartbeatCheckInterval);
         heartBeatWatcher.start();
         return this;
     }
@@ -297,5 +302,9 @@ public class SmartHttpConnection implements SmartConnection {
 
     public void setAddXIdHeader(boolean addXIdHeader) {
         this.addXIdHeader = addXIdHeader;
+    }
+
+    public void setHeartbeatCheckInterval(int heartbeatCheckInterval) {
+        this.heartbeatCheckInterval = heartbeatCheckInterval;
     }
 }

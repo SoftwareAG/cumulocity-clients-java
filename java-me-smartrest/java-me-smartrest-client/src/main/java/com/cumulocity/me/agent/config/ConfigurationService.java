@@ -6,8 +6,11 @@ import com.cumulocity.me.agent.config.model.Configuration;
 import com.cumulocity.me.agent.config.model.ConfigurationKey;
 import com.cumulocity.me.agent.config.model.DefaultConfiguration;
 import com.cumulocity.me.agent.util.BooleanParser;
+import net.sf.microlog.core.Logger;
+import net.sf.microlog.core.LoggerFactory;
 
 public class ConfigurationService {
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationService.class);
     private static final Configuration DEFAULT_CONFIG = DefaultConfiguration.build();
     
     private final ConfigurationReader reader;
@@ -133,6 +136,7 @@ public class ConfigurationService {
         if (value == null) {
             return key.getDefaultValue();
         }
+        LOG.debug("Read config parameter '" + key.getKey() + "', value is '" + value + "'");
         return value;
     }
 }
