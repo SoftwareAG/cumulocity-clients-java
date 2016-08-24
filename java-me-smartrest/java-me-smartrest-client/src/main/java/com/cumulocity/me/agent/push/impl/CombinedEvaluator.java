@@ -19,6 +19,7 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
     private final Hashtable callbackMap = new Hashtable();
 
     public void evaluate(SmartResponse response) {
+        LOG.debug("Combined evaluator called");
         SmartRow[] rows = response.getDataRows();
         String xId = null;
         Vector currentRows = new Vector();
@@ -51,15 +52,25 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
 
     protected void callEvaluator(String xId, SmartRow[] rows) {
     	CallbackMapKey key = new CallbackMapKey(xId, rows[0].getMessageId());
+        LOG.debug("Try calling response evaluator for xId: " + xId + ", messageId: " + key.getMessageId());
         final SmartResponseEvaluator evaluator = (SmartResponseEvaluator) callbackMap.get(key);
         if (evaluator != null) {
+            LOG.debug("Evaluator found, calling it");
             final SmartResponse response = new SmartResponseImpl(200, "OK", rows);
-            new Thread(new Runnable() {
-				public void run() {
-					evaluator.evaluate(response);
-				}
-			}).start();
+            callEvaluator(evaluator, response);
         }
+    }
+
+    private void callEvaluator(final SmartResponseEvaluator evaluator, final SmartResponse response) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    evaluator.evaluate(response);
+                } catch (Exception e) {
+                    LOG.warn("Calling response evaluator threw exception", e);
+                }
+            }
+        }).start();
     }
 
     public void registerOperation(String xId, int messageId, SmartResponseEvaluator callback) {
