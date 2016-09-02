@@ -19,9 +19,19 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import static java.util.concurrent.Executors.newScheduledThreadPool;
-import static javax.ws.rs.core.HttpHeaders.COOKIE;
+import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import org.cometd.bayeux.Message;
+import org.cometd.bayeux.Message.Mutable;
+import org.cometd.client.transport.HttpClientTransport;
+import org.cometd.client.transport.TransportListener;
 
+import javax.ws.rs.core.NewCookie;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,20 +40,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import javax.ws.rs.core.NewCookie;
-
-import org.cometd.bayeux.Message;
-import org.cometd.bayeux.Message.Mutable;
-import org.cometd.client.transport.HttpClientTransport;
-import org.cometd.client.transport.TransportListener;
-
-import com.cumulocity.sdk.client.PlatformParameters;
-import com.cumulocity.sdk.client.RestConnector;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
+import static javax.ws.rs.core.HttpHeaders.COOKIE;
 
 class CumulocityLongPollingTransport extends HttpClientTransport {
 
@@ -62,6 +60,8 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     final ScheduledExecutorService executorService = newScheduledThreadPool(WORKERS, new CumulocityLongPollingTransportThreadFactory());
 
     private volatile boolean _aborted;
+
+    private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher = new UnauthorizedConnectionWatcher();
 
     CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters) {
         super(NAME, null, options);
@@ -122,7 +122,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
         final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService);
-        final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, messages);
+        final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, unauthorizedConnectionWatcher, messages);
         watcher.addConnectionListener(new ConnectionIdleListener() {
             @Override
             public void onConnectionIdle() {
