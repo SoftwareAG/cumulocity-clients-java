@@ -10,7 +10,6 @@ public class ValueHelper {
         byte[] cutValue = cut(value, definition.getStartBit(), definition.getLength());
         long decimalValue = ArrayUtils.byteArrayToLong(cutValue);
         return convert(decimalValue, definition.getConversion());
-
     }
 
     public static byte[] cut(byte[] source, int startBit, int length){

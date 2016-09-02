@@ -3,6 +3,7 @@ package com.cumulocity.me.agent.fieldbus.evaluator;
 import com.cumulocity.me.agent.fieldbus.FieldbusTemplates;
 import com.cumulocity.me.agent.fieldbus.impl.DeviceTypeBuilder;
 import com.cumulocity.me.agent.fieldbus.impl.FieldbusDeviceList;
+import com.cumulocity.me.agent.fieldbus.impl.RegisterDefinitionBuilder;
 import com.cumulocity.me.agent.fieldbus.model.*;
 import com.cumulocity.me.agent.util.BooleanParser;
 import com.cumulocity.me.agent.util.Callback;
@@ -62,6 +63,9 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_RESPONSE_MESSAGE_ID:
                 parseRegisterBaseParameters(row, uniqueId);
                 break;
+            case FieldbusTemplates.DEVICE_TYPE_REGISTER_WITHOUT_OFFSET_RESPONSE_MESSAGE_ID:
+                parseRegisterBaseParametersWithoutOffset(row, uniqueId);
+                break;
             case FieldbusTemplates.DEVICE_TYPE_REGISTER_STATUS_RESPONSE_MESSAGE_ID:
                 parseRegisterStatusMapping(row, uniqueId);
                 break;
@@ -109,6 +113,25 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
         int offset = Integer.parseInt(row.getData(9));
         int decimalPlaces = Integer.parseInt(row.getData(10));
         typeBuilder.withRegister(uniqueId, multiplier, divisor, offset, decimalPlaces);
+    }
+
+    private void parseRegisterBaseParametersWithoutOffset(SmartRow row, String uniqueId) {
+        RegisterDefinitionBuilder registerDefinitionBuilder = typeBuilder.getRegisterDefinitionBuilder(uniqueId);
+        if (registerDefinitionBuilder == null || registerDefinitionBuilder.getName() == null) {
+            int number = parseNumber(row.getData(1));
+            String name = row.getData(2);
+            boolean isInput = BooleanParser.parse(row.getData(3)).booleanValue();
+            boolean isSigned = BooleanParser.parse(row.getData(4)).booleanValue();
+            int startBit = Integer.parseInt(row.getData(5));
+            int noBits = Integer.parseInt(row.getData(6));
+
+            int multiplier = Integer.parseInt(row.getData(7));
+            int divisor = Integer.parseInt(row.getData(8));
+            int decimalPlaces = Integer.parseInt(row.getData(9));
+
+            typeBuilder.withRegister(uniqueId, number, name, isInput, isSigned, startBit, noBits);
+            typeBuilder.withRegister(uniqueId, multiplier, divisor, 0, decimalPlaces);
+        }
     }
 
     private void parseCoilEventMapping(SmartRow row, String uniqueId) {

@@ -8,6 +8,7 @@ import com.cumulocity.me.agent.integration.DeviceInformationProvider;
 import com.cumulocity.me.agent.plugin.AgentApi;
 import com.cumulocity.me.agent.provider.ExternalIdProvider;
 import com.cumulocity.me.agent.push.DevicePushService;
+import com.cumulocity.me.agent.restart.DeviceRestarter;
 import com.cumulocity.me.agent.smartrest.SmartrestService;
 
 public class InternalAgentApi extends AgentApi{
@@ -46,5 +47,9 @@ public class InternalAgentApi extends AgentApi{
 
     public void setFieldbusService(FieldbusService fieldbusService) {
         this.fieldbusService = fieldbusService;
+    }
+
+    public void setDeviceRestarter(DeviceRestarter restarter) {
+        this.restarter = restarter;
     }
 }
