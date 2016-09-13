@@ -225,10 +225,11 @@ public class SmartCometClient {
     
     private SmartRow[] extractReliableNumber(SmartRow[] rows){
         int index = -1;
-        for (index = 0; index < rows.length; index++) {
-            SmartRow row = rows[index];
+        for (int i = 0; i < rows.length; i++) {
+            SmartRow row = rows[i];
             if (SMARTREST_RELIABLE_COUNT_CODE == row.getMessageId()) {
                 reliableRequestNumber = Integer.parseInt(row.getData(0));
+                index = i;
                 break;
             }
         }

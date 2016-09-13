@@ -8,6 +8,8 @@ import com.cumulocity.me.agent.plugin.impl.InternalAgentApi;
 import com.cumulocity.me.agent.push.impl.DevicePushManager;
 import com.cumulocity.me.smartrest.client.impl.SmartHttpConnection;
 
+import javax.microedition.io.Connector;
+
 public class DevicePushFeature extends BaseFeature{
 
     private SmartHttpConnection connection;
@@ -28,11 +30,22 @@ public class DevicePushFeature extends BaseFeature{
         ConfigurationService config = agentApi.getConfigurationService();
         String credentials = agentApi.getInternalAgentInfo().getCredentials();
         connection = new SmartHttpConnection(config.get(ConfigurationKey.CONNECTION_HOST_URL), AgentTemplates.XID, credentials);
-        connection.setupConnection(config.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_STANDARD));
+        connection.setHeartbeatCheckInterval(getHeartbeatCheckInterval());
+        connection.setupConnection(Connector.READ_WRITE, true);
+        connection.setupConnection(config.get(ConfigurationKey.CONNECTION_SETUP_PARAMS_REALTIME));
     }
     
     public void stop() {
         pushManager.stop();
         connection.closeConnection();
+    }
+
+    public int getHeartbeatCheckInterval() {
+        ConfigurationService config = agentApi.getConfigurationService();
+        Integer value = config.getInt(ConfigurationKey.CONNECTION_HEARTBEAT_CHECK_INTERVAL);
+        if (value == null) {
+            return -1;
+        }
+        return value.intValue() * 1000;
     }
 }
