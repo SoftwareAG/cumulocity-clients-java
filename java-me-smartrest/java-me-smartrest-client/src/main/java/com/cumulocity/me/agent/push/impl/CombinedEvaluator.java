@@ -11,11 +11,14 @@ import net.sf.microlog.core.Logger;
 import net.sf.microlog.core.LoggerFactory;
 
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 public class CombinedEvaluator implements SmartResponseEvaluator {
 	private static final Logger LOG = LoggerFactory.getLogger(CombinedEvaluator.class);
-	
+    private static final Timer CALLBACK_EXECUTION_TIMER = new Timer();
+
     private final Hashtable callbackMap = new Hashtable();
 
     public void evaluate(SmartResponse response) {
@@ -62,7 +65,7 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
     }
 
     private void callEvaluator(final SmartResponseEvaluator evaluator, final SmartResponse response) {
-        new Thread(new Runnable() {
+        CALLBACK_EXECUTION_TIMER.schedule(new TimerTask() {
             public void run() {
                 try {
                     evaluator.evaluate(response);
@@ -70,7 +73,7 @@ public class CombinedEvaluator implements SmartResponseEvaluator {
                     LOG.warn("Calling response evaluator threw exception", e);
                 }
             }
-        }).start();
+        }, 1);
     }
 
     public void registerOperation(String xId, int messageId, SmartResponseEvaluator callback) {
