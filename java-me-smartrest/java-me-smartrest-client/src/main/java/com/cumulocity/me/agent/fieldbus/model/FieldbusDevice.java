@@ -5,12 +5,14 @@ public class FieldbusDevice {
     private final String name;
     private final int address;
     private final FieldbusDeviceType type;
+    private final String protocol;
 
-    public FieldbusDevice(String id, String name, int address, FieldbusDeviceType type) {
+    public FieldbusDevice(String id, String name, int address, FieldbusDeviceType type, String protocol) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.type = type;
+        this.protocol = protocol;
     }
 
     public FieldbusDeviceType getType() {
@@ -27,6 +29,10 @@ public class FieldbusDevice {
 
     public String getName() {
         return name;
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 
     public boolean equals(Object o) {

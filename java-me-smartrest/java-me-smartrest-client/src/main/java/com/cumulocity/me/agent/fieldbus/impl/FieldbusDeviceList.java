@@ -110,4 +110,15 @@ public class FieldbusDeviceList{
         }
     }
 
+    public FieldbusDeviceList filterByProtocol(String fieldbusProtocol) {
+        FieldbusDeviceList filtered = new FieldbusDeviceList();
+        for (int i = 0; i < delegate.size(); i++) {
+            FieldbusDevice currentDevice = this.elementAt(i);
+            if (fieldbusProtocol.equals(currentDevice.getProtocol())) {
+                filtered.addElement(currentDevice);
+            }
+        }
+        return filtered;
+    }
+
 }

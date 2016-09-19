@@ -35,7 +35,7 @@ public class FieldbusTypeEvaluator implements SmartResponseEvaluator{
             }
         }
         typeBuilder.withType(child.getType());
-        FieldbusDevice device = new FieldbusDevice(child.getId(), child.getName(), child.getAddress(), typeBuilder.build());
+        FieldbusDevice device = new FieldbusDevice(child.getId(), child.getName(), child.getAddress(), typeBuilder.build(), child.getProtocol());
         toAppend.addElement(device);
         Callback.execute(onFinished);
 
