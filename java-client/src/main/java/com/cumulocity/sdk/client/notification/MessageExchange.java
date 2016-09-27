@@ -19,8 +19,17 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import static java.lang.Integer.MAX_VALUE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import com.sun.jersey.api.client.AsyncWebResource;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.async.FutureListener;
+import org.cometd.bayeux.Message;
+import org.cometd.client.transport.TransportListener;
+import org.cometd.common.TransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -34,19 +43,16 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.cometd.bayeux.Message;
-import org.cometd.client.transport.TransportListener;
-import org.cometd.common.TransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.jersey.api.client.*;
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.client.async.FutureListener;
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 class MessageExchange {
 
     private static final int ASCII_SPACE = 0x20;
+
+    /* wait time in millis before trying to reconnect again */
+    long reconnectionWaitingTime = MINUTES.toMillis(1);
 
     private final Logger log = LoggerFactory.getLogger(MessageExchange.class);
 
@@ -60,6 +66,8 @@ class MessageExchange {
 
     private final ConnectionHeartBeatWatcher watcher;
 
+    private final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
+
     private final ScheduledExecutorService executorService;
 
     private final Client client;
@@ -67,13 +75,15 @@ class MessageExchange {
     private final List<MessageExchangeListener> listeners = new LinkedList<MessageExchangeListener>();
 
     MessageExchange(CumulocityLongPollingTransport transport, Client client, ScheduledExecutorService executorService,
-            TransportListener listener, ConnectionHeartBeatWatcher watcher, Message... messages) {
+                    TransportListener listener, ConnectionHeartBeatWatcher watcher,
+                    UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, Message... messages) {
         this.transport = transport;
         this.client = client;
         this.executorService = executorService;
         this.listener = listener;
         this.messages = messages;
         this.watcher = watcher;
+        this.unauthorizedConnectionWatcher = unauthorizedConnectionWatcher;
     }
 
     public void execute(String url, String content) {
@@ -143,16 +153,12 @@ class MessageExchange {
             }
         }
 
-        private void heartBeatWatch(ClientResponse clientResponse) {
-            try {
-                if (isOk(clientResponse)) {
-                    if (!isCanGetHeatBeats(clientResponse)) {
-                        clientResponse.setEntityInputStream(new BufferedInputStream(response.getEntityInputStream()));
-                    }
-                    getHeartBeats(clientResponse);
+        private void heartBeatWatch(ClientResponse clientResponse) throws IOException {
+            if (isOk(clientResponse)) {
+                if (!isCanGetHeatBeats(clientResponse)) {
+                    clientResponse.setEntityInputStream(new BufferedInputStream(response.getEntityInputStream()));
                 }
-            } catch (IOException e) {
-                onConnectionFailed(e);
+                getHeartBeats(clientResponse);
             }
         }
 
@@ -209,23 +215,40 @@ class MessageExchange {
 
         private void onException(Exception x) {
             log.debug("request failed ", x);
+            waitBeforeAnotherReconnect();
             listener.onException(x, messages);
+        }
+
+        private void onException(final int code) {
+            Map<String, Object> failure = new HashMap<>(2);
+            failure.put("httpCode", code);
+            onException(new TransportException(failure));
+        }
+
+        private void waitBeforeAnotherReconnect() {
+            try {
+                Thread.sleep(reconnectionWaitingTime);
+            } catch (InterruptedException e) {
+                log.error("Problem occurred while waiting for another bayeux reconnect");
+            }
         }
 
         private void onTransportException(int code) {
             log.debug("request failed with code {}", code);
             if (code == 401) {
-                log.warn("bayeux client received 401 while running -> do no longer reconnect");
+                if (unauthorizedConnectionWatcher.shouldRetry()) {
+                    onException(code);
+                } else {
+                    log.warn("bayeux client received 401 too many times -> do no longer reconnect");
+                }
             } else {
-                Map<String, Object> failure = new HashMap<String, Object>(2);
-                failure.put("httpCode", code);
-                TransportException x = new TransportException(failure);
-                listener.onException(x, messages); 
+                onException(code); 
             }
         }
 
         private void onConnectionFailed(Exception e) {
             log.debug("connection failed");
+            unauthorizedConnectionWatcher.resetCounter();
             listener.onConnectException(e, messages);
         }
 
@@ -250,6 +273,7 @@ class MessageExchange {
                 }
             } catch (Exception e) {
                 log.debug("connection failed", e);
+                unauthorizedConnectionWatcher.resetCounter();
                 listener.onConnectException(e, messages);
                 onFinish();
             }

@@ -1,16 +1,12 @@
 package com.cumulocity.sdk.client.notification;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayInputStream;
-import java.net.URI;
-import java.text.ParseException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-
+import com.google.common.base.Ascii;
+import com.google.common.collect.ImmutableList;
+import com.sun.jersey.api.client.AsyncWebResource;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.async.FutureListener;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
@@ -25,13 +21,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Ascii;
-import com.google.common.collect.ImmutableList;
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.async.FutureListener;
+import java.io.ByteArrayInputStream;
+import java.text.ParseException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageExchangeTest {
@@ -45,6 +44,9 @@ public class MessageExchangeTest {
 
     @Mock
     private ConnectionHeartBeatWatcher watcher;
+
+    @Mock
+    private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
 
     @Mock
     private Message message;
@@ -77,7 +79,8 @@ public class MessageExchangeTest {
 
     @Before
     public void setup() {
-        exchange = new MessageExchange(transport, client, executorService, listener, watcher, message);
+        exchange = new MessageExchange(transport, client, executorService, listener, watcher, unauthorizedConnectionWatcher, message);
+        exchange.reconnectionWaitingTime = SECONDS.toMillis(1);
         when(client.asyncResource(any(String.class))).thenReturn(resource);
         when(resource.handle(any(ClientRequest.class), responseHandler.capture())).thenReturn(request);
     }

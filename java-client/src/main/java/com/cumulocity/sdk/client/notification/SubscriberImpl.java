@@ -19,9 +19,7 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArraySet;
-
+import com.cumulocity.sdk.client.SDKException;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
@@ -31,7 +29,9 @@ import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cumulocity.sdk.client.SDKException;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 class SubscriberImpl<T> implements Subscriber<T, Message> {
 
@@ -218,7 +218,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         }
 
         private boolean isSubscriptionToChannel(Message message) {
-            return message.get(Message.SUBSCRIPTION_FIELD).equals(this.channel.getId());
+            return Objects.equals(channel.getId(), message.get(Message.SUBSCRIPTION_FIELD));
         }
 
         private boolean isSuccessfulySubscribed(Message message) {
