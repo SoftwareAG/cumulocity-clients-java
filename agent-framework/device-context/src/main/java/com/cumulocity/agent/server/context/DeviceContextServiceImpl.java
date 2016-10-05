@@ -59,7 +59,8 @@ public class DeviceContextServiceImpl implements DeviceContextService {
         try {
             return task.call();
         } catch (Exception e) {
-            log.warn("execution of task failed within tenant : " + getContextTenant(context), e);
+            log.warn("execution of task failed within tenant : " + getContextTenant(context), e.getMessage());
+            log.debug("execution of task failed within tenant : " + getContextTenant(context), e);
             throw e;
         } finally {
             leaveContext(previousContext);
