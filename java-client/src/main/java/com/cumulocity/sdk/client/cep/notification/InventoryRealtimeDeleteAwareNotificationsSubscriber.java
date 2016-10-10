@@ -23,42 +23,34 @@ import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
 
-/**
- * This subscriber does not support realtime DELETE actions. 
- * Please use instead InventoryRealtimeDeleteAwareNotificationsSubscriber.java
- *
- */
-@Deprecated
-public class InventoryRealtimeNotificationsSubscriber implements Subscriber<String, ManagedObjectNotification> {
+public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subscriber<String, ManagedObjectDeleteAwareNotification> {
     
     private static final String REALTIME_NOTIFICATIONS_URL = "cep/realtime";
 
-    private final Subscriber<String, ManagedObjectNotification> subscriber;
+    private final Subscriber<String, ManagedObjectDeleteAwareNotification> subscriber;
     
     private static final String channelPrefix = "/managedobjects/";
 
-    public InventoryRealtimeNotificationsSubscriber(PlatformParameters parameters) {
+    public InventoryRealtimeDeleteAwareNotificationsSubscriber(PlatformParameters parameters) {
         subscriber = createSubscriber(parameters);
     }
     
-    private Subscriber<String, ManagedObjectNotification> createSubscriber(PlatformParameters parameters) {
+    private Subscriber<String, ManagedObjectDeleteAwareNotification> createSubscriber(PlatformParameters parameters) {
         // @formatter:off
-        return SubscriberBuilder.<String, ManagedObjectNotification>anSubscriber()
+        return SubscriberBuilder.<String, ManagedObjectDeleteAwareNotification>anSubscriber()
                     .withParameters(parameters)
                     .withEndpoint(REALTIME_NOTIFICATIONS_URL)
                     .withSubscriptionNameResolver(new Identity())
-                    .withDataType(ManagedObjectNotification.class)
+                    .withDataType(ManagedObjectDeleteAwareNotification.class)
                     .build();
         // @formatter:on
     }
 
-    /**
-     * This method does NOT allow to receive device realtime DELETE actions
-     */
-    public Subscription<String> subscribe(final String channelID, final SubscriptionListener<String, ManagedObjectNotification> handler) throws SDKException {
+    public Subscription<String> subscribe(final String channelID, 
+            final SubscriptionListener<String, ManagedObjectDeleteAwareNotification> handler) throws SDKException {
         return subscriber.subscribe(channelPrefix + channelID, handler);
     }
-    
+
     public void disconnect() {
         subscriber.disconnect();
     }
