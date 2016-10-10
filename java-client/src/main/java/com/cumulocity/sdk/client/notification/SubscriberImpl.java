@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-class SubscriberImpl<T> implements Subscriber<T, Message> {
+class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberImpl.class);
 
@@ -47,9 +47,10 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
 
     private volatile ClientSession session;
 
-    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider) {
+    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider, final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
         this.subscriptionNameResolver = channelNameResolver;
         this.bayeuxSessionProvider = bayeuxSessionProvider;
+        unauthorizedConnectionWatcher.addListener(this);
     }
 
     public void start() throws SDKException {
@@ -123,6 +124,13 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
     private void resubscribe() {
         for (SubscriptionRecord subscribed : subscriptions) {
             subscribe(subscribed.getId(), subscribed.getListener());
+        }
+    }
+
+    @Override
+    public void onDisconnection(final int httpCode) {
+        for (final SubscriptionRecord subscription : subscriptions) {
+            subscription.getListener().onError(new DummySubscription(subscription), new SDKException(httpCode, "bayeux client disconnected"));
         }
     }
 
@@ -248,6 +256,24 @@ class SubscriberImpl<T> implements Subscriber<T, Message> {
         @Override
         public T getObject() {
             return object;
+        }
+    }
+
+    private final class DummySubscription implements Subscription<T> {
+
+        private final SubscriptionRecord subscription;
+
+        DummySubscription(final SubscriptionRecord subscription) {
+            this.subscription = subscription;
+        }
+
+        @Override
+        public void unsubscribe() {
+        }
+
+        @Override
+        public T getObject() {
+            return subscription.getId();
         }
     }
 

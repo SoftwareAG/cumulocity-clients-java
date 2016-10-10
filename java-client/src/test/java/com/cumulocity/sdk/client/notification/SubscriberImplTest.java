@@ -40,6 +40,9 @@ public class SubscriberImplTest {
     @Mock
     BayeuxSessionProvider bayeuxSessionProvider;
 
+    @Mock
+    UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
+
     Subscriber<Object, Message> subscriber;
 
     @Mock
@@ -49,7 +52,7 @@ public class SubscriberImplTest {
 
     @Before
     public void setup() throws SDKException {
-        subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider);
+        subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
         mockClientProvider();
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
         when(client.getChannel(ClientSessionChannel.META_HANDSHAKE)).thenReturn(metaHandshakeChannel);

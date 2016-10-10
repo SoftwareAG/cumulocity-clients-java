@@ -61,13 +61,15 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private volatile boolean _aborted;
 
-    private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher = new UnauthorizedConnectionWatcher();
+    private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
 
-    CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters) {
+    CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters,
+                                   UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
         super(NAME, null, options);
         this.httpClient = new ManagedHttpClient(httpClient).get();
         setOptionPrefix(PREFIX);
         this.paramters = paramters;
+        this.unauthorizedConnectionWatcher = unauthorizedConnectionWatcher;
     }
 
     public boolean accept(String bayeuxVersion) {

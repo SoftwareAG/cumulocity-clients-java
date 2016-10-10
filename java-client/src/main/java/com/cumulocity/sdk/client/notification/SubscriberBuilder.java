@@ -40,6 +40,8 @@ public class SubscriberBuilder<T, R> {
     private SubscriptionNameResolver<T> subscriptionNameResolver;
 
     private boolean messageReliability = false;
+    
+    private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher = new UnauthorizedConnectionWatcher();
 
     public static <T, R> SubscriberBuilder<T, R> anSubscriber() {
         return new SubscriberBuilder<T, R>();
@@ -72,7 +74,7 @@ public class SubscriberBuilder<T, R> {
 
     public Subscriber<T, R> build() {
         verifyRequiredFields();
-        return new TypedSubscriber<T, R>(new SubscriberImpl<T>(subscriptionNameResolver, createSessionProvider()), dataType);
+        return new TypedSubscriber<T, R>(new SubscriberImpl<T>(subscriptionNameResolver, createSessionProvider(), unauthorizedConnectionWatcher), dataType);
     }
 
     private void verifyRequiredFields() {
@@ -89,7 +91,7 @@ public class SubscriberBuilder<T, R> {
     }
 
     private BayeuxSessionProvider createSessionProvider() {
-        return createProvider(endpoint, parameters, dataType, resolveEnabledExtensions());
+        return createProvider(endpoint, parameters, dataType, unauthorizedConnectionWatcher, resolveEnabledExtensions());
     }
 
     private Extension[] resolveEnabledExtensions() {
