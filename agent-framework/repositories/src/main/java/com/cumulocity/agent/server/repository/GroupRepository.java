@@ -50,7 +50,7 @@ public class GroupRepository {
     public GroupRepresentation create(GroupRepresentation groupRepresentation) {
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
         String groupsURL = userApiWithTenantURL + "groups/";
-        return restConnector.get(baseUrl + groupsURL, UserMediaType.GROUP, GroupRepresentation.class);
+        return restConnector.post(baseUrl + groupsURL, UserMediaType.GROUP, groupRepresentation);
     }
 
     public void addUserToGroup(String username, Long id) {
