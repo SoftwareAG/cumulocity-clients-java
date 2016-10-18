@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cumulocity.agent.server.context.DeviceContextService;
-import com.cumulocity.rest.representation.user.GroupRepresentation;
-import com.cumulocity.rest.representation.user.UserMediaType;
-import com.cumulocity.rest.representation.user.UserReferenceRepresentation;
+import com.cumulocity.rest.representation.user.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 
@@ -57,7 +55,15 @@ public class GroupRepository {
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
         String groupMembersURL = userApiWithTenantURL + "groups/" + id + "/users";
         UserReferenceRepresentation userReferenceRepresentation = new UserReferenceRepresentation();
-        userReferenceRepresentation.setSelf("/users" + username);
-        restConnector.post(baseUrl + groupMembersURL, UserMediaType.USER_REFERENCE, null);
+        UserRepresentation user = new UserRepresentation();
+        user.setSelf("/users/" + username);
+        userReferenceRepresentation.setUser(user);
+        restConnector.post(baseUrl + groupMembersURL, UserMediaType.USER_REFERENCE, userReferenceRepresentation);
+    }
+    
+    public UserReferenceCollectionRepresentation findGroupUsers(Long id, int pageSize) {
+        String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
+        String groupMembersURL = userApiWithTenantURL + "groups/" + id + "/users?pageSize=" + pageSize;
+        return restConnector.get(baseUrl + groupMembersURL, UserMediaType.USER_REFERENCE, UserReferenceCollectionRepresentation.class);
     }
 }
