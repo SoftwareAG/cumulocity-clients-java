@@ -50,11 +50,14 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private final Class<?> endpointDataType;
 
+    private final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
+
     private final Collection<Extension> extensions;
 
     public static BayeuxSessionProvider createProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
-            Extension... extensions) {
-        return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters), extensions);
+                                                       UnauthorizedConnectionWatcher unauthorizedConnectionWatcher,
+                                                       Extension... extensions) {
+        return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters), unauthorizedConnectionWatcher, extensions);
     }
 
     private static Provider<Client> createDefaultHttpProvider(final PlatformParameters paramters) {
@@ -71,16 +74,19 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
-            Class<?> endpointDataType, final Provider<Client> httpClient, Extension... extensions) {
-        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, extensions);
+                                                       Class<?> endpointDataType, final Provider<Client> httpClient,
+                                                       UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, Extension... extensions) {
+        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, unauthorizedConnectionWatcher, extensions);
     }
 
     public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
-            Provider<Client> httpClient, Extension... extensions) {
+                                       Provider<Client> httpClient, UnauthorizedConnectionWatcher unauthorizedConnectionWatcher,
+                                       Extension... extensions) {
         this.paramters = paramters;
         this.endpoint = endpoint;
         this.httpClient = httpClient;
         this.endpointDataType = endpointDataType;
+        this.unauthorizedConnectionWatcher = unauthorizedConnectionWatcher;
         this.extensions = asList(extensions);
     }
 
@@ -112,7 +118,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private ClientTransport createTransport(final Provider<Client> httpClient) {
-        return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters);
+        return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters, unauthorizedConnectionWatcher);
     }
 
     private Map<String, Object> createTransportOptions() {

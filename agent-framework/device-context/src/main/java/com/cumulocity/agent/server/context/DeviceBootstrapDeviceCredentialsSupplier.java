@@ -6,11 +6,11 @@ import com.google.common.base.Supplier;
 
 public class DeviceBootstrapDeviceCredentialsSupplier implements Supplier<DeviceCredentials> {
 
-    private @Value("${C8Y.devicebootstrap.tenant}") String tenant;
+    private @Value("${C8Y.devicebootstrap.tenant:management}") String tenant;
 
-    private @Value("${C8Y.devicebootstrap.user}") String username;
+    private @Value("${C8Y.devicebootstrap.user:devicebootstrap}") String username;
 
-    private @Value("${C8Y.devicebootstrap.password}") String passwrod;
+    private @Value("${C8Y.devicebootstrap.password:Fhdt1bb1f}") String passwrod;
 
     @Override
     public DeviceCredentials get() {

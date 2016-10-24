@@ -44,7 +44,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.lang.Integer.MAX_VALUE;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 class MessageExchange {
@@ -52,7 +52,7 @@ class MessageExchange {
     private static final int ASCII_SPACE = 0x20;
 
     /* wait time in millis before trying to reconnect again */
-    long reconnectionWaitingTime = MINUTES.toMillis(1);
+    long reconnectionWaitingTime = SECONDS.toMillis(30);
 
     private final Logger log = LoggerFactory.getLogger(MessageExchange.class);
 
@@ -236,10 +236,9 @@ class MessageExchange {
         private void onTransportException(int code) {
             log.debug("request failed with code {}", code);
             if (code == 401) {
+                unauthorizedConnectionWatcher.unauthorizedAccess();
                 if (unauthorizedConnectionWatcher.shouldRetry()) {
                     onException(code);
-                } else {
-                    log.warn("bayeux client received 401 too many times -> do no longer reconnect");
                 }
             } else {
                 onException(code); 
