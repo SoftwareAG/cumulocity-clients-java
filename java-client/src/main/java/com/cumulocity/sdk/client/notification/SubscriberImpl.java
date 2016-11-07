@@ -123,7 +123,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private void resubscribe() {
         for (SubscriptionRecord subscribed : subscriptions) {
-            subscribe(subscribed.getId(), subscribed.getListener());
+            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
+            subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected"));
         }
     }
 
