@@ -44,4 +44,14 @@ public class UserRepository {
             }
         }
     }
+    
+    public UserRepresentation create(UserRepresentation user) {
+        String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
+        return restConnector.post(baseUrl + userApiWithTenantURL, UserMediaType.USER, user);
+    }
+    
+    public void delete(String username) {
+        String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
+        restConnector.delete(baseUrl + userApiWithTenantURL + username);
+    }
 }
