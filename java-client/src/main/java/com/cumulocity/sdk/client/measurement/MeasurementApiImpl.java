@@ -92,6 +92,11 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
     
     @Override
+    public void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException {
+          restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
+    }
+    
+    @Override
     public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
           return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }

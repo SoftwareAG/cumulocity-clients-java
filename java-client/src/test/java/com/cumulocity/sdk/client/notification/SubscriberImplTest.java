@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -183,6 +184,18 @@ public class SubscriberImplTest {
 
     }
 
+    @Test
+    public final void shouldCallOnErrorOnSubscriptionsReconnect() throws SDKException {
+        //given
+        givenChannelWithSubscription("/channel");
+
+        //when
+        reconnect();
+
+        //then
+        verifyOnErrorListener();
+    }
+
     private void sendUnsubscribeMessage(String channelId) {
         verify(metaUnsubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
@@ -284,6 +297,32 @@ public class SubscriberImplTest {
         when(client.getChannel(channelId)).thenReturn(channel);
         when(channel.getId()).thenReturn(channelId);
         return channel;
+    }
+
+    private void verifyOnErrorListener() throws SDKException {
+        verify(listener).onError(any(Subscription.class), anyInstanceOf(ReconnectedSDKException.class));
+    }
+
+    private static <T> T anyInstanceOf(Class<T> clazz) {
+        return (T) argThat(new AnyInstanceOfClass(clazz));
+    }
+
+    private static class AnyInstanceOfClass<T> extends ArgumentMatcher<Class<T>> {
+
+        private final Class clazz;
+
+        public AnyInstanceOfClass(Class clazz) {
+            this.clazz = clazz;
+        }
+
+        @Override
+        public boolean matches(Object o) {
+            return clazz.isInstance(o);
+        }
+
+        public String toString() {
+            return "[argument must be a type of " + clazz.getCanonicalName() + "]";
+        }
     }
 
 }

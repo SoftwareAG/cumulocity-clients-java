@@ -49,6 +49,14 @@ public interface MeasurementApi {
     MeasurementRepresentation create(MeasurementRepresentation measurement) throws SDKException;
     
     /**
+     * Creates measurement in the platform. Does not send Accept header to make the request be processed faster.
+     *
+     * @param measurement measurement to be created
+     * @return the created measurement with the generated id
+     * @throws SDKException if the measurement could not be created
+     */
+    void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException;
+    /**
      * Creates measurement in the platform. Immediate response is available through the Future object. 
      * In case of lost connection, buffers data in persistence provider. 
      *

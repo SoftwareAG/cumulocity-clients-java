@@ -36,4 +36,8 @@ public class MeasurementRepository {
             measurementApi.create(measurement);
         }
     }
+    
+    public void saveWithoutResponse(MeasurementRepresentation representation) {
+        measurementApi.createWithoutResponse(representation);
+    }
 }
