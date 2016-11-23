@@ -14,7 +14,7 @@ public class RemoteAccess extends AbstractDynamicProperties {
 
     private String protocol;
 
-    private String encryptedPassword;
+    private String password; // {cipher} as prefix
 
     public String getHostname() {
         return hostname;
@@ -40,12 +40,12 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.protocol = protocol;
     }
 
-    public String getEncryptedPassword() {
-        return encryptedPassword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public static long getSerialversionuid() {
@@ -56,7 +56,7 @@ public class RemoteAccess extends AbstractDynamicProperties {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((encryptedPassword == null) ? 0 : encryptedPassword.hashCode());
+        result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
         result = prime * result + ((port == null) ? 0 : port.hashCode());
         result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
@@ -72,10 +72,10 @@ public class RemoteAccess extends AbstractDynamicProperties {
         if (getClass() != obj.getClass())
             return false;
         RemoteAccess other = (RemoteAccess) obj;
-        if (encryptedPassword == null) {
-            if (other.encryptedPassword != null)
+        if (password == null) {
+            if (other.password != null)
                 return false;
-        } else if (!encryptedPassword.equals(other.encryptedPassword))
+        } else if (!password.equals(other.password))
             return false;
         if (hostname == null) {
             if (other.hostname != null)
