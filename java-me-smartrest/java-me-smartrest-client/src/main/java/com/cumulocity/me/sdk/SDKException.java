@@ -54,6 +54,9 @@ public class SDKException extends RuntimeException {
     }
     
     private static String createErrorFromMultipleRows(SmartRow[] rows) {
+        if (rows == null || rows.length == 0) {
+            return null;
+        }
         String exceptions = rows[0].toString();
         for (int i = 1; i < rows.length; i++) {
             exceptions = "\n" + rows[i].toString();

@@ -1,12 +1,10 @@
 package com.cumulocity.me.integration;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.cumulocity.me.sdk.SDKException;
-import com.cumulocity.me.smartrest.client.impl.SmartExecutorServiceImpl;
+import com.cumulocity.me.concurrent.impl.SmartExecutorServiceImpl;
 
 @Ignore
 public class ThreadPoolTests {
@@ -16,7 +14,7 @@ public class ThreadPoolTests {
     
     @Test
     public void test() throws InterruptedException {
-        executor = new SmartExecutorServiceImpl(2);
+        executor = new SmartExecutorServiceImpl(2, 1000);
         
         Task task1 = new Task(1,2000);
         Task task2 = new Task(2,7000);
@@ -48,9 +46,7 @@ public class ThreadPoolTests {
         executor.execute(task5);
         
         Thread.sleep(5000);
-        
-        executor.terminateAll();
-        
+
         Thread.sleep(2000);
         
         System.out.println("task6:");
@@ -59,9 +55,7 @@ public class ThreadPoolTests {
         executor.execute(task7);
         
         Thread.sleep(3000);
-        
-        executor.terminateAllIdle();
-        
+
         Thread.sleep(5000);
         
     }
