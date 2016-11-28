@@ -1,9 +1,12 @@
 package com.cumulocity.me.concurrency;
 
+import com.cumulocity.me.concurrent.exception.ExecutionException;
 import com.cumulocity.me.concurrent.impl.SmartExecutorServiceImpl;
 import com.cumulocity.me.concurrent.model.Future;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Collections;
 
 public class SmartExecutorServiceImplTest {
 
@@ -33,7 +36,7 @@ public class SmartExecutorServiceImplTest {
         Assert.assertEquals(amount, executed[0]);
     }
 
-    @Test()
+    @Test
     public void shouldHaveCorrectCount() throws Exception{
         //given
         Assert.assertEquals(0, executorService.getCurrentThreads());
