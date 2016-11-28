@@ -29,10 +29,12 @@ public class DeviceCredentials {
     private final String password;
 
     private final String appKey;
-
+    
     private final GId deviceId;
 
     private final int pageSize;
+
+    private String tfaToken;
 
     private static final Base64 encoder = new Base64();
 
@@ -51,6 +53,12 @@ public class DeviceCredentials {
 
     public static DeviceCredentials from(DeviceCredentialsRepresentation credentials) {
         return new DeviceCredentials(credentials.getTenantId(), credentials.getUsername(), credentials.getPassword(), null, null);
+    }
+    
+    public static DeviceCredentials from(String authorization, String appKey, String tfaToken, int pageSize) {
+        DeviceCredentials deviceCredentials = from(authorization, appKey, pageSize);
+        deviceCredentials.setTfaToken(tfaToken);
+        return deviceCredentials;
     }
 
     public static DeviceCredentials from(String authorization, String appKey, int pageSize) {
@@ -101,7 +109,11 @@ public class DeviceCredentials {
     public String getAppKey() {
         return appKey;
     }
-
+    
+    public String getTfaToken() {
+        return tfaToken;
+    }
+    
     public GId getDeviceId() {
         return deviceId;
     }
@@ -174,5 +186,8 @@ public class DeviceCredentials {
     private String tenant(DeviceCredentials credentials) {
         return isNullOrEmpty(credentials.getTenant()) ? "" : credentials.getTenant() + "/";
     }
-
+    
+    private void setTfaToken(String tfaToken) {
+        this.tfaToken = tfaToken;
+    }
 }

@@ -76,6 +76,8 @@ public class RestConnector {
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
     
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
+    
+    private static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
         ErrorMessageRepresentationReader.class};
@@ -123,6 +125,7 @@ public class RestConnector {
     private ClientResponse getClientResponse(String path, CumulocityMediaType mediaType) {
         Builder builder = client.resource(path).accept(mediaType);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         return builder.get(ClientResponse.class);
     }
@@ -131,6 +134,7 @@ public class RestConnector {
             Class<T> responseClass) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
@@ -144,6 +148,7 @@ public class RestConnector {
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
     }
 
@@ -151,6 +156,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
@@ -162,6 +168,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
@@ -175,6 +182,7 @@ public class RestConnector {
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
@@ -238,6 +246,7 @@ public class RestConnector {
     public <T extends ResourceRepresentation> void postWithoutResponse(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         ClientResponse response = builder.post(ClientResponse.class, representation);
         responseParser.checkStatus(response, CREATED.getStatusCode());
@@ -267,6 +276,13 @@ public class RestConnector {
         return builder;
     }
     
+    private Builder addTfaHeader(Builder builder) {
+        if (platformParameters.getTfaToken() != null) {
+            builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
+        }
+        return builder;
+    }
+    
     private Builder addRequestOriginHeader(Builder builder) {
         if (platformParameters.getRequestOrigin() != null) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
@@ -285,6 +301,7 @@ public class RestConnector {
             builder.accept(accept);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         return builder.post(ClientResponse.class, representation);
     }
@@ -296,6 +313,7 @@ public class RestConnector {
             builder.accept(mediaType);
         }
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         return builder.put(ClientResponse.class, representation);
     }
@@ -304,6 +322,7 @@ public class RestConnector {
         Builder builder = client.resource(path).getRequestBuilder();
 
         builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
