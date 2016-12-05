@@ -71,6 +71,15 @@ public interface CepApi {
     CepModuleRepresentation get(String id);
     
     /**
+     * Gets a cep module text by id
+     *
+     * @param id of the cep module to search for
+     * @return the cep module text
+     * @throws SDKException if the cep module is not found or if the query failed
+     */
+    String getText(String id);
+    
+    /**
      * Creates an cep module in the platform.
      *
      * @param content input stream to resource with cep module definition 
@@ -122,5 +131,6 @@ public interface CepApi {
      * @throws SDKException
      */
     void delete(String id);
+
     
 }

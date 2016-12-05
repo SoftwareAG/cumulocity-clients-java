@@ -41,6 +41,13 @@ public class ResponseParser {
         checkStatus(response, expectedStatusCode);
         return response.getEntity(type);
     }
+    
+    public <T extends Object> T parseObject(ClientResponse response, int expectedStatusCode,
+            Class<T> type) throws SDKException {
+        
+        checkStatus(response, expectedStatusCode);
+        return response.getEntity(type);
+    }
 
     public void checkStatus(ClientResponse response, int expectedStatusCode) throws SDKException {
         int status = response.getStatus();

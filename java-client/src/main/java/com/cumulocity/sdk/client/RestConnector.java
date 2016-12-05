@@ -116,13 +116,18 @@ public class RestConnector {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parse(response, OK.getStatusCode(), responseType);
     }
+    
+    public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
+        ClientResponse response = getClientResponse(path, mediaType);
+        return responseParser.parseObject(response, OK.getStatusCode(), responseType);
+    }
 
     public Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
         return response.getResponseStatus();
     }
 
-    private ClientResponse getClientResponse(String path, CumulocityMediaType mediaType) {
+    private ClientResponse getClientResponse(String path, MediaType mediaType) {
         Builder builder = client.resource(path).accept(mediaType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
