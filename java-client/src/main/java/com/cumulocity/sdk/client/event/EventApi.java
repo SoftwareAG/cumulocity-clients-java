@@ -82,4 +82,13 @@ public interface EventApi {
      * @throws SDKException if the query failed
      */
     EventCollection getEventsByFilter(EventFilter filter) throws SDKException;
+
+    /**
+     * This update the event in the platform. Cannot update the ID.
+     *
+     * @param eventRepresentation
+     * @return The created event
+     * @throws SDKException if the event could not be updated
+     */
+    EventRepresentation update(EventRepresentation eventRepresentation) throws SDKException;
 }

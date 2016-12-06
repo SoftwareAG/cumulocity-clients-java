@@ -92,4 +92,10 @@ public class EventApiImpl implements EventApi {
     private String getSelfUri() throws SDKException {
         return getEventApiRepresentation().getEvents().getSelf();
     }
+
+    @Override
+    public EventRepresentation update(EventRepresentation eventRepresentation) throws SDKException {
+        String url = getSelfUri() + "/" + eventRepresentation.getId().getValue();
+        return restConnector.put(url, EventMediaType.EVENT, eventRepresentation);
+    }
 }
