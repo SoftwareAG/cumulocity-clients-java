@@ -49,6 +49,11 @@ public class UserRepository {
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
         return restConnector.post(baseUrl + userApiWithTenantURL, UserMediaType.USER, user);
     }
+
+    public UserRepresentation update(UserRepresentation user) {
+        String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
+        return restConnector.put(baseUrl + userApiWithTenantURL + user.getId(), UserMediaType.USER, user);
+    }
     
     public void delete(String username) {
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
