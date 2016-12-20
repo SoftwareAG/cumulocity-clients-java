@@ -70,6 +70,8 @@ public class PlatformParameters {
 
     private ClientConfiguration clientConfiguration;
 
+    private String tfaToken;
+
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -190,6 +192,14 @@ public class PlatformParameters {
 
     public void setForceInitialHost(boolean forceInitialHost) {
         this.forceInitialHost = forceInitialHost;
+    }
+    
+    public void setTfaToken(String tfaToken) {
+        this.tfaToken = tfaToken;
+    }
+    
+    public String getTfaToken() {
+        return tfaToken;
     }
 
     public String getPrincipal() {

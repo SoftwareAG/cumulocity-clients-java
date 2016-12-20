@@ -190,6 +190,7 @@ public class CumulocityClientFeature {
             final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
                     login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
             platformImpl.setForceInitialHost(forceInitialHost);
+            platformImpl.setTfaToken(login.getTfaToken());
 
             return proxy(platformImpl);
         }

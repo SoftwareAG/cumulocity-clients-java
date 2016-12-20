@@ -16,6 +16,8 @@ import com.google.common.base.Optional;
 @Component
 public class AuthorizationHeaderDeviceCredentialsResolver implements DeviceCredentailsResolver<HttpServletRequest> {
 
+    private static final String TFA_TOKEN = "TFAToken";
+
     private static final Integer DEFAULT_PAGE_SIZE = 5;
 
     private static final Function<String, Integer> toInt = new Function<String, Integer>() {
@@ -29,8 +31,9 @@ public class AuthorizationHeaderDeviceCredentialsResolver implements DeviceCrede
     public DeviceCredentials get(HttpServletRequest request) {
         String authorization = request.getHeader(AUTHORIZATION);
         String applicationKey = request.getHeader(X_CUMULOCITY_APPLICATION_KEY);
+        String tfaToken = request.getHeader(TFA_TOKEN);
         int pageSize = Optional.fromNullable(request.getParameter(PAGE_SIZE_KEY)).transform(toInt).or(DEFAULT_PAGE_SIZE);
-        return DeviceCredentials.from(authorization, applicationKey, pageSize);
+        return DeviceCredentials.from(authorization, applicationKey, tfaToken, pageSize);
     }
 
     @Override
