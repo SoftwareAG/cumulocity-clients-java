@@ -157,6 +157,13 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
     }
 
+    public <T extends ResourceRepresentation> T putText(String path, String content, Class<T> responseClass) {
+        WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
+        builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
+        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
+    }
+
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
             Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
