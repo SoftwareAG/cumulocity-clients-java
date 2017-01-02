@@ -50,6 +50,14 @@ public class UserRepository {
         return restConnector.post(baseUrl + userApiWithTenantURL, UserMediaType.USER, user);
     }
     
+    public UserRepresentation update(UserRepresentation user) {
+        if (user.getUserName() == null) {
+            throw new IllegalArgumentException("Username must not be null !");
+        }
+        String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
+        return restConnector.put(baseUrl + userApiWithTenantURL + user.getUserName(), UserMediaType.USER, user);
+    }
+    
     public void delete(String username) {
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
         restConnector.delete(baseUrl + userApiWithTenantURL + username);
