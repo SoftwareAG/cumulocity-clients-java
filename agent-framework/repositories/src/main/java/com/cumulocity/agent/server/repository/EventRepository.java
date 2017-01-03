@@ -9,8 +9,6 @@ import org.springframework.util.CollectionUtils;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventRepresentation;
-import com.cumulocity.sdk.client.Param;
-import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.event.EventFilter;
 import com.cumulocity.sdk.client.event.PagedEventCollectionRepresentation;
@@ -18,8 +16,6 @@ import com.cumulocity.sdk.client.event.PagedEventCollectionRepresentation;
 @Component
 public class EventRepository {
 
-    private static final String REVERT_ORDER = "revert";
-    
     private final EventApi api;
 
     @Autowired
@@ -38,13 +34,7 @@ public class EventRepository {
     public EventRepresentation findLastByTypeAndSource(String type, String source) {
         EventFilter filter = new EventFilter().byType(type).bySource(GId.asGId(source));
         filter.byCreationDate(new Date(0), new DateTime().plusDays(1).toDate());
-        PagedEventCollectionRepresentation resultCollection = api.getEventsByFilter(filter).get(1, new QueryParam(new Param() {
-            
-            @Override
-            public String getName() {
-                return REVERT_ORDER;
-            }
-        }, Boolean.TRUE.toString()));
+        PagedEventCollectionRepresentation resultCollection = api.getEventsByFilter(filter).get(1);
         return CollectionUtils.isEmpty(resultCollection.getEvents()) ? null : resultCollection.getEvents().get(0);
     }
 }
