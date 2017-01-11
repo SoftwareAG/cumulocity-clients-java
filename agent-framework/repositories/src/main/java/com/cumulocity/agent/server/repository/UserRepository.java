@@ -55,7 +55,10 @@ public class UserRepository {
             throw new IllegalArgumentException("Username must not be null !");
         }
         String userApiWithTenantURL = USER_URL.replace("{tenant}", contextService.getContext().getLogin().getTenant());
-        return restConnector.put(baseUrl + userApiWithTenantURL + user.getUserName(), UserMediaType.USER, user);
+        String userName = user.getUserName();
+        user.setUserName(null);
+        
+        return restConnector.put(baseUrl + userApiWithTenantURL + userName, UserMediaType.USER, user);
     }
     
     public void delete(String username) {
