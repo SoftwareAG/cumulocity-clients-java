@@ -4,10 +4,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import com.cumulocity.agent.server.service.PasswordGeneratorService;
-import com.cumulocity.agent.server.service.StringEncryptionService;
-import com.cumulocity.agent.server.service.impl.ApplicationIdPasswordGeneratorService;
-import com.cumulocity.agent.server.service.impl.StringEncryptionServiceImpl;
+import com.cumulocity.agent.server.encryption.Encryption;
+import com.cumulocity.agent.server.encryption.PasswordSupplier;
+import com.cumulocity.agent.server.encryption.impl.ApplicationIdPasswordSupplier;
+import com.cumulocity.agent.server.encryption.impl.DefaultEncryption;
 
 @Configuration
 public class CommonConfiguration {
@@ -20,12 +20,7 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public static StringEncryptionService valueEncryptionService() {
-        return new StringEncryptionServiceImpl();
-    }
-
-    @Bean
-    public static PasswordGeneratorService passwordGeneratorService() {
-        return new ApplicationIdPasswordGeneratorService();
+    public static PasswordSupplier passwordGeneratorService() {
+        return new ApplicationIdPasswordSupplier();
     }
 }

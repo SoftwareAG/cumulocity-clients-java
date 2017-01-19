@@ -1,6 +1,8 @@
-package com.cumulocity.agent.server.service;
+package com.cumulocity.agent.server.encryption;
 
-public interface PasswordGeneratorService {
+import com.google.common.base.Supplier;
+
+public interface PasswordSupplier extends Supplier<String> {
 
     /**
      * Method to return an application specific password,
@@ -8,5 +10,5 @@ public interface PasswordGeneratorService {
      * 
      * @return A password useable for encryption.
      */
-    public String applicationPassword();
+    public String get();
 }

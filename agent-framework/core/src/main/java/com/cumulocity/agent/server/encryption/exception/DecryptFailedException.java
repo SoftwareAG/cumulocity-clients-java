@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.service.exception;
+package com.cumulocity.agent.server.encryption.exception;
 
 public class DecryptFailedException extends Exception {
 

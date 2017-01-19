@@ -1,4 +1,4 @@
-package com.cumulocity.agent.server.service.impl;
+package com.cumulocity.agent.server.encryption.impl;
 
 import java.nio.charset.Charset;
 
@@ -7,16 +7,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Component;
 
-import com.cumulocity.agent.server.service.PasswordGeneratorService;
+import com.cumulocity.agent.server.encryption.PasswordSupplier;
 import com.google.common.base.Charsets;
 
 @Component
-public class ApplicationIdPasswordGeneratorService implements PasswordGeneratorService, InitializingBean {
-
+public class ApplicationIdPasswordSupplier implements PasswordSupplier, InitializingBean {
 
     private static final Charset CHARSET = Charsets.UTF_8;
 
-    private static final String EXTRA_SALT = "C,gCW9<e";
+    @Value("${encryption.salt}")
+    private String salt;
 
     @Value("${application.id}")
     private String applicationName;
@@ -24,13 +24,13 @@ public class ApplicationIdPasswordGeneratorService implements PasswordGeneratorS
     private String password;
 
     @Override
-    public String applicationPassword() {
+    public String get() {
         return password;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String plain = EXTRA_SALT + applicationName;
+        String plain = salt + applicationName;
         password = new String(Base64.encode(plain.getBytes(CHARSET)), CHARSET);
     }
 }
