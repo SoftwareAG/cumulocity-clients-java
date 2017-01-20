@@ -4,7 +4,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.Test;
 
-import com.cumulocity.agent.server.encryption.Encryption;
+import com.cumulocity.agent.server.encryption.Encryptor;
 import com.cumulocity.agent.server.encryption.exception.DecryptFailedException;
 import com.cumulocity.agent.server.encryption.impl.DefaultEncryption;
 
@@ -12,10 +12,14 @@ public class DefaultEncryptionTest {
 
     private static final String PLAIN_TEXT = "secret message";
 
+    private static final String PASSWORD = "password";
+
+    private static final String SALT = "4d985faa91fd3694";
+
     @Test
     public void shouldEncryptDecryptSame() throws Exception {
         //given
-        Encryption encryptionService = new DefaultEncryption("password");
+        Encryptor encryptionService = DefaultEncryption.encryption(PASSWORD, SALT);
 
         //when
         String encrypted = encryptionService.encrypt(PLAIN_TEXT);
@@ -27,10 +31,10 @@ public class DefaultEncryptionTest {
     }
 
     @Test(expected = DecryptFailedException.class)
-    public void shouldDependOnApplicationName() throws Exception {
+    public void shouldNotDecryptWithWrongPassword() throws Exception {
         //given
-        Encryption encryptionService = new DefaultEncryption("password");
-        Encryption decryptionService = new DefaultEncryption("wrong password");
+        Encryptor encryptionService = DefaultEncryption.encryption(PASSWORD, SALT);
+        Encryptor decryptionService = DefaultEncryption.encryption("wrong password", SALT);
 
         //when
         String encrypted = encryptionService.encrypt(PLAIN_TEXT);
@@ -43,19 +47,19 @@ public class DefaultEncryptionTest {
     @Test
     public void shouldStartWithPrefix() throws Exception {
         //given
-        Encryption encryptionService = new DefaultEncryption("password");
+        Encryptor encryptionService = DefaultEncryption.encryption(PASSWORD, SALT);
 
         //when
         String encrypted = encryptionService.encrypt(PLAIN_TEXT);
 
         //then
-        assertThat(encrypted).startsWith(Encryption.CIPHER);
+        assertThat(encrypted).startsWith(Encryptor.CIPHER);
     }
 
     @Test(expected = DecryptFailedException.class)
     public void shouldFailWhenNotEncrypted() throws Exception {
         //given
-        Encryption encryptionService = new DefaultEncryption("password");
+        Encryptor encryptionService = DefaultEncryption.encryption(PASSWORD, SALT);
 
         //when
         encryptionService.decrypt(PLAIN_TEXT);

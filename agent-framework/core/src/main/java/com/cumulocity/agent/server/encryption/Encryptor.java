@@ -2,7 +2,12 @@ package com.cumulocity.agent.server.encryption;
 
 import com.cumulocity.agent.server.encryption.exception.DecryptFailedException;
 
-public interface Encryption {
+/**
+ * Wrapper for spring Encryptors to add / remove prefix {cipher}.
+ * 
+ * @author Jens Wildhagen
+ */
+public interface Encryptor {
 
     /** Prefix to mark encrypted text as chipher */
     public static final String CIPHER = "{cipher}";

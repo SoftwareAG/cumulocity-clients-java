@@ -1,31 +1,17 @@
 package com.cumulocity.agent.server.encryption.impl;
 
-import java.nio.charset.Charset;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.crypto.encrypt.Encryptors;
-import org.springframework.security.crypto.keygen.KeyGenerators;
-import org.springframework.security.crypto.keygen.StringKeyGenerator;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
-import com.cumulocity.agent.server.encryption.Encryption;
+import com.cumulocity.agent.server.encryption.Encryptor;
 import com.cumulocity.agent.server.encryption.exception.DecryptFailedException;
-import com.google.common.base.Charsets;
 
-public class DefaultEncryption implements Encryption {
+public class DefaultEncryption implements Encryptor {
 
-    private static final Charset CHARSET = Charsets.UTF_8;
+    private TextEncryptor encryptor;
 
-    private static final StringKeyGenerator KEY_GENERATOR = KeyGenerators.string();
-
-    private String password;
-
-    public DefaultEncryption(String password) {
-        this.password = password;
-    }
-
-    public static Encryption encryption(String password) {
-        return new DefaultEncryption(password);
+    public static Encryptor encryption(String password, String salt) {
+        return new DefaultEncryption(password, salt);
     }
 
     public static boolean isEncrypted(String encrypted) {
@@ -35,16 +21,17 @@ public class DefaultEncryption implements Encryption {
         return false;
     }
 
+    public DefaultEncryption(String password, String salt) {
+        this.encryptor = Encryptors.text(password, salt);
+    }
+
     @Override
     public String decrypt(String encrypted) throws DecryptFailedException {
         if (!isEncrypted(encrypted)) {
             throw new DecryptFailedException("Cannot decrypt unencrypted string");
         }
-        String withoutPrefix = withoutPrefix(encrypted);
-        String salt = extractSalt(withoutPrefix);
-        String text = extractKey(withoutPrefix);
         try {
-            return Encryptors.text(password, salt).decrypt(text);
+            return encryptor.decrypt(encrypted.substring(CIPHER.length()));
         } catch (IllegalStateException e) {
             throw new DecryptFailedException("Decrypting of string failed", e);
         }
@@ -52,28 +39,6 @@ public class DefaultEncryption implements Encryption {
 
     @Override
     public String encrypt(String plain) {
-        String salt = KEY_GENERATOR.generateKey();
-        String hash = Encryptors.text(password, salt).encrypt(plain);
-        return CIPHER + mergeSalt(hash, salt);
-    }
-
-    private String mergeSalt(String encrypted, String salt) {
-        //!TODO: Check if it's safe to store the salt with the encrypted text
-        String merged = encrypted + salt;
-        return new String(Base64.encode(merged.getBytes(CHARSET)), CHARSET);
-    }
-
-    private String extractSalt(String encrypted) {
-        String decoded = new String(Base64.decode(encrypted.getBytes(CHARSET)));
-        return StringUtils.right(decoded, 16);
-    }
-
-    private String extractKey(String encrypted) {
-        String decoded = new String(Base64.decode(encrypted.getBytes(CHARSET)));
-        return decoded.substring(0, decoded.length() - 16);
-    }
-
-    private String withoutPrefix(String prefixedString) {
-        return prefixedString.substring(CIPHER.length());
+        return CIPHER + encryptor.encrypt(plain);
     }
 }

@@ -1,6 +1,6 @@
 package com.cumulocity.agent.server.encryption.exception;
 
-public class DecryptFailedException extends Exception {
+public class DecryptFailedException extends RuntimeException {
 
     private static final long serialVersionUID = 4223229338553714990L;
 
