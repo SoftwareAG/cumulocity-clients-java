@@ -1,4 +1,25 @@
 #!/bin/bash
 BIN=/usr/lib/@package.directory@
+CONF=$BIN/@package.name@.conf
+DEFAULT_JAVA_OPTS="@package.jvm-opts@"
+DEFAULT_ARGUMENTS="@package.arguments@"
+REQUIRED_JAVA="@package.required-java@"
+if [ -f $CONF ];
+then
+    source $CONF
+fi
+
 JAVA_PATH=`$BIN/detect-java`
-$JAVA_PATH/bin/java -jar $BIN/@package.name@.jar
+
+if [ "x$JAVA_OPTS" = "x" ];
+then
+ JAVA_OPTS=$DEFAULT_JAVA_OPTS
+fi;
+if [  "x$ARGUMENTS" = "x" ];
+then
+ ARGUMENTS=$DEFAULT_ARGUMENTS
+fi;
+
+mkdir -p /var/log/@package.name@; echo "heap dumps  /var/log/@package.name@/heap-dump-<pid>.hprof"
+
+$JAVA_PATH/bin/java -server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.name@/heap-dump-%p.hprof  ${JAVA_OPTS} -jar $BIN/@package.name@.jar ${ARGUMENTS}
