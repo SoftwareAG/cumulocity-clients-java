@@ -1,10 +1,10 @@
 [Unit]
-Description=@project.description@
+Description=@package.description@
 After=network.target
 
 [Service]
 PIDFile=/var/run/@package.name@.pid
-ExecStart= /usr/lib/@package.directory@/start
+ExecStart=/usr/lib/@package.directory@/start
 Restart=on-abort
 
 [Install]
