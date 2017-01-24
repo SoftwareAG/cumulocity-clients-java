@@ -93,10 +93,10 @@ public class PackageMojo extends AbstractMojo {
     @Parameter(defaultValue = "${maven.compiler.target}")
     private String javaRuntime;
 
-    @Parameter(property = "agent-packge.heap")
+    @Parameter(property = "agent-package.heap")
     private Memory heap;
 
-    @Parameter(property = "agent-packge.perm")
+    @Parameter(property = "agent-package.perm")
     private Memory perm;
 
     @Component
