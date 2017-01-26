@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="180 seconds">
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-5level %logger{36} - %X{tenant} - %X{device} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.cumulocity" level="INFO" />
+	<logger name="c8y" level="INFO" />
+	<logger name="httpclient.wire" level="INFO" />
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>
