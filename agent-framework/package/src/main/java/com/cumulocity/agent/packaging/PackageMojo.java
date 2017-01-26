@@ -74,6 +74,9 @@ public class PackageMojo extends AbstractMojo {
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession mavenSession;
 
+    @Parameter(defaultValue = "${project.build.directory}")
+    private File build;
+
     @Parameter(defaultValue = "${project.build.directory}/rpm-tmp")
     private File rpmTemporaryDirectory;
 
@@ -126,7 +129,7 @@ public class PackageMojo extends AbstractMojo {
     private void dockerContainer() throws MojoExecutionException {
         try {
             copyArtifact(new File(dockerWorkarea, "resources"));
-            final File tmp = new File(dockerWorkarea, "tmp");
+            final File tmp = new File(build, "tmp");
             initializeTemplates(fromDirectory("docker"), tmp);
             filterResources(resource(tmp.getAbsolutePath()), dockerWorkarea);
             cleanDirectory(tmp);
@@ -142,9 +145,12 @@ public class PackageMojo extends AbstractMojo {
             plugin,
             goal("build"),
             configuration(
-                element(name("imageName"), name)  ,
-                element("imageTags",element("imageTag",project.getVersion()),element("imageTag","latest")),
-                element("dockerDirectory", "${project.build.directory}/docker-work")
+                element(name("imageName"), name),
+                element("imageTags",
+                    element("imageTag",project.getVersion()),
+                    element("imageTag","latest")
+                ),
+                element("dockerDirectory", dockerWorkarea.getAbsolutePath())
             ),
             executionEnvironment(this.project, this.mavenSession, this.pluginManager));
         //@formatter:on
@@ -195,11 +201,11 @@ public class PackageMojo extends AbstractMojo {
         return String.valueOf(Calendar.getInstance().get(YEAR));
     }
 
-    private void filterResources(List<Resource> resources, File destination) throws Exception {
-        final MavenResourcesExecution execution = new MavenResourcesExecution(resources, destination, project, encoding,
+    private void filterResources(Resource resource, File destination) throws Exception {
+        final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(resource), destination, project, encoding,
                                                                                  ImmutableList.<String>of(), ImmutableList.<String>of(),
                                                                                  mavenSession);
-
+        getLog().info("copy resources from " + resource + " to" + destination);
         createDirectories(destination.toPath());
         execution.setOverwrite(true);
         execution.setFilterFilenames(true);
@@ -267,11 +273,11 @@ public class PackageMojo extends AbstractMojo {
         };
     }
 
-    public List<Resource> resource(String resourceDirectory) {
-        return ImmutableList.of(resources(resourceDirectory, ImmutableList.<String>of(), ImmutableList.<String>of()));
+    public Resource resource(String resourceDirectory) {
+        return resource(resourceDirectory, ImmutableList.<String>of(), ImmutableList.<String>of());
     }
 
-    public Resource resources(String resourceDirectory, List<String> includes, List<String> excludes) {
+    public Resource resource(String resourceDirectory, List<String> includes, List<String> excludes) {
         Resource resource = new Resource();
         resource.setDirectory(resourceDirectory);
         resource.setFiltering(true);
