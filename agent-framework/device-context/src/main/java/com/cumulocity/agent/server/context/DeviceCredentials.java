@@ -4,11 +4,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.codec.binary.Base64;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
 import com.google.common.io.BaseEncoding;
+import com.sun.jersey.core.util.Base64;
 
 public class DeviceCredentials {
 
@@ -35,8 +35,6 @@ public class DeviceCredentials {
     private final int pageSize;
 
     private String tfaToken;
-
-    private static final Base64 encoder = new Base64();
 
     public DeviceCredentials(String tenant, String username, String password, String appKey, GId deviceId) {
         this(tenant, username, password, appKey, deviceId, DEFAULT_PAGE_SIZE);
@@ -87,7 +85,7 @@ public class DeviceCredentials {
     public static String[] decode(String authorization) {
         try {
 
-            return new String(encoder.decode(authorization.substring(AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(
+            return new String(Base64.decode(authorization.substring(AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(
                     AUTH_SEPARATOR, 2);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
