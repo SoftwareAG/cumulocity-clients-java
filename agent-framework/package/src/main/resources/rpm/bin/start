@@ -16,4 +16,4 @@ arguments=${ARGUMENTS:-"@package.arguments@"}
 
 mkdir -p /var/log/@package.directory@; echo "heap dumps  /var/log/@package.directory@/heap-dump-<pid>.hprof"
 
-$JAVA_PATH/bin/java ${jvm_opts} ${jvm_gc} ${jvm_mem} -jar $BIN/@package.name@.jar ${arguments}
+exec $JAVA_PATH/bin/java ${jvm_opts} ${jvm_gc} ${jvm_mem} -jar $BIN/@package.name@.jar ${arguments}
