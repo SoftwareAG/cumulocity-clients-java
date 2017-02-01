@@ -1,7 +1,12 @@
 package com.cumulocity.java.sms.client.request;
 
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import com.cumulocity.java.sms.client.messaging.model.IncomingMessages;
 import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
@@ -13,21 +18,20 @@ public class MicroserviceRequest {
     private Properties properties = Properties.getInstance();
     
     public OutgoingMessageResponse sendSmsRequest(Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
-        /*
+
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+        headers.add("Content-Type", "application/json");
+        HttpEntity<OutgoingMessageRequest> request = new HttpEntity<OutgoingMessageRequest>(outgoingMessageRequest, headers);
+        
         ResponseEntity<OutgoingMessageResponse> response = 
                 properties.getAuthorizedTemplate()
-                .postForEntity(sendEndpoint() + "{senderAddress}/requests" , outgoingMessageRequest, OutgoingMessageResponse.class, senderAddress);
+                .postForEntity(sendEndpoint() + "{senderAddress}/requests", request, OutgoingMessageResponse.class, senderAddress);
         return response.getBody();
-        */
-        ResponseEntity<String> response = 
-                properties.getAuthorizedTemplate()
-                .postForEntity(sendEndpoint() + "{senderAddress}/requests" , "{}", String.class, senderAddress);
-        return null;
     }
     
-    //TODO implement return type of the function
-    public void getSmsMessages(Address receiveAddress) {
-        properties.getAuthorizedTemplate().getForObject(receiveEndpoint() + "{receiveAddress}/messages", OutgoingMessageResponse.class, receiveAddress);
+    public IncomingMessages getSmsMessages(Address receiveAddress) {
+        IncomingMessages messages = properties.getAuthorizedTemplate().getForObject(receiveEndpoint() + "{receiveAddress}/messages", IncomingMessages.class, receiveAddress);
+        return messages;
     }
     
     private String sendEndpoint() {
@@ -41,6 +45,6 @@ public class MicroserviceRequest {
     }
     
     private String microserviceApiEndpoint() {
-        return properties.getBaseUrl() + "/service/sms/smsmessaging/v1/";
+        return properties.getBaseUrl() + "service/sms/smsmessaging/v1/";
     }
 }

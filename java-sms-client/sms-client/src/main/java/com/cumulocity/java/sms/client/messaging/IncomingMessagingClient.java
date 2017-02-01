@@ -1,5 +1,6 @@
 package com.cumulocity.java.sms.client.messaging;
 
+import com.cumulocity.java.sms.client.messaging.model.IncomingMessages;
 import com.cumulocity.model.sms.Address;
 
 public class IncomingMessagingClient extends MessagingClient {
@@ -8,8 +9,8 @@ public class IncomingMessagingClient extends MessagingClient {
         super();
     }
     //TODO implement return type
-    public void receive(Address receiveAddress) {
-        microserviceRequest.getSmsMessages(receiveAddress);
+    public IncomingMessages receive(Address receiveAddress) {
+        return microserviceRequest.getSmsMessages(receiveAddress);
     }
     
 }
