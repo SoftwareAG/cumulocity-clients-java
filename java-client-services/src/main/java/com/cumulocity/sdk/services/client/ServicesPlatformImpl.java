@@ -1,36 +1,28 @@
 package com.cumulocity.sdk.services.client;
 
+import org.springframework.web.client.RestTemplate;
+
 import com.cumulocity.java.sms.client.SmsMessagingApi;
 import com.cumulocity.java.sms.client.SmsMessagingApiImpl;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
+import com.cumulocity.sdk.services.client.rest.RestController;
 
 public class ServicesPlatformImpl implements ServicesPlatform {
     
     private String host;
-    private String tenantId;
-    private String user;
-    private String password;
-    private String applicationKey;
-    private CumulocityLogin cumulocityLogin;
-    private String requestOrigin;
+    private final RestTemplate authorizedTemplate;
     
     public ServicesPlatformImpl(String host, CumulocityCredentials credentials) {
         if (host.charAt(host.length() - 1) != '/') {
             host = host + "/";
         }
         this.host = host;
-        this.tenantId = credentials.getTenantId();
-        this.user = credentials.getUsername();
-        this.password = credentials.getPassword();
-        this.applicationKey = credentials.getApplicationKey();
-        this.cumulocityLogin = credentials.getLogin();
-        this.requestOrigin = credentials.getRequestOrigin();
+        authorizedTemplate = new RestController().authorizedTemplate(credentials);
     }
 
     @Override
     public SmsMessagingApi getSmsMessagingApi() {
-        //restconnector?
-        return new SmsMessagingApiImpl();
+        return new SmsMessagingApiImpl(host, authorizedTemplate);
     }
 }

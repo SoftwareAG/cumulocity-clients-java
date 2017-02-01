@@ -4,6 +4,9 @@ import com.cumulocity.model.sms.Address;
 
 public class IncomingMessagingClient extends MessagingClient {
 
+    public IncomingMessagingClient() {
+        super();
+    }
     //TODO implement return type
     public void receive(Address receiveAddress) {
         microserviceRequest.getSmsMessages(receiveAddress);
