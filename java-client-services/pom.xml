@@ -55,6 +55,11 @@
 			<artifactId>sms-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.cumulocity.java.email.client</groupId>
+			<artifactId>email-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
