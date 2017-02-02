@@ -6,6 +6,8 @@ import com.cumulocity.java.sms.client.messaging.IncomingMessagingClient;
 import com.cumulocity.java.sms.client.messaging.OutgoingMessagingClient;
 import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
+import com.cumulocity.model.sms.IncomingMessage;
+import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
 
 public class SmsMessagingApiImpl implements SmsMessagingApi {
@@ -31,8 +33,19 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
     }
 
     @Override
-    public void receiveMessages(Address receiveAddress) {
-        incomingMessagingClient.receive(receiveAddress);
+    public IncomingMessages getAllMessages(Address receiveAddress) {
+        return incomingMessagingClient.getAllMessages(receiveAddress);
+    }
+    
+    @Override
+    public IncomingMessage getLastMessage(Address receiveAddress) {
+        return incomingMessagingClient.getLastMessage(receiveAddress);
+    }
+
+    @Override
+    public IncomingMessage getMessage(Address receiveAddress, String messageId) {
+        return incomingMessagingClient.getMessage(receiveAddress, messageId);
+        
     }
 
 }
