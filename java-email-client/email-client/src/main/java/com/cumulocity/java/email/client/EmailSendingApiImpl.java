@@ -1,5 +1,6 @@
 package com.cumulocity.java.email.client;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 
 import com.cumulocity.java.email.client.properties.Properties;
@@ -18,8 +19,8 @@ public class EmailSendingApiImpl implements EmailSendingApi {
     }
 
     @Override
-    public void sendEmail(Email email) {
-        emailSendingClient.sendEmail(email);
+    public HttpStatus sendEmail(Email email) {
+        return emailSendingClient.sendEmail(email);
     }
 
 }

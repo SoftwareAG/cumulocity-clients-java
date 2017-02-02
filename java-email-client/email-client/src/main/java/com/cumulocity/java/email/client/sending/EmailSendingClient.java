@@ -1,5 +1,7 @@
 package com.cumulocity.java.email.client.sending;
 
+import org.springframework.http.HttpStatus;
+
 import com.cumulocity.java.email.client.rest.EmailRestRequest;
 import com.cumulocity.model.email.Email;
 
@@ -11,8 +13,8 @@ public class EmailSendingClient {
         emailRestRequest = new EmailRestRequest();
     }
 
-    public void sendEmail(Email email) {
-        emailRestRequest.doPost(email);
+    public HttpStatus sendEmail(Email email) {
+        return emailRestRequest.doPost(email);
     }
 
 }
