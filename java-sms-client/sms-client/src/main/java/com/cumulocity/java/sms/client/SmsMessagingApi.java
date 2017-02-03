@@ -9,10 +9,9 @@ public interface SmsMessagingApi {
 
     /**
      * Sends the sms message
-     * @param senderAddress
-     * @param outgoingMessageRequest
+     * @param request
      */
-    public void sendMessage(Address senderAddress, SendMessageRequest request);
+    public void sendMessage(SendMessageRequest request);
     /**
      * Gets the list of sms messages for the given address
      * @param receiveAddress

@@ -5,6 +5,7 @@ import org.springframework.web.client.RestTemplate;
 import com.cumulocity.java.sms.client.messaging.IncomingMessagingClient;
 import com.cumulocity.java.sms.client.messaging.OutgoingMessagingClient;
 import com.cumulocity.java.sms.client.properties.Properties;
+import com.cumulocity.java.sms.client.request.SmsClientException;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
@@ -29,23 +30,35 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
     }
 
     @Override
-    public void sendMessage(Address senderAddress, SendMessageRequest messageRequest) {
+    public void sendMessage(SendMessageRequest messageRequest) {
+        if (messageRequest == null || messageRequest.getSenderAddress() == null) {
+            throw new SmsClientException("Message request and its sender address can not be null");
+        }
         OutgoingMessageRequest outgoingMessageRequest = new OutgoingMessageRequest(messageRequest);
-        outgoingMessagingClient.send(senderAddress, outgoingMessageRequest);
+        outgoingMessagingClient.send(messageRequest.getSenderAddress(), outgoingMessageRequest);
     }
 
     @Override
     public IncomingMessages getAllMessages(Address receiveAddress) {
+        if (receiveAddress == null) {
+            throw new SmsClientException("Receive address can not be null");
+        }
         return incomingMessagingClient.getAllMessages(receiveAddress);
     }
     
     @Override
     public IncomingMessage getLastMessage(Address receiveAddress) {
+        if (receiveAddress == null) {
+            throw new SmsClientException("Receive address can not be null");
+        }
         return incomingMessagingClient.getLastMessage(receiveAddress);
     }
 
     @Override
     public IncomingMessage getMessage(Address receiveAddress, String messageId) {
+        if (receiveAddress == null || messageId == null) {
+            throw new SmsClientException("Receive address and message id can not be null");
+        }
         return incomingMessagingClient.getMessage(receiveAddress, messageId);
         
     }
