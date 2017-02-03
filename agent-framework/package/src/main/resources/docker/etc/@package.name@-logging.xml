@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="180 seconds">
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%-5level %logger{36} - %X{tenant} - %X{device} - %msg%n</pattern>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
 
