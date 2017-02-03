@@ -9,6 +9,7 @@ import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
+import com.cumulocity.model.sms.SendMessageRequest;
 
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
@@ -28,7 +29,8 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
     }
 
     @Override
-    public void sendMessage(Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
+    public void sendMessage(Address senderAddress, SendMessageRequest messageRequest) {
+        OutgoingMessageRequest outgoingMessageRequest = new OutgoingMessageRequest(messageRequest);
         outgoingMessagingClient.send(senderAddress, outgoingMessageRequest);
     }
 

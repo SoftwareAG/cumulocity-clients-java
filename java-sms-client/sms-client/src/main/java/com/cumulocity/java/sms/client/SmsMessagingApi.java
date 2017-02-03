@@ -3,7 +3,7 @@ package com.cumulocity.java.sms.client;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
-import com.cumulocity.model.sms.OutgoingMessageRequest;
+import com.cumulocity.model.sms.SendMessageRequest;
 
 public interface SmsMessagingApi {
 
@@ -12,7 +12,7 @@ public interface SmsMessagingApi {
      * @param senderAddress
      * @param outgoingMessageRequest
      */
-    public void sendMessage(Address senderAddress, OutgoingMessageRequest request);
+    public void sendMessage(Address senderAddress, SendMessageRequest request);
     /**
      * Gets the list of sms messages for the given address
      * @param receiveAddress
