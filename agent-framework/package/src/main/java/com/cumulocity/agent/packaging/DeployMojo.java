@@ -56,8 +56,6 @@ public class DeployMojo extends BaseAgentMojo {
             ),
             executionEnvironment(this.project, this.mavenSession, this.pluginManager)
         );
-        //@formatter:on
-        //@formatter:off
         executeMojo(
             docker(),
             goal("push"),
