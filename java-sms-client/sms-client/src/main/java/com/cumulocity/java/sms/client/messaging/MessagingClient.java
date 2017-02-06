@@ -9,7 +9,7 @@ import com.cumulocity.model.sms.OutgoingMessageRequest;
 
 public class MessagingClient {
     
-    private MicroserviceRequest microserviceRequest;
+    private final MicroserviceRequest microserviceRequest;
     
     public MessagingClient(Properties properties) {
         microserviceRequest = new MicroserviceRequest(properties);

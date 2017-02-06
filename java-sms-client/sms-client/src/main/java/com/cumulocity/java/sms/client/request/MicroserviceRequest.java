@@ -16,7 +16,7 @@ import com.cumulocity.model.sms.OutgoingMessageResponse;
 
 public class MicroserviceRequest {
     
-    private Properties properties;
+    private final Properties properties;
     
     public MicroserviceRequest(Properties properties) {
         this.properties = properties;

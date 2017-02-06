@@ -12,7 +12,7 @@ import com.cumulocity.model.sms.SendMessageRequest;
 
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
-    private MessagingClient messagingClient;
+    private final MessagingClient messagingClient;
     
     public SmsMessagingApiImpl(String host, RestTemplate authorizedTemplate) {
         Properties properties = new Properties();
