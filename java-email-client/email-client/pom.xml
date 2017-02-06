@@ -52,21 +52,6 @@
 		    <artifactId>core-model</artifactId>
 		    <version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>net.sf.microlog</groupId>
-			<artifactId>microlog-logger-core</artifactId>
-			<version>2.3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.microemu</groupId>
-			<artifactId>cldcapi11</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.microemu</groupId>
-			<artifactId>midpapi20</artifactId>
-			<scope>provided</scope>
-		</dependency>
 		<!-- Spring dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -91,23 +76,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<includeGroupIds>org.microemu,net.sf.microlog</includeGroupIds>
-							<outputDirectory>${bootclasspath.dir}</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

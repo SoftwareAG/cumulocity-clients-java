@@ -12,5 +12,5 @@ public interface EmailSendingApi {
      * @param email an email to be sent
      * @return an HTTP status of a request, 200 OK in case if an email was sent successfully
      */
-    public HttpStatus sendEmail(Email email);
+    HttpStatus sendEmail(Email email);
 }

@@ -4,15 +4,9 @@ import org.springframework.web.client.RestTemplate;
 
 public class Properties {
 
-    private static Properties properties = new Properties();
-
     private String baseUrl;
 
     private RestTemplate authorizedTemplate;
-
-    public static Properties getInstance() {
-        return properties;
-    }
 
     public String getBaseUrl() {
         return baseUrl;

@@ -10,10 +10,9 @@ import com.cumulocity.model.email.Email;
 public class EmailSendingApiImpl implements EmailSendingApi {
     private final EmailSendingClient emailSendingClient;
 
-    private Properties properties = Properties.getInstance();
-
     public EmailSendingApiImpl(String host, RestTemplate authorizedTemplate) {
-        emailSendingClient = new EmailSendingClient();
+        Properties properties = new Properties();
+        emailSendingClient = new EmailSendingClient(properties);
         properties.setBaseUrl(host);
         properties.setAuthorizedTemplate(authorizedTemplate);
     }
