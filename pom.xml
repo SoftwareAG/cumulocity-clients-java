@@ -28,6 +28,9 @@
 		<module>java-me-maven-plugin</module>
 		<module>java-me-smartrest</module>
 		<module>agent-framework</module>
+		<module>java-email-client</module>
+		<module>java-sms-client</module>
+		<module>java-client-services</module>
 	</modules>
 
 	<properties>

@@ -2,10 +2,10 @@ package com.cumulocity.sdk.services.client;
 
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.email.client.EmailSendingApi;
-import com.cumulocity.java.email.client.EmailSendingApiImpl;
-import com.cumulocity.java.sms.client.SmsMessagingApi;
-import com.cumulocity.java.sms.client.SmsMessagingApiImpl;
+import com.cumulocity.sms.client.SmsMessagingApi;
+import com.cumulocity.sms.client.SmsMessagingApiImpl;
+import com.cumulocity.email.client.EmailSendingApi;
+import com.cumulocity.email.client.EmailSendingApiImpl;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sdk.services.client.rest.RestController;
 

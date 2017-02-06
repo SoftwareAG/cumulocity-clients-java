@@ -1,4 +1,4 @@
-package com.cumulocity.java.email.client;
+package com.cumulocity.email.client;
 
 import org.springframework.http.HttpStatus;
 

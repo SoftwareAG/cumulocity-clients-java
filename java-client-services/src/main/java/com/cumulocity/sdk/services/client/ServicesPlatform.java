@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.services.client;
 
-import com.cumulocity.java.email.client.EmailSendingApi;
-import com.cumulocity.java.sms.client.SmsMessagingApi;
+import com.cumulocity.email.client.EmailSendingApi;
+import com.cumulocity.sms.client.SmsMessagingApi;
 
 public interface ServicesPlatform {
 

@@ -1,9 +1,9 @@
-package com.cumulocity.java.email.client.sending;
+package com.cumulocity.email.client.sending;
 
 import org.springframework.http.HttpStatus;
 
-import com.cumulocity.java.email.client.properties.Properties;
-import com.cumulocity.java.email.client.rest.EmailRestRequest;
+import com.cumulocity.email.client.properties.Properties;
+import com.cumulocity.email.client.rest.EmailRestRequest;
 import com.cumulocity.model.email.Email;
 
 public class EmailSendingClient {

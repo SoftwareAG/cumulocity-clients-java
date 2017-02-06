@@ -1,4 +1,4 @@
-package com.cumulocity.java.email.client.properties;
+package com.cumulocity.email.client.properties;
 
 import org.springframework.web.client.RestTemplate;
 

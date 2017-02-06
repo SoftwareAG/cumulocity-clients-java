@@ -1,10 +1,10 @@
-package com.cumulocity.java.email.client;
+package com.cumulocity.email.client;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.email.client.properties.Properties;
-import com.cumulocity.java.email.client.sending.EmailSendingClient;
+import com.cumulocity.email.client.properties.Properties;
+import com.cumulocity.email.client.sending.EmailSendingClient;
 import com.cumulocity.model.email.Email;
 
 public class EmailSendingApiImpl implements EmailSendingApi {

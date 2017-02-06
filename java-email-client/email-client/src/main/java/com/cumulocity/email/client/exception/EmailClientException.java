@@ -1,4 +1,4 @@
-package com.cumulocity.java.email.client.exception;
+package com.cumulocity.email.client.exception;
 
 public class EmailClientException extends RuntimeException {
 

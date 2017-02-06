@@ -2,12 +2,12 @@
   	<modelVersion>4.0.0</modelVersion>
   
   	<parent>
-		<groupId>com.cumulocity.java.email.client</groupId>
+		<groupId>com.cumulocity.email.client</groupId>
 		<artifactId>java-email-client</artifactId>
-		<version>7.44.0-SNAPSHOT</version>
+		<version>7.45.0-SNAPSHOT</version>
 	</parent>
 	
-  	<groupId>com.cumulocity.java.email.client</groupId>
+  	<groupId>com.cumulocity.email.client</groupId>
   	<artifactId>email-client</artifactId>
   	<name>Cumulocity :: Email Client Java :: Email Client</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
