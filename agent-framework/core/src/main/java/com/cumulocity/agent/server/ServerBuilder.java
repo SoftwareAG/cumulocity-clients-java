@@ -148,7 +148,6 @@ public class ServerBuilder {
         Object[] sources = from(concat(common(), features)).toArray(Object.class);
         return builder
             .sources(sources)
-            .showBanner(false)
             .registerShutdownHook(false)
             .environment(environment)
             .web(webEnvironmentEnabled);
