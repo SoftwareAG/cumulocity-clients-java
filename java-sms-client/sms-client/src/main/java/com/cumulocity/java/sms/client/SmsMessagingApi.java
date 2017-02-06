@@ -11,25 +11,19 @@ public interface SmsMessagingApi {
      * Sends the sms message
      * @param request
      */
-    public void sendMessage(SendMessageRequest request);
+    void sendMessage(SendMessageRequest request);
     /**
      * Gets the list of sms messages for the given address
      * @param receiveAddress
      * @return the list of incoming messages
      */
-    public IncomingMessages getAllMessages(Address receiveAddress);
-    /**
-     * Get the last message for the given address
-     * @param receiveAddress
-     * @return the last message
-     */
-    public IncomingMessage getLastMessage(Address receiveAddress);
+    IncomingMessages getAllMessages(Address receiveAddress);
     /**
      * Gets the sms message with given the id, null if message with the id does not exist.
      * @param receiveAddress
      * @param messageId
      * @return the message with the given the id
      */
-    public IncomingMessage getMessage(Address receiveAddress, String messageId);
+    IncomingMessage getMessage(Address receiveAddress, String messageId);
     
 }

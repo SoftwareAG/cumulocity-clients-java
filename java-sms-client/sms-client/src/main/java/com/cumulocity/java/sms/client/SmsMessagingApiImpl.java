@@ -2,10 +2,8 @@ package com.cumulocity.java.sms.client;
 
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.sms.client.messaging.IncomingMessagingClient;
-import com.cumulocity.java.sms.client.messaging.OutgoingMessagingClient;
+import com.cumulocity.java.sms.client.messaging.MessagingClient;
 import com.cumulocity.java.sms.client.properties.Properties;
-import com.cumulocity.java.sms.client.request.SmsClientException;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
@@ -14,52 +12,39 @@ import com.cumulocity.model.sms.SendMessageRequest;
 
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
-    private final OutgoingMessagingClient outgoingMessagingClient;
-    private final IncomingMessagingClient incomingMessagingClient;
-    private Properties properties = Properties.getInstance();
-    
-    public SmsMessagingApiImpl() {
-        outgoingMessagingClient = new OutgoingMessagingClient();
-        incomingMessagingClient = new IncomingMessagingClient();
-    }
+    private MessagingClient messagingClient;
     
     public SmsMessagingApiImpl(String host, RestTemplate authorizedTemplate) {
-        this();
+        Properties properties = new Properties();
         properties.setBaseUrl(host);
         properties.setAuthorizedTemplate(authorizedTemplate);
+        
+        messagingClient = new MessagingClient(properties);
     }
 
     @Override
     public void sendMessage(SendMessageRequest messageRequest) {
         if (messageRequest == null || messageRequest.getSenderAddress() == null) {
-            throw new SmsClientException("Message request and its sender address can not be null");
+            throw new NullPointerException("Message request and its sender address can not be null");
         }
         OutgoingMessageRequest outgoingMessageRequest = new OutgoingMessageRequest(messageRequest);
-        outgoingMessagingClient.send(messageRequest.getSenderAddress(), outgoingMessageRequest);
+        messagingClient.send(messageRequest.getSenderAddress(), outgoingMessageRequest);
     }
 
     @Override
     public IncomingMessages getAllMessages(Address receiveAddress) {
         if (receiveAddress == null) {
-            throw new SmsClientException("Receive address can not be null");
+            throw new NullPointerException("Receive address can not be null");
         }
-        return incomingMessagingClient.getAllMessages(receiveAddress);
-    }
-    
-    @Override
-    public IncomingMessage getLastMessage(Address receiveAddress) {
-        if (receiveAddress == null) {
-            throw new SmsClientException("Receive address can not be null");
-        }
-        return incomingMessagingClient.getLastMessage(receiveAddress);
+        return messagingClient.getAllMessages(receiveAddress);
     }
 
     @Override
     public IncomingMessage getMessage(Address receiveAddress, String messageId) {
         if (receiveAddress == null || messageId == null) {
-            throw new SmsClientException("Receive address and message id can not be null");
+            throw new NullPointerException("Receive address and message id can not be null");
         }
-        return incomingMessagingClient.getMessage(receiveAddress, messageId);
+        return messagingClient.getMessage(receiveAddress, messageId);
         
     }
 

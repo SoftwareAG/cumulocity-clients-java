@@ -4,8 +4,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
@@ -17,11 +16,9 @@ import com.cumulocity.model.sms.OutgoingMessageResponse;
 
 public class MicroserviceRequest {
     
-    private Properties properties = Properties.getInstance();
+    private Properties properties;
     
-    public MicroserviceRequest() {}
-    
-    protected MicroserviceRequest(Properties properties) {
+    public MicroserviceRequest(Properties properties) {
         this.properties = properties;
     }
     
@@ -41,8 +38,8 @@ public class MicroserviceRequest {
             } else {
                 return response.getBody();
             }
-            
-        } catch (Exception e) {
+        
+        } catch (RestClientException e) {
             throw new SmsClientException("Send sms request failure", e);
         }
     }
@@ -51,7 +48,7 @@ public class MicroserviceRequest {
         try {
             IncomingMessages messages = properties.getAuthorizedTemplate().getForObject(receiveEndpoint() + "{receiveAddress}/messages", IncomingMessages.class, receiveAddress);
             return messages;
-        } catch(Exception e) {
+        } catch(RestClientException e) {
             throw new SmsClientException("Get sms messages failure", e);
         }
     }
@@ -60,7 +57,7 @@ public class MicroserviceRequest {
         try {
             IncomingMessage message = properties.getAuthorizedTemplate().getForObject(receiveEndpoint() + "{receiveAddress}/messages/{messageId}", IncomingMessage.class, receiveAddress, messageId);
             return message;
-        } catch(Exception e) {
+        } catch(RestClientException e) {
             throw new SmsClientException("Get sms message failure", e);
         }
     }
