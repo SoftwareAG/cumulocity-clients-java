@@ -1,4 +1,4 @@
-package com.cumulocity.java.sms.client.request;
+package com.cumulocity.sms.client.request;
 
 public class SmsClientException extends RuntimeException {
 

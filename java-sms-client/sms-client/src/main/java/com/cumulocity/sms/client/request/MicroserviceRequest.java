@@ -1,4 +1,4 @@
-package com.cumulocity.java.sms.client.request;
+package com.cumulocity.sms.client.request;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -6,12 +6,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
-import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.OutgoingMessageResponse;
+import com.cumulocity.sms.client.properties.Properties;
 
 
 public class MicroserviceRequest {

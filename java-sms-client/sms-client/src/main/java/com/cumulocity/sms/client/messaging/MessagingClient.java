@@ -1,11 +1,11 @@
-package com.cumulocity.java.sms.client.messaging;
+package com.cumulocity.sms.client.messaging;
 
-import com.cumulocity.java.sms.client.properties.Properties;
-import com.cumulocity.java.sms.client.request.MicroserviceRequest;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
+import com.cumulocity.sms.client.properties.Properties;
+import com.cumulocity.sms.client.request.MicroserviceRequest;
 
 public class MessagingClient {
     

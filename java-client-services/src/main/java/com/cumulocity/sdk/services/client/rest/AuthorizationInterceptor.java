@@ -1,16 +1,15 @@
 package com.cumulocity.sdk.services.client.rest;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 import java.io.IOException;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.crypto.codec.Base64;
+
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import org.springframework.http.HttpHeaders;
 
 public class AuthorizationInterceptor implements ClientHttpRequestInterceptor {
 

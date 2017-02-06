@@ -1,4 +1,4 @@
-package com.cumulocity.java.sms.client.request;
+package com.cumulocity.sms.client.request;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -17,12 +17,14 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.OutgoingMessageResponse;
+import com.cumulocity.sms.client.properties.Properties;
+import com.cumulocity.sms.client.request.MicroserviceRequest;
+import com.cumulocity.sms.client.request.SmsClientException;
 
 public class MicroserviceRequestTest extends MicroserviceRequest {
 

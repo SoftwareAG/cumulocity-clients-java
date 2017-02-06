@@ -51,7 +51,7 @@
 		</dependency>
 		<!-- Service Apis -->
 		<dependency>
-			<groupId>com.cumulocity.java.sms.client</groupId>
+			<groupId>com.cumulocity.sms.client</groupId>
 			<artifactId>sms-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>

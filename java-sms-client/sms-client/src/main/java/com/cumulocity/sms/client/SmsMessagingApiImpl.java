@@ -1,14 +1,14 @@
-package com.cumulocity.java.sms.client;
+package com.cumulocity.sms.client;
 
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.sms.client.messaging.MessagingClient;
-import com.cumulocity.java.sms.client.properties.Properties;
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.SendMessageRequest;
+import com.cumulocity.sms.client.messaging.MessagingClient;
+import com.cumulocity.sms.client.properties.Properties;
 
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 

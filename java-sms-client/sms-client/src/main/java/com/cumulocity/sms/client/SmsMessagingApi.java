@@ -1,4 +1,4 @@
-package com.cumulocity.java.sms.client;
+package com.cumulocity.sms.client;
 
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;

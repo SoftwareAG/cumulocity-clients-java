@@ -1,4 +1,4 @@
-package com.cumulocity.java.sms.client.properties;
+package com.cumulocity.sms.client.properties;
 
 import org.springframework.web.client.RestTemplate;
 

@@ -8,7 +8,7 @@
 		<version>7.44.0-SNAPSHOT</version>
 	</parent>
 	
-	<groupId>com.cumulocity.java.sms.client</groupId>
+	<groupId>com.cumulocity.sms.client</groupId>
 	<artifactId>java-sms-client</artifactId>
 	<packaging>pom</packaging>
 	<name>Cumulocity :: Sms Client Java</name>

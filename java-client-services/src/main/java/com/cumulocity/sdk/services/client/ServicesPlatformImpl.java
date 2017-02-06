@@ -2,11 +2,10 @@ package com.cumulocity.sdk.services.client;
 
 import org.springframework.web.client.RestTemplate;
 
-import com.cumulocity.java.sms.client.SmsMessagingApi;
-import com.cumulocity.java.sms.client.SmsMessagingApiImpl;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.model.authentication.CumulocityLogin;
 import com.cumulocity.sdk.services.client.rest.RestController;
+import com.cumulocity.sms.client.SmsMessagingApi;
+import com.cumulocity.sms.client.SmsMessagingApiImpl;
 
 public class ServicesPlatformImpl implements ServicesPlatform {
     
