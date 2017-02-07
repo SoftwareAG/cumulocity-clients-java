@@ -4,8 +4,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cumulocity.sms.client.SmsMessagingApi;
 import com.cumulocity.sms.client.SmsMessagingApiImpl;
-import com.cumulocity.email.client.EmailSendingApi;
-import com.cumulocity.email.client.EmailSendingApiImpl;
+import com.cumulocity.email.client.EmailApi;
+import com.cumulocity.email.client.EmailApiImpl;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sdk.services.client.rest.RestController;
 
@@ -29,7 +29,7 @@ public class ServicesPlatformImpl implements ServicesPlatform {
     }
 
     @Override
-    public EmailSendingApi getEmailSendingApi() {
-        return new EmailSendingApiImpl(host, authorizedTemplate);
+    public EmailApi getEmailApi() {
+        return new EmailApiImpl(host, authorizedTemplate);
     }
 }
