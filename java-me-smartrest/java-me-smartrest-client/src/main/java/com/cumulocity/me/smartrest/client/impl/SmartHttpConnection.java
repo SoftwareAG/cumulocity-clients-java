@@ -6,6 +6,8 @@ import java.io.OutputStream;
 
 import javax.microedition.io.HttpConnection;
 
+import com.cumulocity.me.concurrent.SmartExecutorService;
+import com.cumulocity.me.concurrent.impl.SmartExecutorServiceImpl;
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.*;
 import com.cumulocity.me.util.Base64;

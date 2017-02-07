@@ -1,8 +1,9 @@
 package com.cumulocity.me.smartrest.client.impl;
 
+import com.cumulocity.me.concurrent.impl.SmartExecutorServiceImpl;
 import com.cumulocity.me.sdk.SDKException;
 import com.cumulocity.me.smartrest.client.SmartConnection;
-import com.cumulocity.me.smartrest.client.SmartExecutorService;
+import com.cumulocity.me.concurrent.SmartExecutorService;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
@@ -23,7 +24,7 @@ public class SmartCometClient {
     private String clientId;    
     private String path;    
     private String[] channels;    
-    private boolean fixedSettings = false;    
+    private boolean fixedSettings = false;
     private final SmartExecutorService executorService;    
     private volatile SmartLongPolling longPolling;    
     private long interval;

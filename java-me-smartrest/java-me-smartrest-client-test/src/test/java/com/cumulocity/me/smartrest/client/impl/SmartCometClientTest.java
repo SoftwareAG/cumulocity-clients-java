@@ -3,6 +3,7 @@ package com.cumulocity.me.smartrest.client.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.cumulocity.me.sdk.SDKException;
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -10,7 +11,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.cumulocity.me.smartrest.client.SmartExecutorService;
+import com.cumulocity.me.concurrent.SmartExecutorService;
 import com.cumulocity.me.smartrest.client.SmartRequest;
 import com.cumulocity.me.smartrest.client.SmartResponse;
 import com.cumulocity.me.smartrest.client.SmartResponseEvaluator;
@@ -65,6 +66,11 @@ public class SmartCometClientTest {
         cometClient.startListenTo("mypath", new String[]{"mychannel"});
         // then
         Mockito.verify(smartConnection, Mockito.times(2)).executeRequest(Matchers.any(SmartRequest.class));
+        try {
+            cometClient.stopListenTo();
+        } catch (SDKException e) {
+            //ignore
+        }
     }
     
     @Test
@@ -79,6 +85,12 @@ public class SmartCometClientTest {
         // then
         Mockito.verify(smartConnection, Mockito.times(2)).executeRequest(Matchers.any(SmartRequest.class));
         Assert.assertEquals(10000, cometClient.getInterval());
+
+        try {
+            cometClient.stopListenTo();
+        } catch (SDKException e) {
+            //ignore
+        }
     }
     
     @Test
