@@ -1,11 +1,11 @@
 package com.cumulocity.sdk.services.client;
 
-import com.cumulocity.email.client.EmailSendingApi;
+import com.cumulocity.email.client.EmailApi;
 import com.cumulocity.sms.client.SmsMessagingApi;
 
 public interface ServicesPlatform {
 
     public SmsMessagingApi getSmsMessagingApi();
 
-    public EmailSendingApi getEmailSendingApi();
+    public EmailApi getEmailApi();
 }
