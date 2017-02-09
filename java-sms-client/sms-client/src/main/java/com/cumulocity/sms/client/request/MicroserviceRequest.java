@@ -5,12 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
+import org.svenson.JSON;
 
 import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
-import com.cumulocity.model.sms.OutgoingMessageResponse;
 import com.cumulocity.sms.client.properties.Properties;
 
 
@@ -22,16 +22,17 @@ public class MicroserviceRequest {
         this.properties = properties;
     }
     
-    public OutgoingMessageResponse sendSmsRequest(Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
-
+    public String sendSmsRequest(Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
+        
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
         headers.add("Content-Type", "application/json");
-        HttpEntity<OutgoingMessageRequest> request = new HttpEntity<OutgoingMessageRequest>(outgoingMessageRequest, headers);
+
+        HttpEntity<String> request = new HttpEntity<String>(JSON.defaultJSON().forValue(outgoingMessageRequest), headers);
         
         try {
-            ResponseEntity<OutgoingMessageResponse> response = 
+            ResponseEntity<String> response = 
                     properties.getAuthorizedTemplate()
-                    .postForEntity(sendEndpoint() + "{senderAddress}/requests", request, OutgoingMessageResponse.class, senderAddress);
+                    .postForEntity(sendEndpoint() + "{senderAddress}/requests", request, String.class, senderAddress);
             
             if (response == null || response.getBody() == null) {
                 return null;
@@ -73,6 +74,6 @@ public class MicroserviceRequest {
     }
     
     private String microserviceApiEndpoint() {
-        return properties.getBaseUrl() + "service/sms/smsmessaging/";
+        return properties.getBaseUrl() + "service/sms/smsmessaging/v1/";
     }
 }
