@@ -22,6 +22,7 @@ import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.OutgoingMessageResponse;
+import com.cumulocity.model.sms.SendMessageRequest;
 import com.cumulocity.sms.client.properties.Properties;
 import com.cumulocity.sms.client.request.MicroserviceRequest;
 import com.cumulocity.sms.client.request.SmsClientException;
@@ -43,7 +44,7 @@ public class MicroserviceRequestTest extends MicroserviceRequest {
     
     @Test(expected = SmsClientException.class)
     public void shouldThrowExceptionWhenSendRequestFails() {
-        when(authorizedTemplate.postForEntity(anyString(), (HttpEntity) any(), eq(OutgoingMessageResponse.class), (Address) any())).thenThrow(RestClientException.class);
+        when(authorizedTemplate.postForEntity(anyString(), (HttpEntity) any(), eq(String.class), (Address) any())).thenThrow(RestClientException.class);
         
         sendSmsRequest(new Address(), new OutgoingMessageRequest());
     }
@@ -66,11 +67,30 @@ public class MicroserviceRequestTest extends MicroserviceRequest {
     public void shouldSendCorrectContentTypeInHeader() {
         sendSmsRequest(new Address(), new OutgoingMessageRequest());
 
-        ArgumentCaptor<HttpEntity<OutgoingMessageRequest>> captor = new ArgumentCaptor<HttpEntity<OutgoingMessageRequest>>();
-        verify(authorizedTemplate).postForEntity(anyString(), captor.capture(), eq(OutgoingMessageResponse.class), (Address) any());
-        HttpEntity<OutgoingMessageRequest> actualHttpEntity = captor.getValue();
+        ArgumentCaptor<HttpEntity<String>> captor = new ArgumentCaptor<HttpEntity<String>>();
+        verify(authorizedTemplate).postForEntity(anyString(), captor.capture(), eq(String.class), (Address) any());
+        HttpEntity<String> actualHttpEntity = captor.getValue();
         HttpHeaders actualHeaders = actualHttpEntity.getHeaders();
         assertEquals(MediaType.APPLICATION_JSON, actualHeaders.getContentType());
+    }
+    
+    @Test
+    public void shouldSerializeBodyCorrectly() {
+        SendMessageRequest message = SendMessageRequest.builder()
+                .withSender(Address.phoneNumber("123"))
+                .withReceiver(Address.phoneNumber("245"))
+                .withMessage("test text").build();
+        sendSmsRequest(Address.phoneNumber("123"), new OutgoingMessageRequest(message));
+
+        ArgumentCaptor<HttpEntity<String>> captor = new ArgumentCaptor<HttpEntity<String>>();
+        verify(authorizedTemplate).postForEntity(anyString(), captor.capture(), eq(String.class), (Address) any());
+        HttpEntity<String> actualHttpEntity = captor.getValue();
+        String actualBody = actualHttpEntity.getBody();
+        assertEquals(actualBody,
+                "{\"outboundSMSMessageRequest\":{\"address\":[{\"number\":\"245\"," +
+                "\"protocol\":\"MSISDN\"}],\"clientCorrelator\":null,\"deviceId\":null,\"outboundSMSTextMessage\":{\"message\":\"test text\"}," +
+                "\"receiptRequest\":{\"callbackData\":null,\"notifyURL\":null},\"senderAddress\":{" +
+                "\"number\":\"123\",\"protocol\":\"MSISDN\"},\"senderName\":null}}");
     }
 
 }
