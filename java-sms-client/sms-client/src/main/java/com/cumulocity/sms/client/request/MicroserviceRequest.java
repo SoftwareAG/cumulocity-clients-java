@@ -74,6 +74,6 @@ public class MicroserviceRequest {
     }
     
     private String microserviceApiEndpoint() {
-        return properties.getBaseUrl() + "service/sms/smsmessaging/v1/";
+        return properties.getBaseUrl() + "service/sms/smsmessaging/";
     }
 }

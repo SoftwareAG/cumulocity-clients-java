@@ -21,7 +21,6 @@ import com.cumulocity.model.sms.Address;
 import com.cumulocity.model.sms.IncomingMessage;
 import com.cumulocity.model.sms.IncomingMessages;
 import com.cumulocity.model.sms.OutgoingMessageRequest;
-import com.cumulocity.model.sms.OutgoingMessageResponse;
 import com.cumulocity.model.sms.SendMessageRequest;
 import com.cumulocity.sms.client.properties.Properties;
 import com.cumulocity.sms.client.request.MicroserviceRequest;
@@ -72,6 +71,30 @@ public class MicroserviceRequestTest extends MicroserviceRequest {
         HttpEntity<String> actualHttpEntity = captor.getValue();
         HttpHeaders actualHeaders = actualHttpEntity.getHeaders();
         assertEquals(MediaType.APPLICATION_JSON, actualHeaders.getContentType());
+    }
+    
+    @Test
+    public void shouldUseSecureEndpoint() {
+        sendSmsRequest(new Address(), new OutgoingMessageRequest());
+        getSmsMessage(new Address(), "");
+        getSmsMessages(new Address());
+        
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(authorizedTemplate).postForEntity(captor.capture(), (HttpEntity) any(), eq(String.class), (Address) any());
+        String postEndpoint = captor.getValue();
+        
+        assertEquals("testBaseUrl" + "service/sms/smsmessaging/outbound/{senderAddress}/requests", postEndpoint);
+        
+        verify(authorizedTemplate).getForObject(captor.capture(), eq(IncomingMessages.class), (Address) any());
+        String receiveAllEndpoint = captor.getValue();
+        
+        assertEquals("testBaseUrl" + "service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages", receiveAllEndpoint);
+        
+        verify(authorizedTemplate).getForObject(captor.capture(), eq(IncomingMessage.class), (Address) any(), anyString());
+        String receiveSpecificEndpoint = captor.getValue();
+        
+        assertEquals("testBaseUrl" + "service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}", receiveSpecificEndpoint);
+        
     }
     
     @Test
