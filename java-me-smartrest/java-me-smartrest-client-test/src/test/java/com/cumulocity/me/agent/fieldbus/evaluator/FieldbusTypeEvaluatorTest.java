@@ -15,7 +15,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 public class FieldbusTypeEvaluatorTest {
 
-    private FieldbusChild child = new FieldbusChild("MODBUS", "12345", "myName", 1, "/inventory/managedObjects/23456");
+    private FieldbusChild child = new FieldbusChild(FieldbusProtocol.MODBUS, "12345", "myName", 1, "/inventory/managedObjects/23456");
     private FieldbusDevice parsedDevice;
 
     @Before
