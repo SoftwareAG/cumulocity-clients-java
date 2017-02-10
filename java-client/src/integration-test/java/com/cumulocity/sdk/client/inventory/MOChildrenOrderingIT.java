@@ -68,6 +68,11 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
     }
 
     @Test
+    public void shouldKeepChildAdditionsOrder() throws Exception {
+        shouldKeepChildrenInOrder(new ChildAdditionAdder(), new ChildAdditionsQuery());
+    }
+
+    @Test
     public void addingSameChildDeviceTwiceHasNoEffect() throws Exception {
         addingSameItemTwiceHasNoEffect(new ChildDeviceAdder(), new ChildDevicesQuery());
     }
@@ -75,6 +80,11 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
     @Test
     public void addingSameChildAssetTwiceHasNoEffect() throws Exception {
         addingSameItemTwiceHasNoEffect(new ChildAssetAdder(), new ChildAssetsQuery());
+    }
+
+    @Test
+    public void addingSameChildAdditionTwiceHasNoEffect() throws Exception {
+        addingSameItemTwiceHasNoEffect(new ChildAdditionAdder(), new ChildAdditionsQuery());
     }
 
     private void addingSameItemTwiceHasNoEffect(ChildAdder childAdder, ChildrenQuery childrenQuery)
@@ -171,6 +181,13 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
         }
     }
 
+    private class ChildAdditionAdder implements ChildAdder {
+        @Override
+        public void addChild(ManagedObjectReferenceRepresentation ref) throws SDKException {
+            parentMo.addChildAdditions(ref);
+        }
+    }
+
     private class ChildDevicesQuery implements ChildrenQuery {
         @Override
         public ManagedObjectReferenceCollectionRepresentation getChildren() throws SDKException {
@@ -182,6 +199,13 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
         @Override
         public ManagedObjectReferenceCollectionRepresentation getChildren() throws SDKException {
             return parentMo.get().getChildAssets();
+        }
+    }
+
+    private class ChildAdditionsQuery implements ChildrenQuery {
+        @Override
+        public ManagedObjectReferenceCollectionRepresentation getChildren() throws SDKException {
+            return parentMo.get().getChildAdditions();
         }
     }
 }

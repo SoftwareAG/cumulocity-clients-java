@@ -49,6 +49,8 @@ public class ManagedObjectImplTest {
 
     private static final String CHILD_ASSETS_URL = "path_to_child_assets";
 
+    private static final String CHILD_ADDITIONS_URL = "path_to_child_additions";
+
     private static final int DEFAULT_PAGE_SIZE = 9;
 
     @Rule
@@ -66,7 +68,7 @@ public class ManagedObjectImplTest {
         MockitoAnnotations.initMocks(this);
         managedObject = new ManagedObjectImpl(restConnector, MANAGED_OBJECT_URL, DEFAULT_PAGE_SIZE);
 
-        managedObjectRep = createMoWithChildDevicesAndAssets();
+        managedObjectRep = createMoWithChildDevicesAndAssetsAndAdditions();
         when(restConnector.get(MANAGED_OBJECT_URL, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class)).thenReturn(
                 managedObjectRep);
     }
@@ -175,6 +177,20 @@ public class ManagedObjectImplTest {
     }
 
     @Test
+    public void testGetAllChildAdditions() throws Exception {
+        //Given
+        ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
+        when(restConnector.get(CHILD_ADDITIONS_URL+ "?pageSize=" +DEFAULT_PAGE_SIZE, MANAGED_OBJECT_REFERENCE_COLLECTION,
+                ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
+
+        // when
+        ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildAdditions().get();
+
+        // then
+        assertThat(result.getReferences(), sameInstance(retrieved.getReferences()));
+    }
+
+    @Test
     public void testGetChildAsset() throws Exception {
         //Given
         GId gid = new GId("assetId");
@@ -184,6 +200,21 @@ public class ManagedObjectImplTest {
 
         // when 
         ManagedObjectReferenceRepresentation result = managedObject.getChildAsset(gid);
+
+        // then
+        assertThat(result, sameInstance(retrieved));
+    }
+
+    @Test
+    public void testGetChildAddition() throws Exception {
+        //Given
+        GId gid = new GId("additionId");
+        ManagedObjectReferenceRepresentation retrieved = new ManagedObjectReferenceRepresentation();
+        when(restConnector.get(CHILD_ADDITIONS_URL + "/additionId", MANAGED_OBJECT_REFERENCE,
+                ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
+
+        // when
+        ManagedObjectReferenceRepresentation result = managedObject.getChildAddition(gid);
 
         // then
         assertThat(result, sameInstance(retrieved));
@@ -202,6 +233,18 @@ public class ManagedObjectImplTest {
     }
 
     @Test
+    public void testDeleteChildAddition() throws Exception {
+        //Given
+        GId gid = new GId("additionId");
+
+        // when
+        managedObject.deleteChildAddition(gid);
+
+        // then
+        verify(restConnector).delete(CHILD_ADDITIONS_URL + "/additionId");
+    }
+
+    @Test
     public void testAddChildAsset() throws Exception {
         //Given 
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
@@ -215,7 +258,21 @@ public class ManagedObjectImplTest {
         assertThat(result, sameInstance(created));
     }
 
-    private ManagedObjectRepresentation createMoWithChildDevicesAndAssets() {
+    @Test
+    public void testAddChildAddition() throws Exception {
+        //Given
+        ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
+        ManagedObjectReferenceRepresentation newChildAddition = new ManagedObjectReferenceRepresentation();
+        when(restConnector.post(CHILD_ADDITIONS_URL, MANAGED_OBJECT_REFERENCE, newChildAddition)).thenReturn(created);
+
+        // when
+        ManagedObjectReferenceRepresentation result = managedObject.addChildAdditions(newChildAddition);
+
+        // then
+        assertThat(result, sameInstance(created));
+    }
+
+    private ManagedObjectRepresentation createMoWithChildDevicesAndAssetsAndAdditions() {
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         ManagedObjectReferenceCollectionRepresentation childDevices = new ManagedObjectReferenceCollectionRepresentation();
         childDevices.setSelf(CHILD_DEVICES_URL);
@@ -224,6 +281,10 @@ public class ManagedObjectImplTest {
         ManagedObjectReferenceCollectionRepresentation childAssets = new ManagedObjectReferenceCollectionRepresentation();
         childAssets.setSelf(CHILD_ASSETS_URL);
         mo.setChildAssets(childAssets);
+
+        ManagedObjectReferenceCollectionRepresentation childAdditions = new ManagedObjectReferenceCollectionRepresentation();
+        childAdditions.setSelf(CHILD_ADDITIONS_URL);
+        mo.setChildAdditions(childAdditions);
 
         return mo;
     }

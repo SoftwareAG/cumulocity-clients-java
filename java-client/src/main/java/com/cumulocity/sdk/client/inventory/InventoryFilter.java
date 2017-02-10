@@ -57,6 +57,9 @@ public class InventoryFilter extends Filter {
     @ParamSource
     private String childDeviceId;
 
+    @ParamSource
+    private String childAdditionId;
+
     public static InventoryFilter searchInventory() {
         return new InventoryFilter();
     }
@@ -194,6 +197,21 @@ public class InventoryFilter extends Filter {
 
     public String getChildDeviceId() {
         return childDeviceId;
+    }
+
+    /**
+     * Specifies the {@code childAdditionId} query parameter
+     *
+     * @param childAdditionId the child addition of the managed object(s)
+     * @return the managed object filter with {@code childAdditionId} set
+     */
+    public InventoryFilter byChildAdditionId(GId childAdditionId) {
+        this.childAdditionId = childAdditionId.getValue();
+        return this;
+    }
+
+    public String getChildAdditionId() {
+        return childAdditionId;
     }
 
     private String createCommaSeparatedStringFromGids(List<GId> ids) {
