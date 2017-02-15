@@ -18,6 +18,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
+import java.nio.file.*;
+import java.io.*;
+
 @Mojo(name = "agent-push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
 public class DeployMojo extends BaseAgentMojo {
 
@@ -42,12 +45,18 @@ public class DeployMojo extends BaseAgentMojo {
 
     }
 
+    private boolean configExists() {
+		return Files.exists(Paths.get(System.getProperty("user.home")).resolve(".docker/config.json"));
+    }
+
     private void publish(String tag) throws MojoExecutionException {
         final DockerImage source = DockerImage.ofName(name).withTag(tag);
         final DockerImage pushed = source.withRegistry(registry);
 
         //@formatter:off
-        executeMojo(
+
+
+	executeMojo(
             docker(),
             goal("tag"),
             configuration(
@@ -60,10 +69,12 @@ public class DeployMojo extends BaseAgentMojo {
             docker(),
             goal("push"),
             configuration(
-                element("imageName", pushed.toString())
+                element("imageName", pushed.toString()),
+		element("configFile", String.valueOf(configExists()))
             ),
             executionEnvironment(this.project, this.mavenSession, this.pluginManager)
         );
+
         //@formatter:on
 
     }
