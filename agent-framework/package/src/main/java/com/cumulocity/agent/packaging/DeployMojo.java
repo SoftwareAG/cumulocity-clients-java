@@ -70,7 +70,7 @@ public class DeployMojo extends BaseAgentMojo {
             goal("push"),
             configuration(
                 element("imageName", pushed.toString()),
-		element("configFile", String.valueOf(configExists()))
+		element("useConfigFile", String.valueOf(configExists()))
             ),
             executionEnvironment(this.project, this.mavenSession, this.pluginManager)
         );
