@@ -47,6 +47,8 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
 
     private ManagedObjectReferenceCollectionRepresentation childAssets;
 
+    private ManagedObjectReferenceCollectionRepresentation childAdditions;
+
     private ManagedObjectReferenceCollectionRepresentation parents;
 
     /**
@@ -109,6 +111,14 @@ public class ManagedObjectRepresentation extends AbstractExtensibleRepresentatio
 
     public void setChildAssets(ManagedObjectReferenceCollectionRepresentation childAssets) {
         this.childAssets = childAssets;
+    }
+
+    public ManagedObjectReferenceCollectionRepresentation getChildAdditions() {
+        return childAdditions;
+    }
+
+    public void setChildAdditions(ManagedObjectReferenceCollectionRepresentation childAdditions) {
+        this.childAdditions = childAdditions;
     }
 
     public ManagedObjectReferenceCollectionRepresentation getParents() {

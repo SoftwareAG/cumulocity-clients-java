@@ -24,9 +24,7 @@ import static com.cumulocity.me.rest.convert.JSONObjectBuilder.aJSONObject;
 import static com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter.PROP_ID;
 import static com.cumulocity.me.rest.convert.base.BaseResourceRepresentationConverter.PROP_SELF;
 import static com.cumulocity.me.rest.convert.inventory.ManagedObjectReferenceCollectionRepresentationConverter.PROP_REFERENCES;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_CHILD_ASSETS;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_CHILD_DEVICES;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_PARENTS;
+import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.*;
 
 import com.cumulocity.me.model.idtype.GId;
 import com.cumulocity.me.rest.convert.BaseConverterTestCase;
@@ -73,6 +71,7 @@ public abstract class BaseManagedObjectConverterTestCase extends BaseConverterTe
                 .withID(getSampleGId())
                 .withChildAssets(getMinimalMORCR())
                 .withChildDevices(getMinimalMORCR())
+                .withChildAdditions(getMinimalMORCR())
                 .withParents(getMinimalMORCR())
                 .build();
         return representation;
@@ -108,6 +107,7 @@ public abstract class BaseManagedObjectConverterTestCase extends BaseConverterTe
         return minimalJsonManagedObjectRepresentation()
                 .withPropertyBuilder(PROP_CHILD_ASSETS, minimalJsonObjectReferenceRepresentation())
                 .withPropertyBuilder(PROP_CHILD_DEVICES, minimalJsonObjectReferenceRepresentation())
+                .withPropertyBuilder(PROP_CHILD_ADDITIONS, minimalJsonObjectReferenceRepresentation())
                 .withPropertyBuilder(PROP_PARENTS, minimalJsonObjectReferenceRepresentation());
     }
 

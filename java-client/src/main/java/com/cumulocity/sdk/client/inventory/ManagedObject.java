@@ -148,4 +148,49 @@ public interface ManagedObject {
      */
     void deleteChildAsset(GId assetId) throws SDKException;
 
+    /**
+     * Adds a child addition to the ManagedObject.
+     *
+     * @param refrenceReprsentation
+     * @return ManagedObjectReferenceRepresentation with the id of th child addition.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceRepresentation addChildAdditions(ManagedObjectReferenceRepresentation refrenceReprsentation)
+            throws SDKException;
+
+    /**
+     * Adds a child addition to the ManagedObject.
+     *
+     * @param childId
+     * @return ManagedObjectReferenceRepresentation with the id of th child addition.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceRepresentation addChildAdditions(GId childId)
+            throws SDKException;
+
+    /**
+     * Returns all the child additions for the Managed Object in paged collection form
+     *
+     * @return ManagedObjectReferenceCollectionRepresentation which contains all the child additions.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceCollection getChildAdditions() throws SDKException;
+
+    /**
+     * Returns the child additions with the given id. If it belongs to the ManagedObject.
+     *
+     * @param additionId
+     * @return ManagedObjectReferenceRepresentation of the child additions.
+     * @throws SDKException
+     */
+    ManagedObjectReferenceRepresentation getChildAddition(GId additionId) throws SDKException;
+
+    /**
+     * Deletes the child addition and its relation to the managed object.
+     *
+     * @param additionId
+     * @throws SDKException
+     */
+    void deleteChildAddition(GId additionId) throws SDKException;
+
 }

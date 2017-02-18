@@ -386,7 +386,6 @@ public class InventoryIT extends JavaSdkITBase {
         assertThat(secondPage.getReferences().size(), is(1));
     }
 
-
     @Test
     public void addGetAndRemoveChildAssets() throws Exception {
         // Given
@@ -419,6 +418,38 @@ public class InventoryIT extends JavaSdkITBase {
         assertEquals(0, allChildDevices.getReferences().size());
     }
 
+@Test
+    public void addGetAndRemoveChildAdditions() throws Exception {
+        // Given
+        ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
+        ManagedObjectRepresentation child1 = inventory.create(aSampleMo().withName("child1").build());
+        ManagedObjectRepresentation child2 = inventory.create(aSampleMo().withName("child2").build());
+
+        ManagedObjectReferenceRepresentation childRef1 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
+                child1).build();
+
+        // When
+        ManagedObject parentMo = inventory.getManagedObject(parent.getId());
+        parentMo.addChildAdditions(childRef1);
+        parentMo.addChildAdditions(child2.getId());
+
+        // Then
+        ManagedObjectReferenceCollectionRepresentation refCollection = inventory.getManagedObject(
+                parent.getId()).getChildAdditions().get();
+        List<ManagedObjectReferenceRepresentation> refs = refCollection.getReferences();
+        Set<GId> childDeviceIDs = asSet(refs.get(0).getManagedObject().getId(), refs.get(1).getManagedObject().getId());
+        assertThat(childDeviceIDs, is(asSet(child1.getId(), child2.getId())));
+
+        // When
+        parentMo.deleteChildAddition(child1.getId());
+        parentMo.deleteChildAddition(child2.getId());
+
+        // Then
+        ManagedObjectReferenceCollectionRepresentation allChildAdditions = inventory.getManagedObject(
+                parent.getId()).getChildAdditions().get();
+        assertEquals(0, allChildAdditions.getReferences().size());
+    }
+
     @Test
     public void getPagedChildAssets() throws Exception {
         // Given
@@ -434,6 +465,27 @@ public class InventoryIT extends JavaSdkITBase {
 
         // When
         ManagedObjectReferenceCollection refCollection = inventory.getManagedObject(parent.getId()).getChildAssets();
+
+        // Then
+        assertCollectionPaged(refCollection);
+
+    }
+
+    @Test
+    public void getPagedChildAdditions() throws Exception {
+        // Given
+        ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
+        ManagedObject parentMo = inventory.getManagedObject(parent.getId());
+
+        for (int i=0; i<platform.getPageSize()+1; i++){
+            ManagedObjectRepresentation child = inventory.create(aSampleMo().withName("child"+i).build());
+            ManagedObjectReferenceRepresentation childRef = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
+                    child).build();
+            parentMo.addChildAdditions(childRef);
+        }
+
+        // When
+        ManagedObjectReferenceCollection refCollection = inventory.getManagedObject(parent.getId()).getChildAdditions();
 
         // Then
         assertCollectionPaged(refCollection);

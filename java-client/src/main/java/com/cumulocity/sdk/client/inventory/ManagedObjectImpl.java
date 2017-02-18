@@ -152,7 +152,47 @@ public class ManagedObjectImpl implements ManagedObject {
         String path = createChildAssetPath() + "/" + assetId.getValue();
         restConnector.delete(path);
     }
-    
+
+    @Override
+    public ManagedObjectReferenceRepresentation addChildAdditions(ManagedObjectReferenceRepresentation refrenceReprsentation)
+            throws SDKException {
+        return restConnector.post(createChildAdditionPath(), InventoryMediaType.MANAGED_OBJECT_REFERENCE,
+                refrenceReprsentation);
+    }
+
+    @Override
+    public ManagedObjectReferenceRepresentation addChildAdditions(GId childId)
+            throws SDKException {
+        return restConnector.post(createChildAdditionPath(), InventoryMediaType.MANAGED_OBJECT_REFERENCE,
+                createChildObject(childId));
+    }
+
+    private String createChildAdditionPath() throws SDKException {
+        ManagedObjectRepresentation managedObjectRepresentation = getInternal();
+        if (managedObjectRepresentation == null || managedObjectRepresentation.getChildAdditions() == null) {
+            throw new SDKException("Unable to get the child device URL");
+        }
+        return managedObjectRepresentation.getChildAdditions().getSelf();
+    }
+
+    @Override
+    public ManagedObjectReferenceCollection getChildAdditions() throws SDKException {
+        String self = createChildAdditionPath();
+        return new ManagedObjectReferenceCollectionImpl(restConnector,self, pageSize);
+    }
+
+    @Override
+    public ManagedObjectReferenceRepresentation getChildAddition(GId additionId) throws SDKException {
+        String path = createChildAdditionPath() + "/" + additionId.getValue();
+        return restConnector.get(path, InventoryMediaType.MANAGED_OBJECT_REFERENCE, ManagedObjectReferenceRepresentation.class);
+    }
+
+    @Override
+    public void deleteChildAddition(GId additionId) throws SDKException {
+        String path = createChildAdditionPath() + "/" + additionId.getValue();
+        restConnector.delete(path);
+    }
+
     private ManagedObjectRepresentation getInternal() throws SDKException {
         if (managedObject == null) {
             managedObject = restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
