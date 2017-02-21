@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>7.44.0</version>
+		<version>7.45.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>7.44.3-SNAPSHOT</version>
+	<version>7.45.2-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -28,11 +28,14 @@
 		<module>java-me-maven-plugin</module>
 		<module>java-me-smartrest</module>
 		<module>agent-framework</module>
+		<module>java-email-client</module>
+		<module>java-sms-client</module>
+		<module>java-client-services</module>
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>7.44.1</cumulocity.model.version>
-		<cumulocity.shared-components.version>7.44.1</cumulocity.shared-components.version>
+		<cumulocity.model.version>7.45.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>7.45.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>

@@ -1,8 +1,6 @@
 #!/bin/bash
 BIN=/usr/lib/@package.directory@
 CONF=$BIN/@package.name@.conf
-DEFAULT_JAVA_OPTS="@package.jvm-opts@"
-DEFAULT_ARGUMENTS="@package.arguments@"
 REQUIRED_JAVA="@package.required-java@"
 if [ -f $CONF ];
 then
@@ -10,16 +8,12 @@ then
 fi
 
 JAVA_PATH=`$BIN/detect-java`
+jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
+jvm_mem=${JAVA_MEM:-"@package.jvm-mem@"}
+jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/log/@package.directory@/@package.name@-%p.hprof -XX:NativeMemoryTracking=summary -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/log/@package.directory@/@package.name@-gc.log -XX:-UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=50M"}
+arguments=${ARGUMENTS:-"@package.arguments@"}
 
-if [ "x$JAVA_OPTS" = "x" ];
-then
- JAVA_OPTS=$DEFAULT_JAVA_OPTS
-fi;
-if [  "x$ARGUMENTS" = "x" ];
-then
- ARGUMENTS=$DEFAULT_ARGUMENTS
-fi;
 
-mkdir -p /var/log/@package.name@; echo "heap dumps  /var/log/@package.name@/heap-dump-<pid>.hprof"
+mkdir -p /var/log/@package.directory@; echo "heap dumps  /var/log/@package.directory@/heap-dump-<pid>.hprof"
 
-$JAVA_PATH/bin/java -server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.name@/heap-dump-%p.hprof  ${JAVA_OPTS} -jar $BIN/@package.name@.jar ${ARGUMENTS}
+exec $JAVA_PATH/bin/java ${jvm_opts} ${jvm_gc} ${jvm_mem} -jar $BIN/@package.name@.jar ${arguments}

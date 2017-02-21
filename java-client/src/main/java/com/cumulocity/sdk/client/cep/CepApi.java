@@ -107,7 +107,9 @@ public interface CepApi {
      * @throws SDKException if the cep module could not be updated
      */
     CepModuleRepresentation update(String id, InputStream content);
-    
+
+    CepModuleRepresentation update(String id, String content);
+
     CepModuleRepresentation update(CepModuleRepresentation module);
 
     /**
