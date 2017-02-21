@@ -50,7 +50,6 @@
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>core-model</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<!-- Spring dependencies -->
 		<dependency>
