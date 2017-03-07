@@ -36,6 +36,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
     public static final String PROP_OWNER = "owner";
     public static final String PROP_CHILD_DEVICES = "childDevices";
     public static final String PROP_CHILD_ASSETS = "childAssets";
+    public static final String PROP_CHILD_ADDITIONS = "childAdditions";
     public static final String PROP_PARENTS = "parents";
     public static final String PROP_LAST_UPDATED = "lastUpdated";
 
@@ -50,6 +51,7 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         putString(json, PROP_OWNER,$(representation).getOwner());
         putObject(json, PROP_CHILD_DEVICES, $(representation).getChildDevices());
         putObject(json, PROP_CHILD_ASSETS, $(representation).getChildAssets());
+        putObject(json, PROP_CHILD_ADDITIONS, $(representation).getChildAdditions());
         putObject(json, PROP_PARENTS, $(representation).getParents());
         putDate(json, PROP_LAST_UPDATED, $(representation).getLastUpdated());
     }
@@ -62,6 +64,8 @@ public class ManagedObjectRepresentationConverter extends BaseExtensibleResource
         $(representation).setChildAssets((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_CHILD_ASSETS,
                 ManagedObjectReferenceCollectionRepresentation.class));
         $(representation).setChildDevices((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_CHILD_DEVICES, 
+                ManagedObjectReferenceCollectionRepresentation.class));
+        $(representation).setChildAdditions((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_CHILD_ADDITIONS,
                 ManagedObjectReferenceCollectionRepresentation.class));
         $(representation).setParents((ManagedObjectReferenceCollectionRepresentation) getObject(json, PROP_PARENTS,
                 ManagedObjectReferenceCollectionRepresentation.class));

@@ -124,4 +124,37 @@ public class ManagedObjectImpl implements ManagedObject {
 		String path = createChildAssetPath(managedObjectRepresentation) + "/" + assetId.getValue();
 		restConnector.delete(path);
 	}
+
+	public ManagedObjectReferenceRepresentation addChildAdditions(ManagedObjectReferenceRepresentation refrenceReprsentation)
+			throws SDKException {
+		ManagedObjectRepresentation managedObjectRepresentation = get();
+		return (ManagedObjectReferenceRepresentation) restConnector.post(createChildAdditionPath(managedObjectRepresentation),
+				InventoryMediaType.MANAGED_OBJECT_REFERENCE, refrenceReprsentation);
+	}
+
+	private String createChildAdditionPath(ManagedObjectRepresentation managedObjectRepresentation) {
+		if (managedObjectRepresentation == null || managedObjectRepresentation.getChildAdditions() == null) {
+			throw new SDKException("Unable to get the child device URL");
+		}
+		return managedObjectRepresentation.getChildAdditions().getSelf();
+	}
+
+	public PagedCollectionResource getChildAdditions() {
+		ManagedObjectRepresentation managedObjectRepresentation = get();
+		String self = createChildAdditionPath(managedObjectRepresentation);
+		return new ManagedObjectReferenceCollectionImpl(restConnector, self, pageSize);
+	}
+
+	public ManagedObjectReferenceRepresentation getChildAddition(GId additionId) {
+		ManagedObjectRepresentation managedObjectRepresentation = get();
+		String path = createChildAdditionPath(managedObjectRepresentation) + "/" + additionId.getValue();
+		return (ManagedObjectReferenceRepresentation) restConnector.get(path, InventoryMediaType.MANAGED_OBJECT_REFERENCE,
+				ManagedObjectReferenceRepresentation.class);
+	}
+
+	public void deleteChildAddition(GId additionId) {
+		ManagedObjectRepresentation managedObjectRepresentation = get();
+		String path = createChildAdditionPath(managedObjectRepresentation) + "/" + additionId.getValue();
+		restConnector.delete(path);
+	}
 }

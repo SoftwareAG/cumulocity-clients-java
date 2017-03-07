@@ -393,6 +393,40 @@ public class InventoryIT extends JavaSdkITBase {
     }
 
     @Test
+    public void addGetAndRemoveChildAdditions() throws Exception {
+        // Given
+        ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
+        ManagedObjectRepresentation child1 = inventory.create(aSampleMo().withName("child1").build());
+        ManagedObjectRepresentation child2 = inventory.create(aSampleMo().withName("child2").build());
+
+        ManagedObjectReferenceRepresentation childRef1 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(child1).build();
+        ManagedObjectReferenceRepresentation childRef2 = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(child2).build();
+
+        // When
+        ManagedObject parentMo = inventory.getManagedObject(parent.getId());
+        parentMo.addChildAdditions(childRef1);
+        parentMo.addChildAdditions(childRef2);
+
+        // Then
+        ManagedObjectReferenceCollectionRepresentation refCollection = (ManagedObjectReferenceCollectionRepresentation) inventory.getManagedObject(parent.getId()).getChildAdditions().get();
+
+        List refs = refCollection.getReferences();
+        Set<GId> childAdditionIdList = asSet(
+                ((ManagedObjectReferenceRepresentation) refs.get(0)).getManagedObject().getId(),
+                ((ManagedObjectReferenceRepresentation) refs.get(1)).getManagedObject().getId());
+
+        assertThat(childAdditionIdList, is(asSet(child1.getId(), child2.getId())));
+
+        // When
+        parentMo.deleteChildAddition(child1.getId());
+        parentMo.deleteChildAddition(child2.getId());
+
+        // Then
+        ManagedObjectReferenceCollectionRepresentation allChildAdditions = (ManagedObjectReferenceCollectionRepresentation) inventory.getManagedObject(parent.getId()).getChildAdditions().get();
+        assertThat(allChildAdditions.getReferences().size()).isEqualTo(0);
+    }
+
+    @Test
     public void getPagedChildAssets() throws Exception {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());

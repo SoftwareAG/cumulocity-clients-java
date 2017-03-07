@@ -51,6 +51,11 @@ public class ManagedObjectRepresentationBuilder extends BaseRepresentationBuilde
         return this;
     }
 
+    public ManagedObjectRepresentationBuilder withChildAdditions(final ManagedObjectReferenceCollectionRepresentation childAdditions) {
+        setFieldValue("childAdditions", childAdditions);
+        return this;
+    }
+
     public ManagedObjectRepresentationBuilder withChildDevices(final ManagedObjectReferenceCollectionRepresentation childDevices) {
         setFieldValue("childDevices", childDevices);
         return this;

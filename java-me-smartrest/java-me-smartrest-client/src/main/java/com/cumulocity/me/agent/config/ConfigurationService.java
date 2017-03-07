@@ -1,6 +1,7 @@
 package com.cumulocity.me.agent.config;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import com.cumulocity.me.agent.config.model.Configuration;
 import com.cumulocity.me.agent.config.model.ConfigurationKey;
@@ -121,6 +122,10 @@ public class ConfigurationService {
     
     public void write() throws IOException{
         writer.write(configuration);
+    }
+
+    public Enumeration getKeys() {
+        return configuration.getKeys();
     }
     
     private String firstNonNull(String key){

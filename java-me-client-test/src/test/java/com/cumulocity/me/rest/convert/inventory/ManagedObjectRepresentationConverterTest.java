@@ -19,10 +19,7 @@
  */
 package com.cumulocity.me.rest.convert.inventory;
 
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_CHILD_ASSETS;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_CHILD_DEVICES;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_LAST_UPDATED;
-import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.PROP_PARENTS;
+import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.*;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.CREATE;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.UPDATE;
 import static org.fest.assertions.Assertions.assertThat;
@@ -60,12 +57,14 @@ public class ManagedObjectRepresentationConverterTest extends BaseManagedObjectC
         JSONObject json = minimalJsonManagedObjectRepresentation()
                 .withPropertyBuilder(PROP_CHILD_ASSETS, minimalJsonObjectRepresentation())
                 .withPropertyBuilder(PROP_CHILD_DEVICES, minimalJsonObjectRepresentation())
+                .withPropertyBuilder(PROP_CHILD_ADDITIONS, minimalJsonObjectRepresentation())
                 .withPropertyBuilder(PROP_PARENTS, minimalJsonObjectRepresentation()).build();
 
         ManagedObjectRepresentation representation = fromJson(json);
 
         assertThat(representation.getChildAssets()).isNotNull();
         assertThat(representation.getChildDevices()).isNotNull();
+        assertThat(representation.getChildAdditions()).isNotNull();
         assertThat(representation.getParents()).isNotNull();
     }
 
@@ -124,11 +123,13 @@ public class ManagedObjectRepresentationConverterTest extends BaseManagedObjectC
         ManagedObjectRepresentation representation = minimalManagedObjectBuilder()
                 .withChildAssets(getMinimalMORCR())
                 .withChildDevices(getMinimalMORCR())
+                .withChildAdditions(getMinimalMORCR())
                 .withParents(getMinimalMORCR())
                 .build();
         JSONObject expectedJSON = minimalJsonManagedObjectRepresentation()
                 .withPropertyBuilder(PROP_CHILD_ASSETS, minimalJsonObjectReferenceRepresentation())
                 .withPropertyBuilder(PROP_CHILD_DEVICES, minimalJsonObjectReferenceRepresentation())
+                .withPropertyBuilder(PROP_CHILD_ADDITIONS, minimalJsonObjectReferenceRepresentation())
                 .withPropertyBuilder(PROP_PARENTS, minimalJsonObjectReferenceRepresentation()).build();
 
         JSONObject outputJSON = toJson(representation);
