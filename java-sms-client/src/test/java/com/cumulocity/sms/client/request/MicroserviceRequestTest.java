@@ -5,9 +5,13 @@ import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.SendMessageRequest;
 import com.cumulocity.sms.client.messaging.MessagingClient;
 import com.cumulocity.sms.client.messaging.SmsClientException;
+import com.googlecode.catchexception.CatchException;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.apache.http.util.EntityUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -68,21 +72,19 @@ public class MicroserviceRequestTest {
     }
 
     @Test
-    @Ignore
-    public void shouldUseSecureEndpoint() throws IOException {
-        client.sendMessage(new Address(), new OutgoingMessageRequest());
-        client.getMessage(new Address(), "");
-        client.getAllMessages(new Address());
+    public void shouldThrowExceptionWhenResponseStatusIsIncorrect() throws IOException {
+        final Response response = mock(Response.class);
+        final HttpResponse httpResponse = mock(HttpResponse.class);
+        final StatusLine statusLine = mock(StatusLine.class);
+        when(statusLine.getStatusCode()).thenReturn(404);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(response.returnResponse()).thenReturn(httpResponse);
+        when(client.getAuthorizedTemplate().execute(any(Request.class))).thenReturn(response);
 
-        ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
-        verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests");
+        catchException(client).sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
 
-        verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
-
-        verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
+        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
+        assertThat(caughtException()).hasMessage("Incorrect response: 404");
     }
 
     @Test
@@ -101,6 +103,24 @@ public class MicroserviceRequestTest {
                 "\"protocol\":\"MSISDN\"}],\"clientCorrelator\":null,\"deviceId\":null,\"outboundSMSTextMessage\":{\"message\":\"test text\"}," +
                 "\"receiptRequest\":{\"callbackData\":null,\"notifyURL\":null},\"senderAddress\":{" +
                 "\"number\":\"123\",\"protocol\":\"MSISDN\"},\"senderName\":null}}");
+    }
+
+    @Test
+    @Ignore
+    public void shouldUseSecureEndpoint() throws IOException {
+        client.sendMessage(new Address(), new OutgoingMessageRequest());
+        client.getMessage(new Address(), "");
+        client.getAllMessages(new Address());
+
+        ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests");
+
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
+
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
     }
 
     private HttpEntityEnclosingRequest getFieldValue(Request value) throws NoSuchFieldException, IllegalAccessException {

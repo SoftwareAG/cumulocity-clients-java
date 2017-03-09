@@ -38,7 +38,7 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
     }
 
     public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
-        this(host, "service/sms/smsmessaging/", auth);
+        this(host, "service/messaging/smsmessaging/v1", auth);
     }
 
     public SmsMessagingApiImpl(final String host, Executor executor) {

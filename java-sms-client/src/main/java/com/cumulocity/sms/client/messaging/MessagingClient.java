@@ -42,7 +42,7 @@ public class MessagingClient {
             final String s = senderAddressAsUrlParameter(senderAddress);
             final Request request = Post(sendEndpoint() + s + "/requests").bodyString(body, APPLICATION_JSON);
             final Response response = authorizedTemplate.execute(request);
-            return parseResponseContent(response);
+            return parseResponse(response);
         } catch (IOException e) {
             throw new SmsClientException("Send sms request failure", e);
         }
@@ -52,7 +52,7 @@ public class MessagingClient {
         try {
             final Request request = Get(receiveEndpoint() + receiveAddress + "/messages");
             final Response response = authorizedTemplate.execute(request);
-            return defaultJSONParser().parse(IncomingMessages.class, parseResponseContent(response));
+            return defaultJSONParser().parse(IncomingMessages.class, parseResponse(response));
         } catch(IOException e) {
             throw new SmsClientException("Get sms messages failure", e);
         }
@@ -62,7 +62,7 @@ public class MessagingClient {
         try {
             final Request request = Get(receiveEndpoint() + receiveAddress + "/messages/" + messageId);
             final Response response = authorizedTemplate.execute(request);
-            return defaultJSONParser().parse(IncomingMessage.class, parseResponseContent(response));
+            return defaultJSONParser().parse(IncomingMessage.class, parseResponse(response));
         } catch(IOException e) {
             throw new SmsClientException("Get sms message failure", e);
         }
@@ -77,11 +77,20 @@ public class MessagingClient {
     }
 
     @SneakyThrows
-    private String parseResponseContent(Response response) {
+    private String parseResponse(Response response) {
         if  (response == null) {
             return null;
         }
         final HttpResponse httpResponse = response.returnResponse();
+        final int statusCode = httpResponse.getStatusLine().getStatusCode();
+        final String body = parseResponseBody(httpResponse);
+        if (statusCode != 200) {
+            throw new SmsClientException("Incorrect response: " + statusCode);
+        }
+        return body;
+    }
+
+    private String parseResponseBody(HttpResponse httpResponse) throws IOException {
         if (httpResponse.getEntity() != null) {
             return EntityUtils.toString(httpResponse.getEntity());
         }
@@ -89,7 +98,7 @@ public class MessagingClient {
     }
 
     private String senderAddressAsUrlParameter(@NonNull Address senderAddress) {
-        if (senderAddress == null || senderAddress.getNumber() == null) {
+        if (senderAddress.getNumber() == null) {
             return null;
         }
         return senderAddress.asUrlParameter();
