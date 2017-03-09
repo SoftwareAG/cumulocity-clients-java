@@ -70,13 +70,22 @@ public interface ManagedObject {
     /**
      * Adds a child device to the ManagedObject.
      *
-     * @param refrenceReprsentation
+     * @param childId
      * @return ManagedObjectReferenceRepresentation with the id of th child device.
      * @throws SDKException
      */
     ManagedObjectReferenceRepresentation addChildDevice(GId childId)
             throws SDKException;
 
+    /**
+     * Create ManagedObject and adds as child device to the parent ManagedObject.
+     *
+     * @param representation
+     * @return ManagedObjectRepresentation with the managed object.
+     * @throws SDKException
+     */
+    ManagedObjectRepresentation addChildDevice(ManagedObjectRepresentation representation)
+            throws SDKException;
 
     /**
      * Returns all the child Devices for the Managed Object in paged collection form.
@@ -124,6 +133,16 @@ public interface ManagedObject {
             throws SDKException;
 
     /**
+     * Create ManagedObject and adds as child asset to the parent ManagedObject.
+     *
+     * @param representation
+     * @return ManagedObjectRepresentation with the managed object.
+     * @throws SDKException
+     */
+    ManagedObjectRepresentation addChildAsset(ManagedObjectRepresentation representation)
+            throws SDKException;
+
+    /**
      * Returns all the child Assets for the Managed Object  in paged collection form
      *
      * @return ManagedObjectReferenceCollectionRepresentation which contains all the child devices.
@@ -166,6 +185,16 @@ public interface ManagedObject {
      * @throws SDKException
      */
     ManagedObjectReferenceRepresentation addChildAdditions(GId childId)
+            throws SDKException;
+
+    /**
+     * Create ManagedObject and adds as child addition to the parent ManagedObject.
+     *
+     * @param representation
+     * @return ManagedObjectRepresentation with the managed object.
+     * @throws SDKException
+     */
+    ManagedObjectRepresentation addChildAddition(ManagedObjectRepresentation representation)
             throws SDKException;
 
     /**
