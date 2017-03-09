@@ -1,11 +1,8 @@
 package com.cumulocity.sms.client;
 
+import com.cumulocity.model.sms.*;
 import com.cumulocity.sms.client.messaging.MessagingClient;
-import com.cumulocity.sms.client.model.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Wither;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -13,9 +10,10 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
-import static com.cumulocity.sms.client.model.Protocol.ICCID;
+import static com.cumulocity.sms.client.messaging.MessagingClient.addLeadingSlash;
 import static org.apache.http.client.fluent.Executor.newInstance;
 
+@Getter
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
     @Data
@@ -31,12 +29,16 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
 
     private final MessagingClient messagingClient;
 
-    public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
-        this(normalize(host), newInstance().use(new BasicCredentialsProvider() {
+    public SmsMessagingApiImpl(final String host, final String rootEndpoint, final SmsCredentialsProvider auth) {
+        this(addLeadingSlash(host) + rootEndpoint, newInstance().use(new BasicCredentialsProvider() {
             public Credentials getCredentials(AuthScope authscope) {
                 return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
             }
         }));
+    }
+
+    public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
+        this(host, "service/sms/smsmessaging/", auth);
     }
 
     public SmsMessagingApiImpl(final String host, Executor executor) {
@@ -66,12 +68,5 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
             throw new NullPointerException("Receive address and message id can not be null");
         }
         return messagingClient.getMessage(receiveAddress, messageId);
-    }
-
-    private static String normalize(String host) {
-        if (host.charAt(host.length() - 1) != '/') {
-            host = host + "/";
-        }
-        return host;
     }
 }

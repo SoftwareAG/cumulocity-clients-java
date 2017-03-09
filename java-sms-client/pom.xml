@@ -81,6 +81,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>core-model</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>fluent-hc</artifactId>
 		</dependency>

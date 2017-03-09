@@ -1,15 +1,13 @@
 package com.cumulocity.sms.client.request;
 
+import com.cumulocity.model.sms.Address;
+import com.cumulocity.model.sms.OutgoingMessageRequest;
+import com.cumulocity.model.sms.SendMessageRequest;
 import com.cumulocity.sms.client.messaging.MessagingClient;
 import com.cumulocity.sms.client.messaging.SmsClientException;
-import com.cumulocity.sms.client.model.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.util.EntityUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,18 +15,16 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Map;
 
-import static com.cumulocity.sms.client.model.Protocol.ICCID;
+import static com.cumulocity.model.sms.Protocol.ICCID;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class MicroserviceRequestTest extends MessagingClient {
 
     public MicroserviceRequestTest() {
-        super("testBaseUrl", mock(Executor.class));
+        super("testBaseUrl/service/sms/smsmessaging/", mock(Executor.class));
     }
 
     @Test(expected = SmsClientException.class)
@@ -59,7 +55,7 @@ public class MicroserviceRequestTest extends MessagingClient {
         final ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
         verify(authorizedTemplate).execute(captor.capture());
 
-        assertThat(captor.getValue().toString()).isEqualTo("POST testBaseUrlservice/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1");
+        assertThat(captor.getValue().toString()).isEqualTo("POST testBaseUrl/service/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1");
     }
 
     @Test
@@ -71,13 +67,13 @@ public class MicroserviceRequestTest extends MessagingClient {
 
         ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
         verify(authorizedTemplate).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl" + "service/sms/smsmessaging/outbound/{senderAddress}/requests");
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests");
 
         verify(authorizedTemplate).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl" + "service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
 
         verify(authorizedTemplate).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl" + "service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
+        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
     }
 
     @Test

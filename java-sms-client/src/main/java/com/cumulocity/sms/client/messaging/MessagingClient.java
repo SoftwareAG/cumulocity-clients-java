@@ -1,9 +1,10 @@
 package com.cumulocity.sms.client.messaging;
 
-import com.cumulocity.sms.client.model.Address;
-import com.cumulocity.sms.client.model.IncomingMessage;
-import com.cumulocity.sms.client.model.IncomingMessages;
-import com.cumulocity.sms.client.model.OutgoingMessageRequest;
+import com.cumulocity.model.sms.Address;
+import com.cumulocity.model.sms.IncomingMessage;
+import com.cumulocity.model.sms.IncomingMessages;
+import com.cumulocity.model.sms.OutgoingMessageRequest;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,19 +22,27 @@ import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.svenson.JSON.defaultJSON;
 import static org.svenson.JSONParser.defaultJSONParser;
 
+@Getter
 @RequiredArgsConstructor
 public class MessagingClient {
-    
-    protected final String host;
+
+    public static String addLeadingSlash(String host) {
+        if (host.charAt(host.length() - 1) != '/') {
+            return host + "/";
+        }
+        return host;
+    }
+
+    protected final String rootEndpoint;
     protected final Executor authorizedTemplate;
 
     public String sendMessage(@NonNull Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
         try {
             final String body = defaultJSON().forValue(outgoingMessageRequest);
-            final Request request = Post(sendEndpoint() + senderAddress.asUrlParameter() + "/requests").bodyString(body, APPLICATION_JSON);
+            final String s = senderAddressAsUrlParameter(senderAddress);
+            final Request request = Post(sendEndpoint() + s + "/requests").bodyString(body, APPLICATION_JSON);
             final Response response = authorizedTemplate.execute(request);
             return parseResponseContent(response);
-
         } catch (IOException e) {
             throw new SmsClientException("Send sms request failure", e);
         }
@@ -60,15 +69,11 @@ public class MessagingClient {
     }
 
     private String sendEndpoint() {
-        return microserviceApiEndpoint() + "outbound/";
+        return addLeadingSlash(rootEndpoint) + "outbound/";
     }
 
     private String receiveEndpoint() {
-        return microserviceApiEndpoint() + "inbound/registrations/";
-    }
-
-    private String microserviceApiEndpoint() {
-        return host + "service/sms/smsmessaging/";
+        return addLeadingSlash(rootEndpoint) + "inbound/registrations/";
     }
 
     @SneakyThrows
@@ -81,5 +86,12 @@ public class MessagingClient {
             return EntityUtils.toString(httpResponse.getEntity());
         }
         return null;
+    }
+
+    private String senderAddressAsUrlParameter(@NonNull Address senderAddress) {
+        if (senderAddress == null || senderAddress.getNumber() == null) {
+            return null;
+        }
+        return senderAddress.asUrlParameter();
     }
 }

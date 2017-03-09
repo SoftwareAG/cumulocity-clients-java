@@ -1,9 +1,6 @@
 package com.cumulocity.sms.client;
 
-import com.cumulocity.sms.client.model.Address;
-import com.cumulocity.sms.client.model.IncomingMessage;
-import com.cumulocity.sms.client.model.IncomingMessages;
-import com.cumulocity.sms.client.model.SendMessageRequest;
+import com.cumulocity.model.sms.*;
 
 public interface SmsMessagingApi {
 
