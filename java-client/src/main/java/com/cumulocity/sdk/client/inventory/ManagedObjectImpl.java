@@ -93,6 +93,11 @@ public class ManagedObjectImpl implements ManagedObject {
     }
 
     @Override
+    public ManagedObjectRepresentation addChildDevice(ManagedObjectRepresentation representation) throws SDKException {
+        return restConnector.post(createChildDevicePath(), InventoryMediaType.MANAGED_OBJECT, representation);
+    }
+
+    @Override
     public ManagedObjectReferenceRepresentation getChildDevice(GId deviceId) throws SDKException {
 
         String path = createChildDevicePath() + "/" + deviceId.getValue();
@@ -118,7 +123,12 @@ public class ManagedObjectImpl implements ManagedObject {
         return restConnector.post(createChildAssetPath(), InventoryMediaType.MANAGED_OBJECT_REFERENCE,
                 createChildObject(childId));
     }
-    
+
+    @Override
+    public ManagedObjectRepresentation addChildAsset(ManagedObjectRepresentation representation) throws SDKException {
+        return restConnector.post(createChildAssetPath(), InventoryMediaType.MANAGED_OBJECT, representation);
+    }
+
     private ManagedObjectReferenceRepresentation createChildObject(GId childId) {
         ManagedObjectReferenceRepresentation morr = new ManagedObjectReferenceRepresentation();
         ManagedObjectRepresentation mor = new ManagedObjectRepresentation();
@@ -165,6 +175,11 @@ public class ManagedObjectImpl implements ManagedObject {
             throws SDKException {
         return restConnector.post(createChildAdditionPath(), InventoryMediaType.MANAGED_OBJECT_REFERENCE,
                 createChildObject(childId));
+    }
+
+    @Override
+    public ManagedObjectRepresentation addChildAddition(ManagedObjectRepresentation representation) throws SDKException {
+        return restConnector.post(createChildAdditionPath(), InventoryMediaType.MANAGED_OBJECT, representation);
     }
 
     private String createChildAdditionPath() throws SDKException {

@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client.inventory;
 
+import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT;
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE;
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -93,6 +94,20 @@ public class ManagedObjectImplTest {
         ManagedObjectReferenceRepresentation result = managedObject.addChildDevice(newChildDevice);
 
         // then 
+        assertThat(result, sameInstance(created));
+    }
+
+    @Test
+    public void testCreateAndAddChildDevice() throws SDKException {
+        //Given
+        ManagedObjectRepresentation created = new ManagedObjectRepresentation();
+        ManagedObjectRepresentation newChildDevice = new ManagedObjectRepresentation();
+        when(restConnector.post(CHILD_DEVICES_URL, MANAGED_OBJECT, newChildDevice)).thenReturn(created);
+
+        // when
+        ManagedObjectRepresentation result = managedObject.addChildDevice(newChildDevice);
+
+        // then
         assertThat(result, sameInstance(created));
     }
 
@@ -259,6 +274,20 @@ public class ManagedObjectImplTest {
     }
 
     @Test
+    public void testCreateAndAddChildAsset() throws Exception {
+        //Given
+        ManagedObjectRepresentation created = new ManagedObjectRepresentation();
+        ManagedObjectRepresentation newChildAsset = new ManagedObjectRepresentation();
+        when(restConnector.post(CHILD_ASSETS_URL, MANAGED_OBJECT, newChildAsset)).thenReturn(created);
+
+        // when
+        ManagedObjectRepresentation result = managedObject.addChildAsset(newChildAsset);
+
+        // then
+        assertThat(result, sameInstance(created));
+    }
+
+    @Test
     public void testAddChildAddition() throws Exception {
         //Given
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
@@ -267,6 +296,20 @@ public class ManagedObjectImplTest {
 
         // when
         ManagedObjectReferenceRepresentation result = managedObject.addChildAdditions(newChildAddition);
+
+        // then
+        assertThat(result, sameInstance(created));
+    }
+
+    @Test
+    public void testCreateAndAddChildAddition() throws Exception {
+        //Given
+        ManagedObjectRepresentation created = new ManagedObjectRepresentation();
+        ManagedObjectRepresentation newChildAddition = new ManagedObjectRepresentation();
+        when(restConnector.post(CHILD_ADDITIONS_URL, MANAGED_OBJECT, newChildAddition)).thenReturn(created);
+
+        // when
+        ManagedObjectRepresentation result = managedObject.addChildAddition(newChildAddition);
 
         // then
         assertThat(result, sameInstance(created));
