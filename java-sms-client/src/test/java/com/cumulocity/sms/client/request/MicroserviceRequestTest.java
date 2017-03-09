@@ -17,43 +17,52 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import static com.cumulocity.model.sms.Protocol.ICCID;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class MicroserviceRequestTest extends MessagingClient {
+public class MicroserviceRequestTest {
 
-    public MicroserviceRequestTest() {
-        super("testBaseUrl/service/sms/smsmessaging/", mock(Executor.class));
-    }
+    private MessagingClient client = new MessagingClient("testBaseUrl/service/sms/smsmessaging/", mock(Executor.class));
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenSendRequestFails() throws IOException {
-        when(authorizedTemplate.execute(any(Request.class))).thenThrow(IOException.class);
+        when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(new IOException("qwe"));
 
-        sendMessage(new Address(), new OutgoingMessageRequest());
+        catchException(client).sendMessage(new Address(), new OutgoingMessageRequest());
+
+        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
+        assertThat(caughtException()).hasMessage("Send sms request failure");
     }
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenGetMessagesRequestFails() throws IOException {
-        when(authorizedTemplate.execute(any(Request.class))).thenThrow(IOException.class);
+        when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        getAllMessages(new Address());
+        catchException(client).getAllMessages(new Address());
+
+        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
+        assertThat(caughtException()).hasMessage("Get sms messages failure");
     }
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenGetMessageRequestFails() throws IOException {
-        when(authorizedTemplate.execute(any(Request.class))).thenThrow(IOException.class);
+        when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        getMessage(new Address(), "1");
+        catchException(client).getMessage(new Address(), "1");
+
+        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
+        assertThat(caughtException()).hasMessage("Get sms message failure");
     }
 
     @Test
     public void shouldSendCorrectContentTypeInHeader() throws IOException {
-        sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
+        client.sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
 
         final ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
-        verify(authorizedTemplate).execute(captor.capture());
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
 
         assertThat(captor.getValue().toString()).isEqualTo("POST testBaseUrl/service/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1");
     }
@@ -61,18 +70,18 @@ public class MicroserviceRequestTest extends MessagingClient {
     @Test
     @Ignore
     public void shouldUseSecureEndpoint() throws IOException {
-        sendMessage(new Address(), new OutgoingMessageRequest());
-        getMessage(new Address(), "");
-        getAllMessages(new Address());
+        client.sendMessage(new Address(), new OutgoingMessageRequest());
+        client.getMessage(new Address(), "");
+        client.getAllMessages(new Address());
 
         ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
-        verify(authorizedTemplate).execute(captor.capture());
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
         assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests");
 
-        verify(authorizedTemplate).execute(captor.capture());
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
         assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
 
-        verify(authorizedTemplate).execute(captor.capture());
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
         assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
     }
 
@@ -82,10 +91,10 @@ public class MicroserviceRequestTest extends MessagingClient {
                 .withSender(Address.phoneNumber("123"))
                 .withReceiver(Address.phoneNumber("245"))
                 .withMessage("test text").build();
-        sendMessage(Address.phoneNumber("123"), new OutgoingMessageRequest(message));
+        client.sendMessage(Address.phoneNumber("123"), new OutgoingMessageRequest(message));
 
         final ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
-        verify(authorizedTemplate).execute(captor.capture());
+        verify(client.getAuthorizedTemplate()).execute(captor.capture());
 
         final HttpEntityEnclosingRequest actualRequest = getFieldValue(captor.getValue());
         assertThat(EntityUtils.toString(actualRequest.getEntity())).isEqualTo("{\"outboundSMSMessageRequest\":{\"address\":[{\"number\":\"245\"," +

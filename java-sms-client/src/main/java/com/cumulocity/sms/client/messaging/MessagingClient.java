@@ -33,8 +33,8 @@ public class MessagingClient {
         return host;
     }
 
-    protected final String rootEndpoint;
-    protected final Executor authorizedTemplate;
+    private final String rootEndpoint;
+    private final Executor authorizedTemplate;
 
     public String sendMessage(@NonNull Address senderAddress, OutgoingMessageRequest outgoingMessageRequest) {
         try {
