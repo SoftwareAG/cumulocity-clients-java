@@ -4,15 +4,20 @@ import com.cumulocity.model.sms.*;
 import com.cumulocity.sms.client.messaging.MessagingClient;
 import lombok.*;
 import lombok.experimental.Wither;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
+import java.net.URI;
+
 import static com.cumulocity.sms.client.messaging.MessagingClient.addLeadingSlash;
 import static org.apache.http.client.fluent.Executor.newInstance;
 
+@Slf4j
 @Getter
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
@@ -34,7 +39,7 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
             public Credentials getCredentials(AuthScope authscope) {
                 return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
             }
-        }));
+        }).authPreemptive(getHost(host)));
     }
 
     public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
@@ -68,5 +73,11 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
             throw new NullPointerException("Receive address and message id can not be null");
         }
         return messagingClient.getMessage(receiveAddress, messageId);
+    }
+
+
+    private static HttpHost getHost(String host) {
+        final URI uri = URI.create(host);
+        return new HttpHost(uri.getHost(), uri.getPort());
     }
 }
