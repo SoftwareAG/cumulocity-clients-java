@@ -43,12 +43,6 @@
 	</organization>
 
 	<dependencies>
-		<!-- Spring framework -->
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-		</dependency>
-		<!-- Service Apis -->
 		<dependency>
 			<groupId>com.cumulocity.sms.client</groupId>
 			<artifactId>sms-client</artifactId>
@@ -58,6 +52,18 @@
 			<groupId>com.cumulocity.email.client</groupId>
 			<artifactId>email-client</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.5.2</version>
 		</dependency>
 	</dependencies>
 	<build>
