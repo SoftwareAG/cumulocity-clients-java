@@ -147,7 +147,7 @@ public abstract class BaseAgentMojo extends AbstractMojo {
             final URL url = resource.url();
             getLog().debug("template found " + resource.getResourceName());
             final String path = new File(resource.getResourceName()).getPath();
-            final File destination = new File(dest, path.substring(path.indexOf('/')));
+            final File destination = new File(dest, path.substring(path.indexOf(File.separator)));
             Files.createParentDirs(destination);
             if (!destination.exists() || !asByteSource(url).contentEquals(asByteSource(destination))) {
                 asByteSource(url).copyTo(asByteSink(destination));
