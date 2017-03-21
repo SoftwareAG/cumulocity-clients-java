@@ -5,7 +5,7 @@
 #
 # To specify the required version, set the REQUIRED_VERSION to the major version required, 
 # e.g. 1.3, but not 1.3.1.
-if [ -n "$REQUIRED_VERSION"] 
+if [ -z $REQUIRED_VERSION ]
 then
 	REQUIRED_VERSION=1.7
 fi
@@ -16,7 +16,7 @@ JAVA_PATH=
 
 function java_version(){
 	$1 -version 2> tmp.ver 1> /dev/null
-	local version=`cat tmp.ver | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
+	local version=`cat tmp.ver | grep " version" | awk '{ print substr($3, 2, length($3)-2); }'`
 	rm tmp.ver
 	local result=`echo $version | awk '{ print substr($1, 1, 3); }' | sed -e 's;\.;0;g'`
 	echo $result
