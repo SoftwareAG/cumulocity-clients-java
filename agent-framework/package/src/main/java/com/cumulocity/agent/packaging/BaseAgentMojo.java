@@ -27,6 +27,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
@@ -110,7 +111,8 @@ public abstract class BaseAgentMojo extends AbstractMojo {
         createDirectories(destination.toPath());
         execution.setOverwrite(override);
         execution.setFilterFilenames(true);
-        execution.setDelimiters(Sets.newLinkedHashSet(ImmutableList.of("@*@")));
+        execution.setNonFilteredFileExtensions(ImmutableList.of("jks","jar"));
+        execution.setDelimiters(Sets.newLinkedHashSet(ImmutableSet.of("@*@")));
         execution.setSupportMultiLineFiltering(true);
         final Properties props = new Properties();
         props.put("package.name", name);
