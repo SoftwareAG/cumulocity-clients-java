@@ -18,6 +18,8 @@ public class DeviceCredentials {
 
     public static final String AUTH_PREFIX = "BASIC ";
 
+    public static final String PAYPAL_AUTH_PREFIX = "Paypal ";
+
     public static final String AUTH_SEPARATOR = ":";
 
     public static final String LOGIN_SEPARATOR = "/";
@@ -29,10 +31,12 @@ public class DeviceCredentials {
     private final String password;
 
     private final String appKey;
-    
+
     private final GId deviceId;
 
     private final int pageSize;
+
+    private final String authPrefix;
 
     private String tfaToken;
 
@@ -41,18 +45,23 @@ public class DeviceCredentials {
     }
 
     public DeviceCredentials(String tenant, String username, String password, String appKey, GId deviceId, int pageSize) {
+        this(tenant, username, password, appKey, deviceId, DEFAULT_PAGE_SIZE, AUTH_PREFIX);
+    }
+
+    public DeviceCredentials(String tenant, String username, String password, String appKey, GId deviceId, int pageSize, String authPrefix) {
         this.tenant = tenant;
         this.username = username;
         this.password = password;
         this.appKey = appKey;
         this.deviceId = deviceId;
         this.pageSize = pageSize;
+        this.authPrefix = authPrefix;
     }
 
     public static DeviceCredentials from(DeviceCredentialsRepresentation credentials) {
         return new DeviceCredentials(credentials.getTenantId(), credentials.getUsername(), credentials.getPassword(), null, null);
     }
-    
+
     public static DeviceCredentials from(String authorization, String appKey, String tfaToken, int pageSize) {
         DeviceCredentials deviceCredentials = from(authorization, appKey, pageSize);
         deviceCredentials.setTfaToken(tfaToken);
@@ -60,22 +69,32 @@ public class DeviceCredentials {
     }
 
     public static DeviceCredentials from(String authorization, String appKey, int pageSize) {
-        if (authorization == null || !authorization.toUpperCase().startsWith(AUTH_PREFIX)) {
+        // expected format [tenant]/username:password
+        if (acceptAuthorizationPrefix(authorization, AUTH_PREFIX)) {
+            String[] loginAndPass = decode(authorization);
+            String tenant = null;
+            String username = loginAndPass.length > 0 ? loginAndPass[0] : "";
+            String password = loginAndPass.length > 1 ? loginAndPass[1] : "";
+            String[] tenantAndUsername = splitUsername(username);
+            if (tenantAndUsername.length > 1) {
+                tenant = tenantAndUsername[0];
+                username = tenantAndUsername[1];
+            }
+            return new DeviceCredentials(tenant, username, password, appKey, null, pageSize, AUTH_PREFIX);
+            // expected format [tenant]:locationId:tabId
+        } else if (acceptAuthorizationPrefix(authorization, PAYPAL_AUTH_PREFIX)) {
+            String[] parts = decodePaypal(authorization);
+            String tenant = parts.length > 0 ? parts[0] : "";
+            String locationId = parts.length > 1 ? parts[1] : "";
+            String tabId = parts.length > 2 ? parts[2] : "";
+            return new DeviceCredentials(tenant, locationId, tabId, appKey, null, pageSize, PAYPAL_AUTH_PREFIX);
+        } else {
             return new DeviceCredentials(null, "", "", appKey, null, pageSize);
         }
+    }
 
-        String[] loginAndPass = decode(authorization);
-        String tenant = null;
-        String username = loginAndPass.length > 0 ? loginAndPass[0] : "";
-        String password = loginAndPass.length > 1 ? loginAndPass[1] : "";
-
-        String[] tenantAndUsername = splitUsername(username);
-        if (tenantAndUsername.length > 1) {
-            tenant = tenantAndUsername[0];
-            username = tenantAndUsername[1];
-        }
-
-        return new DeviceCredentials(tenant, username, password, appKey, null, pageSize);
+    private static boolean acceptAuthorizationPrefix(String authorization, String authPrefix) {
+        return authorization != null && authorization.toUpperCase().startsWith(authPrefix.toUpperCase());
     }
 
     public static String[] splitUsername(String username) {
@@ -83,14 +102,22 @@ public class DeviceCredentials {
     }
 
     public static String[] decode(String authorization) {
-        try {
+        return decode(authorization, AUTH_PREFIX, 2);
+    }
 
-            return new String(Base64.decode(authorization.substring(AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(
-                    AUTH_SEPARATOR, 2);
+    public static String[] decodePaypal(String authorization) {
+        return decode(authorization, PAYPAL_AUTH_PREFIX, 3);
+    }
+
+    private static String[] decode(String authorization, String authPrefix, int limit) {
+        try {
+            return new String(Base64.decode(authorization.substring(PAYPAL_AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(
+                    AUTH_SEPARATOR, 3);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public String getTenant() {
         return tenant;
@@ -107,11 +134,11 @@ public class DeviceCredentials {
     public String getAppKey() {
         return appKey;
     }
-    
+
     public String getTfaToken() {
         return tfaToken;
     }
-    
+
     public GId getDeviceId() {
         return deviceId;
     }
@@ -184,7 +211,7 @@ public class DeviceCredentials {
     private String tenant(DeviceCredentials credentials) {
         return isNullOrEmpty(credentials.getTenant()) ? "" : credentials.getTenant() + "/";
     }
-    
+
     private void setTfaToken(String tfaToken) {
         this.tfaToken = tfaToken;
     }
