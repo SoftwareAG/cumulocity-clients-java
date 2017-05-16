@@ -42,6 +42,8 @@ public class PlatformParameters {
 
     private String password;
 
+    private String authPrefix;
+
     private CumulocityLogin cumulocityLogin;
 
     private String proxyHost;
@@ -91,6 +93,7 @@ public class PlatformParameters {
         this.applicationKey = credentials.getApplicationKey();
         this.cumulocityLogin = credentials.getLogin();
         this.requestOrigin = credentials.getRequestOrigin();
+        this.authPrefix = credentials.getAuthPrefix() == null ? "Basic" : credentials.getAuthPrefix();
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
@@ -136,6 +139,10 @@ public class PlatformParameters {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getAuthPrefix() {
+        return authPrefix;
     }
 
     public String getProxyHost() {

@@ -22,9 +22,9 @@ public class DeviceCredentialsTest {
 
     @Test
     public void parseBasicAuthorization() throws UnsupportedEncodingException {
-        String auth = "tenantId:user:password";
+        String auth = "tenantId/user:password";
 
-        DeviceCredentials actual = DeviceCredentials.from("Paypal " + encode(auth), APP_KEY, PAGE_SIZE);
+        DeviceCredentials actual = DeviceCredentials.from("BASIC " + encode(auth), APP_KEY, PAGE_SIZE);
 
         DeviceCredentials expected = new DeviceCredentials("tenantId", "user", "password", APP_KEY, null, PAGE_SIZE, AUTH_PREFIX);
         assertThat(actual).isEqualTo(expected);

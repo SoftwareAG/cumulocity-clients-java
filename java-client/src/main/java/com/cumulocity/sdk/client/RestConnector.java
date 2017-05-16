@@ -359,7 +359,7 @@ public class RestConnector {
         CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new AuthFilters.HTTPBasic(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getAuthPrefix()));
         return client;
     }
 
@@ -388,10 +388,10 @@ public class RestConnector {
         Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
         client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new AuthFilters.HTTPBasic(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getAuthPrefix()));
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
-            client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
-                    .getProxyPassword()));
+            client.addFilter(new AuthFilters.HTTPBasicProxy(platformParameters.getProxyUserId(),
+                    platformParameters.getProxyPassword(), platformParameters.getAuthPrefix()));
         }
         return client;
     }
