@@ -1,5 +1,6 @@
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
@@ -10,23 +11,43 @@ import java.io.UnsupportedEncodingException;
 
 public class AuthFilters {
 
-    /**
-     * Copied from com.sun.jersey.api.client.filter.HTTPBasicAuthFilter
-     */
-    public static final class HTTPBasic extends ClientFilter {
-        private final String authentication;
+    public abstract static class BaseFilter extends ClientFilter {
 
-        public HTTPBasic(String username, String password, String authPrefix) {
+        protected final String authorization;
+
+        protected BaseFilter(String username, String password, String authPrefix) {
             try {
-                this.authentication = authPrefix + " " + new String(Base64.encode(username + ":" + password), "ASCII");
-            } catch (UnsupportedEncodingException var4) {
-                throw new RuntimeException(var4);
+                String credentials = formatCredentials(username, password, authPrefix);
+                this.authorization = authPrefix + " " + new String(Base64.encode(credentials), "ASCII");
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex);
             }
         }
 
+        static String formatCredentials(String username, String password, String authPrefix) {
+            // for some reason paypal authorization header has format:
+            // "Paypal tenant:user:password"
+            // while basic authorization header:
+            // "Basic tenant/user:password"
+            if (CumulocityCredentials.PAYPAL_AUTH_PREFIX.equalsIgnoreCase(authPrefix)) {
+                username = username.replace("/", ":");
+            }
+            return String.format("%s:%s", username, password);
+
+        }
+    }
+
+    /**
+     * Copied from com.sun.jersey.api.client.filter.HTTPBasicAuthFilter
+     */
+    public static final class HTTPBasic extends BaseFilter {
+        public HTTPBasic(String username, String password, String authPrefix) {
+            super(username, password, authPrefix);
+        }
+
         public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-            if(!cr.getMetadata().containsKey("Authorization")) {
-                cr.getMetadata().add("Authorization", this.authentication);
+            if (!cr.getMetadata().containsKey("Authorization")) {
+                cr.getMetadata().add("Authorization", authorization);
             }
 
             return this.getNext().handle(cr);
@@ -36,11 +57,9 @@ public class AuthFilters {
     /**
      * Copied from com.cumulocity.sdk.client.HTTPBasicProxyAuthenticationFilter
      */
-    public static final class HTTPBasicProxy extends ClientFilter {
+    public static final class HTTPBasicProxy extends BaseFilter {
 
         private static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
-
-        private final String authentication;
 
         /**
          * Creates a new HTTP Proxy-Authorization filter using provided username
@@ -50,19 +69,14 @@ public class AuthFilters {
          * @param password
          */
         public HTTPBasicProxy(final String username, final String password, String authPrefix) {
-            try {
-                authentication = authPrefix + " " + new String(Base64.encode(username + ":" + password), "ASCII");
-            } catch (UnsupportedEncodingException ex) {
-                // This should never occur
-                throw new RuntimeException(ex);
-            }
+            super(username, password, authPrefix);
         }
 
         @Override
         public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
 
             if (!cr.getHeaders().containsKey(PROXY_AUTHORIZATION)) {
-                cr.getHeaders().putSingle(PROXY_AUTHORIZATION, authentication);
+                cr.getHeaders().putSingle(PROXY_AUTHORIZATION, authorization);
             }
             return getNext().handle(cr);
         }
