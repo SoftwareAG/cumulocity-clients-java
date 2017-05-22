@@ -153,7 +153,7 @@ public class DeviceCredentials {
 
     @Override
     public String toString() {
-        return tenant + " " + username;
+        return tenant + " " + username + " (" + authPrefix + ")";
     }
 
     @Override
