@@ -24,7 +24,9 @@ public class SmartExecutorServiceImplTest {
             futures[i] = executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    executed[0]++;
+                    synchronized (executed) {
+                        executed[0]++;
+                    }
                 }
             });
         }
