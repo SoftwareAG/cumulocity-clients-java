@@ -1,20 +1,21 @@
 package com.cumulocity.sdk.client;
 
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
 import com.sun.jersey.core.spi.component.ioc.IoCComponentProviderFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CumulocityHttpClient extends ApacheHttpClient {
+public class CumulocityHttpClient extends ApacheHttpClient4 {
 
     private final Pattern hostPattern = Pattern.compile("((http|https):\\/\\/.+?)(\\/|\\?|$)");
 
     private PlatformParameters platformParameters;
 
-    CumulocityHttpClient(ApacheHttpClientHandler createDefaultClientHander, IoCComponentProviderFactory provider) {
-        super(createDefaultClientHander, provider);
+    CumulocityHttpClient(ApacheHttpClient4Handler createDefaultClientHander, ClientConfig cc, IoCComponentProviderFactory provider) {
+        super(createDefaultClientHander, cc, provider);
     }
 
     @Override

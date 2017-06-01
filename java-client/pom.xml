@@ -85,10 +85,20 @@
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>rest-representation</artifactId>
 		</dependency>
+		
+		<!--
 		<dependency>
 			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
 			<artifactId>jersey-apache-client</artifactId>
 		</dependency>
+		-->
+		
+		<dependency>
+    		<groupId>com.sun.jersey.contribs</groupId>
+ 		   	<artifactId>jersey-apache-client4</artifactId>
+  		  <version>1.8</version>
+		</dependency>
+		
 		<dependency>
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>jersey-multipart</artifactId>

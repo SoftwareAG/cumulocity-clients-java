@@ -35,15 +35,30 @@ import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
+
+
+
+
 import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.params.ConnManagerPNames;
+import org.apache.http.conn.params.ConnPerRoute;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SchemeRegistryFactory;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -54,6 +69,7 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
@@ -83,6 +99,14 @@ public class RestConnector {
         ErrorMessageRepresentationReader.class};
 
     private static final int READ_TIMEOUT_IN_MILLIS = 180000;
+    
+    private static final int MAX_CONNECTIONS_PER_ROUTE=100;
+    private static final int MAX_CONNECTIONS_PER_HOST=100;
+    
+    
+    private static final int CONNECTION_MANAGER_TIMEOUT_MS=10000;
+    
+    
 
     private final PlatformParameters platformParameters;
 
@@ -341,35 +365,45 @@ public class RestConnector {
     }
 
     public static Client createClient(PlatformParameters platformParameters) {
-
-        DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
-
+    	
+    	//set up client config based on platform parameters
+    	ApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
+    	
         if (isProxyRequired(platformParameters)) {
-            config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI,
+            config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI,
                     "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
             if (isProxyAuthenticationRequired(platformParameters)) {
-                config.getState().setProxyCredentials(null, platformParameters.getProxyHost(), platformParameters.getProxyPort(),
-                        platformParameters.getProxyUserId(), platformParameters.getProxyPassword());
-            }
+            	config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, platformParameters.getProxyUserId());
+            	config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, platformParameters.getProxyPassword());
+                }
         }
 
         registerClasses(config);
-        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
+        config.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
+        
+        //set-up a threaded connection manager and configure it
+    	BasicHttpParams httpParams = new BasicHttpParams();
+    	HttpConnectionParams.setSoTimeout(httpParams, CONNECTION_MANAGER_TIMEOUT_MS);	   	
+    	SchemeRegistry schemeReg = SchemeRegistryFactory.createDefault();
 
-        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
+    	ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager(schemeReg,CONNECTION_MANAGER_TIMEOUT_MS,TimeUnit.MILLISECONDS);
+    	
+    	connManager.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
+    	connManager.setMaxTotal(MAX_CONNECTIONS_PER_HOST);
+        
+        //Generate Client handler that makes use of this connection manager
+    	final HttpClient rootClient = new DefaultHttpClient(connManager);
+    	 	
+    	ApacheHttpClient4Handler clientHandler =  new ApacheHttpClient4Handler(rootClient,null,false);
+        
+        CumulocityHttpClient client = new CumulocityHttpClient(clientHandler,config,null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
         return client;
     }
 
-    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
-        MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        httpConnectionManager.setMaxConnectionsPerHost(20);
-        final HttpClient client = new HttpClient(httpConnectionManager);
-        client.getParams().setConnectionManagerTimeout(10000);
-        return new ApacheHttpClientHandler(client, cc);
-    }
+  
 
     private static boolean isProxyAuthenticationRequired(PlatformParameters platformParameters) {
         return hasText(platformParameters.getProxyUserId()) && hasText(platformParameters.getProxyPassword());
