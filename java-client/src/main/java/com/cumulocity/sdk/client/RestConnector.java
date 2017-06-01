@@ -367,7 +367,26 @@ public class RestConnector {
     public static Client createClient(PlatformParameters platformParameters) {
     	
     	//set up client config based on platform parameters
-    	ApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
+    	ApacheHttpClient4Config config = createApache4ClientConfig(platformParameters);
+    
+    	ThreadSafeClientConnManager connManager = createConnectionManager();
+        
+        //Generate Client handler that makes use of this connection manager
+    	final HttpClient rootClient = new DefaultHttpClient(connManager);
+    	ApacheHttpClient4Handler clientHandler =  new ApacheHttpClient4Handler(rootClient,null,false);
+    	
+    	//setup client and configure it
+        CumulocityHttpClient client = new CumulocityHttpClient(clientHandler,config,null);
+        client.setPlatformParameters(platformParameters);
+        client.setFollowRedirects(true);
+        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+      
+        return client;
+    }
+    
+    
+	private static ApacheHttpClient4Config createApache4ClientConfig(PlatformParameters platformParameters) {
+		ApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
     	
         if (isProxyRequired(platformParameters)) {
             config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI,
@@ -380,9 +399,12 @@ public class RestConnector {
 
         registerClasses(config);
         config.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
-        
-        //set-up a threaded connection manager and configure it
-    	BasicHttpParams httpParams = new BasicHttpParams();
+		return config;
+	}
+
+    //set-up a threaded connection manager and configure it
+	private static ThreadSafeClientConnManager createConnectionManager() {
+		BasicHttpParams httpParams = new BasicHttpParams();
     	HttpConnectionParams.setSoTimeout(httpParams, CONNECTION_MANAGER_TIMEOUT_MS);	   	
     	SchemeRegistry schemeReg = SchemeRegistryFactory.createDefault();
 
@@ -390,18 +412,8 @@ public class RestConnector {
     	
     	connManager.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
     	connManager.setMaxTotal(MAX_CONNECTIONS_PER_HOST);
-        
-        //Generate Client handler that makes use of this connection manager
-    	final HttpClient rootClient = new DefaultHttpClient(connManager);
-    	 	
-    	ApacheHttpClient4Handler clientHandler =  new ApacheHttpClient4Handler(rootClient,null,false);
-        
-        CumulocityHttpClient client = new CumulocityHttpClient(clientHandler,config,null);
-        client.setPlatformParameters(platformParameters);
-        client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
-        return client;
-    }
+		return connManager;
+	}
 
   
 
