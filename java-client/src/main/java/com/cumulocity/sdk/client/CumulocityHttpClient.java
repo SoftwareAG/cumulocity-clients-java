@@ -42,7 +42,7 @@ public class CumulocityHttpClient extends ApacheHttpClient4 {
 
     private String getInitialHost() {
         String initialHost = platformParameters.getHost();
-        if(initialHost.endsWith("/")) {
+        if (initialHost.endsWith("/")) {
             initialHost = initialHost.substring(0, initialHost.length() - 1);
         }
         return initialHost;
