@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -43,10 +44,10 @@
 	</organization>
 
 	<dependencies>
-        <dependency>
-            <groupId>com.nsn.cumulocity.shared-components</groupId>
-            <artifactId>common-notification</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.shared-components</groupId>
+			<artifactId>common-notification</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.shared-components</groupId>
 			<artifactId>common-rest</artifactId>
@@ -68,16 +69,16 @@
 					<artifactId>common-exception</artifactId>
 				</exclusion>
 				<exclusion>
-                 	<groupId>com.nsn.cumulocity.shared-components</groupId>
-                	 <artifactId>common-spring</artifactId>
-                </exclusion>
-				<exclusion>
-				    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-				    <groupId>org.apache.cxf</groupId>
+					<groupId>com.nsn.cumulocity.shared-components</groupId>
+					<artifactId>common-spring</artifactId>
 				</exclusion>
 				<exclusion>
-				    <artifactId>cxf-rt-transports-http-jetty</artifactId>
-				    <groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+					<groupId>org.apache.cxf</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>cxf-rt-transports-http-jetty</artifactId>
+					<groupId>org.apache.cxf</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -85,24 +86,10 @@
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>rest-representation</artifactId>
 		</dependency>
-		
-		<!--
 		<dependency>
 			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-			<artifactId>jersey-apache-client</artifactId>
+			<artifactId>jersey-multipart</artifactId>
 		</dependency>
-		-->
-		
-		<dependency>
-    		<groupId>com.sun.jersey.contribs</groupId>
- 		   	<artifactId>jersey-apache-client4</artifactId>
-  		  <version>1.8</version>
-		</dependency>
-		
-		<dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-            <artifactId>jersey-multipart</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -112,7 +99,12 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-apache-client4</artifactId>
+			<version>${jersey.apache.http4.version}</version>
+		</dependency>
+	
 		<!-- Testing -->
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
@@ -136,33 +128,33 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-        	<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-        	<artifactId>guava</artifactId>
-        	<scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+			<artifactId>guava</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-            <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                            <execution>
-                                    <id>bundle-sources</id>
-                                    <phase>package</phase>
-                                    <goals>
-                                            <!-- produce source artifact for main project sources -->
-                                            <goal>jar-no-fork</goal>
-                                    </goals>
-                            </execution>
-                    </executions>
-            </plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>bundle-sources</id>
+						<phase>package</phase>
+						<goals>
+							<!-- produce source artifact for main project sources -->
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -257,15 +249,16 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-				    <shadedArtifactAttached>true</shadedArtifactAttached>
-				    <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
 					<transformers>
-						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 					</transformers>
 				</configuration>
 				<executions>
@@ -276,7 +269,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
