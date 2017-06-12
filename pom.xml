@@ -5,18 +5,18 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>8.4.0</version>
+		<version>8.5.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>8.4.1-SNAPSHOT</version>
+	<version>8.5.1-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<scm>
-		<connection>scm:hg:https://bitbucket.org/m2m/cumulocity-clients-java</connection>
+		<connection>scm:hg:ssh://hg@bitbucket.org/m2m/cumulocity-clients-java</connection>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -34,8 +34,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>8.4.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.4.0</cumulocity.shared-components.version>
+		<cumulocity.model.version>8.5.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>8.5.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
