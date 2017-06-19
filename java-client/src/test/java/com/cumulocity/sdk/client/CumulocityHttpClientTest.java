@@ -1,16 +1,18 @@
 package com.cumulocity.sdk.client;
 
 import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.mock;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 public class CumulocityHttpClientTest {
     
@@ -45,14 +47,14 @@ public class CumulocityHttpClientTest {
     }
     
     public static CumulocityHttpClient createClient(PlatformParameters platformParameters) {
-        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(), null);
+        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(), mock(ClientConfig.class),null);
         client.setPlatformParameters(platformParameters);
         return client;
     }
     
-    private static ApacheHttpClientHandler createDefaultClientHander() {
-        final HttpClient client = new HttpClient(new MultiThreadedHttpConnectionManager());
-        return new ApacheHttpClientHandler(client, mock(ClientConfig.class));
+    private static ApacheHttpClient4Handler createDefaultClientHander() {
+        final HttpClient client = new DefaultHttpClient(new ThreadSafeClientConnManager());
+        return new ApacheHttpClient4Handler(client, null, false);
     }
 
 }
