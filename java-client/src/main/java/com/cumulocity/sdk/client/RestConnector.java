@@ -19,31 +19,6 @@
  */
 package com.cumulocity.sdk.client;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
-import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SchemeRegistryFactory;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-
 import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
@@ -60,13 +35,28 @@ import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
-import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
+import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+
+import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 public class RestConnector {
 
@@ -84,21 +74,15 @@ public class RestConnector {
     }
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
-
+    
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
-
+    
     private static final String TFA_TOKEN_HEADER = "TFAToken";
 
-    private final static Class<?>[] PROVIDERS_CLASSES = { CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
-            ErrorMessageRepresentationReader.class };
+    private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
+        ErrorMessageRepresentationReader.class};
 
     private static final int READ_TIMEOUT_IN_MILLIS = 180000;
-
-    private static final int MAX_CONNECTIONS_PER_ROUTE = 100;
-
-    private static final int MAX_CONNECTIONS_PER_HOST = 100;
-
-    private static final int CONNECTION_MANAGER_TIMEOUT_MS = 10000;
 
     private final PlatformParameters platformParameters;
 
@@ -132,7 +116,7 @@ public class RestConnector {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parse(response, OK.getStatusCode(), responseType);
     }
-
+    
     public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parseObject(response, OK.getStatusCode(), responseType);
@@ -165,7 +149,7 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
 
     }
-
+    
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
         builder = addApplicationKeyHeader(builder);
@@ -180,7 +164,8 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
     }
 
-    public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content, Class<T> responseClass) {
+    public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
+            Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -190,8 +175,9 @@ public class RestConnector {
         }
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), CREATED.getStatusCode());
     }
-
-    public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content, Class<T> responseClass) {
+    
+    public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
+            Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -203,8 +189,9 @@ public class RestConnector {
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
     }
-
-    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, Class<T> responseClass) {
+    
+    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
+            Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -219,8 +206,7 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation)
-            throws SDKException {
+    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
@@ -264,14 +250,12 @@ public class RestConnector {
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation)
-            throws SDKException {
+    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
-
-    public <T extends ResourceRepresentation> void postWithoutResponse(String path, CumulocityMediaType mediaType, T representation)
-            throws SDKException {
+    
+    public <T extends ResourceRepresentation> void postWithoutResponse(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -280,8 +264,11 @@ public class RestConnector {
         responseParser.checkStatus(response, CREATED.getStatusCode());
     }
 
-    public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(final String path,
-            final CumulocityMediaType contentType, final CumulocityMediaType accept, final Param representation,
+    public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(
+            final String path,
+            final CumulocityMediaType contentType,
+            final CumulocityMediaType accept,
+            final Param representation,
             final Class<Result> clazz) {
         ClientResponse response = httpPost(path, contentType, accept, representation);
         return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode());
@@ -300,14 +287,14 @@ public class RestConnector {
         }
         return builder;
     }
-
+    
     private Builder addTfaHeader(Builder builder) {
         if (platformParameters.getTfaToken() != null) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
-
+    
     private Builder addRequestOriginHeader(Builder builder) {
         if (platformParameters.getRequestOrigin() != null) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
@@ -320,8 +307,7 @@ public class RestConnector {
         return responseParser.parse(response, responseCode, type);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType,
-            CumulocityMediaType accept, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType, CumulocityMediaType accept, T representation) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(accept);
@@ -356,53 +342,33 @@ public class RestConnector {
 
     public static Client createClient(PlatformParameters platformParameters) {
 
-        // set up client config based on platform parameters
-        ApacheHttpClient4Config config = createApache4ClientConfig(platformParameters);
-
-        ThreadSafeClientConnManager connManager = createConnectionManager();
-
-        // Generate Client handler that makes use of this connection manager
-        final HttpClient rootClient = new DefaultHttpClient(connManager);
-        ApacheHttpClient4Handler clientHandler = new ApacheHttpClient4Handler(rootClient, null, false);
-
-        // setup client and configure it
-        CumulocityHttpClient client = new CumulocityHttpClient(clientHandler, config, null);
-        client.setPlatformParameters(platformParameters);
-        client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
-
-        return client;
-    }
-
-    private static ApacheHttpClient4Config createApache4ClientConfig(PlatformParameters platformParameters) {
-        ApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
+        DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
 
         if (isProxyRequired(platformParameters)) {
-            config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI,
+            config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI,
                     "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
             if (isProxyAuthenticationRequired(platformParameters)) {
-                config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, platformParameters.getProxyUserId());
-                config.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, platformParameters.getProxyPassword());
+                config.getState().setProxyCredentials(null, platformParameters.getProxyHost(), platformParameters.getProxyPort(),
+                        platformParameters.getProxyUserId(), platformParameters.getProxyPassword());
             }
         }
 
         registerClasses(config);
-        config.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
-        return config;
+        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
+
+        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
+        client.setPlatformParameters(platformParameters);
+        client.setFollowRedirects(true);
+        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        return client;
     }
 
-    // set-up a threaded connection manager and configure it
-    private static ThreadSafeClientConnManager createConnectionManager() {
-        BasicHttpParams httpParams = new BasicHttpParams();
-        HttpConnectionParams.setSoTimeout(httpParams, CONNECTION_MANAGER_TIMEOUT_MS);
-        SchemeRegistry schemeReg = SchemeRegistryFactory.createDefault();
-
-        ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager(schemeReg, CONNECTION_MANAGER_TIMEOUT_MS,
-                TimeUnit.MILLISECONDS);
-
-        connManager.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
-        connManager.setMaxTotal(MAX_CONNECTIONS_PER_HOST);
-        return connManager;
+    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
+        MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
+        httpConnectionManager.setMaxConnectionsPerHost(20);
+        final HttpClient client = new HttpClient(httpConnectionManager);
+        client.getParams().setConnectionManagerTimeout(10000);
+        return new ApacheHttpClientHandler(client, cc);
     }
 
     private static boolean isProxyAuthenticationRequired(PlatformParameters platformParameters) {
@@ -424,8 +390,8 @@ public class RestConnector {
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
-            client.addFilter(
-                    new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters.getProxyPassword()));
+            client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
+                    .getProxyPassword()));
         }
         return client;
     }

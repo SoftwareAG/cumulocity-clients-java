@@ -2,7 +2,7 @@ package com.cumulocity.agent.server.repository;
 
 import static com.cumulocity.rest.representation.tenant.OptionMediaType.OPTION;
 
-import org.apache.http.HttpStatus;
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
