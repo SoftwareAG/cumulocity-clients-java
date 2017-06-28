@@ -34,8 +34,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>8.7.2</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.7.1</cumulocity.shared-components.version>
+		<cumulocity.model.version>8.7.3</cumulocity.model.version>
+		<cumulocity.shared-components.version>8.7.2</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
