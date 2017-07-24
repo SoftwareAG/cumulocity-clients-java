@@ -20,15 +20,14 @@
 
 package com.cumulocity.sdk.client;
 
-import javax.ws.rs.core.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.MediaType;
 
 public class ResponseParser {
     
@@ -49,11 +48,14 @@ public class ResponseParser {
         return response.getEntity(type);
     }
 
-    public void checkStatus(ClientResponse response, int expectedStatusCode) throws SDKException {
+    public void checkStatus(ClientResponse response, int... expectedStatusCodes) throws SDKException {
         int status = response.getStatus();
-        if (status != expectedStatusCode) {
-            throw new SDKException(status, getErrorMessage(response, status));
+        for (int expectedStatusCode : expectedStatusCodes) {
+            if (status == expectedStatusCode) {
+                return;
+            }
         }
+        throw new SDKException(status, getErrorMessage(response, status));
     }
 
     protected String getErrorMessage(ClientResponse response, int status) {
