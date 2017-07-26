@@ -254,14 +254,14 @@ public class RestConnector {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
-    
-    public <T extends ResourceRepresentation> void postWithoutResponse(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+
+    public <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         ClientResponse response = builder.post(ClientResponse.class, representation);
-        responseParser.checkStatus(response, CREATED.getStatusCode());
+        responseParser.checkStatus(response, CREATED.getStatusCode(), ACCEPTED.getStatusCode());
     }
 
     public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(
