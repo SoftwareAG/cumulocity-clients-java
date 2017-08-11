@@ -28,6 +28,7 @@ import com.cumulocity.rest.representation.ResourceRepresentationWithId;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -132,6 +133,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         return builder.get(ClientResponse.class);
     }
 
@@ -141,6 +143,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -170,6 +173,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -182,6 +186,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(mediaType);
         }
@@ -196,6 +201,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         if (platformParameters.requireResponseBody()) {
             builder.accept(MediaType.APPLICATION_JSON);
         }
@@ -260,6 +266,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         ClientResponse response = builder.post(ClientResponse.class, representation);
         responseParser.checkStatus(response, CREATED.getStatusCode(), ACCEPTED.getStatusCode());
     }
@@ -302,6 +309,15 @@ public class RestConnector {
         return builder;
     }
 
+    private Builder applyInterceptors(Builder builder) {
+        synchronized (platformParameters.interceptorSet) {
+            for(HttpClientInterceptor interceptor: platformParameters.interceptorSet) {
+                builder = interceptor.apply(builder);
+            }
+            return builder;
+        }
+    }
+
     private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
             throws SDKException {
         return responseParser.parse(response, responseCode, type);
@@ -315,6 +331,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         return builder.post(ClientResponse.class, representation);
     }
 
@@ -327,6 +344,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         return builder.put(ClientResponse.class, representation);
     }
 
@@ -336,6 +354,7 @@ public class RestConnector {
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
         ClientResponse response = builder.delete(ClientResponse.class);
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
