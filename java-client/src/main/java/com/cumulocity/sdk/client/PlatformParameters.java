@@ -23,6 +23,11 @@ package com.cumulocity.sdk.client;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
 import com.cumulocity.sdk.client.buffering.*;
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  Keeps credentials and client configuration.
@@ -72,6 +77,8 @@ public class PlatformParameters {
 
     private String tfaToken;
 
+    Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
+    
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -239,7 +246,15 @@ public class PlatformParameters {
             bufferProcessor.shutdown();
         }
     }
+
+    public boolean registerInterceptor(HttpClientInterceptor interceptor) {
+        return interceptorSet.add(interceptor);
+    }
     
+    public boolean unregisterInterceptor(HttpClientInterceptor interceptor) {
+        return interceptorSet.remove(interceptor);
+    }
+
     private class DisabledBufferRequestService implements BufferRequestService {
 
         @Override
