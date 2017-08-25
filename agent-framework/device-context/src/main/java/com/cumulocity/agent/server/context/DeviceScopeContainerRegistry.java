@@ -9,6 +9,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+/**
+ * todo: This class may cause memory leaks?
+ */
 public class DeviceScopeContainerRegistry implements ScopeContainerRegistry {
 
     private LoadingCache<DeviceCredentials, ScopeContainer> scopes = CacheBuilder.newBuilder().concurrencyLevel(16)
