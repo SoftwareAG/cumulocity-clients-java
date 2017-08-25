@@ -13,7 +13,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  * Be careful with equals and hashcode.{@link DeviceScopeContainerRegistry}
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(of = {"tenant", "username", "password", "appKey", "deviceId", "pageSize"})
 public class DeviceCredentials {
 
     public static final int DEFAULT_PAGE_SIZE = 25;

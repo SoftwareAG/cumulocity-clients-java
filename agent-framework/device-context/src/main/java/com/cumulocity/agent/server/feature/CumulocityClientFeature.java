@@ -1,15 +1,7 @@
 package com.cumulocity.agent.server.feature;
 
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import c8y.inject.ContextScope;
 import c8y.inject.DeviceScope;
-
 import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.context.DeviceCredentials;
 import com.cumulocity.agent.server.context.scope.ContextScopedSubscriber;
@@ -29,9 +21,17 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
-
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class CumulocityClientFeature {
@@ -162,6 +162,30 @@ public class CumulocityClientFeature {
 
     public static class CumulocityClientFactoryBean extends AbstractFactoryBean<PlatformImpl> implements FactoryBean<PlatformImpl> {
 
+        private LoadingCache<DeviceCredentials, PlatformImpl> cached = CacheBuilder.newBuilder()
+                .build(new CacheLoader<DeviceCredentials, PlatformImpl>() {
+                    public PlatformImpl load(DeviceCredentials login) throws Exception {
+                        final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
+                                login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
+                        platformImpl.setForceInitialHost(forceInitialHost);
+                        platformImpl.setTfaToken(login.getTfaToken());
+
+                        return proxy(platformImpl);
+                    }
+
+                    private PlatformImpl proxy(PlatformImpl platform) {
+                        String proxyHost = proxy.or("");
+                        if (proxyHost.length() > 0) {
+                            platform.setProxyHost(proxyHost);
+                        }
+                        Integer port = proxyPort.or(0);
+                        if (port > 0) {
+                            platform.setProxyPort(port);
+                        }
+                        return platform;
+                    }
+                });
+
         private final DeviceContextService contextService;
 
         private final String host;
@@ -183,28 +207,10 @@ public class CumulocityClientFeature {
 
         @Override
         protected PlatformImpl createInstance() throws Exception {
-            return create(contextService.getCredentials());
-        }
-
-        private PlatformImpl create(DeviceCredentials login) throws Exception {
-            final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
-                    login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
-            platformImpl.setForceInitialHost(forceInitialHost);
-            platformImpl.setTfaToken(login.getTfaToken());
-
-            return proxy(platformImpl);
-        }
-
-        private PlatformImpl proxy(PlatformImpl platform) {
-            String proxyHost = proxy.or("");
-            if (proxyHost.length() > 0) {
-                platform.setProxyHost(proxyHost);
-            }
-            Integer port = proxyPort.or(0);
-            if (port > 0) {
-                platform.setProxyPort(port);
-            }
-            return platform;
+            final DeviceCredentials credentials = contextService.getCredentials();
+            final PlatformImpl result = cached.getUnchecked(credentials);
+            result.setTfaToken(credentials.getTfaToken());
+            return result;
         }
 
         @Override
@@ -214,7 +220,7 @@ public class CumulocityClientFeature {
 
         @Override
         public boolean isSingleton() {
-            return true;
+            return false;
         }
 
     }

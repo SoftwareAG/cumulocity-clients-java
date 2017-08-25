@@ -1,7 +1,5 @@
 package com.cumulocity.agent.server.context;
 
-import java.util.concurrent.ExecutionException;
-
 import com.cumulocity.agent.server.context.scope.DefaultScopeContainer;
 import com.cumulocity.agent.server.context.scope.ScopeContainer;
 import com.google.common.base.Throwables;
@@ -9,8 +7,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import java.util.concurrent.ExecutionException;
+
 /**
- * todo: This class may cause memory leaks?
+ * May cause memory leaks for users that are removed or users with changed passwords - cache is never invalidated.
  */
 public class DeviceScopeContainerRegistry implements ScopeContainerRegistry {
 
@@ -18,7 +18,7 @@ public class DeviceScopeContainerRegistry implements ScopeContainerRegistry {
             .build(new CacheLoader<DeviceCredentials, ScopeContainer>() {
                 public ScopeContainer load(DeviceCredentials key) throws Exception {
                     return new DefaultScopeContainer();
-                };
+                }
             });
 
     public ScopeContainer get(DeviceContext context) {
