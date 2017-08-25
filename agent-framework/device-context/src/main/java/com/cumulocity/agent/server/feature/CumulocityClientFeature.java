@@ -11,6 +11,7 @@ import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
+import com.cumulocity.sdk.client.base.Supplier;
 import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
@@ -21,9 +22,6 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -162,30 +160,6 @@ public class CumulocityClientFeature {
 
     public static class CumulocityClientFactoryBean extends AbstractFactoryBean<PlatformImpl> implements FactoryBean<PlatformImpl> {
 
-        private LoadingCache<DeviceCredentials, PlatformImpl> cached = CacheBuilder.newBuilder()
-                .build(new CacheLoader<DeviceCredentials, PlatformImpl>() {
-                    public PlatformImpl load(DeviceCredentials login) throws Exception {
-                        final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
-                                login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
-                        platformImpl.setForceInitialHost(forceInitialHost);
-                        platformImpl.setTfaToken(login.getTfaToken());
-
-                        return proxy(platformImpl);
-                    }
-
-                    private PlatformImpl proxy(PlatformImpl platform) {
-                        String proxyHost = proxy.or("");
-                        if (proxyHost.length() > 0) {
-                            platform.setProxyHost(proxyHost);
-                        }
-                        Integer port = proxyPort.or(0);
-                        if (port > 0) {
-                            platform.setProxyPort(port);
-                        }
-                        return platform;
-                    }
-                });
-
         private final DeviceContextService contextService;
 
         private final String host;
@@ -207,10 +181,29 @@ public class CumulocityClientFeature {
 
         @Override
         protected PlatformImpl createInstance() throws Exception {
-            final DeviceCredentials credentials = contextService.getCredentials();
-            final PlatformImpl result = cached.getUnchecked(credentials);
-            result.setTfaToken(credentials.getTfaToken());
-            return result;
+            final DeviceCredentials login = contextService.getCredentials();
+            final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
+                    login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
+            platformImpl.setForceInitialHost(forceInitialHost);
+            platformImpl.setTfaToken(new Supplier<String>() {
+                public String get() {
+                    return contextService.getCredentials().getTfaToken();
+                }
+            });
+
+            return proxy(platformImpl);
+        }
+
+        private PlatformImpl proxy(PlatformImpl platform) {
+            String proxyHost = proxy.or("");
+            if (proxyHost.length() > 0) {
+                platform.setProxyHost(proxyHost);
+            }
+            Integer port = proxyPort.or(0);
+            if (port > 0) {
+                platform.setProxyPort(port);
+            }
+            return platform;
         }
 
         @Override
@@ -220,7 +213,7 @@ public class CumulocityClientFeature {
 
         @Override
         public boolean isSingleton() {
-            return false;
+            return true;
         }
 
     }
