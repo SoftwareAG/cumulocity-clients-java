@@ -22,8 +22,6 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
-import com.cumulocity.sdk.client.base.Supplier;
-import com.cumulocity.sdk.client.base.Suppliers;
 import com.cumulocity.sdk.client.buffering.*;
 
 /**
@@ -72,7 +70,7 @@ public class PlatformParameters {
 
     private ClientConfiguration clientConfiguration;
 
-    private Supplier<String> tfaToken;
+    private String tfaToken;
 
     public PlatformParameters() {
         //empty constructor for spring based initialization
@@ -195,20 +193,13 @@ public class PlatformParameters {
     public void setForceInitialHost(boolean forceInitialHost) {
         this.forceInitialHost = forceInitialHost;
     }
-
-    public String getTfaToken() {
-        if (tfaToken == null) {
-            return null;
-        }
-        return tfaToken.get();
-    }
-
-    public void setTfaToken(final String tfaToken) {
-        this.tfaToken = Suppliers.ofInstance(tfaToken);
-    }
-
-    public void setTfaToken(final Supplier<String> tfaToken) {
+    
+    public void setTfaToken(String tfaToken) {
         this.tfaToken = tfaToken;
+    }
+    
+    public String getTfaToken() {
+        return tfaToken;
     }
 
     public String getPrincipal() {

@@ -1,7 +1,15 @@
 package com.cumulocity.agent.server.feature;
 
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import c8y.inject.ContextScope;
 import c8y.inject.DeviceScope;
+
 import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.context.DeviceCredentials;
 import com.cumulocity.agent.server.context.scope.ContextScopedSubscriber;
@@ -11,7 +19,6 @@ import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
-import com.cumulocity.sdk.client.base.Supplier;
 import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
@@ -22,14 +29,9 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class CumulocityClientFeature {
@@ -181,15 +183,14 @@ public class CumulocityClientFeature {
 
         @Override
         protected PlatformImpl createInstance() throws Exception {
-            final DeviceCredentials login = contextService.getCredentials();
+            return create(contextService.getCredentials());
+        }
+
+        private PlatformImpl create(DeviceCredentials login) throws Exception {
             final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
                     login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
             platformImpl.setForceInitialHost(forceInitialHost);
-            platformImpl.setTfaToken(new Supplier<String>() {
-                public String get() {
-                    return contextService.getCredentials().getTfaToken();
-                }
-            });
+            platformImpl.setTfaToken(login.getTfaToken());
 
             return proxy(platformImpl);
         }

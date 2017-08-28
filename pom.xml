@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>8.12.0</version>
+		<version>8.7.1</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>8.12.0-SNAPSHOT</version>
+	<version>8.7.4-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -34,8 +34,8 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>8.12.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.12.0</cumulocity.shared-components.version>
+		<cumulocity.model.version>8.7.3</cumulocity.model.version>
+		<cumulocity.shared-components.version>8.7.2</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
@@ -243,6 +243,11 @@
 				<artifactId>notification-service</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.sun.jersey.contribs</groupId>
+				<artifactId>jersey-apache-client4</artifactId>
+			</dependency>
+	
 			<!-- COMPILE DEPENDENCIES END -->
 
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
