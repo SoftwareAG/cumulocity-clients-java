@@ -26,13 +26,12 @@ import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache.ApacheHttpClient;
 
 public class HttpClientFactory {
 
     public Client createClient() {
-        Client client = ApacheHttpClient4.create();
-       
+        Client client = ApacheHttpClient.create();
         client.setFollowRedirects(true);
         client.addFilter(new HTTPBasicAuthFilter("management/admin", "Pyi1bo1r"));
         client.addFilter(new ApplicationKeyFilter());
