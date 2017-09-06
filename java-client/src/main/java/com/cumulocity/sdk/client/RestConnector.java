@@ -310,12 +310,14 @@ public class RestConnector {
     }
 
     private Builder applyInterceptors(Builder builder) {
-        synchronized (platformParameters.interceptorSet) {
-            for(HttpClientInterceptor interceptor: platformParameters.interceptorSet) {
-                builder = interceptor.apply(builder);
+        if (platformParameters.interceptorSet != null) {
+            synchronized (platformParameters.interceptorSet) {
+                for (HttpClientInterceptor interceptor : platformParameters.interceptorSet) {
+                    builder = interceptor.apply(builder);
+                }
             }
-            return builder;
         }
+        return builder;
     }
 
     private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
