@@ -1,15 +1,19 @@
 package com.cumulocity.agent.server.context;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
-import java.io.UnsupportedEncodingException;
-
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
 import com.google.common.io.BaseEncoding;
 import com.sun.jersey.core.util.Base64;
+import lombok.EqualsAndHashCode;
 
+import java.io.UnsupportedEncodingException;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+
+/**
+ * Be careful with equals and hashcode.{@link DeviceScopeContainerRegistry}
+ */
+@EqualsAndHashCode(of = {"tenant", "username", "password", "appKey", "deviceId", "pageSize"})
 public class DeviceCredentials {
 
     public static final int DEFAULT_PAGE_SIZE = 25;
@@ -120,63 +124,6 @@ public class DeviceCredentials {
         return pageSize;
     }
 
-    @Override
-    public String toString() {
-        return tenant + " " + username;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((appKey == null) ? 0 : appKey.hashCode());
-        result = prime * result + ((deviceId == null) ? 0 : deviceId.hashCode());
-        result = prime * result + pageSize;
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
-        result = prime * result + ((tenant == null) ? 0 : tenant.hashCode());
-        result = prime * result + ((username == null) ? 0 : username.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        DeviceCredentials other = (DeviceCredentials) obj;
-        if (appKey == null) {
-            if (other.appKey != null)
-                return false;
-        } else if (!appKey.equals(other.appKey))
-            return false;
-        if (deviceId == null) {
-            if (other.deviceId != null)
-                return false;
-        } else if (!deviceId.equals(other.deviceId))
-            return false;
-        if (pageSize != other.pageSize)
-            return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
-            return false;
-        if (tenant == null) {
-            if (other.tenant != null)
-                return false;
-        } else if (!tenant.equals(other.tenant))
-            return false;
-        if (username == null) {
-            if (other.username != null)
-                return false;
-        } else if (!username.equals(other.username))
-            return false;
-        return true;
-    }
-
     public String encode() {
         return BaseEncoding.base64().encode(((tenant(this) + getUsername() + ":" + this.getPassword())).getBytes());
     }
@@ -184,8 +131,13 @@ public class DeviceCredentials {
     private String tenant(DeviceCredentials credentials) {
         return isNullOrEmpty(credentials.getTenant()) ? "" : credentials.getTenant() + "/";
     }
-    
+
     private void setTfaToken(String tfaToken) {
         this.tfaToken = tfaToken;
+    }
+
+    @Override
+    public String toString() {
+        return tenant + " " + username;
     }
 }

@@ -22,7 +22,14 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityLogin;
+import com.cumulocity.sdk.client.base.Supplier;
+import com.cumulocity.sdk.client.base.Suppliers;
 import com.cumulocity.sdk.client.buffering.*;
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  Keeps credentials and client configuration.
@@ -70,8 +77,10 @@ public class PlatformParameters {
 
     private ClientConfiguration clientConfiguration;
 
-    private String tfaToken;
+    private Supplier<String> tfaToken;
 
+    Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
+    
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -193,13 +202,20 @@ public class PlatformParameters {
     public void setForceInitialHost(boolean forceInitialHost) {
         this.forceInitialHost = forceInitialHost;
     }
-    
-    public void setTfaToken(String tfaToken) {
-        this.tfaToken = tfaToken;
-    }
-    
+
     public String getTfaToken() {
-        return tfaToken;
+        if (tfaToken == null) {
+            return null;
+        }
+        return tfaToken.get();
+    }
+
+    public void setTfaToken(final String tfaToken) {
+        this.tfaToken = Suppliers.ofInstance(tfaToken);
+    }
+
+    public void setTfaToken(final Supplier<String> tfaToken) {
+        this.tfaToken = tfaToken;
     }
 
     public String getPrincipal() {
@@ -239,7 +255,15 @@ public class PlatformParameters {
             bufferProcessor.shutdown();
         }
     }
+
+    public boolean registerInterceptor(HttpClientInterceptor interceptor) {
+        return interceptorSet.add(interceptor);
+    }
     
+    public boolean unregisterInterceptor(HttpClientInterceptor interceptor) {
+        return interceptorSet.remove(interceptor);
+    }
+
     private class DisabledBufferRequestService implements BufferRequestService {
 
         @Override

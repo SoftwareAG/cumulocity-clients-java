@@ -24,14 +24,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
 import javax.ws.rs.core.MediaType;
 
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -269,6 +269,62 @@ public class RestConnectorTest {
         verify(typeBuilder, never()).accept(any(MediaType.class));
         assertThat(result, sameInstance(representation));
         assertThat(result.getId(), nullValue());
+    }
+
+    @Test
+    public void shouldAddHeaderFormInterceptor() throws Exception {
+        // Given
+        clientParameters.registerInterceptor(new HttpClientInterceptor() {
+            @Override
+            public Builder apply(Builder builder) {
+                builder.header("fake", "fake");
+                return builder;
+            }
+        });
+
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
+        returnResponseWhenPosting(representation);
+        BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
+        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+
+        // When
+        BaseResourceRepresentation result = restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder).header(eq("fake"), eq("fake"));
+        assertThat(result, sameInstance(outputRepresentation));
+    }
+
+    @Test
+    public void shouldNotAddHeaderFormInterceptorAfterRemovingInterceptor() throws Exception {
+        // given
+        HttpClientInterceptor addHeaderFake = new HttpClientInterceptor() {
+            @Override
+            public Builder apply(Builder builder) {
+                builder.header("fake", "fake");
+                return builder;
+            }
+        };
+
+        BaseResourceRepresentation representation = new BaseResourceRepresentation();
+        returnResponseWhenPosting(representation);
+        BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
+        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+
+        { // recheck if work ok on register interceptor
+            clientParameters.registerInterceptor(addHeaderFake);
+            restConnector.post(PATH, mediaType, representation);
+            verify(typeBuilder).header(eq("fake"), eq("fake"));
+            reset(typeBuilder);
+        }
+
+        clientParameters.unregisterInterceptor(addHeaderFake);
+
+        // when
+        restConnector.post(PATH, mediaType, representation);
+
+        // then
+        verify(typeBuilder, never()).header(eq("fake"), eq("fake"));
     }
 
 }
