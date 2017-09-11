@@ -10,7 +10,7 @@ public class DeviceContextScope extends BaseScope {
     private final ScopeContainerRegistry registry;
 
     public DeviceContextScope(DeviceContextService contextService, ScopeContainerRegistry registry) {
-        super(false);
+        super(true);
         this.contextService = contextService;
         this.registry = registry;
     }
