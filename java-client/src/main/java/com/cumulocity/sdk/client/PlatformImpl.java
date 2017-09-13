@@ -43,6 +43,8 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryApiImpl;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
+import com.cumulocity.sdk.client.user.UserApi;
+import com.cumulocity.sdk.client.user.UserApiImpl;
 
 public class PlatformImpl extends PlatformParameters implements Platform {
 
@@ -236,6 +238,12 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public BinariesApi getBinariesApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new BinariesApiImpl(restConnector, getPlatformApi(restConnector).getInventory());
+    }
+
+    @Override
+    public UserApi getUserApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new UserApiImpl(restConnector, new TemplateUrlParser(), getPlatformApi(restConnector).getUser());
     }
 
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
