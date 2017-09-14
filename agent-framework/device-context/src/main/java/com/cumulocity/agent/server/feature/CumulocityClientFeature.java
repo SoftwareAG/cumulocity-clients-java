@@ -21,6 +21,7 @@ import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.Subscriber;
+import com.cumulocity.sdk.client.user.UserApi;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +142,13 @@ public class CumulocityClientFeature {
     @ContextScope
     public BinariesApi binariesApi(Platform platform) throws SDKException {
         return platform.getBinariesApi();
+    }
+
+    @Bean
+    @Autowired
+    @ContextScope
+    public UserApi userApi(Platform platform) throws SDKException {
+        return platform.getUserApi();
     }
 
     @Bean(destroyMethod = "disconnect")
