@@ -1,6 +1,6 @@
 package com.cumulocity.agent.server.context.scope;
 
-import static java.lang.String.format;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +8,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.lang.String.format;
+
 /**
  * Implements a scope container.
  * @author Darek Kaczynski
  */
+@Slf4j
 public class DefaultScopeContainer implements ScopeContainer {
 
     private final ConcurrentMap<String, Object> objectsMap;
@@ -52,7 +55,9 @@ public class DefaultScopeContainer implements ScopeContainer {
         ensureObjectNotInDestruction(name);
         Object previous = objectsMap.putIfAbsent(name, obj);
         if (previous != null) {
-            throw new IllegalArgumentException(format("Object with name %s is already present in the container!", name));
+            final IllegalArgumentException exception = new IllegalArgumentException(format("Object with name %s is already present in the container!", name));
+            log.error(exception.getMessage(), exception);
+            throw exception;
         }
     }
 

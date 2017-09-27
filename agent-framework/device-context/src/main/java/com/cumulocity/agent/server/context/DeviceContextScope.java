@@ -17,7 +17,10 @@ public class DeviceContextScope extends BaseScope {
 
     @Override
     protected String getContextId() {
-        return null;
+        final DeviceCredentials credentials = contextService.getCredentials();
+        final String username = credentials.getUsername();
+        final String tenant = credentials.getTenant();
+        return tenant + "/" + username;
     }
 
     @Override

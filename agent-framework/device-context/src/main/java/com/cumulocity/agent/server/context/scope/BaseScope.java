@@ -1,12 +1,15 @@
 package com.cumulocity.agent.server.context.scope;
 
+import com.cumulocity.agent.server.context.scope.KeyBasedLocksMap.KeyBasedLock;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
-import com.cumulocity.agent.server.context.scope.KeyBasedLocksMap.KeyBasedLock;
+import static com.google.common.base.Preconditions.checkState;
 
+@Slf4j
 public abstract class BaseScope implements Scope {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseScope.class);
@@ -42,7 +45,7 @@ public abstract class BaseScope implements Scope {
         }
     }
 
-    private Object doGet(String name, ObjectFactory<?> objectFactory) {
+    protected Object doGet(String name, ObjectFactory<?> objectFactory) {
         ScopeContainer scopeContainer = getScopeContainer();
         if (scopeContainer.contains(name)) {
             return getExisting(scopeContainer, name);
