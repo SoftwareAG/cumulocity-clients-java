@@ -5,6 +5,7 @@ import static com.cumulocity.sdk.client.ResponseParser.NO_ERROR_REPRESENTATION;
 import java.net.ConnectException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.ws.rs.HttpMethod;
 
@@ -31,7 +32,15 @@ public class BufferProcessor {
         this.persistentProvider = persistentProvider;
         this.service = service;
         this.restConnector = restConnector;
-        this.executor = Executors.newSingleThreadExecutor();
+        this.executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("buffering-process");
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
     
     public void startProcessing() {

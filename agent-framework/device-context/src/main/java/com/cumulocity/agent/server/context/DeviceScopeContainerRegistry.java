@@ -25,7 +25,7 @@ public class DeviceScopeContainerRegistry implements ScopeContainerRegistry {
         try {
             return scopes.get(context.getLogin());
         } catch (ExecutionException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

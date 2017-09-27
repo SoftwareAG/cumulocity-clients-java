@@ -257,4 +257,8 @@ public class PlatformImpl extends PlatformParameters implements Platform {
         return getHost() + PLATFORM_URL;
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+    }
 }
