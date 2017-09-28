@@ -4,6 +4,7 @@ import com.cumulocity.agent.server.context.DeviceContextScope;
 import com.cumulocity.agent.server.context.DeviceContextService;
 import com.cumulocity.agent.server.context.DeviceCredentials;
 import lombok.SneakyThrows;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.ObjectFactory;
 
@@ -19,6 +20,7 @@ public class BaseScopeTest {
     final Executor executor = Executors.newFixedThreadPool(3);
 
     @Test
+    @Ignore
     @SneakyThrows
     public void shouldSynchronize() {
         final AtomicInteger integer = new AtomicInteger(0);
