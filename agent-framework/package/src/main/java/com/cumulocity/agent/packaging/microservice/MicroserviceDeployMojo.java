@@ -1,5 +1,6 @@
 package com.cumulocity.agent.packaging.microservice;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.plugin.AbstractMojo;
@@ -72,10 +73,12 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             return Optional.absent();
         }
         final Xpp3Dom urlDom = ((Xpp3Dom) configuration).getChild("url");
-        if (urlDom == null) {
-            return Optional.absent();
-        }
-        return Optional.of(urlDom.getValue());
+        return Optional.fromNullable(urlDom).transform(new Function<Xpp3Dom, String>() {
+            @Override
+            public String apply(final Xpp3Dom input) {
+                return input.getValue();
+            }
+        });
     }
 
 }
