@@ -12,8 +12,8 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
     public static final int SCHEDULE_INTERVAL_DEFAULT = 500;
 
     private final int maxThreads;
-    private int currentThreads;
-    private Vector queue = new Vector();
+    private volatile int currentThreads;
+    private final Vector queue = new Vector();
 
     public SmartExecutorServiceImpl() {
         this(MAX_THREADS_DEFAULT, SCHEDULE_INTERVAL_DEFAULT);

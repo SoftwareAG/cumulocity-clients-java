@@ -10,14 +10,21 @@ public class DeviceContextScope extends BaseScope {
     private final ScopeContainerRegistry registry;
 
     public DeviceContextScope(DeviceContextService contextService, ScopeContainerRegistry registry) {
-        super(true);
+        this(contextService, registry, true);
+    }
+
+    public DeviceContextScope(DeviceContextService contextService, ScopeContainerRegistry registry, boolean sync) {
+        super(sync);
         this.contextService = contextService;
         this.registry = registry;
     }
 
     @Override
     protected String getContextId() {
-        return null;
+        final DeviceCredentials credentials = contextService.getCredentials();
+        final String username = credentials.getUsername();
+        final String tenant = credentials.getTenant();
+        return tenant + "/" + username;
     }
 
     @Override

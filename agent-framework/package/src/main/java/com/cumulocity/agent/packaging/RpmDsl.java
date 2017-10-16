@@ -58,7 +58,7 @@ public final class RpmDsl {
 
     public static MojoExecutor.Element mapping(MojoExecutor.Element... elements) {
         return element(name("mapping"),
-            ObjectArrays.concat(elements, new MojoExecutor.Element[] { element(name("username"), "root"), element(name("filemode"), "777") },
+            ObjectArrays.concat(elements, new MojoExecutor.Element[] { element(name("username"), "root"), element(name("filemode"), "764") },
                 MojoExecutor.Element.class));
     }
 }
