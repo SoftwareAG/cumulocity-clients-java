@@ -225,7 +225,7 @@ public class AlarmIT extends JavaSdkITBase {
     public void getAlarmCollectionByStatusAndSource() throws Exception {
         // Given
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
-                .withStatus("ACTIVE")
+                .withStatus("CLEARED")
                 .withSource(mo1).build());
 
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
@@ -233,7 +233,7 @@ public class AlarmIT extends JavaSdkITBase {
                 .withSource(mo1).build());
 
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
-                .withStatus("ACKNOWLEDGED")
+                .withStatus("CUSTOM")
                 .withSource(mo2).build());
 
         // When
