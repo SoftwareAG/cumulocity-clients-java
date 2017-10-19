@@ -56,7 +56,7 @@ public class DeviceControlListener implements SubscriptionListener<GId, Operatio
 
     @Override
     public void onError(Subscription<GId> subscription, Throwable ex) {
-        log.error("agent unable to subscribe for opeartion ", ex);
+        log.error("agent unable to subscribe for operation ", ex);
         final AlarmRepresentation alarm = new AlarmRepresentation();
         alarm.setType("c8y_agent_Connection");
         alarm.setTime(new Date());
@@ -64,7 +64,11 @@ public class DeviceControlListener implements SubscriptionListener<GId, Operatio
         alarm.setSeverity(CRITICAL.name());
         alarm.setStatus(ACTIVE.name());
         alarm.setSource(findAgent());
-        alarmRepository.save(alarm);
+        try {
+            alarmRepository.save(alarm);
+        } catch (Exception e) {
+            log.error("failed to raise alarm about error in subscription", e);
+        }
     }
 
     public ManagedObjectRepresentation findAgent() {
