@@ -48,8 +48,12 @@ public final class RpmDsl {
         return element(name("directoryIncluded"), String.valueOf(enabled));
     }
 
-    public static MojoExecutor.Element isConfiguration(boolean enabled) {
-        return element(name("configuration"), String.valueOf(enabled));
+    public static MojoExecutor.Element configuration(String param) {
+        return element(name("configuration"), param);
+    }
+
+    public static MojoExecutor.Element configuration(boolean param) {
+        return element(name("configuration"), String.valueOf(param));
     }
 
     public static MojoExecutor.Element mappings(MojoExecutor.Element... elements) {
