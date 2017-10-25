@@ -90,15 +90,15 @@ public class PackageMojo extends BaseAgentMojo {
                         sources(source(location(new File(workarea, "bin").getAbsolutePath())))),
                     mapping(directory("/usr/lib/systemd/system"),
                         directoryIncluded(false),
-                        isConfiguration(true),
+                        configuration(true),
                         sources(source(location(new File(workarea, "systemd").getAbsolutePath()),
                             includes(include(String.format("%s.service", name)))))),
                     mapping(directory("/etc/init.d"),
                         directoryIncluded(false),
-                        isConfiguration(true),
+                        configuration(true),
                         sources(source(location(new File(workarea, "init.d").getAbsolutePath()),
                             includes(include(name))))),
-                    mapping(directory("/etc/" + directory), directoryIncluded(false), isConfiguration(true),
+                    mapping(directory("/etc/" + directory), directoryIncluded(false), configuration("noreplace"),
                         sources(source(location(new File(workarea, "etc").getAbsolutePath())))))
 
             ), executionEnvironment(this.project, this.mavenSession, this.pluginManager));
