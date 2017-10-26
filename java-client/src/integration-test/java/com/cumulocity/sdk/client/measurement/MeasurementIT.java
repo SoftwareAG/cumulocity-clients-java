@@ -414,6 +414,18 @@ public class MeasurementIT extends JavaSdkITBase {
         shouldNotBeFound();
     }
 
+//    Scenario: Create measurement in bulk
+
+    @Test
+    public void createMeasurementsInBulk() throws Exception {
+//    Given I have '2' measurements of type 'com.type1' for the managed object
+        iHaveMeasurements(3, "com.type2");
+//    When I create all measurements in bulk
+        iCreateAllBulk();
+//    Then All measurements should be created
+        allShouldBeCreated();
+    }
+
 //
 //    Scenario: Get measurements collection by default page settings
 
@@ -550,6 +562,17 @@ public class MeasurementIT extends JavaSdkITBase {
             for (MeasurementRepresentation rep : input) {
                 result1.add(measurementApi.create(rep));
             }
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I create all measurements as bulk")
+    public void iCreateAllBulk() throws SDKException {
+        try {
+            MeasurementCollectionRepresentation collection = new MeasurementCollectionRepresentation();
+            collection.setMeasurements(input);
+            result1.addAll(measurementApi.createBulk(collection).getMeasurements());
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
