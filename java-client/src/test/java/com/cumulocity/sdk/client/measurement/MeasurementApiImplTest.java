@@ -170,6 +170,32 @@ public class MeasurementApiImplTest {
         assertThat(result, sameInstance(created));
     }
 
+    @Test
+    public void shouldCreateBulk() throws SDKException {
+        //Given
+        MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
+        MeasurementCollectionRepresentation created = new MeasurementCollectionRepresentation();
+        when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate)).thenReturn(created);
+
+        // When
+        MeasurementCollectionRepresentation result = measurementApi.createBulk(toCreate);
+
+        //then
+        assertThat(result, sameInstance(created));
+    }
+
+    @Test
+    public void shouldCreateBulkWithoutResponse() throws SDKException {
+        //Given
+        MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
+
+        // When
+        measurementApi.createBulkWithoutResponse(toCreate);
+
+        //then
+        verify(restConnector).postWithoutResponse(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate);
+    }
+
     public static class NonRelevantFragmentType {
     }
 
