@@ -55,12 +55,12 @@
         </dependency>
 
         <dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+            <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+            <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
             <scope>test</scope>
         </dependency>

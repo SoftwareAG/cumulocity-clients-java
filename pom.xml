@@ -36,6 +36,8 @@
 	<properties>
 		<cumulocity.model.version>8.12.0-SNAPSHOT</cumulocity.model.version>
 		<cumulocity.shared-components.version>8.12.0-SNAPSHOT</cumulocity.shared-components.version>
+		<jersey1.version>1.8</jersey1.version>
+		<jaxrs.version>1.1.1</jaxrs.version>
 	</properties>
 
 	<licenses>
@@ -199,6 +201,21 @@
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 			<!-- COMPILE DEPENDENCIES START -->
 			<dependency>
+				<groupId>com.sun.jersey.contribs</groupId>
+				<artifactId>jersey-apache-client</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.jersey</groupId>
+				<artifactId>jersey-client</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.jersey.contribs</groupId>
+				<artifactId>jersey-multipart</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.nsn.cumulocity.clients-java</groupId>
 				<artifactId>java-client</artifactId>
 				<version>${project.version}</version>
@@ -217,6 +234,12 @@
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>rest-representation</artifactId>
 				<version>${cumulocity.model.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.ws.rs</groupId>
+						<artifactId>javax.ws.rs-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -243,6 +266,11 @@
 				<artifactId>notification-service</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>javax.ws.rs</groupId>
+				<artifactId>jsr311-api</artifactId>
+				<version>${jaxrs.version}</version>
+			</dependency>
 			<!-- COMPILE DEPENDENCIES END -->
 
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
@@ -267,6 +295,12 @@
 				<version>${cumulocity.model.version}</version>
 				<scope>test</scope>
 				<classifier>tests</classifier>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.ws.rs</groupId>
+						<artifactId>javax.ws.rs-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.shared-components</groupId>
