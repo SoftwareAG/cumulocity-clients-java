@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+        <spring-boot-dependencies.version>1.4.0.RELEASE</spring-boot-dependencies.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
         <lombok.version>1.16.16</lombok.version>
@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
+                <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
