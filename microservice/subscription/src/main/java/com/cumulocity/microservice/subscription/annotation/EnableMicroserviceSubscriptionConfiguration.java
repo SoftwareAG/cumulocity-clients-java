@@ -7,6 +7,7 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceSubscript
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
         MicroserviceSubscriptionsRepository.class,
         MicroserviceRepository.class
 })
+@ConditionalOnProperty(value="microservice.subscription.enabled", havingValue="true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
