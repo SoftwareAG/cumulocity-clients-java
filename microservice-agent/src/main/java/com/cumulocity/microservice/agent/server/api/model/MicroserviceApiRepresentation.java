@@ -1,0 +1,44 @@
+package com.cumulocity.microservice.agent.server.api.model;
+
+import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
+import lombok.*;
+
+import javax.annotation.Nonnull;
+
+import static java.lang.String.valueOf;
+
+@Data
+@Builder(builderMethodName = "microserviceApiRepresentation")
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentation {
+    public final static String APPLICATION_ID = "{{applicationId}}";
+    public final static String APPLICATION_NAME = "{{applicationName}}";
+
+    private String createUrl;
+    private String updateUrl;
+    private String subscriptionsUrl;
+    private String findByNameUrl;
+
+    public String getCreateUrl(String baseUrl) {
+        return url(baseUrl, getCreateUrl(), null, null);
+    }
+
+    public String getFindByNameUrl(String baseUrl, String applicationName) {
+        return url(baseUrl, getFindByNameUrl(), applicationName, null);
+    }
+
+    public String getSubscriptionsUrl(String baseUrl, String applicationId) {
+        return url(baseUrl, getSubscriptionsUrl(), null, applicationId);
+    }
+
+    public String getUpdateUrl(String baseUrl, String name, String id) {
+        return url(baseUrl, getUpdateUrl(), name, id);
+    }
+
+    @Nonnull
+    private static String url(@NonNull String baseUrl, @NonNull String url, String applicationName, String applicationId) {
+        return baseUrl + url.replace(APPLICATION_NAME, valueOf(applicationName)).replace(APPLICATION_ID, valueOf(applicationId));
+    }
+}
