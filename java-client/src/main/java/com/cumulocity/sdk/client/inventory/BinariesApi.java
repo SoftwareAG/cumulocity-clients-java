@@ -11,6 +11,8 @@ public interface BinariesApi {
     ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, byte[] bytes) throws SDKException;
     
     ManagedObjectRepresentation replaceFile(GId containerId, String contentType, InputStream fileStream) throws SDKException;
+
+    InputStream downloadFile(GId id);
     
     void deleteFile(GId containerId) throws SDKException;
 
