@@ -65,7 +65,7 @@ public class MicroserviceRepository {
         return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
                 .createUrl("/application/applications")
                 .updateUrl("/application/applications/" + APPLICATION_ID)
-                .subscriptionsUrl("/application/applications/self/subscriptions")
+                .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
                 .build());
     }
