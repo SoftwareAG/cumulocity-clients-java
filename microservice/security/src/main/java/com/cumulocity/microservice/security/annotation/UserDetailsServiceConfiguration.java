@@ -38,7 +38,6 @@ public class UserDetailsServiceConfiguration {
     })
     @ConditionalOnProperty("C8Y.baseURL")
     @ConditionalOnBean(EnableMicroserviceSecurityConfiguration.class)
-    @ConditionalOnMissingBean({UserDetailsService.class, RoleService.class})
     protected static class ContextFeatureConfiguration {
     }
 
