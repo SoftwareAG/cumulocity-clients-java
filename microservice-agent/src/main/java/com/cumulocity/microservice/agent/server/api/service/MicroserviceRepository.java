@@ -65,7 +65,7 @@ public class MicroserviceRepository {
         return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
                 .createUrl("/application/applications")
                 .updateUrl("/application/applications/" + APPLICATION_ID)
-                .subscriptionsUrl("/application/applications/" + APPLICATION_ID + "/subscriptions")
+                .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
                 .build());
     }
@@ -98,7 +98,7 @@ public class MicroserviceRepository {
     }
 
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
-        final String url = microserviceApi.getSubscriptionsUrl(baseUrl.get(), applicationId);
+        final String url = microserviceApi.getSubscriptionsUrl(baseUrl.get());
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
