@@ -7,6 +7,7 @@ import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import javax.ws.rs.core.MediaType;
 
 public class BinariesApiImpl implements BinariesApi {
 
@@ -33,7 +34,12 @@ public class BinariesApiImpl implements BinariesApi {
     public void deleteFile(GId containerId) throws SDKException {
         restConnector.delete(getBinariesUrl() + "/" + containerId.getValue());
     }
-    
+
+    @Override
+    public InputStream downloadFile(GId id) throws SDKException {
+        return restConnector.get(getBinariesUrl() + "/" + id.getValue(), MediaType.APPLICATION_OCTET_STREAM_TYPE, InputStream.class);
+    }
+
     private String getBinariesUrl() throws SDKException {
         String url = inventoryRepresentation.getManagedObjects().getSelf();
         return url.replace("managedObjects", "binaries");
