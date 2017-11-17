@@ -12,7 +12,7 @@ public interface BinariesApi {
     
     ManagedObjectRepresentation replaceFile(GId containerId, String contentType, InputStream fileStream) throws SDKException;
 
-    InputStream downloadFile(GId id);
+    InputStream downloadFile(GId id) throws SDKException;
     
     void deleteFile(GId containerId) throws SDKException;
 

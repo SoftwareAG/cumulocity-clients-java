@@ -36,7 +36,7 @@ public class BinariesApiImpl implements BinariesApi {
     }
 
     @Override
-    public InputStream downloadFile(GId id) {
+    public InputStream downloadFile(GId id) throws SDKException {
         return restConnector.get(getBinariesUrl() + "/" + id.getValue(), MediaType.APPLICATION_OCTET_STREAM_TYPE, InputStream.class);
     }
 
