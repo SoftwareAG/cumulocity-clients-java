@@ -16,14 +16,9 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
     public final static String APPLICATION_ID = "{{applicationId}}";
     public final static String APPLICATION_NAME = "{{applicationName}}";
 
-    private String createUrl;
     private String updateUrl;
     private String subscriptionsUrl;
     private String getUrl;
-
-    public String getCreateUrl(String baseUrl) {
-        return url(baseUrl, getCreateUrl(), null, null);
-    }
 
     public String getAppUrl(String baseUrl) {
         return url(baseUrl, getGetUrl(), null, null);

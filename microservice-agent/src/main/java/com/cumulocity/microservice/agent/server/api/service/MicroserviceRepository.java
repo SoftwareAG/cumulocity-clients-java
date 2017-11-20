@@ -61,7 +61,6 @@ public class MicroserviceRepository {
         final CumulocityCredentials credentials = initCredentials(user, password, tenant);
         final PlatformImpl platform = new PlatformImpl(baseUrlSupplier.get(), credentials);
         return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
-                .createUrl("/application/currentApplication")
                 .updateUrl("/application/currentApplication")
                 .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .getUrl("/application/currentApplication")
@@ -113,22 +112,6 @@ public class MicroserviceRepository {
             return rest().put(url, APPLICATION, application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("PUT", url, ex);
-        }
-    }
-
-    public ApplicationRepresentation create(String applicationName, MicroserviceMetadataRepresentation representation) {
-        final String url = microserviceApi.getCreateUrl(baseUrl.get());
-        try {
-            final ApplicationRepresentation application = new ApplicationRepresentation();
-            application.setName(applicationName);
-            application.setKey(applicationName + "-application-key");
-            application.setType(MICROSERVICE);
-            application.setRequiredRoles(representation.getRequiredRoles());
-            application.setRoles(representation.getRoles());
-            application.setUrl(representation.getUrl());
-            return rest().post(url, APPLICATION, application);
-        } catch (final Exception ex) {
-            return (ApplicationRepresentation) handleException("POST", url, ex);
         }
     }
 
