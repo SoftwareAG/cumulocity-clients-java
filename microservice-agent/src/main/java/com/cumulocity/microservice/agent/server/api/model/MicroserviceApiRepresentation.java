@@ -19,14 +19,14 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
     private String createUrl;
     private String updateUrl;
     private String subscriptionsUrl;
-    private String findByNameUrl;
+    private String getUrl;
 
     public String getCreateUrl(String baseUrl) {
         return url(baseUrl, getCreateUrl(), null, null);
     }
 
-    public String getFindByNameUrl(String baseUrl, String applicationName) {
-        return url(baseUrl, getFindByNameUrl(), applicationName, null);
+    public String getAppUrl(String baseUrl) {
+        return url(baseUrl, getGetUrl(), null, null);
     }
 
     public String getSubscriptionsUrl(String baseUrl) {
