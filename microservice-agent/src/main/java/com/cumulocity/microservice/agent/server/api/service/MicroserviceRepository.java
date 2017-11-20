@@ -2,7 +2,6 @@ package com.cumulocity.microservice.agent.server.api.service;
 
 import com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
@@ -22,9 +21,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation.APPLICATION_ID;
-import static com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation.APPLICATION_NAME;
-import static com.cumulocity.rest.representation.application.ApplicationMediaType.*;
+import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
+import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.httpclient.HttpStatus.*;
@@ -63,19 +61,19 @@ public class MicroserviceRepository {
         final CumulocityCredentials credentials = initCredentials(user, password, tenant);
         final PlatformImpl platform = new PlatformImpl(baseUrlSupplier.get(), credentials);
         return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
-                .createUrl("/application/applications")
-                .updateUrl("/application/applications/" + APPLICATION_ID)
+                .updateUrl("/application/currentApplication")
                 .subscriptionsUrl("/application/currentApplication/subscriptions")
-                .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
+                .getUrl("/application/currentApplication")
                 .build());
     }
 
     public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation representation) {
         log.debug("register {}", representation);
 
-        final ApplicationRepresentation application = getByName(applicationName);
+        final ApplicationRepresentation application = getApplication();
         if (application == null) {
-            return create(applicationName, representation);
+            // new micro-service SDK approach requires application configured
+            throw new SDKException("No microservice with name "+applicationName+" registered. Microservice must be configured before running the SDK, please contact administrator");
         } else {
             if (!MICROSERVICE.equals(application.getType())) {
                 throw new SDKException("Cannot register application. There is another application with name \""  + applicationName + "\"");
@@ -84,14 +82,10 @@ public class MicroserviceRepository {
         }
     }
 
-    public ApplicationRepresentation getByName(String applicationName) {
-        final String url = microserviceApi.getFindByNameUrl(baseUrl.get(), applicationName);
+    public ApplicationRepresentation getApplication() {
+        final String url = microserviceApi.getAppUrl(baseUrl.get());
         try {
-            final ApplicationCollectionRepresentation response = rest().get(url, APPLICATION_COLLECTION, ApplicationCollectionRepresentation.class);
-            if (response.getApplications().size() == 1) {
-                return response.getApplications().get(0);
-            }
-            return null;
+            return rest().get(url, APPLICATION, ApplicationRepresentation.class);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("GET", url, ex);
         }
@@ -118,22 +112,6 @@ public class MicroserviceRepository {
             return rest().put(url, APPLICATION, application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("PUT", url, ex);
-        }
-    }
-
-    public ApplicationRepresentation create(String applicationName, MicroserviceMetadataRepresentation representation) {
-        final String url = microserviceApi.getCreateUrl(baseUrl.get());
-        try {
-            final ApplicationRepresentation application = new ApplicationRepresentation();
-            application.setName(applicationName);
-            application.setKey(applicationName + "-application-key");
-            application.setType(MICROSERVICE);
-            application.setRequiredRoles(representation.getRequiredRoles());
-            application.setRoles(representation.getRoles());
-            application.setUrl(representation.getUrl());
-            return rest().post(url, APPLICATION, application);
-        } catch (final Exception ex) {
-            return (ApplicationRepresentation) handleException("POST", url, ex);
         }
     }
 
