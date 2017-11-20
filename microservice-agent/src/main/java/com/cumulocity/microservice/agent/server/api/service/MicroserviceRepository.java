@@ -11,7 +11,6 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -98,7 +97,6 @@ public class MicroserviceRepository {
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
-            System.out.println(Throwables.getStackTraceAsString(ex));
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
     }
