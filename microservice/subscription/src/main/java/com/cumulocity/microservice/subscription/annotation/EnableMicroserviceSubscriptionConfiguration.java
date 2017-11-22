@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
         MicroserviceSubscriptionsRepository.class,
         MicroserviceRepository.class
 })
-@ConditionalOnProperty(value="microservice.subscription.enabled", havingValue="true", matchIfMissing = true)
+@ConditionalOnProperty(value = "microservice.subscription.enabled", havingValue = "true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
@@ -42,6 +42,8 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 .tenant(boostrapUser.getTenant())
                 .password(boostrapUser.getPassword())
                 .objectMapper(objectMapper)
+                // When no isolation level defined then application must be registered
+                .register(properties.getIsolation() == null)
                 .build();
     }
 }

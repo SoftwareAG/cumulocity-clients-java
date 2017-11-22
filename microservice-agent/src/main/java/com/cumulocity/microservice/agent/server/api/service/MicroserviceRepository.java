@@ -35,6 +35,7 @@ public class MicroserviceRepository {
     private final Supplier<String> baseUrl;
     private final PlatformImpl platform;
     private final ObjectMapper objectMapper;
+    private final boolean register;
     private final MicroserviceApiRepresentation microserviceApi;
 
     @Builder(builderMethodName = "microserviceApi")
@@ -44,7 +45,8 @@ public class MicroserviceRepository {
             final String baseUrl,
             final String tenant,
             final String user,
-            final String password) {
+            final String password,
+            final boolean register) {
         if (baseUrl != null) {
             baseUrlSupplier = new Supplier<String>() {
                 @Override
@@ -60,7 +62,7 @@ public class MicroserviceRepository {
 
         final CumulocityCredentials credentials = initCredentials(user, password, tenant);
         final PlatformImpl platform = new PlatformImpl(baseUrlSupplier.get(), credentials);
-        return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
+        return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper,register, MicroserviceApiRepresentation.microserviceApiRepresentation()
                 .updateUrl("/application/currentApplication")
                 .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .getUrl("/application/currentApplication")
@@ -73,13 +75,19 @@ public class MicroserviceRepository {
         final ApplicationRepresentation application = getApplication();
         if (application == null) {
             // new micro-service SDK approach requires application configured
-            throw new SDKException("No microservice with name "+applicationName+" registered. Microservice must be configured before running the SDK, please contact administrator");
-        } else {
+            throw new SDKException("No microservice with name " + applicationName + " registered. Microservice must be configured before running the SDK, please contact administrator");
+        } else if (shouldUpdateApplication()) {
             if (!MICROSERVICE.equals(application.getType())) {
-                throw new SDKException("Cannot register application. There is another application with name \""  + applicationName + "\"");
+                throw new SDKException("Cannot register application. There is another application with name \"" + applicationName + "\"");
             }
             return update(application, representation);
+        } else {
+            return application;
         }
+    }
+
+    private boolean shouldUpdateApplication() {
+        return register;
     }
 
     public ApplicationRepresentation getApplication() {
@@ -120,7 +128,7 @@ public class MicroserviceRepository {
     }
 
     private ApplicationUserCollectionRepresentation retrieveUsers(ApplicationUserCollectionRepresentation result) {
-        final List<ApplicationUserRepresentation> users =  new ArrayList<>();
+        final List<ApplicationUserRepresentation> users = new ArrayList<>();
         for (final Object userMap : result.getUsers()) {
             users.add(objectMapper.convertValue(userMap, ApplicationUserRepresentation.class));
         }
@@ -132,7 +140,7 @@ public class MicroserviceRepository {
     private Object handleException(String method, String url, Exception ex) {
         if (ex instanceof SDKException) {
             final SDKException sdkException = (SDKException) ex;
-            if (sdkException.getHttpStatus() == SC_FORBIDDEN ||  sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
+            if (sdkException.getHttpStatus() == SC_FORBIDDEN || sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
                 log.warn("User has no permission to api " + method + " " + url);
                 return null;
             } else if (sdkException.getHttpStatus() == SC_NOT_FOUND) {

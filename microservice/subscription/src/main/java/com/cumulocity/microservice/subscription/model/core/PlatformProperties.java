@@ -12,6 +12,9 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Builder
 @AllArgsConstructor
 public class PlatformProperties {
+    enum IsolationLevel{
+        PER_TENANT, MULTI_TENANT
+    }
     public static class PlatformPropertiesProvider {
         @Value("${application.name:}")
         private String applicationName;
@@ -39,6 +42,9 @@ public class PlatformProperties {
 
         @Value("${C8Y.bootstrap.initialDelay:30000}")
         private int microserviceSubscriptionInitialDelay;
+
+        @Value(value = "${C8Y.microservice.isolation:null}")
+        private IsolationLevel isolation;
 
         public PlatformProperties platformProperties(String defaultApplicationName) {
             if (!isEmpty(this.applicationName)) {
@@ -68,6 +74,7 @@ public class PlatformProperties {
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(defaultApplicationName)
+                    .isolation(isolation)
                     .build();
         }
     }
@@ -78,4 +85,5 @@ public class PlatformProperties {
     private Credentials microserviceBoostrapUser;
     private Integer subscriptionDelay;
     private Integer subscriptionInitialDelay;
+    private IsolationLevel isolation;
 }
