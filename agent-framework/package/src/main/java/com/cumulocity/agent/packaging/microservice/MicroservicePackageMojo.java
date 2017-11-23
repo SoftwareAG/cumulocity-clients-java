@@ -67,7 +67,7 @@ public class MicroservicePackageMojo extends AbstractMojo {
             final String targetFilename = String.format(TARGET_FILENAME_PATTERN, name, project.getVersion());
             final File dockerImage = new File(build, "image.tar");
             createDirectories(build.toPath());
-            dockerClient.saveDockerImage(image, dockerImage);
+            dockerClient.saveDockerImage(String.format("%s:%s",image,project.getVersion()), dockerImage);
 
             try (final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(
                     new File(build, targetFilename)))) {
