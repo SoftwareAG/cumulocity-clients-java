@@ -5,7 +5,6 @@ import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentia
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import lombok.Builder;

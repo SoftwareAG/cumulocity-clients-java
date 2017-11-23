@@ -1,22 +1,20 @@
 package com.cumulocity.microservice.agent.server.api.service;
 
 import com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation;
-import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
-import com.cumulocity.sdk.client.PlatformImpl;
-import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,36 +31,18 @@ import static org.apache.commons.httpclient.HttpStatus.*;
 public class MicroserviceRepository {
 
     private final Supplier<String> baseUrl;
-    private final PlatformImpl platform;
+    private final Supplier<RestOperations> platform;
     private final ObjectMapper objectMapper;
     private final boolean register;
     private final MicroserviceApiRepresentation microserviceApi;
 
     @Builder(builderMethodName = "microserviceApi")
     public static MicroserviceRepository create(
+            final Supplier<String> baseUrl,
             ObjectMapper objectMapper,
-            Supplier<String> baseUrlSupplier,
-            final String baseUrl,
-            final String tenant,
-            final String user,
-            final String password,
+            Supplier<RestOperations> connector,
             final boolean register) {
-        if (baseUrl != null) {
-            baseUrlSupplier = new Supplier<String>() {
-                @Override
-                public String get() {
-                    return baseUrl;
-                }
-            };
-        }
-
-        if (objectMapper == null) {
-            objectMapper = new ObjectMapper();
-        }
-
-        final CumulocityCredentials credentials = initCredentials(user, password, tenant);
-        final PlatformImpl platform = new PlatformImpl(baseUrlSupplier.get(), credentials);
-        return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper,register, MicroserviceApiRepresentation.microserviceApiRepresentation()
+        return new MicroserviceRepository(baseUrl, Suppliers.memoize(connector), objectMapper == null ? new ObjectMapper() : objectMapper, register, MicroserviceApiRepresentation.microserviceApiRepresentation()
                 .updateUrl("/application/currentApplication")
                 .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .getUrl("/application/currentApplication")
@@ -123,8 +103,8 @@ public class MicroserviceRepository {
         }
     }
 
-    private RestConnector rest() {
-        return platform.createRestConnector();
+    private RestOperations rest() {
+        return platform.get();
     }
 
     private ApplicationUserCollectionRepresentation retrieveUsers(ApplicationUserCollectionRepresentation result) {
@@ -150,8 +130,4 @@ public class MicroserviceRepository {
         throw new SDKException("Error invoking " + method + " " + url, ex);
     }
 
-    @Nonnull
-    private static CumulocityCredentials initCredentials(final String username, String password, String tenant) {
-        return new CumulocityCredentials.Builder(username, password).withTenantId(tenant).build();
-    }
 }

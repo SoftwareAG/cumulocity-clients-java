@@ -98,7 +98,7 @@ public class MicroserviceSubscriptionsService {
             if (application.isPresent()) {
                 final Subscriptions subscriptions = repository.retrieveSubscriptions(application.get().getId());
 
-                final ImmutableList<MicroserviceCredentials> successfullyRemoved = from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
+                 from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
                     public boolean apply(final MicroserviceCredentials user) {
                         logIfNotFirstTime("Remove subscription: {}", user);
 
