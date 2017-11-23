@@ -1,6 +1,8 @@
 package com.cumulocity.microservice.subscription.model.core;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,10 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Builder
 @AllArgsConstructor
 public class PlatformProperties {
+    enum IsolationLevel {
+        PER_TENANT, MULTI_TENANT
+    }
+
     public static class PlatformPropertiesProvider {
         @Value("${application.name:}")
         private String applicationName;
@@ -40,26 +46,22 @@ public class PlatformProperties {
         @Value("${C8Y.bootstrap.initialDelay:30000}")
         private int microserviceSubscriptionInitialDelay;
 
-        public PlatformProperties platformProperties(String defaultApplicationName) {
+        @Value(value = "${C8Y.microservice.isolation:}")
+        private String isolation;
+
+        public PlatformProperties platformProperties(String defaultName) {
+            String name;
             if (!isEmpty(this.applicationName)) {
-                defaultApplicationName = this.applicationName;
+                name = this.applicationName;
+            } else {
+                name = defaultName;
             }
-            if (isEmpty(defaultApplicationName)) {
+            if (isEmpty(name)) {
                 throw new IllegalStateException("Please set up application name");
             }
             return PlatformProperties.builder()
-                    .url(new Supplier<String>() {
-                        @Override
-                        public String get() {
-                            return url;
-                        }
-                    })
-                    .mqttUrl(new Supplier<String>() {
-                        @Override
-                        public String get() {
-                            return mqttUrl;
-                        }
-                    })
+                    .url(Suppliers.ofInstance(url))
+                    .mqttUrl(Suppliers.ofInstance(mqttUrl))
                     .microserviceBoostrapUser(MicroserviceCredentials.builder()
                             .tenant(microserviceBootstrapTenant)
                             .name(microserviceBootstrapName)
@@ -67,7 +69,8 @@ public class PlatformProperties {
                             .build())
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
-                    .applicationName(defaultApplicationName)
+                    .applicationName(name)
+                    .isolation(Strings.isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
                     .build();
         }
     }
@@ -78,4 +81,5 @@ public class PlatformProperties {
     private Credentials microserviceBoostrapUser;
     private Integer subscriptionDelay;
     private Integer subscriptionInitialDelay;
+    private IsolationLevel isolation;
 }

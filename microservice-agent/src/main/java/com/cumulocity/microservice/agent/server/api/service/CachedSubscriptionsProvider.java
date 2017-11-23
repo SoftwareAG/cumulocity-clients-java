@@ -19,7 +19,7 @@ public class CachedSubscriptionsProvider {
     private MicroserviceRepository microserviceRepository;
     private Cache<String, DeviceCredentials> cache;
     private AgentApplication agentApplication;
-    
+
     public CachedSubscriptionsProvider(MicroserviceRepository microserviceRepository, AgentApplication application) {
         this.microserviceRepository = microserviceRepository;
         this.agentApplication = application;
