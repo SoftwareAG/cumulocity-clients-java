@@ -22,25 +22,25 @@ public class PlatformProperties {
         @Value("${application.name:}")
         private String applicationName;
 
-        @Value("${platform.url:${C8Y.baseURL:http://localhost:8181}}")
+        @Value("${C8Y.baseURL:${platform.url:http://localhost:8181}}")
         private String url;
 
-        @Value("${platform.url.mqtt:${C8Y.baseURL.mqtt:tcp://localhost:1883}}")
+        @Value("${C8Y.baseURL.mqtt:${platform.url.mqtt:tcp://localhost:1883}}")
         private String mqttUrl;
 
-        @Value("${platform.forceInitialHost:${C8Y.forceInitialHost:true}}")
+        @Value("${C8Y.forceInitialHost:${platform.forceInitialHost:true}}")
         private boolean forceInitialHost;
 
-        @Value("${platform.bootstrap.agent.tenant:${C8Y.bootstrap.tenant:management}}")
+        @Value("${C8Y.bootstrap.tenant:${platform.bootstrap.agent.tenant:management}}")
         private String microserviceBootstrapTenant;
 
-        @Value("${platform.bootstrap.agent.name:${C8Y.bootstrap.user:servicebootstrap}}")
+        @Value("${C8Y.bootstrap.user:${platform.bootstrap.agent.name:servicebootstrap}}")
         private String microserviceBootstrapName;
 
-        @Value("${platform.bootstrap.agent.password:${C8Y.bootstrap.password:!j5iBT0GE7,a73s2;4q51h_52m&6%#}}")
+        @Value("${C8Y.bootstrap.password:${platform.bootstrap.agent.password:!j5iBT0GE7,a73s2;4q51h_52m&6%#}}")
         private String microserviceBootstrapPassword;
 
-        @Value("${platform.bootstrap.agent.delay:${C8Y.bootstrap.delay:10000}}")
+        @Value("${C8Y.bootstrap.delay:${platform.bootstrap.agent.delay:10000}}")
         private int microserviceSubscriptionDelay;
 
         @Value("${C8Y.bootstrap.initialDelay:30000}")
