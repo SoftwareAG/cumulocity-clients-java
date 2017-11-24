@@ -32,7 +32,6 @@
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
 		<module>microservice</module>
-		<module>microservice-agent</module>
 	</modules>
 
 	<properties>
