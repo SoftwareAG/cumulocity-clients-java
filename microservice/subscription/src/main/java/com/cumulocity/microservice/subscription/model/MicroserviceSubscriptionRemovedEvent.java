@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription.model;
 
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.HasCredentials;
-import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentials;
 import lombok.Data;
 import org.springframework.context.ApplicationEvent;
 
