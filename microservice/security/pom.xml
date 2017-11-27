@@ -23,6 +23,16 @@
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-subscription</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>microservice-agent</artifactId>
             <version>${project.version}</version>
         </dependency>

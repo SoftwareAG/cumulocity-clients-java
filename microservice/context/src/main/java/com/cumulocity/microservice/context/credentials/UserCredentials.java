@@ -9,11 +9,10 @@ import lombok.experimental.Wither;
 @ToString(of = {"tenant", "username"})
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeviceCredentials {
+public class UserCredentials implements Credentials {
     private String tenant;
     private String username;
     private String password;
-    private String identifier;
     private String tfaToken;
     private String appKey;
 }

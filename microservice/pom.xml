@@ -11,11 +11,16 @@
     <packaging>pom</packaging>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
 
         <cumulocity.model.version>8.18.0-SNAPSHOT</cumulocity.model.version>
         <cumulocity.dependencies.version>8.18.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.18.0-SNAPSHOT</cumulocity.clients.version>
     </properties>
 
     <modules>
@@ -37,15 +42,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- todo: remove it from here, no transient junk this time-->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <!-- newer guava requires java 8 -->
-                <version>20.0</version>
-            </dependency>
-
-            <!-- microservice sdk -->
+            <!-- microservice libraries -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-security</artifactId>
@@ -70,6 +67,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- todo fixing agent framework - jetty version -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
@@ -89,11 +92,11 @@
                 <version>${jetty.version}</version>
             </dependency>
 
-            <!-- todo fixing agent framework - exclude javax.validation from transient dependencies-->
+            <!-- todo fixing agent framework - exclude javax.validation -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-mvc</artifactId>
-                <version>${project.version}</version>
+                <version>${cumulocity.clients.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -105,7 +108,7 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-repositories</artifactId>
-                <version>${project.version}</version>
+                <version>${cumulocity.clients.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -125,6 +128,25 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- todo overriding version to ones which work with the microservice libraries -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-device-context</artifactId>
+                <version>${cumulocity.clients.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-core</artifactId>
+                <version>${cumulocity.clients.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>java-client</artifactId>
+                <version>${cumulocity.clients.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -136,27 +158,15 @@
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>1.9</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                        <complianceLevel>1.7</complianceLevel>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <complianceLevel>${maven.compiler.target}</complianceLevel>
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
     <distributionManagement>
