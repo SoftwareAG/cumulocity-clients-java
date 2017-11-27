@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <artifactId>clients-java</artifactId>
-        <version>8.18.0-SNAPSHOT</version>
-    </parent>
 
-    <artifactId>microservice</artifactId>
+    <groupId>com.nsn.cumulocity.clients-java</groupId>
+    <artifactId>microservice-dependencies</artifactId>
+    <version>8.18.0-SNAPSHOT</version>
+
     <name>Cumulocity :: Clients Java :: Microservice</name>
-    <description>Microservice root</description>
+    <description>Microservice</description>
     <packaging>pom</packaging>
 
     <properties>
-        <spring-boot-dependencies.version>1.4.0.RELEASE</spring-boot-dependencies.version>
-        <spring.version>4.3.2.RELEASE</spring.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+
+        <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
-        <lombok.version>1.16.16</lombok.version>
+
+        <cumulocity.model.version>8.18.0-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.dependencies.version>8.18.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.18.0-SNAPSHOT</cumulocity.clients.version>
     </properties>
 
     <modules>
@@ -25,7 +29,6 @@
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
-        <module>dependencies</module>
     </modules>
 
     <dependencyManagement>
@@ -39,30 +42,79 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- utils -->
+            <!-- microservice sdk -->
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>19.0</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-agent</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-security</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-subscription</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
-            <!-- exclude javax.validation, todo: you need to copy it also to your pom -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-context</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- todo fixing agent framework - jetty version -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-continuation</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jmx</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- todo fixing agent framework - exclude javax.validation -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-mvc</artifactId>
+                <version>${cumulocity.clients.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-repositories</artifactId>
-                <version>${project.version}</version>
+                <version>${cumulocity.clients.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -83,23 +135,23 @@
                 </exclusions>
             </dependency>
 
-            <!-- jetty version, todo: you need to copy it also to your pom -->
+            <!-- todo overriding version to ones which work with the microservice libraries -->
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-device-context</artifactId>
+                <version>${cumulocity.clients.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-continuation</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-core</artifactId>
+                <version>${cumulocity.clients.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jmx</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>java-client</artifactId>
+                <version>${cumulocity.clients.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -112,26 +164,25 @@
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>1.9</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                        <complianceLevel>1.7</complianceLevel>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <complianceLevel>${maven.compiler.target}</complianceLevel>
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>http://localhost:8080/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>release</id>
+            <url>http://localhost:8080/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
 </project>
