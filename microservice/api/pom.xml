@@ -25,8 +25,13 @@
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>agent-framework-repositories</artifactId>
-            <version>${project.version}</version>
+            <artifactId>microservice-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>java-client</artifactId>
+            <version>${cumulocity.clients.version}</version>
         </dependency>
 
         <dependency>

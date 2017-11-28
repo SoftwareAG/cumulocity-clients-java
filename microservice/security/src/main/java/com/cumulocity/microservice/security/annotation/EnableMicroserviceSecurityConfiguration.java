@@ -1,7 +1,8 @@
 package com.cumulocity.microservice.security.annotation;
 
 
-import com.cumulocity.microservice.security.filter.ServletContextFilter;
+import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter;
+import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,7 +19,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Slf4j
 @Order(99)
 @EnableWebSecurity
-@ComponentScan(basePackageClasses = ServletContextFilter.class)
+@ComponentScan(basePackageClasses = PreAuthenticateServletFilter.class)
 @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true, securedEnabled = true)
 public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -26,7 +27,10 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     private UserDetailsService userDetailsService;
 
     @Autowired
-    private ServletContextFilter servletContextFilter;
+    private PreAuthenticateServletFilter preAuthenticateServletFilter;
+
+    @Autowired
+    private PostAuthenticateServletFilter postAuthenticateServletFilter;
 
     public void configure(WebSecurity webSecurity) {
         webSecurity.ignoring().antMatchers("/metadata", "/health");
@@ -45,7 +49,9 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
 
                 csrf().disable();
 
-        security.addFilterBefore(servletContextFilter, BasicAuthenticationFilter.class);
+        security.addFilterBefore(preAuthenticateServletFilter, BasicAuthenticationFilter.class);
+        security.addFilterAfter(postAuthenticateServletFilter, BasicAuthenticationFilter.class);
+
     }
 }
 

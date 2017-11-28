@@ -2,6 +2,7 @@ package com.cumulocity.microservice.context.annotation;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.context.inject.TenantScope;
 import lombok.Data;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,14 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.context.annotation.ScopedProxyMode.TARGET_CLASS;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -42,7 +41,7 @@ public class EnableContextSupportConfigurationTest {
         private ContextService<MicroserviceCredentials> microservice;
 
         @Bean
-        @Scope(value = "tenant", proxyMode = TARGET_CLASS)
+        @TenantScope
         public TenantService getContext() {
             return new TenantService(microservice.getContext().getTenant());
         }

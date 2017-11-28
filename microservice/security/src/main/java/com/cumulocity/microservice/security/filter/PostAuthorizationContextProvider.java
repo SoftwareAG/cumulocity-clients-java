@@ -2,7 +2,7 @@ package com.cumulocity.microservice.security.filter;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
 
-public interface CredentailsProvider<T> {
-    boolean supports(Object credentialSource);
+public interface PostAuthorizationContextProvider<T> {
+    boolean supports(T credentialSource);
     Credentials get(T input);
 }

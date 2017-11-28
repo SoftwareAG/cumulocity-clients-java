@@ -13,6 +13,7 @@ public class UserCredentials implements Credentials {
     private String tenant;
     private String username;
     private String password;
+    private String identifier;
     private String tfaToken;
     private String appKey;
 }

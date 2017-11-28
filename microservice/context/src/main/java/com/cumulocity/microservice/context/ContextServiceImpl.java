@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.context;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
-import com.cumulocity.microservice.context.credentials.DeviceCredentials;
+import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import lombok.SneakyThrows;
@@ -19,6 +19,7 @@ public class ContextServiceImpl<C> implements ContextService<C> {
 
     private static final String TENANT_LOG_FLAG = "tenant";
     private static final String DEVICE_LOG_FLAG = "device";
+
     private static ThreadLocal<LinkedList<Object>> locaContext = new ThreadLocal<LinkedList<Object>>() {
         @Override
         protected LinkedList<Object> initialValue() {
@@ -135,8 +136,8 @@ public class ContextServiceImpl<C> implements ContextService<C> {
     }
 
 	private static String getContextDevice(Object credentials) {
-        if (credentials instanceof DeviceCredentials) {
-            return ((DeviceCredentials) credentials).getIdentifier();
+        if (credentials instanceof UserCredentials) {
+            return ((UserCredentials) credentials).getIdentifier();
         }
         return null;
 	}

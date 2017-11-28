@@ -22,13 +22,13 @@ import static com.google.common.collect.FluentIterable.from;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ServletContextFilter extends OncePerRequestFilter {
+public class PreAuthenticateServletFilter extends OncePerRequestFilter {
+
+    @Autowired(required = false)
+    private List<PreAuthorizationContextProvider<HttpServletRequest>> credentialsResolvers;
 
     @Autowired(required = false)
     private ContextService<Credentials> contextService;
-
-    @Autowired(required = false)
-    private List<CredentailsProvider<HttpServletRequest>> credentialsResolvers;
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) {
@@ -40,14 +40,19 @@ public class ServletContextFilter extends OncePerRequestFilter {
         };
         if (contextService != null && credentialsResolvers != null) {
             final ImmutableList<Credentials> credentials = from(credentialsResolvers)
-                    .filter(new Predicate<CredentailsProvider<HttpServletRequest>>() {
-                        public boolean apply(CredentailsProvider<HttpServletRequest> provider) {
+                    .filter(new Predicate<PreAuthorizationContextProvider<HttpServletRequest>>() {
+                        public boolean apply(PreAuthorizationContextProvider<HttpServletRequest> provider) {
                             return provider.supports(request);
                         }
                     })
-                    .transform(new Function<CredentailsProvider<HttpServletRequest>, Credentials>() {
-                        public Credentials apply(CredentailsProvider<HttpServletRequest> provider) {
+                    .transform(new Function<PreAuthorizationContextProvider<HttpServletRequest>, Credentials>() {
+                        public Credentials apply(PreAuthorizationContextProvider<HttpServletRequest> provider) {
                             return provider.get(request);
+                        }
+                    })
+                    .filter(new Predicate<Credentials>() {
+                        public boolean apply(Credentials credentials) {
+                            return credentials != null;
                         }
                     })
                     .toList();

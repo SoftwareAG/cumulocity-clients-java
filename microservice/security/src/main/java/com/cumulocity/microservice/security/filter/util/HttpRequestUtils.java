@@ -2,11 +2,18 @@ package com.cumulocity.microservice.security.filter.util;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static com.cumulocity.agent.server.context.DeviceCredentials.decode;
 import static com.cumulocity.agent.server.context.DeviceCredentials.splitUsername;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 public class HttpRequestUtils {
+    public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
+    public static final String TFA_TOKEN_HEADER = "TFAToken";
+    public static final String LOGIN_SEPARATOR = "/";
 
     @Data
     @Builder
@@ -16,7 +23,12 @@ public class HttpRequestUtils {
         private String password;
     }
 
-    public static AuthorizationHeader from(String authorization) {
+    public static boolean hasAuthorizationHeader(Object credentialSource) {
+        return credentialSource instanceof HttpServletRequest
+                && !StringUtils.hasText(((HttpServletRequest) credentialSource).getHeader(AUTHORIZATION));
+    }
+
+    public static AuthorizationHeader authorizationHeader(String authorization) {
         String tenant = null;
         String username = null;
         String password = null;
@@ -39,5 +51,9 @@ public class HttpRequestUtils {
                 .username(username)
                 .password(password)
                 .build();
+    }
+
+    public static String[] splitUsername(String username) {
+        return username.split(LOGIN_SEPARATOR);
     }
 }

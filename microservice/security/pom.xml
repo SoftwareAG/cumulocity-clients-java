@@ -38,17 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>agent-framework-mvc</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.nsn.cumulocity.model</groupId>
-            <artifactId>rest-representation</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>

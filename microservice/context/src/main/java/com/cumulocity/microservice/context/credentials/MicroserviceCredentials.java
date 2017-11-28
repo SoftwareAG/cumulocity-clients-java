@@ -16,8 +16,8 @@ public class MicroserviceCredentials implements Credentials {
     private String tfaToken;
     private String appKey;
 
-    public DeviceCredentials withIdentifier(String identifier) {
-        return DeviceCredentials.builder()
+    public UserCredentials withIdentifier(String identifier) {
+        return UserCredentials.builder()
                 .tenant(tenant)
                 .username(username)
                 .password(password)
