@@ -21,6 +21,8 @@
         <cumulocity.model.version>8.18.0-SNAPSHOT</cumulocity.model.version>
         <cumulocity.dependencies.version>8.18.0-SNAPSHOT</cumulocity.dependencies.version>
         <cumulocity.clients.version>8.18.0-SNAPSHOT</cumulocity.clients.version>
+        <guava.version>20.0</guava.version>
+        <jsr305.version>3.0.2</jsr305.version>
     </properties>
 
     <modules>
@@ -40,6 +42,19 @@
                 <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- google -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
             </dependency>
 
             <!-- microservice sdk -->
