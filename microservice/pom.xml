@@ -25,6 +25,7 @@
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>package</module>
         <module>dependencies</module>
     </modules>
 
