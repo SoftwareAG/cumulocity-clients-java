@@ -4,10 +4,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
@@ -16,14 +13,14 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.util.Arrays;
 
-import static com.google.common.collect.FluentIterable.from;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 
-@Slf4j
 public class LoggingEnvironmentRunListener implements SpringApplicationRunListener {
+
+    private static final Logger log = LoggerFactory.getLogger(LoggingEnvironmentRunListener.class);
 
     private String applicationName;
 
@@ -55,7 +52,6 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
 
     }
 
-
     public void initLogging() {
         if (!StringUtils.isEmpty(applicationName)) {
             log.info("Attempt to configure logback: look in standard locations for log files");
@@ -66,27 +62,16 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
     }
 
     private void setUpConfigFiles() {
-        from(get())
-                .transform(new Function<Supplier<File>, File>() {
-                    public File apply(Supplier<File> fileSupplier) {
-                        return fileSupplier.get();
-                    }
-                })
-                .filter(new Predicate<File>() {
-                    public boolean apply(File file) {
-                        return file != null && file.exists();
-                    }
-                })
-                .first()
-                .transform(new Function<File, File>() {
-                    public File apply(File file) {
-                        return setupLoggingFIle(file);
-                    }
-                });
+        for(File file:getFiles()){
+            if(file != null && file.exists()){
+                setupLoggingFile(file);
+                return;
+            }
+        }
     }
 
-    public Iterable<Supplier<File>> get() {//, applicationName + "-agent-server-logging.xml"
-        return newArrayList(
+    public Iterable<File> getFiles() {
+        return Arrays.asList(
                 file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), "." + applicationName, applicationName + "-agent-server-logging.xml"),
                 file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), "." + applicationName, "logging.xml"),
                 file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), applicationName, applicationName + "-agent-server-logging.xml"),
@@ -105,7 +90,7 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
         );
     }
 
-    private static File setupLoggingFIle(File file) {
+    private static File setupLoggingFile(File file) {
         log.info("logging.conf: {}", file.getAbsoluteFile());
 
         if (!file.getAbsoluteFile().getName().equals(System.getProperty("logging.conf"))) {
@@ -125,19 +110,15 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
         return file;
     }
 
-    private static Supplier<File> file(final String home, final String dir, final String filename) {
-        return new Supplier<File>() {
-            public File get() {
-                final File homeFile = new File(home, dir);
-                if (homeFile.exists()) {
-                    final File file = new File(homeFile, filename);
-                    if (file.exists()) {
-                        return file;
-                    }
-                }
-                return null;
+    private static File file(final String home, final String dir, final String filename) {
+        final File homeFile = new File(home, dir);
+        if (homeFile.exists()) {
+            final File file = new File(homeFile, filename);
+            if (file.exists()) {
+                return file;
             }
-        };
+        }
+        return null;
     }
 
 }
