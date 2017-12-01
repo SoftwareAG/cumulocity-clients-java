@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
-import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentials;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
@@ -48,7 +48,7 @@ public class MicroserviceSubscriptionsRepository {
         final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId)).transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
             public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
                 return MicroserviceCredentials.builder()
-                        .name(representation.getName())
+                        .username(representation.getName())
                         .tenant(representation.getTenant())
                         .password(representation.getPassword())
                         .build();

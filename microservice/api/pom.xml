@@ -20,12 +20,17 @@
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>microservice-agent</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>agent-framework-repositories</artifactId>
+            <artifactId>microservice-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>java-client</artifactId>
+            <version>${cumulocity.clients.version}</version>
         </dependency>
 
         <dependency>
@@ -36,7 +41,7 @@
         <dependency>
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>googleauth</artifactId>
+            <version>1.1.1-${cumulocity.dependencies.version}</version>
         </dependency>
-
     </dependencies>
 </project>

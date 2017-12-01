@@ -1,5 +1,7 @@
 package com.cumulocity.microservice.subscription.model.core;
 
+import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -64,7 +66,7 @@ public class PlatformProperties {
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
                     .microserviceBoostrapUser(MicroserviceCredentials.builder()
                             .tenant(microserviceBootstrapTenant)
-                            .name(microserviceBootstrapName)
+                            .username(microserviceBootstrapName)
                             .password(microserviceBootstrapPassword)
                             .build())
                     .subscriptionDelay(microserviceSubscriptionDelay)

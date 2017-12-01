@@ -1,11 +1,11 @@
 package com.cumulocity.microservice.subscription.service;
 
+import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionRemovedEvent;
-import com.cumulocity.microservice.subscription.model.core.Credentials;
 import com.cumulocity.microservice.subscription.model.core.HasCredentials;
-import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;

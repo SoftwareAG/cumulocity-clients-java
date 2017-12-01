@@ -2,12 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>microservice-dependencies</artifactId>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
+        <artifactId>microservice-dependencies</artifactId>
         <version>8.18.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>microservice-agent</artifactId>
     <name>Cumulocity :: Clients Java :: Microservice :: Agent</name>
@@ -34,19 +35,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- javax.annotations -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
 </project>
