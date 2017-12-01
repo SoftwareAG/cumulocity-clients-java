@@ -21,6 +21,7 @@
         <cumulocity.model.version>8.18.0-SNAPSHOT</cumulocity.model.version>
         <cumulocity.dependencies.version>8.18.0-SNAPSHOT</cumulocity.dependencies.version>
         <cumulocity.clients.version>8.18.0-SNAPSHOT</cumulocity.clients.version>
+        <cumulocity.agent-framework.version>8.18.0</cumulocity.agent-framework.version>
         <guava.version>20.0</guava.version>
         <jsr305.version>3.0.2</jsr305.version>
     </properties>
@@ -117,7 +118,7 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-mvc</artifactId>
-                <version>${cumulocity.clients.version}</version>
+                <version>${cumulocity.agent-framework.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -129,7 +130,7 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-repositories</artifactId>
-                <version>${cumulocity.clients.version}</version>
+                <version>${cumulocity.agent-framework.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -154,13 +155,13 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-device-context</artifactId>
-                <version>${cumulocity.clients.version}</version>
+                <version>${cumulocity.agent-framework.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-core</artifactId>
-                <version>${cumulocity.clients.version}</version>
+                <version>${cumulocity.agent-framework.version}</version>
             </dependency>
 
             <dependency>

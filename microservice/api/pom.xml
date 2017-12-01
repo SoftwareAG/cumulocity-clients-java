@@ -26,7 +26,6 @@
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>agent-framework-repositories</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
