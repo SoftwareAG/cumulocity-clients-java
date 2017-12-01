@@ -24,6 +24,7 @@
         <cumulocity.agent-framework.version>8.18.0</cumulocity.agent-framework.version>
         <guava.version>20.0</guava.version>
         <jsr305.version>3.0.2</jsr305.version>
+        <googleauth.version>1.1.1</googleauth.version>
     </properties>
 
     <modules>
@@ -56,6 +57,12 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>${jsr305.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                <artifactId>googleauth</artifactId>
+                <version>${googleauth.version}-${cumulocity.dependencies.version}</version>
             </dependency>
 
             <!-- microservice sdk -->

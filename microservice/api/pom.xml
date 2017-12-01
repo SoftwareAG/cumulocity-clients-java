@@ -36,7 +36,6 @@
         <dependency>
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>googleauth</artifactId>
-            <version>1.1.1-${cumulocity.dependencies.version}</version>
         </dependency>
 
     </dependencies>
