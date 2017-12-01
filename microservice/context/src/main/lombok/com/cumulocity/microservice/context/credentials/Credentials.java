@@ -7,3 +7,4 @@ public interface Credentials {
     String getTfaToken();
     String getAppKey();
 }
+
