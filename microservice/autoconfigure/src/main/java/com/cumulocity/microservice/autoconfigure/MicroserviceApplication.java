@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.autoconfigure;
 
+import com.cumulocity.microservice.context.annotation.EnableContextSupport;
 import com.cumulocity.microservice.logging.annotation.EnableMicroserviceLogging;
 import com.cumulocity.microservice.platform.api.annotation.EnableMicroservicePlatformInternalApi;
 import com.cumulocity.microservice.security.annotation.EnableMicroserviceSecurity;
@@ -14,6 +15,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootApplication
+@EnableContextSupport
 @EnableMicroserviceLogging
 @EnableMicroserviceSecurity
 @EnableMicroserviceSubscription
