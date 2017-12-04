@@ -1,6 +1,8 @@
 package com.cumulocity.agent.packaging.microservice;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -22,6 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static com.google.common.base.Throwables.propagate;
+import static com.google.common.io.Files.asByteSource;
 import static java.nio.file.Files.createDirectories;
 import static org.apache.commons.io.IOUtils.copyLarge;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
@@ -29,8 +32,8 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 @Mojo(name = "microservice-package", defaultPhase = PACKAGE)
 public class MicroservicePackageMojo extends AbstractMojo {
 
-    public static final String TARGET_FILENAME_PATTERN = "%s-package-%s.zip";
-    
+    public static final String TARGET_FILENAME_PATTERN = "%s-%s.zip";
+
     @Parameter(defaultValue = "${project.build.directory}")
     private File build;
     @Parameter(property = "project.build.sourceEncoding", defaultValue = "utf8")
@@ -46,6 +49,8 @@ public class MicroservicePackageMojo extends AbstractMojo {
     private String image;
     @Parameter(defaultValue = "${basedir}/src/main/configuration/cumulocity.json")
     private File manifestFile;
+    @Parameter(defaultValue = "${project.artifactId}")
+    private String name;
 
     @Component
     private MicroserviceDockerClient dockerClient;
@@ -59,16 +64,16 @@ public class MicroservicePackageMojo extends AbstractMojo {
             return;
         }
         try {
-            final String targetFilename = String.format(TARGET_FILENAME_PATTERN, project.getArtifactId(), project.getVersion());
+            final String targetFilename = String.format(TARGET_FILENAME_PATTERN, name, project.getVersion());
             final File dockerImage = new File(build, "image.tar");
             createDirectories(build.toPath());
-            dockerClient.saveDockerImage(image, dockerImage);
+            dockerClient.saveDockerImage(String.format("%s:%s",image,project.getVersion()), dockerImage);
 
-            final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(
-                    new File(build, targetFilename)));
-            addFileToZip(zipOutputStream, filterResourceFile(manifestFile));
-            addFileToZip(zipOutputStream, dockerImage);
-            zipOutputStream.close();
+            try (final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(
+                    new File(build, targetFilename)))) {
+                addFileToZip(zipOutputStream, filterResourceFile(manifestFile),"cumulocity.json");
+                addFileToZip(zipOutputStream, dockerImage,"image.tar");
+            }
 
             dockerImage.delete();
         } catch (Exception e) {
@@ -101,13 +106,14 @@ public class MicroservicePackageMojo extends AbstractMojo {
         return resource;
     }
 
-    private void addFileToZip(final ZipOutputStream zipOutputStream, final File file) throws IOException {
-        final FileInputStream input = new FileInputStream(file);
-        final ZipEntry ze = new ZipEntry(file.getName());
-        zipOutputStream.putNextEntry(ze);
-        copyLarge(input, zipOutputStream);
-        input.close();
-        zipOutputStream.closeEntry();
+    private void addFileToZip(final ZipOutputStream zipOutputStream, final File file,String name) throws IOException {
+        final ZipEntry ze = new ZipEntry(name);
+        try {
+            zipOutputStream.putNextEntry(ze);
+            asByteSource(file).copyTo(zipOutputStream);
+        }finally {
+            zipOutputStream.closeEntry();
+        }
     }
 
 }

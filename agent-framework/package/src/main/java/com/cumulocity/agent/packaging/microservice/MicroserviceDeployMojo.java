@@ -36,6 +36,11 @@ public class MicroserviceDeployMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "skip.microservice.deploy")
     private boolean skip;
 
+    @Parameter(defaultValue = SERVER_ID)
+    private String serviceId ;
+    @Parameter(defaultValue = "${project.artifactId}")
+    private String name;
+
     @Component
     private WagonManager wagonManager;
     @Component
@@ -53,12 +58,12 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             return;
         }
 
-        final String targetFilename = format(TARGET_FILENAME_PATTERN, project.getArtifactId(), project.getVersion());
+        final String targetFilename = format(TARGET_FILENAME_PATTERN, name, project.getVersion());
         final File file = new File(build, targetFilename);
         try {
-            final Repository repository = new Repository(SERVER_ID, serverUrl.get());
+            final Repository repository = new Repository(serviceId, serverUrl.get());
             final Wagon wagon = wagonManager.getWagon(repository);
-            wagon.connect(repository, wagonManager.getAuthenticationInfo(SERVER_ID));
+            wagon.connect(repository, wagonManager.getAuthenticationInfo(serviceId));
             wagon.put(file, targetFilename);
             wagon.disconnect();
         } catch (Exception e) {
@@ -67,7 +72,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
     }
 
     private Optional<String> getServerUrl() {
-        final Server server = settings.getServer(SERVER_ID);
+        final Server server = settings.getServer(serviceId);
         final Object configuration = server.getConfiguration();
         if (!(configuration instanceof Xpp3Dom)) {
             return Optional.absent();

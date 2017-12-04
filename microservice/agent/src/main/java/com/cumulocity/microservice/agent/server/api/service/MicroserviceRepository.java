@@ -1,30 +1,26 @@
 package com.cumulocity.microservice.agent.server.api.service;
 
 import com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation;
-import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
-import com.cumulocity.sdk.client.PlatformImpl;
-import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation.APPLICATION_ID;
-import static com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation.APPLICATION_NAME;
-import static com.cumulocity.rest.representation.application.ApplicationMediaType.*;
+import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
+import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.httpclient.HttpStatus.*;
@@ -35,70 +31,56 @@ import static org.apache.commons.httpclient.HttpStatus.*;
 public class MicroserviceRepository {
 
     private final Supplier<String> baseUrl;
-    private final PlatformImpl platform;
+    private final Supplier<RestOperations> platform;
     private final ObjectMapper objectMapper;
+    private final boolean register;
     private final MicroserviceApiRepresentation microserviceApi;
 
     @Builder(builderMethodName = "microserviceApi")
     public static MicroserviceRepository create(
+            final Supplier<String> baseUrl,
             ObjectMapper objectMapper,
-            Supplier<String> baseUrlSupplier,
-            final String baseUrl,
-            final String tenant,
-            final String user,
-            final String password) {
-        if (baseUrl != null) {
-            baseUrlSupplier = new Supplier<String>() {
-                @Override
-                public String get() {
-                    return baseUrl;
-                }
-            };
-        }
-
-        if (objectMapper == null) {
-            objectMapper = new ObjectMapper();
-        }
-
-        final CumulocityCredentials credentials = initCredentials(user, password, tenant);
-        final PlatformImpl platform = new PlatformImpl(baseUrlSupplier.get(), credentials);
-        return new MicroserviceRepository(baseUrlSupplier, platform, objectMapper, MicroserviceApiRepresentation.microserviceApiRepresentation()
-                .createUrl("/application/applications")
-                .updateUrl("/application/applications/" + APPLICATION_ID)
-                .subscriptionsUrl("/application/applications/" + APPLICATION_ID + "/subscriptions")
-                .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
+            Supplier<RestOperations> connector,
+            final boolean register) {
+        return new MicroserviceRepository(baseUrl, Suppliers.memoize(connector), objectMapper == null ? new ObjectMapper() : objectMapper, register, MicroserviceApiRepresentation.microserviceApiRepresentation()
+                .updateUrl("/application/currentApplication")
+                .subscriptionsUrl("/application/currentApplication/subscriptions")
+                .getUrl("/application/currentApplication")
                 .build());
     }
 
     public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation representation) {
         log.debug("register {}", representation);
 
-        final ApplicationRepresentation application = getByName(applicationName);
+        final ApplicationRepresentation application = getApplication();
         if (application == null) {
-            return create(applicationName, representation);
-        } else {
+            // new micro-service SDK approach requires application configured
+            throw new SDKException("No microservice with name " + applicationName + " registered. Microservice must be configured before running the SDK, please contact administrator");
+        } else if (shouldUpdateApplication()) {
             if (!MICROSERVICE.equals(application.getType())) {
-                throw new SDKException("Cannot register application. There is another application with name \""  + applicationName + "\"");
+                throw new SDKException("Cannot register application. There is another application with name \"" + applicationName + "\"");
             }
             return update(application, representation);
+        } else {
+            return application;
         }
     }
 
-    public ApplicationRepresentation getByName(String applicationName) {
-        final String url = microserviceApi.getFindByNameUrl(baseUrl.get(), applicationName);
+    private boolean shouldUpdateApplication() {
+        return register;
+    }
+
+    public ApplicationRepresentation getApplication() {
+        final String url = microserviceApi.getAppUrl(baseUrl.get());
         try {
-            final ApplicationCollectionRepresentation response = rest().get(url, APPLICATION_COLLECTION, ApplicationCollectionRepresentation.class);
-            if (response.getApplications().size() == 1) {
-                return response.getApplications().get(0);
-            }
-            return null;
+            return rest().get(url, APPLICATION, ApplicationRepresentation.class);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("GET", url, ex);
         }
     }
 
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
-        final String url = microserviceApi.getSubscriptionsUrl(baseUrl.get(), applicationId);
+        final String url = microserviceApi.getSubscriptionsUrl(baseUrl.get());
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
@@ -121,28 +103,12 @@ public class MicroserviceRepository {
         }
     }
 
-    public ApplicationRepresentation create(String applicationName, MicroserviceMetadataRepresentation representation) {
-        final String url = microserviceApi.getCreateUrl(baseUrl.get());
-        try {
-            final ApplicationRepresentation application = new ApplicationRepresentation();
-            application.setName(applicationName);
-            application.setKey(applicationName + "-application-key");
-            application.setType(MICROSERVICE);
-            application.setRequiredRoles(representation.getRequiredRoles());
-            application.setRoles(representation.getRoles());
-            application.setUrl(representation.getUrl());
-            return rest().post(url, APPLICATION, application);
-        } catch (final Exception ex) {
-            return (ApplicationRepresentation) handleException("POST", url, ex);
-        }
-    }
-
-    private RestConnector rest() {
-        return platform.createRestConnector();
+    private RestOperations rest() {
+        return platform.get();
     }
 
     private ApplicationUserCollectionRepresentation retrieveUsers(ApplicationUserCollectionRepresentation result) {
-        final List<ApplicationUserRepresentation> users =  new ArrayList<>();
+        final List<ApplicationUserRepresentation> users = new ArrayList<>();
         for (final Object userMap : result.getUsers()) {
             users.add(objectMapper.convertValue(userMap, ApplicationUserRepresentation.class));
         }
@@ -154,7 +120,7 @@ public class MicroserviceRepository {
     private Object handleException(String method, String url, Exception ex) {
         if (ex instanceof SDKException) {
             final SDKException sdkException = (SDKException) ex;
-            if (sdkException.getHttpStatus() == SC_FORBIDDEN ||  sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
+            if (sdkException.getHttpStatus() == SC_FORBIDDEN || sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
                 log.warn("User has no permission to api " + method + " " + url);
                 return null;
             } else if (sdkException.getHttpStatus() == SC_NOT_FOUND) {
@@ -164,8 +130,4 @@ public class MicroserviceRepository {
         throw new SDKException("Error invoking " + method + " " + url, ex);
     }
 
-    @Nonnull
-    private static CumulocityCredentials initCredentials(final String username, String password, String tenant) {
-        return new CumulocityCredentials.Builder(username, password).withTenantId(tenant).build();
-    }
 }

@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.service;
 
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class MicroserviceSubscriptionScheduler implements ApplicationListener<ContextRefreshedEvent> {
-    private final ScheduledExecutorService singleThreadScheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService subscriptionsWatcher = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+            .setNameFormat("subscriptions-%d")
+            .setDaemon(true)
+            .build());
 
     private final MicroserviceSubscriptionsService service;
     private final PlatformProperties properties;
@@ -38,7 +42,7 @@ public class MicroserviceSubscriptionScheduler implements ApplicationListener<Co
         if (subscriptionDelay <= 0) {
             return;
         }
-        singleThreadScheduler.scheduleWithFixedDelay(new Runnable() {
+        subscriptionsWatcher.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 try {
                     service.subscribe();

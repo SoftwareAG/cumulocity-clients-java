@@ -1,22 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
+        <artifactId>microservice</artifactId>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <artifactId>clients-java</artifactId>
-        <version>8.17.1-SNAPSHOT</version>
+        <version>8.18.1-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>microservice-agent</artifactId>
-    <name>Cumulocity :: Clients Java :: Microservice</name>
-    <description>Microservice agent.</description>
+    <name>Cumulocity :: Clients Java :: Microservice :: Agent</name>
+    <description>Microservice agent</description>
 
     <properties>
-  		<!-- srping.version overrides version specified in com.nsn.cumulocity.shared-components:common-spring
-  			project take care if spring and logback version corresponds to version specified
-  			in spring-boot -->
-  		<spring.version>4.3.2.RELEASE</spring.version>
-  		<spring-boot.version>1.4.0.RELEASE</spring-boot.version>
-  	</properties>
+        <!-- srping.version overrides version specified in com.nsn.cumulocity.shared-components:common-spring
+            project take care if spring and logback version corresponds to version specified
+            in spring-boot -->
+        <spring.version>4.3.2.RELEASE</spring.version>
+        <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+    </properties>
 
     <dependencies>
         <!-- agent framework mvc-->
@@ -46,7 +47,7 @@
             <artifactId>guava</artifactId>
         </dependency>
 
-	 <!-- javax.annotations -->
+        <!-- javax.annotations -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
@@ -55,4 +56,5 @@
         </dependency>
 
     </dependencies>
+
 </project>

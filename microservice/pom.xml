@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>8.17.1-SNAPSHOT</version>
+        <version>8.18.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice</artifactId>
@@ -20,6 +20,7 @@
     </properties>
 
     <modules>
+        <module>agent</module>
         <module>api</module>
         <module>security</module>
         <module>subscription</module>

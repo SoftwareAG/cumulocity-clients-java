@@ -9,7 +9,9 @@ import java.lang.annotation.*;
 /**
  * Requires application name. Emits MicroserviceSubscription*Event events.
  * Additional configuration is provided by ObjectMapper and MicroserviceMetadataRepresentation
- */
+ *
+ *
+**/
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

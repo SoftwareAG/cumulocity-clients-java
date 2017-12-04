@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice</artifactId>
-        <version>8.17.1-SNAPSHOT</version>
+        <version>8.18.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-subscription</artifactId>
@@ -47,10 +47,5 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice</artifactId>
-        <version>8.17.1-SNAPSHOT</version>
+        <version>8.18.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-dependencies</artifactId>
@@ -23,7 +23,11 @@
                 <artifactId>microservice-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-subscription</artifactId>
@@ -33,6 +37,11 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-agent</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
