@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.subscription.repository;
 
-import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;

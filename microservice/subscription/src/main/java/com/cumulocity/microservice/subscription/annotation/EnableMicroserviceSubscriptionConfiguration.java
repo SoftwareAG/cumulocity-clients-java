@@ -1,8 +1,8 @@
 package com.cumulocity.microservice.subscription.annotation;
 
-import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.sdk.client.Platform;
@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackageClasses = {
         MicroserviceSubscriptionsService.class,
         MicroserviceSubscriptionsRepository.class,
-        MicroserviceRepository.class
 })
 @ConditionalOnProperty(value = "microservice.subscription.enabled", havingValue = "true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {

@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>8.18.0-SNAPSHOT</version>
+    <version>8.19.0-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -15,10 +15,10 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>8.18.0-SNAPSHOT</cumulocity.model.version>
-        <cumulocity.dependencies.version>8.18.0-SNAPSHOT</cumulocity.dependencies.version>
-        <cumulocity.clients.version>8.18.0-SNAPSHOT</cumulocity.clients.version>
-        <cumulocity.agent-framework.version>8.18.0</cumulocity.agent-framework.version>
+        <cumulocity.model.version>8.19.0-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.dependencies.version>8.19.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.19.0-SNAPSHOT</cumulocity.clients.version>
+        <cumulocity.agent-framework.version>8.19.0-SNAPSHOT</cumulocity.agent-framework.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
@@ -27,12 +27,13 @@
     </properties>
 
     <modules>
-        <module>agent</module>
+        <module>autoconfigure</module>
         <module>context</module>
         <module>api</module>
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>properties</module>
     </modules>
 
     <dependencyManagement>
@@ -45,6 +46,7 @@
                 <type>pom</type>
                 <scope>import</scope>
 
+                <!-- fixing clients java - jetty version -->
                 <exclusions>
                     <exclusion>
                         <groupId>org.eclipse.jetty</groupId>
@@ -61,6 +63,12 @@
                         <artifactId>jetty-jmx</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
 
             <!-- microservice libraries -->
@@ -90,7 +98,19 @@
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-properties</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-autoconfigure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -100,7 +120,7 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- fixing agent framework - jetty version -->
+            <!-- fixing clients java - jetty version -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
@@ -119,7 +139,7 @@
                 <version>${jetty.version}</version>
             </dependency>
 
-            <!-- fixing agent framework - exclude javax.validation -->
+            <!-- fixing client java -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-mvc</artifactId>
@@ -156,7 +176,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- overriding version to ones which work with the microservice libraries -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-device-context</artifactId>
@@ -173,6 +192,21 @@
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>java-client</artifactId>
                 <version>${cumulocity.clients.version}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -191,6 +225,42 @@
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.nsn.cumulocity.clients-java</groupId>
+                    <artifactId>agent-framework-package</artifactId>
+                    <version>${c8y.agent-framework.version}</version>
+                    <executions>
+                        <execution>
+                            <id>agent-package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>agent-package</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>agent-push</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>agent-push</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>microservice-package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>microservice-package</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>microservice-deploy</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>microservice-deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

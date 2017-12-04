@@ -1,8 +1,8 @@
 package com.cumulocity.microservice.security.annotation;
 
-import com.cumulocity.microservice.agent.server.security.conf.SecurityUserDetailsService;
-import com.cumulocity.microservice.agent.server.security.service.RoleService;
-import com.cumulocity.microservice.agent.server.security.service.impl.RoleServiceImpl;
+import com.cumulocity.microservice.security.service.RoleService;
+import com.cumulocity.microservice.security.service.SecurityUserDetailsService;
+import com.cumulocity.microservice.security.service.impl.RoleServiceImpl;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -14,7 +14,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Lazy
 @Configuration
-@ConditionalOnBean(EnableMicroserviceSecurityConfiguration.class)
+@ConditionalOnBean({
+        PlatformParameters.class,
+        EnableMicroserviceSecurityConfiguration.class,
+})
 @ConditionalOnMissingBean({UserDetailsService.class, RoleService.class})
 public class UserDetailsServiceConfiguration {
 

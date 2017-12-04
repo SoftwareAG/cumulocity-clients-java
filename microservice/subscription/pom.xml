@@ -11,7 +11,6 @@
     <name>Cumulocity :: Clients Java :: Microservice :: Subscription</name>
 
     <dependencies>
-        <!-- spring boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -22,21 +21,15 @@
             <artifactId>microservice-context</artifactId>
         </dependency>
 
-        <!-- todo get rid of that transient junk!!!!! -->
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-agent</artifactId>
-        </dependency>
-
-        <!-- todo get rid of that transient junk!!!!! -->
-        <dependency>
-            <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>agent-framework-repositories</artifactId>
+            <artifactId>java-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

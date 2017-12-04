@@ -7,13 +7,13 @@
         <version>8.18.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>microservice-security</artifactId>
-    <name>Cumulocity :: Clients Java :: Microservice :: Security</name>
+    <artifactId>microservice-autoconfigure</artifactId>
+    <name>Cumulocity :: Clients Java :: Microservice :: Autoconfigure</name>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -23,30 +23,27 @@
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-context</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>microservice-subscription</artifactId>
         </dependency>
 
-<!--
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-agent</artifactId>
-        </dependency>
--->
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <artifactId>microservice-logging</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-properties</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-platform-api</artifactId>
         </dependency>
     </dependencies>
 </project>
