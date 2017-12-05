@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.context.scope;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,9 @@ import static java.lang.String.format;
  * Implements a scope container.
  * @author Darek Kaczynski
  */
-@Slf4j
 public class DefaultScopeContainer implements ScopeContainer {
+
+    private final Logger log = LoggerFactory.getLogger(DefaultScopeContainer.class);
 
     private final ConcurrentMap<String, Object> objectsMap;
 

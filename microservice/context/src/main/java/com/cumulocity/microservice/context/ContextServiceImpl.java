@@ -4,8 +4,9 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.LinkedList;
@@ -14,8 +15,9 @@ import java.util.concurrent.Callable;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Lists.reverse;
 
-@Slf4j
 public class ContextServiceImpl<C> implements ContextService<C> {
+
+    private static final Logger log = LoggerFactory.getLogger(ContextServiceImpl.class);
 
     private static final String TENANT_LOG_FLAG = "tenant";
     private static final String DEVICE_LOG_FLAG = "device";
@@ -65,7 +67,6 @@ public class ContextServiceImpl<C> implements ContextService<C> {
     }
 
     @Override
-    @SneakyThrows
     public <V> V callWithinContext(C context, Callable<V> task) {
         enterContext(context);
         try {
@@ -73,7 +74,7 @@ public class ContextServiceImpl<C> implements ContextService<C> {
         } catch (Exception e) {
             log.warn("execution of task failed within tenant : " + getContextTenant(context), e.getMessage());
             log.debug("execution of task failed within tenant : " + getContextTenant(context), e);
-            throw e;
+            throw Throwables.propagate(e);
         } finally {
             leaveContext();
         }

@@ -3,7 +3,6 @@ package com.cumulocity.microservice.context.annotation;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
-import lombok.Data;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class EnableContextSupportConfigurationTest {
 
-    @Data
     public static class TenantService {
         private static int static_counter = 0;
         private final String tenant;
         private final int counter = TenantService.static_counter ++;
 
-    @Override
+        public TenantService(String tenant) {
+            this.tenant = tenant;
+        }
+
+        @Override
     public String toString() {
         return tenant + ", " + counter;
     }
