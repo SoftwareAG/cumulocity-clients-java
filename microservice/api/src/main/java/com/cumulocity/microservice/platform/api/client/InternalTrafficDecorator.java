@@ -57,6 +57,14 @@ public class InternalTrafficDecorator<K> {
             return new InternalTrafficDecorator<>(platform, callable).asInternal();
         }
 
+        public void doAction(final Runnable runnable) {
+            doAction(new Callable<Object>() {
+                public Object call() {
+                    runnable.run();
+                    return null;
+                }
+            });
+        }
     }
 
 }

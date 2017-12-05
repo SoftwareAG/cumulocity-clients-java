@@ -114,6 +114,15 @@ public class CepInternalApi {
         });
     }
 
+    public String health() {
+        checkBeansNotNull();
+        return internally().onPlatform(platform).doAction(new Callable<String>() {
+            public String call() {
+                return cepApi.health();
+            }
+        });
+    }
+
     private void checkBeansNotNull() {
         Preconditions.checkNotNull(cepApi, "Bean of type: " + CepApi.class + " must be in context");
         Preconditions.checkNotNull(platform, "Bean of type: " + PlatformImpl.class + " must be in context");

@@ -19,13 +19,11 @@
  */
 package com.cumulocity.sdk.client.cep;
 
-import java.io.InputStream;
-import java.io.Reader;
-
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.alarm.AlarmCollection;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
+
+import java.io.InputStream;
 
 /**
  * API for integration with Custom Event Processing modules from the platform.
@@ -134,5 +132,8 @@ public interface CepApi {
      */
     void delete(String id);
 
-    
+    /**
+     * Checks state of cep microservice.
+     */
+    String health();
 }

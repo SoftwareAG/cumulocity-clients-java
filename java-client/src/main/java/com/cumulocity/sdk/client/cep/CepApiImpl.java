@@ -19,15 +19,17 @@
  */
 package com.cumulocity.sdk.client.cep;
 
-import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
-
-import java.io.InputStream;
-
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
+
+import java.io.InputStream;
+import java.util.Map;
+
+import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 public class CepApiImpl implements CepApi {
 
@@ -93,6 +95,12 @@ public class CepApiImpl implements CepApi {
     @Override
     public void delete(String id) {
         restConnector.delete(cepModuleUrl(id));
+    }
+
+    @Override
+    public String health() {
+        final Map map = restConnector.get(url + "/health", APPLICATION_JSON_TYPE, Map.class);
+        return String.valueOf(map.get("status"));
     }
 
     @Override
