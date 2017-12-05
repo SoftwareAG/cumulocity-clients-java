@@ -3,12 +3,14 @@ package com.cumulocity.microservice.context.scope;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
-@Slf4j
 public abstract class BaseScope implements Scope {
+
+    private static final Logger log = LoggerFactory.getLogger(BaseScope.class);
 
     private final KeyBasedLocksMap locks = new KeyBasedLocksMap();
 

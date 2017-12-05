@@ -14,9 +14,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import lombok.RequiredArgsConstructor;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,10 +27,10 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.collect.FluentIterable.from;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class MicroserviceSubscriptionsService {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceSubscriptionsService.class);
 
     public interface MicroserviceChangedListener<T extends HasCredentials> {
 //        returns true if subscription is properly added
@@ -63,119 +61,138 @@ public class MicroserviceSubscriptionsService {
             }
     );
 
-    @Synchronized
+    private final Object $lock = new Object();
+
+    @Autowired
+    public MicroserviceSubscriptionsService(
+            PlatformProperties properties,
+            ApplicationEventPublisher eventPublisher,
+            MicroserviceSubscriptionsRepository repository,
+            MicroserviceMetadataRepresentation microserviceMetadataRepresentation) {
+        this.properties = properties;
+        this.eventPublisher = eventPublisher;
+        this.repository = repository;
+        this.microserviceMetadataRepresentation = microserviceMetadataRepresentation;
+    }
+
     public void listen(MicroserviceChangedListener listener) {
-        this.listeners.add(listener);
-        for (final MicroserviceCredentials user : repository.getCurrentSubscriptions()) {
-            try {
-                processed = user;
-                listener.apply(new MicroserviceSubscriptionAddedEvent(user));
-            } catch (final Exception ex) {
-                log.error(ex.getMessage(), ex);
-            } finally {
-                processed = null;
+        synchronized ($lock) {
+            this.listeners.add(listener);
+            for (final MicroserviceCredentials user : repository.getCurrentSubscriptions()) {
+                try {
+                    processed = user;
+                    listener.apply(new MicroserviceSubscriptionAddedEvent(user));
+                } catch (final Exception ex) {
+                    log.error(ex.getMessage(), ex);
+                } finally {
+                    processed = null;
+                }
             }
         }
     }
 
-    @Synchronized
     public <T extends HasCredentials> void listen(final Class<T> clazz, final MicroserviceChangedListener<T> listener) {
-        listen(new MicroserviceChangedListener() {
-            @Override
-            public boolean apply(HasCredentials event) throws Exception {
-                if (clazz.isInstance(event)) {
-                    return listener.apply((T) event);
-            }
-                return true;
-            }
-        });
-    }
-
-    @Synchronized
-    public void subscribe() {
-        try {
-            final Optional<ApplicationRepresentation> application = repository.register(properties.getApplicationName(), convert(microserviceMetadataRepresentation));
-            if (application.isPresent()) {
-                final Subscriptions subscriptions = repository.retrieveSubscriptions(application.get().getId());
-
-                 from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
-                    public boolean apply(final MicroserviceCredentials user) {
-                        logIfNotFirstTime("Remove subscription: {}", user);
-
-                        for (final MicroserviceChangedListener listener : listeners) {
-                            try {
-                                if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
-                                    return false;
-                                }
-                            } catch (final Exception ex) {
-                                log.error(ex.getMessage(), ex);
-                                return false;
-                            }
-                        }
-                        return true;
+        synchronized ($lock) {
+            listen(new MicroserviceChangedListener() {
+                @Override
+                public boolean apply(HasCredentials event) throws Exception {
+                    if (clazz.isInstance(event)) {
+                        return listener.apply((T) event);
                     }
-                }).toList();
-
-                final ImmutableList<MicroserviceCredentials> successfullyAdded = from(subscriptions.getAdded()).filter(new Predicate<MicroserviceCredentials>() {
-                    public boolean apply(final MicroserviceCredentials user) {
-                        logIfNotFirstTime("Add subscription: {}", user);
-
-                        for (final MicroserviceChangedListener listener : listeners) {
-                            try {
-                                processed = user;
-                                if (!listener.apply(new MicroserviceSubscriptionAddedEvent(user))) {
-                                    return false;
-                                }
-                            } catch (final Exception ex) {
-                                log.error(ex.getMessage(), ex);
-                                return false;
-                            } finally {
-                                processed = null;
-                            }
-                        }
-                        return true;
-                    }
-                }).toList();
-
-                repository.updateCurrentSubscriptions(from(subscriptions.getAll())
-                        .filter(new Predicate<MicroserviceCredentials>() {
-                            public boolean apply(MicroserviceCredentials user) {
-                                if (subscriptions.getAdded().contains(user)) {
-                                    return successfullyAdded.contains(user);
-                                }
-                                return true;
-                            }
-                        })
-                        .toList());
-            } else {
-                log.error("Application {} not found", properties.getApplicationName());
-            }
-        } catch (Throwable e) {
-            log.error("Error while reacting on microservice subscription", e);
+                    return true;
+                }
+            });
         }
     }
 
-    @Synchronized
+    public void subscribe() {
+        synchronized ($lock) {
+            try {
+                final Optional<ApplicationRepresentation> application = repository.register(properties.getApplicationName(), convert(microserviceMetadataRepresentation));
+                if (application.isPresent()) {
+                    final Subscriptions subscriptions = repository.retrieveSubscriptions(application.get().getId());
+
+                    from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
+                        public boolean apply(final MicroserviceCredentials user) {
+                            logIfNotFirstTime("Remove subscription: {}", user);
+
+                            for (final MicroserviceChangedListener listener : listeners) {
+                                try {
+                                    if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
+                                        return false;
+                                    }
+                                } catch (final Exception ex) {
+                                    log.error(ex.getMessage(), ex);
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    }).toList();
+
+                    final ImmutableList<MicroserviceCredentials> successfullyAdded = from(subscriptions.getAdded()).filter(new Predicate<MicroserviceCredentials>() {
+                        public boolean apply(final MicroserviceCredentials user) {
+                            logIfNotFirstTime("Add subscription: {}", user);
+
+                            for (final MicroserviceChangedListener listener : listeners) {
+                                try {
+                                    processed = user;
+                                    if (!listener.apply(new MicroserviceSubscriptionAddedEvent(user))) {
+                                        return false;
+                                    }
+                                } catch (final Exception ex) {
+                                    log.error(ex.getMessage(), ex);
+                                    return false;
+                                } finally {
+                                    processed = null;
+                                }
+                            }
+                            return true;
+                        }
+                    }).toList();
+
+                    repository.updateCurrentSubscriptions(from(subscriptions.getAll())
+                            .filter(new Predicate<MicroserviceCredentials>() {
+                                public boolean apply(MicroserviceCredentials user) {
+                                    if (subscriptions.getAdded().contains(user)) {
+                                        return successfullyAdded.contains(user);
+                                    }
+                                    return true;
+                                }
+                            })
+                            .toList());
+                } else {
+                    log.error("Application {} not found", properties.getApplicationName());
+                }
+            } catch (Throwable e) {
+                log.error("Error while reacting on microservice subscription", e);
+            }
+        }
+    }
+
     public Collection<MicroserviceCredentials> getAll() {
-        return repository.getCurrentSubscriptions();
+        synchronized ($lock) {
+            return repository.getCurrentSubscriptions();
+        }
     }
 
     /**
      * This method should not be invoked in listener because it will return previous state
      */
-    @Synchronized
     public Optional<MicroserviceCredentials> getCredentials(String tenant) {
-        for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
-            if (subscription.getTenant().equals(tenant)) {
-                return of(subscription);
+        synchronized ($lock) {
+            for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
+                if (subscription.getTenant().equals(tenant)) {
+                    return of(subscription);
+                }
             }
-        }
-        if (processed != null) {
-            if (processed.getTenant().equals(tenant)) {
-                return Optional.of((MicroserviceCredentials) processed);
+            if (processed != null) {
+                if (processed.getTenant().equals(tenant)) {
+                    return Optional.of((MicroserviceCredentials) processed);
+                }
             }
+            return absent();
         }
-        return absent();
     }
 
     private void logIfNotFirstTime(String s, MicroserviceCredentials user) {

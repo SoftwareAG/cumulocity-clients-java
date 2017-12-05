@@ -9,10 +9,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,21 +17,26 @@ import java.util.List;
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
-import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.httpclient.HttpStatus.*;
 
-@Slf4j
-@Setter(value = PRIVATE)
-@RequiredArgsConstructor
 public class MicroserviceRepository {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceRepository.class);
     private final Supplier<String> baseUrl;
     private final Supplier<RestOperations> platform;
     private final ObjectMapper objectMapper;
     private final boolean register;
     private final MicroserviceApiRepresentation microserviceApi;
 
-    @Builder(builderMethodName = "microserviceApi")
+    @java.beans.ConstructorProperties({"baseUrl", "platform", "objectMapper", "register", "microserviceApi"})
+    public MicroserviceRepository(Supplier<String> baseUrl, Supplier<RestOperations> platform, ObjectMapper objectMapper, boolean register, MicroserviceApiRepresentation microserviceApi) {
+        this.baseUrl = baseUrl;
+        this.platform = platform;
+        this.objectMapper = objectMapper;
+        this.register = register;
+        this.microserviceApi = microserviceApi;
+    }
+
     public static MicroserviceRepository create(
             final Supplier<String> baseUrl,
             ObjectMapper objectMapper,
@@ -45,6 +47,10 @@ public class MicroserviceRepository {
                 .subscriptionsUrl("/application/currentApplication/subscriptions")
                 .getUrl("/application/currentApplication")
                 .build());
+    }
+
+    public static MicroserviceRepositoryBuilder microserviceApi() {
+        return new MicroserviceRepositoryBuilder();
     }
 
     public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation representation) {
@@ -127,4 +133,41 @@ public class MicroserviceRepository {
         throw new SDKException("Error invoking " + method + " " + url, ex);
     }
 
+    public static class MicroserviceRepositoryBuilder {
+        private Supplier<String> baseUrl;
+        private ObjectMapper objectMapper;
+        private Supplier<RestOperations> connector;
+        private boolean register;
+
+        MicroserviceRepositoryBuilder() {
+        }
+
+        public MicroserviceRepository.MicroserviceRepositoryBuilder baseUrl(Supplier<String> baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+        public MicroserviceRepository.MicroserviceRepositoryBuilder objectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        public MicroserviceRepository.MicroserviceRepositoryBuilder connector(Supplier<RestOperations> connector) {
+            this.connector = connector;
+            return this;
+        }
+
+        public MicroserviceRepository.MicroserviceRepositoryBuilder register(boolean register) {
+            this.register = register;
+            return this;
+        }
+
+        public MicroserviceRepository build() {
+            return MicroserviceRepository.create(baseUrl, objectMapper, connector, register);
+        }
+
+        public String toString() {
+            return "MicroserviceRepository.MicroserviceRepositoryBuilder(baseUrl=" + this.baseUrl + ", objectMapper=" + this.objectMapper + ", connector=" + this.connector + ", register=" + this.register + ")";
+        }
+    }
 }

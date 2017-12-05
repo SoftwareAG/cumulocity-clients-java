@@ -29,11 +29,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
             <artifactId>googleauth</artifactId>
             <version>${googleauth.version}-${cumulocity.dependencies.version}</version>

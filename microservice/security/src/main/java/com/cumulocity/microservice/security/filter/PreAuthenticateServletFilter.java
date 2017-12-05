@@ -4,10 +4,9 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,23 +18,28 @@ import java.util.List;
 
 import static com.google.common.collect.FluentIterable.from;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public class PreAuthenticateServletFilter extends OncePerRequestFilter {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(PreAuthenticateServletFilter.class);
     @Autowired(required = false)
     private List<PreAuthorizationContextProvider<HttpServletRequest>> credentialsResolvers;
 
     @Autowired(required = false)
     private ContextService<Credentials> contextService;
 
+    public PreAuthenticateServletFilter() {
+    }
+
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) {
         Runnable runnable = new Runnable() {
-            @SneakyThrows
             public void run() {
-                filterChain.doFilter(request, response);
+                try {
+                    filterChain.doFilter(request, response);
+                } catch (final Exception ex) {
+                    Throwables.propagate(ex);
+                }
             }
         };
         if (contextService != null && credentialsResolvers != null) {

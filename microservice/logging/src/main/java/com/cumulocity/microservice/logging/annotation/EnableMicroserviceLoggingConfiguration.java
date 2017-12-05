@@ -8,9 +8,8 @@ import com.cumulocity.microservice.logging.model.LoggingConfiguration;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import com.google.common.base.Throwables;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +27,22 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 
-@Slf4j
 @Configuration
 public class EnableMicroserviceLoggingConfiguration {
+
+    private static final Logger log = LoggerFactory.getLogger(EnableMicroserviceLoggingConfiguration.class);
 
     public interface ConfigurationFilesProvider extends Supplier<Iterable<Supplier<File>>> {
     }
 
-    @RequiredArgsConstructor
     private final static class DefaultConfigurationFilesProvider implements ConfigurationFilesProvider {
         private final String directory, file;
+
+        @java.beans.ConstructorProperties({"directory", "file"})
+        public DefaultConfigurationFilesProvider(String directory, String file) {
+            this.directory = directory;
+            this.file = file;
+        }
 
         public Iterable<Supplier<File>> get() {
             return newArrayList(
@@ -63,10 +68,13 @@ public class EnableMicroserviceLoggingConfiguration {
     @Value("${application.name:}")
     private String applicationName;
 
-    @SneakyThrows
     @EventListener(ContextRefreshedEvent.class)
     public void onStart() {
-        loggingInit().afterPropertiesSet();
+        try {
+            loggingInit().afterPropertiesSet();
+        } catch (Exception ex) {
+            throw Throwables.propagate(ex);
+        }
     }
 
     @Bean

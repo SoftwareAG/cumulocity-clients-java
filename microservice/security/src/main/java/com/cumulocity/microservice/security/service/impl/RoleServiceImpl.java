@@ -6,9 +6,8 @@ import com.cumulocity.rest.representation.user.RoleRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,18 @@ import static com.cumulocity.rest.representation.user.UserMediaType.CURRENT_USER
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RoleServiceImpl implements RoleService {
     private final PlatformParameters platformParameters;
     private final RestConnector restConnector;
 
+    @java.beans.ConstructorProperties({"platformParameters", "restConnector"})
+    @Autowired
+    public RoleServiceImpl(PlatformParameters platformParameters, RestConnector restConnector) {
+        this.platformParameters = platformParameters;
+        this.restConnector = restConnector;
+    }
+
     @Override
-    @SneakyThrows
     public List<String> getUserRoles() {
         final List<String> result = Lists.newArrayList();
         try {
@@ -50,6 +54,8 @@ public class RoleServiceImpl implements RoleService {
             if (e.getHttpStatus() != HttpStatus.FORBIDDEN.value()) {
                 throw e;
             }
+        } catch (Exception ex) {
+            throw Throwables.propagate(ex);
         }
         return result;
     }
