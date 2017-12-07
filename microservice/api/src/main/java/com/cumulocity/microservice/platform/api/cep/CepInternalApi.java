@@ -114,11 +114,11 @@ public class CepInternalApi {
         });
     }
 
-    public String health() {
+    public <T> T health(final Class<T> clazz) {
         checkBeansNotNull();
-        return internally().onPlatform(platform).doAction(new Callable<String>() {
-            public String call() {
-                return cepApi.health();
+        return internally().onPlatform(platform).doAction(new Callable<T>() {
+            public T call() {
+                return cepApi.health(clazz);
             }
         });
     }

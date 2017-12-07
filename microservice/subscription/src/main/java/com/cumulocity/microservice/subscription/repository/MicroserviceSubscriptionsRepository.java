@@ -1,9 +1,9 @@
 package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Autowired;

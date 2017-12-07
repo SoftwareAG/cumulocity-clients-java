@@ -33,19 +33,28 @@ public class ResponseParser {
     
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
+    private final ResponseMapper mapper;
+
+    public ResponseParser(ResponseMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public ResponseParser() {
+        this(null);
+    }
 
     public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
             Class<T> type) throws SDKException {
 
         checkStatus(response, expectedStatusCode);
-        return response.getEntity(type);
+        return read(response, type);
     }
     
     public <T extends Object> T parseObject(ClientResponse response, int expectedStatusCode,
             Class<T> type) throws SDKException {
         
         checkStatus(response, expectedStatusCode);
-        return response.getEntity(type);
+        return read(response, type);
     }
 
     public void checkStatus(ClientResponse response, int... expectedStatusCodes) throws SDKException {
@@ -74,10 +83,10 @@ public class ResponseParser {
     protected String getErrorRepresentation(ClientResponse response) {
         try {
             if (isJsonResponse(response)) {
-                return response.getEntity(ErrorMessageRepresentation.class).toString();
+                return read(response, ErrorMessageRepresentation.class).toString();
             } else {
                 LOG.error("Failed to parse error message to json. Getting error string... ");
-                LOG.error(response.getEntity(String.class)); 
+                LOG.error(read(response, String.class));
             }
         } catch (Exception e) {
             LOG.error("Failed to parse error message", e);
@@ -100,5 +109,13 @@ public class ResponseParser {
         String[] pathParts = path.split("\\/");
         String gid = pathParts[pathParts.length - 1];
         return new GId(gid);
+    }
+
+    private <T> T read(ClientResponse response, Class<T> clazz) {
+        if (mapper != null) {
+            return mapper.read(response.getEntityInputStream(), clazz);
+        } else {
+            return response.getEntity(clazz);
+        }
     }
 }

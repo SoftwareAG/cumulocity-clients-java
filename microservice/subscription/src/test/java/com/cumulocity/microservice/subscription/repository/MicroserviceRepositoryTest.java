@@ -1,8 +1,8 @@
 package com.cumulocity.microservice.subscription.repository;
 
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.google.common.base.Suppliers;

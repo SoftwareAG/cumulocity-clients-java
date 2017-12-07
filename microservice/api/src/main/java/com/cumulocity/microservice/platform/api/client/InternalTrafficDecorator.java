@@ -1,6 +1,6 @@
 package com.cumulocity.microservice.platform.api.client;
 
-import com.cumulocity.sdk.client.PlatformImpl;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
@@ -11,10 +11,10 @@ public class InternalTrafficDecorator<K> {
 
     private final String TOTP_SECRET = "Q436QSIBB3OWS5R7";
     private final GoogleAuthenticator gAuth = new GoogleAuthenticator();
-    private final PlatformImpl platform;
+    private final PlatformParameters platform;
     private final Callable<K> callable;
 
-    private InternalTrafficDecorator(PlatformImpl platform, Callable<K> callable) {
+    private InternalTrafficDecorator(PlatformParameters platform, Callable<K> callable) {
         this.platform = platform;
         this.callable = callable;
     }
@@ -37,7 +37,7 @@ public class InternalTrafficDecorator<K> {
     }
 
     public static class Builder {
-        private PlatformImpl platform;
+        private PlatformParameters platform;
 
         private Builder() {
 
@@ -47,7 +47,11 @@ public class InternalTrafficDecorator<K> {
             return new Builder();
         }
 
-        public Builder onPlatform(PlatformImpl platform) {
+        public static Builder internal(PlatformParameters platform) {
+            return new InternalTrafficDecorator.Builder().onPlatform(platform);
+        }
+
+        public Builder onPlatform(PlatformParameters platform) {
             this.platform = platform;
             return this;
         }

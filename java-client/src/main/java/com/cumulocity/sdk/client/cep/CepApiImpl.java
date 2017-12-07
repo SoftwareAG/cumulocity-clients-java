@@ -26,7 +26,6 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.cep.notification.CepCustomNotificationsSubscriber;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import static com.cumulocity.rest.representation.cep.CepMediaType.CEP_MODULE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
@@ -98,9 +97,8 @@ public class CepApiImpl implements CepApi {
     }
 
     @Override
-    public String health() {
-        final Map map = restConnector.get(url + "/health", APPLICATION_JSON_TYPE, Map.class);
-        return String.valueOf(map.get("status"));
+    public <T> T health(Class<T> clazz) {
+        return restConnector.get(url + "/health", APPLICATION_JSON_TYPE, clazz);
     }
 
     @Override

@@ -16,6 +16,8 @@ public class PlatformBuilder {
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
+    private ResponseMapper responseMapper;
+    private boolean forceInitialHost;
 
     public Platform build(){
         return proxy(new PlatformImpl(baseUrl,buildCredentials()));
@@ -28,6 +30,10 @@ public class PlatformBuilder {
         if (proxyPort != null && proxyPort > 0) {
             platform.setProxyPort(proxyPort);
         }
+        if (responseMapper != null) {
+            platform.setResponseMapper(responseMapper);
+        }
+        platform.setForceInitialHost(forceInitialHost);
         return platform;
     }
 

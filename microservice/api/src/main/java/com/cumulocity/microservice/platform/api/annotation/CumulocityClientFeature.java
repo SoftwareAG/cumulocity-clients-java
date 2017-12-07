@@ -15,6 +15,7 @@ import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.user.UserApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,9 +32,13 @@ public class CumulocityClientFeature {
     @Value("${C8Y.proxyPort:0}")
     private Integer proxyPort;
 
+    @Autowired(required = false)
+    private ResponseMapper responseMapper;
+
     @Bean
     @TenantScope
-    public PlatformImpl tenantPlatform(final ContextService<MicroserviceCredentials> contextService) {
+    public PlatformImpl tenantPlatform(
+            final ContextService<MicroserviceCredentials> contextService) {
         final MicroserviceCredentials login = contextService.getContext();
 
         return (PlatformImpl) PlatformBuilder.platform()
@@ -44,13 +49,15 @@ public class CumulocityClientFeature {
                 .withPassword(login.getPassword())
                 .withUsername(login.getUsername())
                 .withTfaToken(login.getTfaToken())
+                .withResponseMapper(responseMapper)
+                .withForceInitialHost(true)
                 .build();
     }
 
     @Bean
     @TenantScope
     public RestConnector connector(PlatformParameters platformParameters) {
-        return new RestConnector(platformParameters, new ResponseParser());
+        return new RestConnector(platformParameters, new ResponseParser(responseMapper));
     }
 
     @Bean

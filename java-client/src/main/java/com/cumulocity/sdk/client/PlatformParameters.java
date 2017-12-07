@@ -79,6 +79,8 @@ public class PlatformParameters {
 
     private Supplier<String> tfaToken;
 
+    private ResponseMapper responseMapper;
+
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
     
     public PlatformParameters() {
@@ -121,7 +123,7 @@ public class PlatformParameters {
 
     public synchronized RestConnector createRestConnector() {
         if (restConnector == null) {
-            restConnector = new RestConnector(this, new ResponseParser());
+            restConnector = new RestConnector(this, new ResponseParser(responseMapper));
             startBufferProcessing();
         }
         return restConnector;
@@ -262,6 +264,14 @@ public class PlatformParameters {
     
     public boolean unregisterInterceptor(HttpClientInterceptor interceptor) {
         return interceptorSet.remove(interceptor);
+    }
+
+    public ResponseMapper getResponseMapper() {
+        return responseMapper;
+    }
+
+    public void setResponseMapper(ResponseMapper responseMapper) {
+        this.responseMapper = responseMapper;
     }
 
     private class DisabledBufferRequestService implements BufferRequestService {

@@ -1,9 +1,12 @@
-package com.cumulocity.microservice.subscription.service;
+package com.cumulocity.microservice.subscription.service.impl;
 
+import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionsInitializedEvent;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
@@ -23,39 +26,45 @@ public class MicroserviceSubscriptionScheduler implements ApplicationListener<Co
             .setDaemon(true)
             .build());
 
-    private final MicroserviceSubscriptionsService service;
+    private final MicroserviceSubscriptionsServiceImpl service;
     private final PlatformProperties properties;
+    private final ApplicationEventPublisher eventPublisher;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private final Object $lock = new Object();
 
     @Autowired
-    public MicroserviceSubscriptionScheduler(MicroserviceSubscriptionsService service, PlatformProperties properties) {
+    public MicroserviceSubscriptionScheduler(
+            final MicroserviceSubscriptionsServiceImpl service,
+            final PlatformProperties properties,
+            final ApplicationEventPublisher eventPublisher) {
         this.service = service;
         this.properties = properties;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
+    @Synchronized
     public void onApplicationEvent(ContextRefreshedEvent applicationContextEvent) {
-        synchronized ($lock) {
-            if (started.get()) {
-                return;
-            }
-            final int subscriptionDelay = getSubscriptionDelay();
-            final int subscriptionInitialDelay = getSubscriptionInitialDelay();
-            log.info("Start; subscriptionDelay = {}, subscriptionInitialDelay = {}", subscriptionDelay, subscriptionInitialDelay);
-            if (subscriptionDelay <= 0) {
-                return;
-            }
-            subscriptionsWatcher.scheduleWithFixedDelay(new Runnable() {
-                public void run() {
-                    try {
-                        service.subscribe();
-                    } finally {
-                        started.set(true);
-                    }
-                }
-            }, subscriptionInitialDelay, subscriptionDelay, MILLISECONDS);
+        if (started.get()) {
+            return;
         }
+        final int subscriptionDelay = getSubscriptionDelay();
+        final int subscriptionInitialDelay = getSubscriptionInitialDelay();
+        log.info("Start; subscriptionDelay = {}, subscriptionInitialDelay = {}", subscriptionDelay, subscriptionInitialDelay);
+        if (subscriptionDelay <= 0) {
+            return;
+        }
+        subscriptionsWatcher.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                try {
+                    service.subscribe();
+                } finally {
+                    if (!started.get()) {
+                        eventPublisher.publishEvent(new MicroserviceSubscriptionsInitializedEvent());
+                    }
+                    started.set(true);
+                }
+            }
+        }, subscriptionInitialDelay, subscriptionDelay, MILLISECONDS);
     }
 
     private int getSubscriptionDelay() {

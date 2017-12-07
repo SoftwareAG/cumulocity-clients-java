@@ -135,5 +135,5 @@ public interface CepApi {
     /**
      * Checks state of cep microservice.
      */
-    String health();
+    <T> T health(Class<T> clazz);
 }
