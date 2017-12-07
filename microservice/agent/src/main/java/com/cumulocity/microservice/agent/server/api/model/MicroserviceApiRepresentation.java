@@ -3,8 +3,6 @@ package com.cumulocity.microservice.agent.server.api.model;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import lombok.*;
 
-import javax.annotation.Nonnull;
-
 import static java.lang.String.valueOf;
 
 @Data
@@ -32,7 +30,6 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
         return url(baseUrl, getUpdateUrl(), name, id);
     }
 
-    @Nonnull
     private static String url(@NonNull String baseUrl, @NonNull String url, String applicationName, String applicationId) {
         return baseUrl + url.replace(APPLICATION_NAME, valueOf(applicationName)).replace(APPLICATION_ID, valueOf(applicationId));
     }

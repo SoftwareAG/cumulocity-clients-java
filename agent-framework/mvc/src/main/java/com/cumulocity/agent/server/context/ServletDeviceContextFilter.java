@@ -17,7 +17,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.google.common.base.Throwables;
 
+/**
+ * @deprecated use microservice sdk
+ */
 @Component
+@Deprecated
 public class ServletDeviceContextFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(ServletDeviceContextFilter.class);

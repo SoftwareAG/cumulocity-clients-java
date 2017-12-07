@@ -1,8 +1,6 @@
 package com.cumulocity.microservice.subscription.annotation;
 
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 import java.lang.annotation.*;
 

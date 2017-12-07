@@ -1,8 +1,7 @@
 package com.cumulocity.microservice.subscription;
 
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
-import com.cumulocity.microservice.subscription.model.core.HasCredentials;
-import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
@@ -109,7 +108,7 @@ public class MicroserviceSubscriptionsServiceTest {
     }
 
     private Subscriptions givenSubscriptions() {
-        final MicroserviceCredentials credentials = new MicroserviceCredentials().withName("name").withPassword("pass").withTenant("tenant");
+        final MicroserviceCredentials credentials = new MicroserviceCredentials().withUsername("name").withPassword("pass").withTenant("tenant");
         return Subscriptions.builder()
                 .added(Arrays.asList(credentials))
                 .removed(Arrays.<MicroserviceCredentials>asList())
