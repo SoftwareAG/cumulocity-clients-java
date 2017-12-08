@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
 
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 
+@Order(5)
 public class LoggingEnvironmentRunListener implements SpringApplicationRunListener {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingEnvironmentRunListener.class);
@@ -28,7 +30,8 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
     }
 
     @Override
-    public void started() {
+    public void starting() {
+
     }
 
     @Override
