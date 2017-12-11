@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
+import com.cumulocity.microservice.agent.server.api.service.SelfRegistration;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
@@ -26,8 +27,8 @@ import org.springframework.context.annotation.Configuration;
 public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider() {
-        return new PlatformProperties.PlatformPropertiesProvider();
+    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider(SelfRegistration selfRegistration) {
+        return new PlatformProperties.PlatformPropertiesProvider(selfRegistration);
     }
 
     @Bean
@@ -50,6 +51,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                                 .withUsername(boostrapUser.getUsername())
                                 .withPassword(boostrapUser.getPassword())
                                 .withTenant(boostrapUser.getTenant())
+                                .withForceInitialHost(properties.getForceInitialHost())
                                 .build()) {
                             return platform.rest();
                         }
@@ -59,5 +61,11 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 // When no isolation level defined then application must be registered
                 .register(properties.getIsolation() == null)
                 .build();
+    }
+
+
+    @Bean
+    public SelfRegistration selfRegistration() {
+        return new SelfRegistration();
     }
 }

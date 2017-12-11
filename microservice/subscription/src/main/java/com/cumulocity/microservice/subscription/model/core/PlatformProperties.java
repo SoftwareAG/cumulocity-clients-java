@@ -1,17 +1,24 @@
 package com.cumulocity.microservice.subscription.model.core;
 
+import com.cumulocity.microservice.agent.server.api.service.SelfRegistration;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
+import com.cumulocity.sdk.client.Platform;
+import com.cumulocity.sdk.client.PlatformBuilder;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.springframework.util.StringUtils.isEmpty;
 
 public class PlatformProperties {
     @java.beans.ConstructorProperties({"applicationName", "url", "mqttUrl", "microserviceBoostrapUser", "subscriptionDelay", "subscriptionInitialDelay", "isolation"})
-    public PlatformProperties(String applicationName, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation) {
+    public PlatformProperties(String applicationName, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation, boolean forceInitialHost) {
         this.applicationName = applicationName;
         this.url = url;
         this.mqttUrl = mqttUrl;
@@ -19,6 +26,7 @@ public class PlatformProperties {
         this.subscriptionDelay = subscriptionDelay;
         this.subscriptionInitialDelay = subscriptionInitialDelay;
         this.isolation = isolation;
+        this.forceInitialHost = forceInitialHost;
     }
 
     public static PlatformPropertiesBuilder builder() {
@@ -53,6 +61,10 @@ public class PlatformProperties {
         return this.isolation;
     }
 
+    public boolean getForceInitialHost(){
+        return forceInitialHost;
+    }
+
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
     }
@@ -81,72 +93,29 @@ public class PlatformProperties {
         this.isolation = isolation;
     }
 
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof PlatformProperties)) return false;
-        final PlatformProperties other = (PlatformProperties) o;
-        if (!other.canEqual((Object) this)) return false;
-        final Object this$applicationName = this.getApplicationName();
-        final Object other$applicationName = other.getApplicationName();
-        if (this$applicationName == null ? other$applicationName != null : !this$applicationName.equals(other$applicationName))
-            return false;
-        final Object this$url = this.getUrl();
-        final Object other$url = other.getUrl();
-        if (this$url == null ? other$url != null : !this$url.equals(other$url)) return false;
-        final Object this$mqttUrl = this.getMqttUrl();
-        final Object other$mqttUrl = other.getMqttUrl();
-        if (this$mqttUrl == null ? other$mqttUrl != null : !this$mqttUrl.equals(other$mqttUrl)) return false;
-        final Object this$microserviceBoostrapUser = this.getMicroserviceBoostrapUser();
-        final Object other$microserviceBoostrapUser = other.getMicroserviceBoostrapUser();
-        if (this$microserviceBoostrapUser == null ? other$microserviceBoostrapUser != null : !this$microserviceBoostrapUser.equals(other$microserviceBoostrapUser))
-            return false;
-        final Object this$subscriptionDelay = this.getSubscriptionDelay();
-        final Object other$subscriptionDelay = other.getSubscriptionDelay();
-        if (this$subscriptionDelay == null ? other$subscriptionDelay != null : !this$subscriptionDelay.equals(other$subscriptionDelay))
-            return false;
-        final Object this$subscriptionInitialDelay = this.getSubscriptionInitialDelay();
-        final Object other$subscriptionInitialDelay = other.getSubscriptionInitialDelay();
-        if (this$subscriptionInitialDelay == null ? other$subscriptionInitialDelay != null : !this$subscriptionInitialDelay.equals(other$subscriptionInitialDelay))
-            return false;
-        final Object this$isolation = this.getIsolation();
-        final Object other$isolation = other.getIsolation();
-        if (this$isolation == null ? other$isolation != null : !this$isolation.equals(other$isolation)) return false;
-        return true;
-    }
-
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $applicationName = this.getApplicationName();
-        result = result * PRIME + ($applicationName == null ? 43 : $applicationName.hashCode());
-        final Object $url = this.getUrl();
-        result = result * PRIME + ($url == null ? 43 : $url.hashCode());
-        final Object $mqttUrl = this.getMqttUrl();
-        result = result * PRIME + ($mqttUrl == null ? 43 : $mqttUrl.hashCode());
-        final Object $microserviceBoostrapUser = this.getMicroserviceBoostrapUser();
-        result = result * PRIME + ($microserviceBoostrapUser == null ? 43 : $microserviceBoostrapUser.hashCode());
-        final Object $subscriptionDelay = this.getSubscriptionDelay();
-        result = result * PRIME + ($subscriptionDelay == null ? 43 : $subscriptionDelay.hashCode());
-        final Object $subscriptionInitialDelay = this.getSubscriptionInitialDelay();
-        result = result * PRIME + ($subscriptionInitialDelay == null ? 43 : $subscriptionInitialDelay.hashCode());
-        final Object $isolation = this.getIsolation();
-        result = result * PRIME + ($isolation == null ? 43 : $isolation.hashCode());
-        return result;
-    }
-
-    protected boolean canEqual(Object other) {
-        return other instanceof PlatformProperties;
-    }
 
     public String toString() {
-        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ")";
+        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost="+this.getForceInitialHost()+" )";
     }
 
     enum IsolationLevel {
         PER_TENANT, MULTI_TENANT
     }
 
+
     public static class PlatformPropertiesProvider {
+
+        private final Logger log = LoggerFactory.getLogger(PlatformPropertiesProvider.class);
+
+        private final SelfRegistration selfRegistration;
+
+        public PlatformPropertiesProvider(SelfRegistration selfRegistration) {
+            this.selfRegistration = selfRegistration;
+        }
+
+        @Value("${C8Y.bootstrap.register:false}")
+        private boolean autoRegistration;
+
         @Value("${application.name:}")
         private String applicationName;
 
@@ -190,17 +159,44 @@ public class PlatformProperties {
             return PlatformProperties.builder()
                     .url(Suppliers.ofInstance(url))
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
-                    .microserviceBoostrapUser(MicroserviceCredentials.builder()
+                    .microserviceBoostrapUser(resolveBootstrapUser(name, MicroserviceCredentials.builder()
                             .tenant(microserviceBootstrapTenant)
                             .username(microserviceBootstrapName)
                             .password(microserviceBootstrapPassword)
-                            .build())
+                            .build()))
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(name)
-                    .isolation(Strings.isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
+                    .isolation(isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
+                    .forceInitialHost(forceInitialHost)
                     .build();
         }
+
+
+        private MicroserviceCredentials resolveBootstrapUser(String name, MicroserviceCredentials bootstrap) {
+            if (autoRegistration) {
+                log.info("Self registration procedure activated");
+                try (Platform platform = PlatformBuilder.platform()
+                        .withBaseUrl(url)
+                        .withTenant(bootstrap.getTenant())
+                        .withUsername(bootstrap.getUsername())
+                        .withPassword(bootstrap.getPassword())
+                        .withForceInitialHost(forceInitialHost)
+                        .build()) {
+                    ApplicationUserRepresentation userRepresentation = selfRegistration.register(url, platform
+                            .rest(), name);
+                    return MicroserviceCredentials.builder().tenant(userRepresentation.getTenant())
+                            .username(userRepresentation.getName())
+                            .password(userRepresentation.getPassword())
+                            .build();
+                }
+            }
+            log.info("Self registration procedure not active");
+
+            return bootstrap;
+        }
+
+
     }
 
     private String applicationName;
@@ -210,6 +206,7 @@ public class PlatformProperties {
     private Integer subscriptionDelay;
     private Integer subscriptionInitialDelay;
     private IsolationLevel isolation;
+    private boolean forceInitialHost;
 
     public static class PlatformPropertiesBuilder {
         private String applicationName;
@@ -219,6 +216,7 @@ public class PlatformProperties {
         private Integer subscriptionDelay;
         private Integer subscriptionInitialDelay;
         private IsolationLevel isolation;
+        private boolean forceInitialHost;
 
         PlatformPropertiesBuilder() {
         }
@@ -257,9 +255,13 @@ public class PlatformProperties {
             this.isolation = isolation;
             return this;
         }
+        public PlatformProperties.PlatformPropertiesBuilder forceInitialHost(boolean forceInitialHost) {
+            this.forceInitialHost = forceInitialHost;
+            return this;
+        }
 
         public PlatformProperties build() {
-            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation);
+            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation,forceInitialHost);
         }
 
         public String toString() {
