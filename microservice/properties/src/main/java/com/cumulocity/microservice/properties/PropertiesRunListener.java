@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
@@ -22,7 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Order(PropertiesRunListener.ORDER)
 public class PropertiesRunListener implements SpringApplicationRunListener {
+
+    /**
+     * Should be above logging configuration listener.
+     */
+    public static final int ORDER = 4;
 
     private final List<String> propertySourceNames = new ArrayList<>();
 
