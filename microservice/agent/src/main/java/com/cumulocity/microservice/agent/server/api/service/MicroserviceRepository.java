@@ -30,7 +30,6 @@ import static org.apache.commons.httpclient.HttpStatus.*;
 @RequiredArgsConstructor
 public class MicroserviceRepository {
 
-    private final Supplier<String> baseUrl;
     private final Supplier<RestOperations> platform;
     private final ObjectMapper objectMapper;
     private final boolean register;
@@ -42,11 +41,8 @@ public class MicroserviceRepository {
             ObjectMapper objectMapper,
             Supplier<RestOperations> connector,
             final boolean register) {
-        return new MicroserviceRepository(baseUrl, Suppliers.memoize(connector), objectMapper == null ? new ObjectMapper() : objectMapper, register, MicroserviceApiRepresentation.microserviceApiRepresentation()
-                .updateUrl("/application/currentApplication")
-                .subscriptionsUrl("/application/currentApplication/subscriptions")
-                .getUrl("/application/currentApplication")
-                .build());
+        return new MicroserviceRepository(Suppliers.memoize(connector), objectMapper == null ? new ObjectMapper() : objectMapper, register,
+                MicroserviceApiRepresentation.of(baseUrl));
     }
 
     public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation representation) {
@@ -71,7 +67,7 @@ public class MicroserviceRepository {
     }
 
     public ApplicationRepresentation getApplication() {
-        final String url = microserviceApi.getAppUrl(baseUrl.get());
+        final String url = microserviceApi.getAppUrl();
         try {
             return rest().get(url, APPLICATION, ApplicationRepresentation.class);
         } catch (final Exception ex) {
@@ -80,7 +76,7 @@ public class MicroserviceRepository {
     }
 
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
-        final String url = microserviceApi.getSubscriptionsUrl(baseUrl.get());
+        final String url = microserviceApi.getSubscriptionsUrl();
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
@@ -88,10 +84,11 @@ public class MicroserviceRepository {
         }
     }
 
+
     private ApplicationRepresentation update(ApplicationRepresentation source, MicroserviceMetadataRepresentation representation) {
         final String name = source.getName();
         final String id = source.getId();
-        final String url = microserviceApi.getUpdateUrl(baseUrl.get(), name, id);
+        final String url = microserviceApi.getUpdateUrl(name, id);
         try {
             final ApplicationRepresentation application = new ApplicationRepresentation();
             application.setRequiredRoles(representation.getRequiredRoles());

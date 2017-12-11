@@ -46,7 +46,7 @@ import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
 import com.cumulocity.sdk.client.user.UserApi;
 import com.cumulocity.sdk.client.user.UserApiImpl;
 
-public class PlatformImpl extends PlatformParameters implements Platform,AutoCloseable {
+public class PlatformImpl extends PlatformParameters implements Platform, AutoCloseable {
 
     private static final String PLATFORM_URL = "platform";
 

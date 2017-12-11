@@ -1,44 +1,41 @@
 package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Wither;
 
+@Wither
+@NoArgsConstructor(staticName = "platform")
+@AllArgsConstructor
 public class PlatformBuilder {
     private String baseUrl;
     private String tenant;
     private String username;
     private String password;
+    private String proxyHost;
+    private Integer proxyPort;
+    private String tfaToken;
+    private boolean forceInitialHost ;
 
-    public static PlatformBuilder platform(){
-        return new PlatformBuilder();
+    public Platform build() {
+        return configure(new PlatformImpl(baseUrl, buildCredentials()));
     }
 
-    public PlatformBuilder withBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-        return this;
-    }
-
-    public PlatformBuilder withTenant(String tenant) {
-        this.tenant = tenant;
-        return this;
-    }
-
-    public PlatformBuilder withUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public PlatformBuilder withPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public Platform build(){
-        return new PlatformImpl(baseUrl,buildCredentials());
+    private PlatformImpl configure(PlatformImpl platform) {
+        if (proxyHost != null && !proxyHost.isEmpty()) {
+            platform.setProxyHost(proxyHost);
+        }
+        if (proxyPort != null && proxyPort > 0) {
+            platform.setProxyPort(proxyPort);
+        }
+        platform.setForceInitialHost(forceInitialHost);
+        return platform;
     }
 
     private CumulocityCredentials buildCredentials() {
-        final CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username,password);
-        if(tenant != null && !tenant.isEmpty()){
+        final CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
+        if (tenant != null && !tenant.isEmpty()) {
             return credentials.withTenantId(tenant).build();
         }
         return credentials.build();

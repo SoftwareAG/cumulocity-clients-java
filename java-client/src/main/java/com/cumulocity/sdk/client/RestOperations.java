@@ -12,7 +12,7 @@ import java.io.InputStream;
 public interface RestOperations {
     <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException;
 
-    <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException;
+    <T > T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException;
 
     Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException;
 
