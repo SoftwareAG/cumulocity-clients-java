@@ -10,4 +10,6 @@ public interface MicroserviceSubscriptionsService {
     Collection<MicroserviceCredentials> getAll();
 
     Optional<MicroserviceCredentials> getCredentials(String tenant);
+
+    void subscribe();
 }
