@@ -18,7 +18,7 @@
         <cumulocity.model.version>8.19.0-SNAPSHOT</cumulocity.model.version>
         <cumulocity.dependencies.version>8.19.0-SNAPSHOT</cumulocity.dependencies.version>
         <cumulocity.clients.version>8.19.0-SNAPSHOT</cumulocity.clients.version>
-        <cumulocity.agent-framework.version>8.19.0</cumulocity.agent-framework.version>
+        <cumulocity.agent-framework.version>8.19.0-SNAPSHOT</cumulocity.agent-framework.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
