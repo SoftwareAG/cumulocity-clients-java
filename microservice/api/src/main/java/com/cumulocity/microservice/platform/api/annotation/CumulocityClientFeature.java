@@ -1,8 +1,8 @@
 package com.cumulocity.microservice.platform.api.annotation;
 
 import com.cumulocity.microservice.context.ContextService;
-import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.microservice.context.inject.UserScope;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
@@ -32,10 +32,14 @@ public class CumulocityClientFeature {
     @Value("${C8Y.proxyPort:0}")
     private Integer proxyPort;
 
+    @Autowired(required = false)
+    private ResponseMapper responseMapper;
+
     @Bean
-    @UserScope
-    public PlatformImpl userPlatform(final ContextService<UserCredentials> contextService) {
-        final UserCredentials login = contextService.getContext();
+    @TenantScope
+    public PlatformImpl tenantPlatform(
+            final ContextService<MicroserviceCredentials> contextService) {
+        final MicroserviceCredentials login = contextService.getContext();
 
         return (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
@@ -45,78 +49,79 @@ public class CumulocityClientFeature {
                 .withPassword(login.getPassword())
                 .withUsername(login.getUsername())
                 .withTfaToken(login.getTfaToken())
+                .withResponseMapper(responseMapper)
+                .withForceInitialHost(true)
                 .build();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public RestConnector connector(PlatformParameters platformParameters) {
-        return new RestConnector(platformParameters, new ResponseParser());
+        return new RestConnector(platformParameters, new ResponseParser(responseMapper));
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public InventoryApi inventoryApi(Platform platform) throws SDKException {
         return platform.getInventoryApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public DeviceCredentialsApi deviceCredentialsApi(Platform platform) throws SDKException {
         return platform.getDeviceCredentialsApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public EventApi eventApi(Platform platform) throws SDKException {
         return platform.getEventApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public MeasurementApi measurementApi(Platform platform) throws SDKException {
         return platform.getMeasurementApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public IdentityApi identityApi(Platform platform) throws SDKException {
         return platform.getIdentityApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public AlarmApi alarmApi(Platform platform) throws SDKException {
         return platform.getAlarmApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public AuditRecordApi auditRecordApi(Platform platform) throws SDKException {
         return platform.getAuditRecordApi();
     }
 
     @Bean
-    @Autowired
-    @UserScope
+    @TenantScope
     public DeviceControlApi deviceControlApi(Platform platform) throws SDKException {
         return platform.getDeviceControlApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public CepApi cepApi(Platform platform) throws SDKException {
         return platform.getCepApi();
     }
     
     @Bean
-    @UserScope
+    @TenantScope
     public BinariesApi binariesApi(Platform platform) throws SDKException {
         return platform.getBinariesApi();
     }
 
     @Bean
-    @UserScope
+    @TenantScope
     public UserApi userApi(Platform platform) throws SDKException {
         return platform.getUserApi();
     }

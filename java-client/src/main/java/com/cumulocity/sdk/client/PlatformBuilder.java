@@ -16,24 +16,31 @@ public class PlatformBuilder {
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
+    private ResponseMapper responseMapper;
+    private boolean forceInitialHost;
 
-    public Platform build(){
-        return proxy(new PlatformImpl(baseUrl,buildCredentials()));
+    public Platform build() {
+        return configure(new PlatformImpl(baseUrl, buildCredentials()));
     }
 
-    private PlatformImpl proxy(PlatformImpl platform) {
+    private PlatformImpl configure(PlatformImpl platform) {
         if (proxyHost != null && !proxyHost.isEmpty()) {
             platform.setProxyHost(proxyHost);
         }
         if (proxyPort != null && proxyPort > 0) {
             platform.setProxyPort(proxyPort);
         }
+        if (responseMapper != null) {
+        platform.setForceInitialHost(forceInitialHost);
+            platform.setResponseMapper(responseMapper);
+        }
+        platform.setForceInitialHost(forceInitialHost);
         return platform;
     }
 
     private CumulocityCredentials buildCredentials() {
-        final CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username,password);
-        if(tenant != null && !tenant.isEmpty()){
+        final CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
+        if (tenant != null && !tenant.isEmpty()) {
             return credentials.withTenantId(tenant).build();
         }
         return credentials.build();
