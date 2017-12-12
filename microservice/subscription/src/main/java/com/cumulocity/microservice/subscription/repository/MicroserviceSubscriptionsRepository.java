@@ -149,15 +149,17 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
-        final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId)).transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
-            public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
-                return MicroserviceCredentials.builder()
-                        .username(representation.getName())
-                        .tenant(representation.getTenant())
-                        .password(representation.getPassword())
-                        .build();
-            }
-        }).toList();
+        final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId))
+                .transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
+                    public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
+                        return MicroserviceCredentials.builder()
+                                .username(representation.getName())
+                                .tenant(representation.getTenant())
+                                .password(representation.getPassword())
+                                .build();
+                    }
+                })
+                .toList();
         final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, subscriptions);
         final Collection<MicroserviceCredentials> added = subtract(subscriptions, currentSubscriptions);
         return Subscriptions.builder()
