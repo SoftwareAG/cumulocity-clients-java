@@ -7,6 +7,8 @@ import java.util.Collection;
 
 public interface MicroserviceSubscriptionsService {
 
+    void subscribe();
+
     Collection<MicroserviceCredentials> getAll();
 
     Optional<MicroserviceCredentials> getCredentials(String tenant);

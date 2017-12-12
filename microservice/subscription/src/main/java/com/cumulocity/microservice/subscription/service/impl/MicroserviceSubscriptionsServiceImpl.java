@@ -101,6 +101,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         });
     }
 
+    @Override
     @Synchronized
     public void subscribe() {
         try {

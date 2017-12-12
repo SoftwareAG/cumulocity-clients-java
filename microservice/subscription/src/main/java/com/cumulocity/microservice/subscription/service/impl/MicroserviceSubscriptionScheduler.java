@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.service.impl;
 
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionsInitializedEvent;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Synchronized;
 import org.slf4j.Logger;
@@ -26,14 +27,14 @@ public class MicroserviceSubscriptionScheduler implements ApplicationListener<Co
             .setDaemon(true)
             .build());
 
-    private final MicroserviceSubscriptionsServiceImpl service;
+    private final MicroserviceSubscriptionsService service;
     private final PlatformProperties properties;
     private final ApplicationEventPublisher eventPublisher;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     @Autowired
     public MicroserviceSubscriptionScheduler(
-            final MicroserviceSubscriptionsServiceImpl service,
+            final MicroserviceSubscriptionsService service,
             final PlatformProperties properties,
             final ApplicationEventPublisher eventPublisher) {
         this.service = service;
