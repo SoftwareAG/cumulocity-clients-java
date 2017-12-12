@@ -32,8 +32,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-agent</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

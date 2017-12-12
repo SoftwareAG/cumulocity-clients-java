@@ -7,8 +7,8 @@
         <version>8.19.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>microservice-subscription</artifactId>
-    <name>Cumulocity :: Clients Java :: Microservice :: Subscription</name>
+    <artifactId>microservice-autoconfigure</artifactId>
+    <name>Cumulocity :: Clients Java :: Microservice :: Autoconfigure</name>
 
     <dependencies>
         <dependency>
@@ -23,19 +23,32 @@
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>java-client</artifactId>
+            <artifactId>microservice-subscription</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-properties</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-platform-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
 </project>

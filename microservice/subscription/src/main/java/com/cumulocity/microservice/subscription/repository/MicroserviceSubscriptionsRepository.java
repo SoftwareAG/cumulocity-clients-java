@@ -1,10 +1,9 @@
 package com.cumulocity.microservice.subscription.repository;
 
-import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,43 +55,6 @@ public class MicroserviceSubscriptionsRepository {
 
         public Collection<MicroserviceCredentials> getAdded() {
             return this.added;
-        }
-
-        public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof Subscriptions)) return false;
-            final Subscriptions other = (Subscriptions) o;
-            if (!other.canEqual((Object) this)) return false;
-            final Object this$all = this.getAll();
-            final Object other$all = other.getAll();
-            if (this$all == null ? other$all != null : !this$all.equals(other$all)) return false;
-            final Object this$removed = this.getRemoved();
-            final Object other$removed = other.getRemoved();
-            if (this$removed == null ? other$removed != null : !this$removed.equals(other$removed)) return false;
-            final Object this$added = this.getAdded();
-            final Object other$added = other.getAdded();
-            if (this$added == null ? other$added != null : !this$added.equals(other$added)) return false;
-            return true;
-        }
-
-        public int hashCode() {
-            final int PRIME = 59;
-            int result = 1;
-            final Object $all = this.getAll();
-            result = result * PRIME + ($all == null ? 43 : $all.hashCode());
-            final Object $removed = this.getRemoved();
-            result = result * PRIME + ($removed == null ? 43 : $removed.hashCode());
-            final Object $added = this.getAdded();
-            result = result * PRIME + ($added == null ? 43 : $added.hashCode());
-            return result;
-        }
-
-        protected boolean canEqual(Object other) {
-            return other instanceof Subscriptions;
-        }
-
-        public String toString() {
-            return "MicroserviceSubscriptionsRepository.Subscriptions(all=" + this.getAll() + ", removed=" + this.getRemoved() + ", added=" + this.getAdded() + ")";
         }
 
         public Subscriptions withAll(Collection<MicroserviceCredentials> all) {
