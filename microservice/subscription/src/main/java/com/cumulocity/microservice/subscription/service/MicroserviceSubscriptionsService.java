@@ -13,5 +13,4 @@ public interface MicroserviceSubscriptionsService {
 
     Optional<MicroserviceCredentials> getCredentials(String tenant);
 
-    void subscribe();
 }
