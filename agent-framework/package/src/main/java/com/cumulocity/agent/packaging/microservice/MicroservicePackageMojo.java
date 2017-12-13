@@ -45,11 +45,11 @@ public class MicroservicePackageMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "true", property = "skip.microservice.package")
     private boolean skip;
-    @Parameter(defaultValue = "${project.artifactId}")
+    @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     private String image;
     @Parameter(defaultValue = "${basedir}/src/main/configuration/cumulocity.json")
     private File manifestFile;
-    @Parameter(defaultValue = "${project.artifactId}")
+    @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     private String name;
 
     @Component
