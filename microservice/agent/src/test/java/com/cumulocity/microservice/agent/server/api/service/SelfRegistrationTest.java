@@ -47,7 +47,7 @@ public class SelfRegistrationTest {
 
             @Override
             public ApplicationRepresentation answer(InvocationOnMock invocationOnMock) throws Throwable {
-                ApplicationRepresentation app = invocationOnMock.getArgumentAt(2, ApplicationRepresentation.class);
+                ApplicationRepresentation app = (ApplicationRepresentation) invocationOnMock.getArguments()[2];
 
                 return ApplicationRepresentation.applicationRepresentation()
                         .name(app.getName())

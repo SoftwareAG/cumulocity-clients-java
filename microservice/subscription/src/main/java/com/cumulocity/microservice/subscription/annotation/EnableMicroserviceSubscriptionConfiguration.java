@@ -2,7 +2,7 @@ package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
 import com.cumulocity.microservice.agent.server.api.service.SelfRegistration;
-import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.subscription.model.core.Credentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
