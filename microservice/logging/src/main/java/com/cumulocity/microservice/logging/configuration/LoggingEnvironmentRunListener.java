@@ -34,6 +34,12 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
 
     }
 
+    /**
+     * for older spring boot versions
+     */
+    public void started() {
+    }
+
     @Override
     public void environmentPrepared(ConfigurableEnvironment configurableEnvironment) {
         applicationName = configurableEnvironment.getProperty("application.name");

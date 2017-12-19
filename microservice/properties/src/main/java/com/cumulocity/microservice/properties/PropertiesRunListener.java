@@ -40,6 +40,12 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     public void starting() {
     }
 
+    /**
+     * for older spring boot versions
+     */
+    public void started() {
+    }
+
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         final String applicationName = environment.getProperty("application.name");
