@@ -112,7 +112,7 @@ public class PlatformProperties {
             this.selfRegistration = selfRegistration;
         }
 
-        @Value("${C8Y.bootstrap.register:false}")
+        @Value("${C8Y.bootstrap.register:true}")
         private boolean autoRegistration;
 
         @Value("${application.name:}")
