@@ -3,49 +3,39 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <artifactId>microservice</artifactId>
-        <version>8.18.1-SNAPSHOT</version>
+        <artifactId>microservice-dependencies</artifactId>
+        <version>8.19.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-subscription</artifactId>
     <name>Cumulocity :: Clients Java :: Microservice :: Subscription</name>
 
     <dependencies>
-        <!-- spring boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- todo get rid of that transient junk!!!!! -->
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-agent</artifactId>
-            <version>${project.version}</version>
+            <artifactId>microservice-context</artifactId>
         </dependency>
 
-        <!-- todo get rid of that transient junk!!!!! -->
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>agent-framework-repositories</artifactId>
+            <artifactId>java-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 </project>

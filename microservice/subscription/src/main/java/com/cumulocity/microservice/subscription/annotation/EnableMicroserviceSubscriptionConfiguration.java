@@ -1,12 +1,14 @@
 package com.cumulocity.microservice.subscription.annotation;
 
-import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
-import com.cumulocity.microservice.subscription.model.core.Credentials;
+
+import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
+import com.cumulocity.microservice.subscription.service.impl.SelfRegistration;
 import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformImpl;
+import com.cumulocity.sdk.client.PlatformBuilder;
 import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
@@ -16,22 +18,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
-import static com.cumulocity.sdk.client.PlatformBuilder.platform;
-import static com.google.common.base.Suppliers.memoize;
-
 @Configuration
 @ComponentScan(basePackageClasses = {
         MicroserviceSubscriptionsService.class,
         MicroserviceSubscriptionsRepository.class,
-        MicroserviceRepository.class
 })
 @ConditionalOnProperty(value = "microservice.subscription.enabled", havingValue = "true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider() {
-        return new PlatformProperties.PlatformPropertiesProvider();
+    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider(SelfRegistration selfRegistration) {
+        return new PlatformProperties.PlatformPropertiesProvider(selfRegistration);
     }
 
     @Bean
@@ -49,11 +46,12 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 .connector(new Supplier<RestOperations>() {
                     @Override
                     public RestOperations get() {
-                        try (Platform platform = platform()
+                        try (Platform platform = PlatformBuilder.platform()
                                 .withBaseUrl(properties.getUrl().get())
-                                .withUsername(boostrapUser.getName())
+                                .withUsername(boostrapUser.getUsername())
                                 .withPassword(boostrapUser.getPassword())
                                 .withTenant(boostrapUser.getTenant())
+                                .withForceInitialHost(properties.getForceInitialHost())
                                 .build()) {
                             return platform.rest();
                         }
@@ -63,5 +61,11 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 // When no isolation level defined then application must be registered
                 .register(properties.getIsolation() == null)
                 .build();
+    }
+
+
+    @Bean
+    public SelfRegistration selfRegistration() {
+        return new SelfRegistration();
     }
 }
