@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.security.filter;
+package com.cumulocity.microservice.security.filter.provider;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
 

@@ -2,6 +2,7 @@ package com.cumulocity.microservice.security.filter;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.security.filter.provider.PostAuthorizationContextProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
