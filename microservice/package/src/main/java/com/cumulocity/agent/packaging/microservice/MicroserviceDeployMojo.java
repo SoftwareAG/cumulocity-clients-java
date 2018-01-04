@@ -38,7 +38,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
 
     @Parameter(defaultValue = SERVER_ID)
     private String serviceId ;
-    @Parameter(defaultValue = "${project.artifactId}")
+    @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     private String name;
 
     @Component

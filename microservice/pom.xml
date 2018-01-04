@@ -1,32 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <artifactId>clients-java</artifactId>
-        <version>8.18.0-SNAPSHOT</version>
-    </parent>
 
-    <artifactId>microservice</artifactId>
+    <groupId>com.nsn.cumulocity.clients-java</groupId>
+    <artifactId>microservice-dependencies</artifactId>
+    <version>8.19.0-SNAPSHOT</version>
+
     <name>Cumulocity :: Clients Java :: Microservice</name>
-    <description>Microservice root</description>
+    <description>Microservice</description>
     <packaging>pom</packaging>
 
     <properties>
-        <spring-boot-dependencies.version>1.4.0.RELEASE</spring-boot-dependencies.version>
-        <spring.version>4.3.2.RELEASE</spring.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+
+        <cumulocity.model.version>8.19.0-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.dependencies.version>8.19.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.19.0-SNAPSHOT</cumulocity.clients.version>
+        <cumulocity.agent-framework.version>8.19.0-SNAPSHOT</cumulocity.agent-framework.version>
+
+        <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
-        <lombok.version>1.16.16</lombok.version>
+        <guava.version>20.0</guava.version>
+        <googleauth.version>1.1.1</googleauth.version>
     </properties>
 
     <modules>
-        <module>agent</module>
+        <module>autoconfigure</module>
+        <module>context</module>
         <module>api</module>
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
         <module>package</module>
-        <module>dependencies</module>
+        <module>properties</module>
     </modules>
 
     <dependencyManagement>
@@ -38,32 +46,117 @@
                 <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+
+                <!-- fixing clients java - jetty version -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-util</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-continuation</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-jmx</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
-            <!-- utils -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>19.0</version>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <!-- microservice libraries -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-security</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-subscription</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-logging</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
-            <!-- exclude javax.validation, todo: you need to copy it also to your pom -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-context</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-properties</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- fixing clients java - jetty version -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-continuation</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jmx</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- fixing client java -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-mvc</artifactId>
+                <version>${cumulocity.clients.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>agent-framework-repositories</artifactId>
-                <version>${project.version}</version>
+                <version>${cumulocity.clients.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>
@@ -84,23 +177,37 @@
                 </exclusions>
             </dependency>
 
-            <!-- jetty version, todo: you need to copy it also to your pom -->
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-device-context</artifactId>
+                <version>${cumulocity.clients.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-continuation</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>agent-framework-core</artifactId>
+                <version>${cumulocity.clients.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jmx</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>java-client</artifactId>
+                <version>${cumulocity.clients.version}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -113,26 +220,61 @@
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>1.9</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                        <complianceLevel>1.7</complianceLevel>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <complianceLevel>${maven.compiler.target}</complianceLevel>
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>com.nsn.cumulocity.clients-java</groupId>
+                    <artifactId>agent-framework-package</artifactId>
+                    <version>${c8y.agent-framework.version}</version>
+                    <executions>
+                        <execution>
+                            <id>agent-package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>agent-package</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>agent-push</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>agent-push</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>microservice-package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>microservice-package</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>microservice-deploy</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>microservice-deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>http://localhost:8080/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>release</id>
+            <url>http://localhost:8080/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
 </project>

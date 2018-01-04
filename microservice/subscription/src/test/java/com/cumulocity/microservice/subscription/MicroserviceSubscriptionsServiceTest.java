@@ -1,15 +1,14 @@
 package com.cumulocity.microservice.subscription;
 
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
-import com.cumulocity.microservice.subscription.model.core.HasCredentials;
-import com.cumulocity.microservice.subscription.model.core.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
-import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService.MicroserviceChangedListener;
+import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl.MicroserviceChangedListener;
+import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.cumulocity.rest.representation.microservice.MicroserviceMetadataRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -51,7 +50,7 @@ public class MicroserviceSubscriptionsServiceTest {
     private ObjectMapper objectMapper = new ObjectMapper();
     
     @InjectMocks
-    private MicroserviceSubscriptionsService subscriptionsService;
+    private MicroserviceSubscriptionsServiceImpl subscriptionsService;
 
     @Test
     public void shouldNotUpdateCurrentSubscriptionWhenEventProcessingFails() {
@@ -109,7 +108,7 @@ public class MicroserviceSubscriptionsServiceTest {
     }
 
     private Subscriptions givenSubscriptions() {
-        final MicroserviceCredentials credentials = new MicroserviceCredentials().withName("name").withPassword("pass").withTenant("tenant");
+        final MicroserviceCredentials credentials = new MicroserviceCredentials().withUsername("name").withPassword("pass").withTenant("tenant");
         return Subscriptions.builder()
                 .added(Arrays.asList(credentials))
                 .removed(Arrays.<MicroserviceCredentials>asList())

@@ -124,14 +124,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     private void resubscribe() {
         for (SubscriptionRecord subscribed : subscriptions) {
             Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
-            subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected"));
+            subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
         }
     }
 
     @Override
     public void onDisconnection(final int httpCode) {
         for (final SubscriptionRecord subscription : subscriptions) {
-            subscription.getListener().onError(new DummySubscription(subscription), new SDKException(httpCode, "bayeux client disconnected"));
+            subscription.getListener().onError(new DummySubscription(subscription), new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
         }
     }
 
@@ -195,7 +195,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         private final SubscriptionRecord subscription;
 
         private SubscriptionSuccessListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
-                ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
+                                            ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
             this.subscription = subscribed;
             this.listener = listener;
             this.metaSubscribeChannel = subscribeChannel;
@@ -215,7 +215,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 } else {
                     subscription.getListener().onError(
                             listener.getSubscription(),
-                            new SDKException("unable to subscribe on Channel " + channel.getChannelId() + " "
+                            new SDKException("unable to subscribe Client: " + session.getId() + "  on Channel:" + channel.getChannelId() + " "
                                     + message.get(Message.ERROR_FIELD)));
                 }
             } catch (NullPointerException ex) {

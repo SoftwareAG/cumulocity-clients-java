@@ -11,8 +11,10 @@ import com.cumulocity.microservice.platform.api.inventory.InventoryInternalApi;
 import com.cumulocity.microservice.platform.api.measurement.MeasurementInternalApi;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
+@Import(CumulocityClientFeature.class)
 @ComponentScan(basePackageClasses = {
         AlarmInternalApi.class
         , AuditRecordInternalApi.class
