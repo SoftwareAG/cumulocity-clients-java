@@ -4,21 +4,25 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>8.19.0-SNAPSHOT</version>
+    <version>8.19.2-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
     <packaging>pom</packaging>
+    <scm>
+        <connection>scm:hg:ssh://hg@bitbucket.org/m2m/cumulocity-clients-java</connection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>8.19.0-SNAPSHOT</cumulocity.model.version>
-        <cumulocity.dependencies.version>8.19.0-SNAPSHOT</cumulocity.dependencies.version>
-        <cumulocity.clients.version>8.19.0-SNAPSHOT</cumulocity.clients.version>
-        <cumulocity.agent-framework.version>8.19.0-SNAPSHOT</cumulocity.agent-framework.version>
+        <cumulocity.model.version>8.19.1</cumulocity.model.version>
+        <cumulocity.dependencies.version>8.19.0</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.19.1</cumulocity.clients.version>
+        <cumulocity.agent-framework.version>8.19.0</cumulocity.agent-framework.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
