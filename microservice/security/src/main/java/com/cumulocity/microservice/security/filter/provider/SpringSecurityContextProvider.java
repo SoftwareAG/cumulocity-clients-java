@@ -3,7 +3,6 @@ package com.cumulocity.microservice.security.filter.provider;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.microservice.security.filter.PostAuthorizationContextProvider;
 import com.cumulocity.microservice.security.filter.util.HttpRequestUtils;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.google.common.base.Optional;
