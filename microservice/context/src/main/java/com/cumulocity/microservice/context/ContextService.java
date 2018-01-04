@@ -6,6 +6,8 @@ public interface ContextService<C> {
 
     C getContext();
 
+    boolean isInContext();
+
     void runWithinContext(C context, Runnable task);
 
     <V> V callWithinContext(C context, Callable<V> task);

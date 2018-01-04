@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice-dependencies</artifactId>
-        <version>8.19.2-SNAPSHOT</version>
+        <version>8.20.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-autoconfigure</artifactId>
@@ -47,8 +47,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-health-indicator</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -43,6 +43,11 @@ public class ContextServiceImpl<C> implements ContextService<C> {
         return context;
     }
 
+    @Override
+    public boolean isInContext() {
+        return doGetContext() != null;
+    }
+
 	private C doGetContext() {
         return from(reverse(locaContext.get())).firstMatch(new Predicate<Object>() {
             public boolean apply(Object o) {

@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.autoconfigure;
 
 import com.cumulocity.microservice.context.annotation.EnableContextSupport;
+import com.cumulocity.microservice.health.annotation.EnableHealthIndicator;
 import com.cumulocity.microservice.platform.api.annotation.EnableMicroservicePlatformInternalApi;
 import com.cumulocity.microservice.security.annotation.EnableMicroserviceSecurity;
 import com.cumulocity.microservice.subscription.annotation.EnableMicroserviceSubscription;
@@ -15,6 +16,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootApplication
 @EnableContextSupport
+@EnableHealthIndicator
 @EnableMicroserviceSecurity
 @EnableMicroserviceSubscription
 @EnableMicroservicePlatformInternalApi
