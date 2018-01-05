@@ -98,11 +98,12 @@ public class ResponseParserTest {
         ErrorMessageRepresentation errorRepresentation = new ErrorMessageRepresentation();
         when(response.hasEntity()).thenReturn(true);
         when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+        when(response.getLocation()).thenReturn(URI.create("http://management.cumulocity.com/inventory/managedObjects"));
         when(response.getEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
 
         // Then
         thrown.expect(SDKException.class);
-        thrown.expectMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation.toString());
+        thrown.expectMessage("Http status code: " + ERROR_STATUS+" when invoking: http://management.cumulocity.com/inventory/managedObjects\n" + errorRepresentation.toString());
 
         // When
         parser.parse(response, EXPECTED_STATUS, BaseResourceRepresentation.class);

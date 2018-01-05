@@ -1,9 +1,5 @@
 package com.cumulocity.microservice.subscription.model.core;
 
-import com.cumulocity.microservice.agent.server.api.service.SelfRegistration;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformBuilder;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.slf4j.Logger;
@@ -104,12 +100,6 @@ public class PlatformProperties {
 
         private final Logger log = LoggerFactory.getLogger(PlatformPropertiesProvider.class);
 
-        private final SelfRegistration selfRegistration;
-
-        public PlatformPropertiesProvider(SelfRegistration selfRegistration) {
-            this.selfRegistration = selfRegistration;
-        }
-
         @Value("${C8Y.bootstrap.register:true}")
         private boolean autoRegistration;
 
@@ -156,41 +146,17 @@ public class PlatformProperties {
             return PlatformProperties.builder()
                     .url(Suppliers.ofInstance(url))
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
-                    .microserviceBoostrapUser(resolveBootstrapUser(name, MicroserviceCredentials.builder()
+                    .microserviceBoostrapUser(MicroserviceCredentials.builder()
                             .tenant(microserviceBootstrapTenant)
                             .name(microserviceBootstrapName)
                             .password(microserviceBootstrapPassword)
-                            .build()))
+                            .build())
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(name)
                     .isolation(isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
                     .forceInitialHost(forceInitialHost)
                     .build();
-        }
-
-
-        private MicroserviceCredentials resolveBootstrapUser(String name, MicroserviceCredentials bootstrap) {
-            if (autoRegistration) {
-                log.info("Self registration procedure activated");
-                try (Platform platform = PlatformBuilder.platform()
-                        .withBaseUrl(url)
-                        .withTenant(bootstrap.getTenant())
-                        .withUsername(bootstrap.getName())
-                        .withPassword(bootstrap.getPassword())
-                        .withForceInitialHost(forceInitialHost)
-                        .build()) {
-                    ApplicationUserRepresentation userRepresentation = selfRegistration.register(url, platform
-                            .rest(), name);
-                    return MicroserviceCredentials.builder().tenant(userRepresentation.getTenant())
-                            .name(userRepresentation.getName())
-                            .password(userRepresentation.getPassword())
-                            .build();
-                }
-            }
-            log.info("Self registration procedure not active");
-
-            return bootstrap;
         }
 
 

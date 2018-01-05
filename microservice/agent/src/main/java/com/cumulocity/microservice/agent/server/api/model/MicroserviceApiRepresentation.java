@@ -18,9 +18,8 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
        return  microserviceApiRepresentation()
                 .baseUrl(baseUrl)
                 .collectionUrl("/application/applications")
-                .updateUrl("/application/currentApplication")
-                .subscriptionsUrl("/application/currentApplication/subscriptions")
-                .getUrl("/application/currentApplication")
+                .currentApplicationSubscriptions("/application/currentApplication/subscriptions")
+                .currentApplication("/application/currentApplication")
                 .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
                 .getById("/application/applications/" + APPLICATION_ID)
                 .bootstrapUserUrl("/application/applications/" + APPLICATION_ID + "/bootstrapUser")
@@ -30,8 +29,8 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
 
     private final Supplier<String> baseUrl;
     private final String updateUrl;
-    private final String subscriptionsUrl;
-    private final String getUrl;
+    private final String currentApplicationSubscriptions;
+    private final String currentApplication;
     private final String collectionUrl;
     private final String getById;
     private final String findByNameUrl;
@@ -45,17 +44,14 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
         return url(findByNameUrl, applicationName, null);
     }
 
-    public String getAppUrl() {
-        return url(getUrl, null, null);
+    public String getCurrentApplication() {
+        return url(currentApplication, null, null);
     }
 
-    public String getSubscriptionsUrl() {
-        return url(subscriptionsUrl, null, null);
+    public String getCurrentApplicationSubscriptions() {
+        return url(currentApplicationSubscriptions, null, null);
     }
 
-    public String getUpdateUrl(String name, String id) {
-        return url(updateUrl, name, id);
-    }
 
     public String getByIdUrl(String id) {
         return url(getById, null, id);
