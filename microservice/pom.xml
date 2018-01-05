@@ -37,6 +37,7 @@
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>package</module>
         <module>properties</module>
     </modules>
 
@@ -233,21 +234,21 @@
 
                 <plugin>
                     <groupId>com.nsn.cumulocity.clients-java</groupId>
-                    <artifactId>agent-framework-package</artifactId>
-                    <version>${c8y.agent-framework.version}</version>
+                    <artifactId>microservice-package-maven-plugin</artifactId>
+                    <version>${project.version}</version>
                     <executions>
                         <execution>
-                            <id>agent-package</id>
+                            <id>package</id>
                             <phase>package</phase>
                             <goals>
-                                <goal>agent-package</goal>
+                                <goal>package</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>agent-push</id>
+                            <id>push</id>
                             <phase>package</phase>
                             <goals>
-                                <goal>agent-push</goal>
+                                <goal>push</goal>
                             </goals>
                         </execution>
                         <execution>

@@ -2,12 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
-		<artifactId>agent-framework</artifactId>
+		<artifactId>microservice-dependencies</artifactId>
 		<version>8.20.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>agent-framework-package</artifactId>
+	<artifactId>microservice-package-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<name>Cumulocity :: Clients Java :: Agent Framework :: Package</name>
+	<name>Cumulocity :: Clients Java :: Microservice:: Package</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 	<licenses>
 		<license>
@@ -39,19 +39,23 @@
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
 
+	<properties>
+		<maven-plugin-version>3.2.5</maven-plugin-version>
+		<docker-client.version>8.9.0</docker-client.version>
+	</properties>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>3.2.5</version>
+			<version>${maven-plugin-version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
-			<version>3.2.5</version>
+			<version>${maven-plugin-version}</version>
 		</dependency>
 
 		<dependency>
@@ -80,17 +84,14 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.8.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>2.8.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

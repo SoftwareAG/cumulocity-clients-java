@@ -2,7 +2,6 @@ package com.cumulocity.agent.packaging;
 
 import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Throwables.propagate;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
@@ -15,8 +14,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-@Mojo(name = "agent-package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = true)
-public class PackageMojo extends BaseAgentMojo {
+@Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = true)
+public class PackageMojo extends BaseMicroserviceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
