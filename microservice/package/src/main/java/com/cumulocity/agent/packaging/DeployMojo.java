@@ -19,10 +19,9 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.file.*;
-import java.io.*;
 
-@Mojo(name = "agent-push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
-public class DeployMojo extends BaseAgentMojo {
+@Mojo(name = "push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
+public class DeployMojo extends BaseMicroserviceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

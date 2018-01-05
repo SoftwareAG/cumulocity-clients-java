@@ -32,7 +32,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 
-public abstract class BaseAgentMojo extends AbstractMojo {
+public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
     @Parameter(property = "agent-package.container.registry")
     protected String registry;
