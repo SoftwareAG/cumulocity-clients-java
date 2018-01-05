@@ -2,10 +2,6 @@ package com.cumulocity.microservice.subscription.model.core;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
-import com.cumulocity.microservice.subscription.service.impl.SelfRegistration;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformBuilder;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.slf4j.Logger;

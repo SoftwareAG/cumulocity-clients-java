@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.subscription.repository;
 
-import com.cumulocity.microservice.agent.server.api.model.MicroserviceApiRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 
