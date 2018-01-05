@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
@@ -8,16 +9,16 @@ import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
+import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static lombok.AccessLevel.PRIVATE;
@@ -25,56 +26,152 @@ import static org.apache.commons.httpclient.HttpStatus.*;
 
 @Slf4j
 @Setter(value = PRIVATE)
-@RequiredArgsConstructor
-public class MicroserviceRepository {
+public class MicroserviceRepository implements EnvironmentAware {
 
-    private final Supplier<RestOperations> platform;
+    private Environment environment;
+
+    interface SelfRegistration {
+        ApplicationRepresentation register(String application, MicroserviceMetadataRepresentation representation);
+    }
+
+    private final CredentialsSwitchingPlatform platform;
     private final ObjectMapper objectMapper;
-    private final boolean register;
-    private final MicroserviceApiRepresentation microserviceApi;
+    private final MicroserviceApiRepresentation api;
+    private boolean register;
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    public MicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, MicroserviceApiRepresentation api, boolean register) {
+        this.platform = platform;
+        this.objectMapper = objectMapper;
+        this.api = api;
+        this.register = register;
+    }
 
     @Builder(builderMethodName = "microserviceApi")
     public static MicroserviceRepository create(
             final Supplier<String> baseUrl,
+            final String tenant,
+            final String username,
+            final String password,
             ObjectMapper objectMapper,
-            Supplier<RestOperations> connector,
-            final boolean register) {
-        return new MicroserviceRepository(Suppliers.memoize(connector), objectMapper == null ? new ObjectMapper() : objectMapper, register,
-                MicroserviceApiRepresentation.of(baseUrl));
+            CredentialsSwitchingPlatform connector,
+            boolean register) {
+        return new MicroserviceRepository(connector != null ? connector :
+                new DefaultCredentialsSwitchingPlatform(baseUrl)
+                        .switchTo(
+                                cumulocityCredentials(username, password)
+                                        .withTenantId(tenant)
+                                        .build()
+                        ), objectMapper == null ? new ObjectMapper() : objectMapper,
+                MicroserviceApiRepresentation.of(baseUrl), register);
     }
 
-    public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation representation) {
-        log.debug("register {}", representation);
+    public ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata) {
+        log.debug("registering {} with {}", applicationName, metadata);
+        SelfRegistration registration = isAutoRegistrationEnabled() ? new AutoSelfRegistration() : new NoSelfRegistration();
+        return registration.register(applicationName, metadata);
 
-        final ApplicationRepresentation application = getApplication();
-        if (application == null) {
-            // new micro-service SDK approach requires application configured
-            throw new SDKException("No microservice with name " + applicationName + " registered. Microservice must be configured before running the SDK, please contact administrator");
-        } else if (shouldUpdateApplication()) {
-            if (!MICROSERVICE.equals(application.getType())) {
-                throw new SDKException("Cannot register application. There is another application with name \"" + applicationName + "\"");
+    }
+
+    private boolean isAutoRegistrationEnabled() {
+        return environment != null ? environment.getProperty("C8Y.bootstrap.register", Boolean.class, register) : register;
+    }
+
+
+    private class AutoSelfRegistration implements MicroserviceRepository.SelfRegistration {
+        @Override
+        public ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation metadata) {
+            ApplicationRepresentation application = getApplication();
+            if (application == null) {
+                return createOrGet(applicationName, metadata);
+            } else {
+                if (!MICROSERVICE.equals(application.getType())) {
+                    throw new SDKException("Cannot register application. There is another application with name \"" + application.getName() + "\"");
+                }
+                return updateMetadata(metadata);
             }
-            return update(application, representation);
-        } else {
-            return application;
+
+        }
+
+        private ApplicationRepresentation createOrGet(String applicationName, MicroserviceMetadataRepresentation metadata) {
+            ApplicationRepresentation application;
+            log.info("Self registration procedure activated");
+            try {
+                log.info("Attempt to self register with name {}", applicationName);
+                application = applicationApi().getByName(applicationName);
+                if (application == null) {
+                    application = new ApplicationRepresentation();
+                    application.setName(applicationName);
+                    application.setKey(applicationName + "-application-key");
+                    application.setType(MICROSERVICE);
+                    log.info("Application not registered creating {}", application);
+                    application = applicationApi().create(application);
+                } else {
+                    log.info("Application already registered");
+                }
+                platform.switchTo(getBoostrapUser(application));
+                return updateMetadata(metadata);
+            } catch (Exception ex) {
+                log.error("Self registration process failed ", ex);
+                throw ex;
+            }
+        }
+
+
+        private ApplicationRepresentation updateMetadata(MicroserviceMetadataRepresentation metadata) {
+            try {
+                final ApplicationRepresentation update = new ApplicationRepresentation();
+                update.setRequiredRoles(metadata.getRequiredRoles());
+                update.setRoles(metadata.getRoles());
+                update.setUrl(metadata.getUrl());
+                return applicationApi().currentApplication().update(update);
+            } catch (final Exception ex) {
+                return (ApplicationRepresentation) handleException("PUT", api.getCurrentApplication(), ex);
+            }
         }
     }
 
-    private boolean shouldUpdateApplication() {
-        return register;
+
+    private class NoSelfRegistration implements MicroserviceRepository.SelfRegistration {
+        @Override
+        public ApplicationRepresentation register(String appliation, MicroserviceMetadataRepresentation representation) {
+            log.info("Self registration procedure not active");
+            final ApplicationRepresentation application = getApplication();
+            if (application == null) {
+                throw new SDKException("No microservice with name " + appliation + " registered. Microservice must be configured before running the SDK, please contact administrator");
+            } else {
+                if (!MICROSERVICE.equals(application.getType())) {
+                    throw new SDKException("Cannot register application. There is another application with name \"" + application.getName() + "\"");
+                }
+                return application;
+            }
+
+
+        }
+
     }
 
+    private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
+        return new CumulocityCredentials.Builder(user.getName(), user.getPassword())
+                .withTenantId(user.getTenant())
+                .build();
+    }
+
+
     public ApplicationRepresentation getApplication() {
-        final String url = microserviceApi.getAppUrl();
         try {
-            return rest().get(url, APPLICATION, ApplicationRepresentation.class);
+            return applicationApi().currentApplication().get();
         } catch (final Exception ex) {
-            return (ApplicationRepresentation) handleException("GET", url, ex);
+            return (ApplicationRepresentation) handleException("GET", api.getCurrentApplication(), ex);
         }
     }
 
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
-        final String url = microserviceApi.getSubscriptionsUrl();
+        final String url = api.getCurrentApplicationSubscriptions();
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
@@ -83,19 +180,9 @@ public class MicroserviceRepository {
     }
 
 
-    private ApplicationRepresentation update(ApplicationRepresentation source, MicroserviceMetadataRepresentation representation) {
-        final String name = source.getName();
-        final String id = source.getId();
-        final String url = microserviceApi.getUpdateUrl(name, id);
-        try {
-            final ApplicationRepresentation application = new ApplicationRepresentation();
-            application.setRequiredRoles(representation.getRequiredRoles());
-            application.setRoles(representation.getRoles());
-            application.setUrl(representation.getUrl());
-            return rest().put(url, APPLICATION, application);
-        } catch (final Exception ex) {
-            return (ApplicationRepresentation) handleException("PUT", url, ex);
-        }
+    public CumulocityCredentials getBoostrapUser(ApplicationRepresentation application) {
+        ApplicationApi applicationApi = applicationApi();
+        return asCredentials(applicationApi.getBootstrapUser(application.getId()));
     }
 
     private RestOperations rest() {
@@ -124,4 +211,8 @@ public class MicroserviceRepository {
         throw new SDKException("Error invoking " + method + " " + url, ex);
     }
 
+
+    private ApplicationApi applicationApi() {
+        return new ApplicationApi(platform.get(), api);
+    }
 }
