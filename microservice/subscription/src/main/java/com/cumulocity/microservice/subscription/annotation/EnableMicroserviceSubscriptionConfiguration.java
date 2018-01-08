@@ -1,15 +1,13 @@
 package com.cumulocity.microservice.subscription.annotation;
 
-import com.cumulocity.microservice.agent.server.api.service.DefaultCredentialsSwitchingPlatform;
-import com.cumulocity.microservice.agent.server.api.service.MicroserviceRepository;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Supplier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +40,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
         return MicroserviceRepository.microserviceApi()
                 .baseUrl(properties.getUrl())
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
-                        .switchTo(new CumulocityCredentials.Builder(boostrapUser.getName(), boostrapUser.getPassword())
+                        .switchTo(new CumulocityCredentials.Builder(boostrapUser.getUsername(), boostrapUser.getPassword())
                                 .withTenantId(boostrapUser.getTenant())
                                 .build()))
                 .objectMapper(objectMapper)
