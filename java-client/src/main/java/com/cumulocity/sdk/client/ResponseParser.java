@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,20 +30,20 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 
 public class ResponseParser {
-    
+
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
 
     public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
-            Class<T> type) throws SDKException {
+                                                      Class<T> type) throws SDKException {
 
         checkStatus(response, expectedStatusCode);
         return response.getEntity(type);
     }
-    
+
     public <T extends Object> T parseObject(ClientResponse response, int expectedStatusCode,
-            Class<T> type) throws SDKException {
-        
+                                            Class<T> type) throws SDKException {
+
         checkStatus(response, expectedStatusCode);
         return response.getEntity(type);
     }
@@ -59,7 +59,8 @@ public class ResponseParser {
     }
 
     protected String getErrorMessage(ClientResponse response, int status) {
-        String errorMessage = "Http status code: " + status;
+
+        String errorMessage = "Http status code: " + status + (response.getLocation() != null ? " when invoking: " + response.getLocation() : "");
 
         if (response.hasEntity()) {
             String errorRepresentation = getErrorRepresentation(response);
@@ -77,7 +78,7 @@ public class ResponseParser {
                 return response.getEntity(ErrorMessageRepresentation.class).toString();
             } else {
                 LOG.error("Failed to parse error message to json. Getting error string... ");
-                LOG.error(response.getEntity(String.class)); 
+                LOG.error(response.getEntity(String.class));
             }
         } catch (Exception e) {
             LOG.error("Failed to parse error message", e);
@@ -85,12 +86,12 @@ public class ResponseParser {
         return null;
     }
 
-    protected boolean isJsonResponse(ClientResponse response){
+    protected boolean isJsonResponse(ClientResponse response) {
         MediaType contentType = response.getType();
         if (contentType == null) {
             return false;
         }
-        return contentType.getType().contains("application") 
+        return contentType.getType().contains("application")
                 && contentType.getSubtype().contains("json");
     }
 
