@@ -264,6 +264,6 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
 
     @Override
     public RestConnector rest() {
-        return new RestConnector(this, new ResponseParser());
+        return new RestConnector(this, new ResponseParser(this.getResponseMapper()));
     }
 }

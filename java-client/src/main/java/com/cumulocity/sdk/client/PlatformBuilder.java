@@ -31,7 +31,6 @@ public class PlatformBuilder {
             platform.setProxyPort(proxyPort);
         }
         if (responseMapper != null) {
-        platform.setForceInitialHost(forceInitialHost);
             platform.setResponseMapper(responseMapper);
         }
         platform.setForceInitialHost(forceInitialHost);
