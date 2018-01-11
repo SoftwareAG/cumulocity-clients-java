@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
@@ -50,5 +51,9 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 .build();
     }
 
-
+    @Bean
+    @ConditionalOnMissingBean
+    public MicroserviceMetadataRepresentation metadata() {
+        return new MicroserviceMetadataRepresentation();
+    }
 }

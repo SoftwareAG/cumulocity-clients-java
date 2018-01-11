@@ -1,8 +1,11 @@
 package com.cumulocity.microservice.platform.api.annotation;
 
 import com.cumulocity.microservice.context.ContextService;
+import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
+import com.cumulocity.microservice.context.inject.UserScope;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
@@ -16,9 +19,11 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.user.UserApi;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class CumulocityClientFeature {
@@ -36,10 +41,9 @@ public class CumulocityClientFeature {
     private ResponseMapper responseMapper;
 
     @Bean
-    @TenantScope
-    public PlatformImpl tenantPlatform(
-            final ContextService<MicroserviceCredentials> contextService) {
-        final MicroserviceCredentials login = contextService.getContext();
+    @UserScope
+    public PlatformImpl userPlatform(ContextService<UserCredentials> contextService) {
+        final Credentials login = contextService.getContext();
 
         return (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
@@ -55,8 +59,34 @@ public class CumulocityClientFeature {
     }
 
     @Bean
+    @Primary
     @TenantScope
-    public RestConnector connector(PlatformParameters platformParameters) {
+    public PlatformImpl tenantPlatform(ContextService<MicroserviceCredentials> contextService) {
+        final Credentials login = contextService.getContext();
+
+        return (PlatformImpl) PlatformBuilder.platform()
+                .withBaseUrl(host)
+                .withProxyHost(proxyHost)
+                .withProxyPort(proxyPort)
+                .withTenant(login.getTenant())
+                .withPassword(login.getPassword())
+                .withUsername(login.getUsername())
+                .withTfaToken(login.getTfaToken())
+                .withResponseMapper(responseMapper)
+                .withForceInitialHost(true)
+                .build();
+    }
+
+    @Bean
+    @UserScope
+    public RestConnector userRestConnector(@Qualifier("userPlatform") PlatformParameters platformParameters) {
+        return new RestConnector(platformParameters, new ResponseParser(responseMapper));
+    }
+
+    @Bean
+    @Primary
+    @TenantScope
+    public RestConnector tenantRestConnector(@Qualifier("tenantPlatform") PlatformParameters platformParameters) {
         return new RestConnector(platformParameters, new ResponseParser(responseMapper));
     }
 
