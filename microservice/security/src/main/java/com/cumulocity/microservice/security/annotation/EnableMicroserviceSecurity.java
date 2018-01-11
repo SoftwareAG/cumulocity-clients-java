@@ -5,7 +5,8 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * Requires UserDetailsService bean
+ * Indicates that all the exposed endpoints other than /metadata requires 
+ * base64 authorization and authentication.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

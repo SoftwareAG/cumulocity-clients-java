@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * Requires application name. Emits MicroserviceSubscription*Event events.
- * Additional configuration is provided by ObjectMapper and MicroserviceMetadataRepresentation
- *
+ * 
+ * Indicates the application can use microservice subscription interface and emits MicroserviceSubscription*Event events.
+ * Additional configuration is provided by ObjectMapper and MicroserviceMetadataRepresentation. 
  *
 **/
 @Target(ElementType.TYPE)
