@@ -14,7 +14,11 @@ public interface MicroserviceSubscriptionsService {
 
     /**
      * Fetches microservice subscriptions and emits MicroserviceSubscriptionRemovedEvent, 
-     * MicroserviceSubscriptionAddedEvent to the MicroserviceChangedListener listeners. 
+     * MicroserviceSubscriptionAddedEvent to the MicroserviceChangedListener listeners
+     * <p>
+     * If a listener throws exception during event execution, the event is created again in 
+     * the next call to the method.
+     * </p>
      */
     void subscribe();
 

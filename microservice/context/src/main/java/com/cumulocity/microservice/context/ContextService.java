@@ -48,7 +48,7 @@ public interface ContextService<C> {
     Runnable withinContext(C context, Runnable task);
     
     /**
-     * Enters context to run with Runnable task and returns the task with context
+     * Enters context to run with Callable task and returns the task with context
      * @param context the credentials to access the Cumulocity platform
      * @param task Callable task
      * @return Callable task with context
