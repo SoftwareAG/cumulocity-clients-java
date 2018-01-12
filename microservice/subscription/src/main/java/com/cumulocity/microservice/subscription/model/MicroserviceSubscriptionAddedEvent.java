@@ -4,6 +4,11 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.HasCredentials;
 import org.springframework.context.ApplicationEvent;
 
+/**
+ * 
+ * An event to be emitted with the microservice credentials of newly added microservice subscription.
+ *
+ */
 public class MicroserviceSubscriptionAddedEvent extends ApplicationEvent implements HasCredentials {
     private final MicroserviceCredentials credentials;
 

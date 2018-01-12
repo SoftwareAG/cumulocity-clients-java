@@ -22,7 +22,7 @@ public class ContextServiceImpl<C> implements ContextService<C> {
     private static final String TENANT_LOG_FLAG = "tenant";
     private static final String DEVICE_LOG_FLAG = "device";
 
-    private static ThreadLocal<LinkedList<Object>> locaContext = new ThreadLocal<LinkedList<Object>>() {
+    private static ThreadLocal<LinkedList<Object>> localContext = new ThreadLocal<LinkedList<Object>>() {
         @Override
         protected LinkedList<Object> initialValue() {
             return new LinkedList<>();
@@ -49,7 +49,7 @@ public class ContextServiceImpl<C> implements ContextService<C> {
     }
 
 	private C doGetContext() {
-        return from(reverse(locaContext.get())).firstMatch(new Predicate<Object>() {
+        return from(reverse(localContext.get())).firstMatch(new Predicate<Object>() {
             public boolean apply(Object o) {
                 return clazz.isInstance(o);
             }
@@ -90,14 +90,14 @@ public class ContextServiceImpl<C> implements ContextService<C> {
         MDC.put(TENANT_LOG_FLAG, getContextTenant(newContext));
         MDC.put(DEVICE_LOG_FLAG, getContextDevice(newContext));
         log.debug("entering to  {} ", newContext);
-        locaContext.get().add(newContext);
+        localContext.get().add(newContext);
     }
 
     private void leaveContext() {
         // Remove logging flags
         MDC.remove(TENANT_LOG_FLAG);
         MDC.remove(DEVICE_LOG_FLAG);
-        locaContext.get().removeLast();
+        localContext.get().removeLast();
 
         final C previousContext = doGetContext();
         if (previousContext != null) {

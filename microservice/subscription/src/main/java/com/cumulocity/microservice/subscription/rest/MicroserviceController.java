@@ -6,6 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 
+ * A rest controller that exposes <code>/refreshSubscriptions</code> 
+ * to force refresh of microservice subscriptions.
+ *
+ */
 @Slf4j
 @RestController("microservice")
 public class MicroserviceController {

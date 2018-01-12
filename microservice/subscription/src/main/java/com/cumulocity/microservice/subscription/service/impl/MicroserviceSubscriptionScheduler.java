@@ -19,6 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+/**
+ * 
+ * A service which creates a scheduled task to fetch microservice subscriptions.
+ * Emits MicroserviceSubscriptionsInitializedEvent when scheduled task is initialized.
+ *
+ */
 @Service
 public class MicroserviceSubscriptionScheduler implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceSubscriptionScheduler.class);
