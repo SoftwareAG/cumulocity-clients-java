@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.cumulocity.rest.representation.user.UserMediaType.CURRENT_USER;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -37,7 +36,7 @@ public class RoleServiceImpl implements RoleService {
             final CurrentUserRepresentation currrentUser = userRestConnector.get(url.toString(), CURRENT_USER, CurrentUserRepresentation.class);
     
             final List<RoleRepresentation> effectiveRoles = currrentUser.getEffectiveRoles();
-            if (!isEmpty(effectiveRoles)) {
+            if (effectiveRoles != null && !effectiveRoles.isEmpty()) {
                 for (final Object roleRepresentation : effectiveRoles) {
                     // todo: why rest connector parses role representation to map?
                     final Map<String, String> map = (Map<String, String>) roleRepresentation;
