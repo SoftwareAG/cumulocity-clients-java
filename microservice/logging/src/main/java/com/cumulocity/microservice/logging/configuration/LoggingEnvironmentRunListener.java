@@ -43,7 +43,7 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
     @Override
     public void environmentPrepared(ConfigurableEnvironment configurableEnvironment) {
         applicationName = configurableEnvironment.getProperty("application.name");
-        initLogging();
+        initLogging(configurableEnvironment);
     }
 
     @Override
@@ -61,42 +61,24 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
 
     }
 
-    public void initLogging() {
+    public void initLogging(ConfigurableEnvironment environment) {
         if (!StringUtils.isEmpty(applicationName)) {
             log.info("Attempt to configure logback: look in standard locations for log files");
-            setUpConfigFiles();
+            setUpConfigFiles(environment);
         } else {
             log.warn("Application name not provided, cannot configure logback using standard locations");
         }
     }
 
-    private void setUpConfigFiles() {
-        for(File file:getFiles()){
+    private void setUpConfigFiles(ConfigurableEnvironment environment) {
+        for(File file: new ConfigurationFileProvider(environment).find("-logging.xml", "-agent-server-logging.xml")){
+            log.info("logging.xml file: {}");
+
             if(file != null && file.exists()){
                 setupLoggingFile(file);
                 return;
             }
         }
-    }
-
-    public Iterable<File> getFiles() {
-        return Arrays.asList(
-                file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), "." + applicationName, applicationName + "-agent-server-logging.xml"),
-                file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), "." + applicationName, "logging.xml"),
-                file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), applicationName, applicationName + "-agent-server-logging.xml"),
-                file(getenv(applicationName.toUpperCase() + "_CONF_DIR"), applicationName, "logging.xml"),
-
-                file(getProperty("user.home"), "." + applicationName, applicationName + "-agent-server-logging.xml"),
-                file(getProperty("user.home"), "." + applicationName, "logging.xml"),
-
-                file(getenv("CONF_DIR"), "." + applicationName, applicationName + "-agent-server-logging.xml"),
-                file(getenv("CONF_DIR"), "." + applicationName, "logging.xml"),
-                file(getenv("CONF_DIR"), applicationName, applicationName + "-agent-server-logging.xml"),
-                file(getenv("CONF_DIR"), applicationName, "logging.xml"),
-
-                file("/etc", applicationName, applicationName + "-agent-server-logging.xml"),
-                file("/etc", applicationName, "logging.xml")
-        );
     }
 
     private static File setupLoggingFile(File file) {
@@ -118,16 +100,4 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
         }
         return file;
     }
-
-    private static File file(final String home, final String dir, final String filename) {
-        final File homeFile = new File(home, dir);
-        if (homeFile.exists()) {
-            final File file = new File(homeFile, filename);
-            if (file.exists()) {
-                return file;
-            }
-        }
-        return null;
-    }
-
 }

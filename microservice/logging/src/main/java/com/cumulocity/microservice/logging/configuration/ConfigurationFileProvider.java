@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.properties;
+package com.cumulocity.microservice.logging.configuration;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

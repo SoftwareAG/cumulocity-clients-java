@@ -13,4 +13,6 @@ public interface MicroserviceSubscriptionsService {
 
     Optional<MicroserviceCredentials> getCredentials(String tenant);
 
+    void forEach(Runnable runnable);
+
 }

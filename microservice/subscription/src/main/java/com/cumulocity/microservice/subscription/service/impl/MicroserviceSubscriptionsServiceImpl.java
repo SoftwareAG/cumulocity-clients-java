@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.subscription.service.impl;
 
+import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
@@ -61,16 +62,20 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
     );
 
+    private final ContextService<MicroserviceCredentials> contextService;
+
     @Autowired
     public MicroserviceSubscriptionsServiceImpl(
-            PlatformProperties properties,
-            ApplicationEventPublisher eventPublisher,
-            MicroserviceSubscriptionsRepository repository,
-            MicroserviceMetadataRepresentation microserviceMetadataRepresentation) {
+            final PlatformProperties properties,
+            final ApplicationEventPublisher eventPublisher,
+            final MicroserviceSubscriptionsRepository repository,
+            final MicroserviceMetadataRepresentation microserviceMetadataRepresentation,
+            final ContextService<MicroserviceCredentials> contextService) {
         this.properties = properties;
         this.eventPublisher = eventPublisher;
         this.repository = repository;
         this.microserviceMetadataRepresentation = microserviceMetadataRepresentation;
+        this.contextService = contextService;
     }
 
     @Synchronized
@@ -194,5 +199,12 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             newPassword = newPassword.substring(0, 2) + "*******";
         }
         log.debug(s, user.withPassword(newPassword));
+    }
+
+    @Override
+    public void forEach(Runnable runnable) {
+        for (final MicroserviceCredentials credentials : getAll()) {
+            contextService.runWithinContext(credentials, runnable);
+        }
     }
 }
