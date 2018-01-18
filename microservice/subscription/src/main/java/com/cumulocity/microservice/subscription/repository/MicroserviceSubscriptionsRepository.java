@@ -6,6 +6,8 @@ import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +17,6 @@ import java.util.List;
 import static com.google.common.base.Optional.*;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.apache.commons.collections.CollectionUtils.subtract;
 
 @Repository
 public class MicroserviceSubscriptionsRepository {
@@ -129,6 +130,18 @@ public class MicroserviceSubscriptionsRepository {
                 .removed(removed)
                 .added(added)
                 .build();
+    }
+
+    public Collection<MicroserviceCredentials> subtract(Collection<MicroserviceCredentials> a, final Collection<MicroserviceCredentials> b) {
+        return FluentIterable.from(a).filter(new Predicate<MicroserviceCredentials>() {
+            @Override
+            public boolean apply(MicroserviceCredentials credentials) {
+                if(b.contains(credentials)){
+                    return false;
+                }
+                return true;
+            }
+        }).toList();
     }
 
     public void updateCurrentSubscriptions(final Collection<MicroserviceCredentials> subscriptions) {
