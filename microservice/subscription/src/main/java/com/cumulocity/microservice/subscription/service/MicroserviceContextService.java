@@ -13,7 +13,17 @@ public interface MicroserviceContextService {
     void runForEachTenant(Consumer<MicroserviceCredentials> runnable);
 
     /**
+     * Invokes runnable in context of all tenants.
+     */
+    void runForEachTenant(Runnable runnable);
+
+    /**
      * Invokes runnable in context of tenant.
      */
     void runForTenant(String tenant, Consumer<MicroserviceCredentials> runnable);
+
+    /**
+     * Invokes runnable in context of all tenants.
+     */
+    void runForTenant(String tenant, Runnable runnable);
 }

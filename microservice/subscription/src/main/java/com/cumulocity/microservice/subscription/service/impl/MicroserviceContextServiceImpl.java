@@ -23,6 +23,24 @@ public class MicroserviceContextServiceImpl implements MicroserviceContextServic
     }
 
     @Override
+    public void runForEachTenant(final Runnable runnable) {
+        runForEachTenant(new Consumer<MicroserviceCredentials>() {
+            public void accept(MicroserviceCredentials credentials) {
+                runnable.run();
+            }
+        });
+    }
+
+    @Override
+    public void runForTenant(String tenant, final Runnable runnable) {
+        runForTenant(tenant, new Consumer<MicroserviceCredentials>() {
+            public void accept(MicroserviceCredentials credentials) {
+                runnable.run();
+            }
+        });
+    }
+
+    @Override
     public void runForEachTenant(final Consumer<MicroserviceCredentials> runnable) {
         for (final MicroserviceCredentials credentials : subscriptionsService.getAll()) {
             contextService.runWithinContext(credentials, new Runnable() {
