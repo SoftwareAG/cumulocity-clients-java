@@ -1,0 +1,36 @@
+<HTML>
+<BODY>
+<style>p.indent{ padding-left: 1.8em }</style>
+Cumulocity Microservice SDK Java library provides functionalities to make microservice applications ready to intract with Cumulocity.
+
+<p>The Cumulocity Microservice SDK provides the following components:
+<ul>
+    <li>Packaging</li>
+    <li>Auto-configure</li>
+    <li>Context</li>
+    <li>Health Indicator</li>
+    <li>Logging</li>
+    <li>Internal Cumulocity Platform</li>
+    <li>Security</li>
+    <li>Subscription</li>
+</ul>
+<p>
+    Example for fastest usage:
+    <p class="indent">
+        Add auto-configure maven dependency to your project.
+    </p>
+
+    <pre>
+      
+        &lt;dependency&gt;
+            &lt;groupId>com.nsn.cumulocity.clients-java&lt;/groupId&gt;
+            &lt;artifactId>microservice-autoconfigure&lt;/artifactId&gt;
+            &lt;version>{enter_cumulocity-clients-java_version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    </pre>
+    <p class="indent">
+        Afterwards, add @MicroserviceApplication annotation to your application. This enables all the necessary components of microservice SDK except packaging.
+    </p>
+@since 8.21
+</BODY>
+</HTML>
