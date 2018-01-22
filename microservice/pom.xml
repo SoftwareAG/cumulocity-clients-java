@@ -39,6 +39,7 @@
         <module>package</module>
         <module>properties</module>
         <module>health-indicator</module>
+        <module>common</module>
     </modules>
 
     <dependencyManagement>
@@ -125,10 +126,9 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- depracated -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-agent</artifactId>
+                <artifactId>microservice-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

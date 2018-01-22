@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.subscription.service.impl;
 
+import com.cumulocity.microservice.common.Consumer;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceContextService;
@@ -22,16 +23,24 @@ public class MicroserviceContextServiceImpl implements MicroserviceContextServic
     }
 
     @Override
-    public void runForEachTenant(final Runnable runnable) {
+    public void runForEachTenant(final Consumer<MicroserviceCredentials> runnable) {
         for (final MicroserviceCredentials credentials : subscriptionsService.getAll()) {
-            contextService.runWithinContext(credentials, runnable);
+            contextService.runWithinContext(credentials, new Runnable() {
+                public void run() {
+                    runnable.accept(credentials);
+                }
+            });
         }
     }
 
     @Override
-    public void runForTenant(final String tenant, final Runnable runnable) {
+    public void runForTenant(final String tenant, final Consumer<MicroserviceCredentials> runnable) {
         for (final MicroserviceCredentials credentials : subscriptionsService.getCredentials(tenant).asSet()) {
-            contextService.runWithinContext(credentials, runnable);
+            contextService.runWithinContext(credentials, new Runnable() {
+                public void run() {
+                    runnable.accept(credentials);
+                }
+            });
         }
     }
 }
