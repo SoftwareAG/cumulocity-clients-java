@@ -274,6 +274,24 @@
                         </execution>
                     </executions>
                 </plugin>
+                <!-- Javadoc -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.0</version>
+                        <configuration>
+                            <doctitle>Cumulocity Microservice SDK</doctitle>
+                            <windowtitle>Cumulocity Microservice SDK</windowtitle>
+                            <overview>${project.basedir}/javadoc/overview.html</overview>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                          <goal>aggregate</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
