@@ -10,21 +10,24 @@ import com.cumulocity.sdk.client.alarm.AlarmFilter;
 import com.cumulocity.sdk.client.buffering.Future;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class AlarmInternalApi {
+@Service("alarmInternalApi")
+public class AlarmInternalApi implements AlarmApi{
 
     @Autowired(required = false)
+    @Qualifier("alarmApi")
     private AlarmApi alarmApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public AlarmRepresentation getAlarm(final GId gid) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AlarmRepresentation>() {
@@ -35,6 +38,7 @@ public class AlarmInternalApi {
         });
     }
 
+    @Override
     public AlarmRepresentation create(final AlarmRepresentation alarm) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AlarmRepresentation>() {
@@ -45,6 +49,7 @@ public class AlarmInternalApi {
         });
     }
 
+    @Override
     public Future createAsync(final AlarmRepresentation alarm) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<Future>() {
@@ -55,6 +60,12 @@ public class AlarmInternalApi {
         });
     }
 
+    @Override
+    public AlarmRepresentation updateAlarm(AlarmRepresentation alarm) throws SDKException {
+        return update(alarm);
+    }
+
+    @Override
     public AlarmRepresentation update(final AlarmRepresentation alarm) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AlarmRepresentation>() {
@@ -65,6 +76,7 @@ public class AlarmInternalApi {
         });
     }
 
+    @Override
     public AlarmCollection getAlarms() throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AlarmCollection>() {
@@ -75,6 +87,7 @@ public class AlarmInternalApi {
         });
     }
 
+    @Override
     public AlarmCollection getAlarmsByFilter(final AlarmFilter filter) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AlarmCollection>() {

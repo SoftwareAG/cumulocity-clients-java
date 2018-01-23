@@ -120,7 +120,7 @@ public class CumulocityClientFeature {
         return platform.getIdentityApi();
     }
 
-    @Bean
+    @Bean("alarmApi")
     @TenantScope
     public AlarmApi alarmApi(Platform platform) throws SDKException {
         return platform.getAlarmApi();
