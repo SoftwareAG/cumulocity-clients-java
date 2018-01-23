@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.subscription.service.impl;
 
-import com.cumulocity.microservice.common.Consumer;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceContextService;
@@ -24,41 +23,15 @@ public class MicroserviceContextServiceImpl implements MicroserviceContextServic
 
     @Override
     public void runForEachTenant(final Runnable runnable) {
-        runForEachTenant(new Consumer<MicroserviceCredentials>() {
-            public void accept(MicroserviceCredentials credentials) {
-                runnable.run();
-            }
-        });
-    }
-
-    @Override
-    public void runForTenant(String tenant, final Runnable runnable) {
-        runForTenant(tenant, new Consumer<MicroserviceCredentials>() {
-            public void accept(MicroserviceCredentials credentials) {
-                runnable.run();
-            }
-        });
-    }
-
-    @Override
-    public void runForEachTenant(final Consumer<MicroserviceCredentials> runnable) {
         for (final MicroserviceCredentials credentials : subscriptionsService.getAll()) {
-            contextService.runWithinContext(credentials, new Runnable() {
-                public void run() {
-                    runnable.accept(credentials);
-                }
-            });
+            contextService.runWithinContext(credentials, runnable);
         }
     }
 
     @Override
-    public void runForTenant(final String tenant, final Consumer<MicroserviceCredentials> runnable) {
+    public void runForTenant(String tenant, final Runnable runnable) {
         for (final MicroserviceCredentials credentials : subscriptionsService.getCredentials(tenant).asSet()) {
-            contextService.runWithinContext(credentials, new Runnable() {
-                public void run() {
-                    runnable.accept(credentials);
-                }
-            });
+            contextService.runWithinContext(credentials, runnable);
         }
     }
 }

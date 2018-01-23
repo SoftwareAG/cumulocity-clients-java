@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.properties;
 
-import com.google.common.base.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
@@ -49,9 +48,8 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
 
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
-        final String applicationName = Optional.fromNullable(environment.getProperty("application.name")).or("application");
-        final ConfigurationFileProvider provider = new ConfigurationFileProvider(applicationName);
-        Iterable<File> locations = provider.find(applicationName + ".properties", applicationName + "-agent-server.properties");
+        final ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
+        Iterable<File> locations = provider.find(".properties", "-agent-server.properties");
         processPropertySource(environment, locations);
     }
 

@@ -39,7 +39,6 @@
         <module>package</module>
         <module>properties</module>
         <module>health-indicator</module>
-        <module>common</module>
     </modules>
 
     <dependencyManagement>
@@ -184,6 +183,23 @@
                     <exclusion>
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>core-model</artifactId>
+                <version>${cumulocity.model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
