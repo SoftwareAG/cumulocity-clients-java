@@ -90,7 +90,7 @@ public class CumulocityClientFeature {
         return new RestConnector(platformParameters, new ResponseParser(responseMapper));
     }
 
-    @Bean
+    @Bean("inventoryApi")
     @TenantScope
     public InventoryApi inventoryApi(Platform platform) throws SDKException {
         return platform.getInventoryApi();
@@ -102,19 +102,19 @@ public class CumulocityClientFeature {
         return platform.getDeviceCredentialsApi();
     }
 
-    @Bean
+    @Bean("eventApi")
     @TenantScope
     public EventApi eventApi(Platform platform) throws SDKException {
         return platform.getEventApi();
     }
 
-    @Bean
+    @Bean("measurementApi")
     @TenantScope
     public MeasurementApi measurementApi(Platform platform) throws SDKException {
         return platform.getMeasurementApi();
     }
 
-    @Bean
+    @Bean("identityApi")
     @TenantScope
     public IdentityApi identityApi(Platform platform) throws SDKException {
         return platform.getIdentityApi();
@@ -126,25 +126,25 @@ public class CumulocityClientFeature {
         return platform.getAlarmApi();
     }
 
-    @Bean
+    @Bean("auditRecordApi")
     @TenantScope
     public AuditRecordApi auditRecordApi(Platform platform) throws SDKException {
         return platform.getAuditRecordApi();
     }
 
-    @Bean
+    @Bean("deviceControlApi")
     @TenantScope
     public DeviceControlApi deviceControlApi(Platform platform) throws SDKException {
         return platform.getDeviceControlApi();
     }
 
-    @Bean
+    @Bean("cepApi")
     @TenantScope
     public CepApi cepApi(Platform platform) throws SDKException {
         return platform.getCepApi();
     }
     
-    @Bean
+    @Bean("binariesApi")
     @TenantScope
     public BinariesApi binariesApi(Platform platform) throws SDKException {
         return platform.getBinariesApi();

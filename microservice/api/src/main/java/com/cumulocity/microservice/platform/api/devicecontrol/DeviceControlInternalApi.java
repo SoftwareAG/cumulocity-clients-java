@@ -11,21 +11,24 @@ import com.cumulocity.sdk.client.devicecontrol.OperationFilter;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class DeviceControlInternalApi {
+@Service("deviceControlInternalApi")
+public class DeviceControlInternalApi implements DeviceControlApi{
 
     @Autowired(required = false)
+    @Qualifier("deviceControlApi")
     private DeviceControlApi deviceControlApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public OperationRepresentation getOperation(final GId gid) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<OperationRepresentation>() {
@@ -36,6 +39,8 @@ public class DeviceControlInternalApi {
         });
     }
 
+
+    @Override
     public OperationRepresentation create(final OperationRepresentation operation) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<OperationRepresentation>() {
@@ -46,6 +51,7 @@ public class DeviceControlInternalApi {
         });
     }
 
+    @Override
     public OperationRepresentation update(final OperationRepresentation operation) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<OperationRepresentation>() {
@@ -56,6 +62,7 @@ public class DeviceControlInternalApi {
         });
     }
 
+    @Override
     public Future updateAsync(final OperationRepresentation operation) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<Future>() {
@@ -66,6 +73,7 @@ public class DeviceControlInternalApi {
         });
     }
 
+    @Override
     public OperationCollection getOperations() throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<OperationCollection>() {
@@ -76,6 +84,7 @@ public class DeviceControlInternalApi {
         });
     }
 
+    @Override
     public OperationCollection getOperationsByFilter(final OperationFilter filter) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<OperationCollection>() {
@@ -86,6 +95,7 @@ public class DeviceControlInternalApi {
         });
     }
 
+    @Override
     public Subscriber<GId, OperationRepresentation> getNotificationsSubscriber() throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<Subscriber<GId, OperationRepresentation>>() {

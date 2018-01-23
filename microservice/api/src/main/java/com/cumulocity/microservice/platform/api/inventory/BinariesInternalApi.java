@@ -7,6 +7,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -14,15 +15,17 @@ import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class BinariesInternalApi {
+@Service("binariesInternalApi")
+public class BinariesInternalApi implements BinariesApi{
 
     @Autowired(required = false)
+    @Qualifier("binariesApi")
     private BinariesApi binariesApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public ManagedObjectRepresentation uploadFile(final ManagedObjectRepresentation container, final byte[] bytes) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<ManagedObjectRepresentation>() {
@@ -33,6 +36,17 @@ public class BinariesInternalApi {
         });
     }
 
+    @Override
+    public InputStream downloadFile(final GId id) throws SDKException {checkBeansNotNull();
+        return internally().onPlatform(platform).doAction(new Callable<InputStream>() {
+            @Override
+            public InputStream call() throws Exception {
+                return binariesApi.downloadFile(id);
+            }
+        });
+    }
+
+    @Override
     public ManagedObjectRepresentation replaceFile(final GId containerId, final String contentType, final InputStream fileStream) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<ManagedObjectRepresentation>() {
@@ -43,6 +57,7 @@ public class BinariesInternalApi {
         });
     }
 
+    @Override
     public void deleteFile(final GId containerId) throws SDKException {
         checkBeansNotNull();
         internally().onPlatform(platform).doAction(new Callable<Void>() {

@@ -10,21 +10,24 @@ import com.cumulocity.sdk.client.event.EventCollection;
 import com.cumulocity.sdk.client.event.EventFilter;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class EventInternalApi {
+@Service("eventInternalApi")
+public class EventInternalApi implements EventApi{
 
     @Autowired(required = false)
+    @Qualifier("eventApi")
     private EventApi eventApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public EventRepresentation getEvent(final GId gid) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<EventRepresentation>() {
@@ -35,6 +38,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public EventRepresentation create(final EventRepresentation event) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<EventRepresentation>() {
@@ -45,6 +49,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public Future createAsync(final EventRepresentation event) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<Future>() {
@@ -55,6 +60,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public void delete(final EventRepresentation event) throws SDKException {
         checkBeansNotNull();
         internally().onPlatform(platform).doAction(new Callable<Void>() {
@@ -66,6 +72,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public EventCollection getEvents() throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<EventCollection>() {
@@ -76,6 +83,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public EventCollection getEventsByFilter(final EventFilter filter) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<EventCollection>() {
@@ -86,6 +94,7 @@ public class EventInternalApi {
         });
     }
 
+    @Override
     public EventRepresentation update(final EventRepresentation eventRepresentation) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<EventRepresentation>() {

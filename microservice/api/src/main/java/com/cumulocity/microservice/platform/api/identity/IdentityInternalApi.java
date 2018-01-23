@@ -9,21 +9,24 @@ import com.cumulocity.sdk.client.identity.ExternalIDCollection;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class IdentityInternalApi {
+@Service("identityInternalApi")
+public class IdentityInternalApi implements IdentityApi{
 
     @Autowired(required = false)
+    @Qualifier("identityApi")
     private IdentityApi identityApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public ExternalIDRepresentation create(final ExternalIDRepresentation externalId) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<ExternalIDRepresentation>() {
@@ -34,6 +37,7 @@ public class IdentityInternalApi {
         });
     }
 
+    @Override
     public ExternalIDRepresentation getExternalId(final ID extId) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<ExternalIDRepresentation>() {
@@ -44,6 +48,7 @@ public class IdentityInternalApi {
         });
     }
 
+    @Override
     public ExternalIDCollection getExternalIdsOfGlobalId(final GId gid) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<ExternalIDCollection>() {
@@ -54,6 +59,7 @@ public class IdentityInternalApi {
         });
     }
 
+    @Override
     public void deleteExternalId(final ExternalIDRepresentation externalId) throws SDKException {
         checkBeansNotNull();
         internally().onPlatform(platform).doAction(new Callable<Void>() {

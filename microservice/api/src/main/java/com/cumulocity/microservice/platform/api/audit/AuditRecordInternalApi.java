@@ -9,21 +9,24 @@ import com.cumulocity.sdk.client.audit.AuditRecordCollection;
 import com.cumulocity.sdk.client.audit.AuditRecordFilter;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
 
 import static com.cumulocity.microservice.platform.api.client.InternalTrafficDecorator.Builder.internally;
 
-@Service
-public class AuditRecordInternalApi {
+@Service("auditRecordInternalApi")
+public class AuditRecordInternalApi implements AuditRecordApi{
 
     @Autowired(required = false)
+    @Qualifier("auditRecordApi")
     private AuditRecordApi auditRecordApi;
 
     @Autowired(required = false)
     private PlatformImpl platform;
 
+    @Override
     public AuditRecordRepresentation getAuditRecord(final GId gid) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AuditRecordRepresentation>() {
@@ -34,6 +37,7 @@ public class AuditRecordInternalApi {
         });
     }
 
+    @Override
     public AuditRecordRepresentation create(final AuditRecordRepresentation auditRecord) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AuditRecordRepresentation>() {
@@ -44,6 +48,7 @@ public class AuditRecordInternalApi {
         });
     }
 
+    @Override
     public AuditRecordCollection getAuditRecords() throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AuditRecordCollection>() {
@@ -54,6 +59,7 @@ public class AuditRecordInternalApi {
         });
     }
 
+    @Override
     public AuditRecordCollection getAuditRecordsByFilter(final AuditRecordFilter filter) throws SDKException {
         checkBeansNotNull();
         return internally().onPlatform(platform).doAction(new Callable<AuditRecordCollection>() {
