@@ -30,7 +30,6 @@
 		<module>java-email-client</module>
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
-		<module>microservice</module> 
 	</modules>
 
 	<properties>
