@@ -17,9 +17,9 @@ import com.cumulocity.sdk.client.SDKException;
 import com.sun.jersey.api.client.ClientHandlerException;
 
 public class BufferProcessor {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(BufferProcessor.class);
-    
+
     private ExecutorService executor;
 
     private PersistentProvider persistentProvider;
@@ -42,14 +42,28 @@ public class BufferProcessor {
             }
         });
     }
-    
+
     public void startProcessing() {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    ProcessingRequest processingRequest = persistentProvider.poll();
-                    service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getEntity()));
+                try {
+                    while (!Thread.currentThread().isInterrupted()) {
+                        ProcessingRequest processingRequest = persistentProvider.poll();
+                        service.addResponse(processingRequest.getId(), sendRequest(processingRequest.getEntity()));
+
+                    }
+                } catch (Exception ex) {
+                    Throwable cause = ex;
+
+                    while (cause.getCause() != null) {
+                        cause = cause.getCause();
+                    }
+                    if (cause instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    } else {
+                        throw ex;
+                    }
                 }
             }
 
@@ -83,10 +97,10 @@ public class BufferProcessor {
                     }
                 }
             }
-            
+
             private void waitForPlatform() {
                 try {
-                    Thread.sleep(5*60*1000);
+                    Thread.sleep(5 * 60 * 1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException("", e);
                 }
@@ -94,7 +108,7 @@ public class BufferProcessor {
 
             private void waitForConnection() {
                 try {
-                    Thread.sleep(30*1000);
+                    Thread.sleep(30 * 1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException("", e);
                 }

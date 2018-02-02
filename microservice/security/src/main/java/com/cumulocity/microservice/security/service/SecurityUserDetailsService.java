@@ -7,14 +7,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
+import java.beans.ConstructorProperties;
+
 @Repository
 public class SecurityUserDetailsService implements UserDetailsService {
 
     private final PlatformParameters platformParameters;
     private final RoleService roleService;
 
-    @java.beans.ConstructorProperties({"platformParameters", "roleService"})
     @Autowired
+    @ConstructorProperties({"userPlatform", "roleService"})
     public SecurityUserDetailsService(PlatformParameters platformParameters, RoleService roleService) {
         this.platformParameters = platformParameters;
         this.roleService = roleService;

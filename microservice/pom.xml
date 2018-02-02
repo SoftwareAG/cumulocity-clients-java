@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>8.19.2-SNAPSHOT</version>
+    <version>8.21.1-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -19,10 +19,9 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>8.19.1</cumulocity.model.version>
-        <cumulocity.dependencies.version>8.19.0</cumulocity.dependencies.version>
-        <cumulocity.clients.version>8.19.1</cumulocity.clients.version>
-        <cumulocity.agent-framework.version>8.19.0</cumulocity.agent-framework.version>
+        <cumulocity.model.version>8.21.0</cumulocity.model.version>
+        <cumulocity.dependencies.version>8.21.0</cumulocity.dependencies.version>
+        <cumulocity.clients.version>8.21.0</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
@@ -37,7 +36,9 @@
         <module>security</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>package</module>
         <module>properties</module>
+        <module>health-indicator</module>
     </modules>
 
     <dependencyManagement>
@@ -118,6 +119,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-health-indicator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- depracated -->
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-agent</artifactId>
@@ -233,21 +241,21 @@
 
                 <plugin>
                     <groupId>com.nsn.cumulocity.clients-java</groupId>
-                    <artifactId>agent-framework-package</artifactId>
-                    <version>${c8y.agent-framework.version}</version>
+                    <artifactId>microservice-package-maven-plugin</artifactId>
+                    <version>${project.version}</version>
                     <executions>
                         <execution>
-                            <id>agent-package</id>
+                            <id>package</id>
                             <phase>package</phase>
                             <goals>
-                                <goal>agent-package</goal>
+                                <goal>package</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>agent-push</id>
+                            <id>push</id>
                             <phase>package</phase>
                             <goals>
-                                <goal>agent-push</goal>
+                                <goal>push</goal>
                             </goals>
                         </execution>
                         <execution>
@@ -265,6 +273,24 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <!-- Javadoc -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.0</version>
+                        <configuration>
+                            <doctitle>Cumulocity Microservice SDK</doctitle>
+                            <windowtitle>Cumulocity Microservice SDK</windowtitle>
+                            <overview>${project.basedir}/javadoc/overview.html</overview>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                          <goal>aggregate</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

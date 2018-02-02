@@ -1,7 +1,6 @@
 package com.cumulocity.microservice.security.filter.provider;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.microservice.security.filter.PreAuthorizationContextProvider;
 import com.cumulocity.microservice.security.filter.util.HttpRequestUtils;
 import com.cumulocity.microservice.security.filter.util.HttpRequestUtils.AuthorizationHeader;
 import org.springframework.stereotype.Component;

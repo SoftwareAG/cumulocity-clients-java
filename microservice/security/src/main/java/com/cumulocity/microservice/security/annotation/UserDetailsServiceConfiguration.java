@@ -5,6 +5,7 @@ import com.cumulocity.microservice.security.service.SecurityUserDetailsService;
 import com.cumulocity.microservice.security.service.impl.RoleServiceImpl;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -22,12 +23,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public class UserDetailsServiceConfiguration {
 
     @Bean
-    public UserDetailsService userDetailsService(PlatformParameters platformParameters, RoleService roleService) {
-        return new SecurityUserDetailsService(platformParameters, roleService);
+    public UserDetailsService userDetailsService(
+            @Qualifier("userPlatform") PlatformParameters userPlatform,
+            RoleService roleService) {
+        return new SecurityUserDetailsService(userPlatform, roleService);
     }
 
     @Bean
-    public RoleService roleService(PlatformParameters platformParameters, RestConnector restConnector) {
-        return new RoleServiceImpl(platformParameters, restConnector);
+    public RoleService roleService(
+            @Qualifier("userRestConnector") RestConnector restConnector) {
+        return new RoleServiceImpl(restConnector);
     }
 }

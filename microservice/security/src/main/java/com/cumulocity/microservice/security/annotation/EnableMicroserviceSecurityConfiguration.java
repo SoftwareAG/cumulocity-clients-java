@@ -33,7 +33,7 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     private PostAuthenticateServletFilter postAuthenticateServletFilter;
 
     public void configure(WebSecurity webSecurity) {
-        webSecurity.ignoring().antMatchers("/metadata", "/health");
+        webSecurity.ignoring().antMatchers("/metadata");
     }
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

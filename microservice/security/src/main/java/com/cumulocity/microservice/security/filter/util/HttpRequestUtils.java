@@ -128,7 +128,7 @@ public class HttpRequestUtils {
 
     public static boolean hasAuthorizationHeader(Object credentialSource) {
         return credentialSource instanceof HttpServletRequest
-                && !StringUtils.hasText(((HttpServletRequest) credentialSource).getHeader(AUTHORIZATION));
+                && StringUtils.hasText(((HttpServletRequest) credentialSource).getHeader(AUTHORIZATION));
     }
 
     public static AuthorizationHeader authorizationHeader(String authorization) {

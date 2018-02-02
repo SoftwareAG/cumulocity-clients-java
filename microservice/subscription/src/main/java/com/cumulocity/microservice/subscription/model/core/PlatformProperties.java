@@ -2,10 +2,6 @@ package com.cumulocity.microservice.subscription.model.core;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
-import com.cumulocity.microservice.subscription.service.impl.SelfRegistration;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformBuilder;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.slf4j.Logger;
@@ -60,7 +56,7 @@ public class PlatformProperties {
         return this.isolation;
     }
 
-    public boolean getForceInitialHost(){
+    public boolean getForceInitialHost() {
         return forceInitialHost;
     }
 
@@ -94,7 +90,7 @@ public class PlatformProperties {
 
 
     public String toString() {
-        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost="+this.getForceInitialHost()+" )";
+        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
     }
 
     enum IsolationLevel {
@@ -106,13 +102,7 @@ public class PlatformProperties {
 
         private final Logger log = LoggerFactory.getLogger(PlatformPropertiesProvider.class);
 
-        private final SelfRegistration selfRegistration;
-
-        public PlatformPropertiesProvider(SelfRegistration selfRegistration) {
-            this.selfRegistration = selfRegistration;
-        }
-
-        @Value("${C8Y.bootstrap.register:false}")
+        @Value("${C8Y.bootstrap.register:true}")
         private boolean autoRegistration;
 
         @Value("${application.name:}")
@@ -158,41 +148,17 @@ public class PlatformProperties {
             return PlatformProperties.builder()
                     .url(Suppliers.ofInstance(url))
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
-                    .microserviceBoostrapUser(resolveBootstrapUser(name, MicroserviceCredentials.builder()
+                    .microserviceBoostrapUser(MicroserviceCredentials.builder()
                             .tenant(microserviceBootstrapTenant)
                             .username(microserviceBootstrapName)
                             .password(microserviceBootstrapPassword)
-                            .build()))
+                            .build())
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(name)
                     .isolation(isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
                     .forceInitialHost(forceInitialHost)
                     .build();
-        }
-
-
-        private MicroserviceCredentials resolveBootstrapUser(String name, MicroserviceCredentials bootstrap) {
-            if (autoRegistration) {
-                log.info("Self registration procedure activated");
-                try (Platform platform = PlatformBuilder.platform()
-                        .withBaseUrl(url)
-                        .withTenant(bootstrap.getTenant())
-                        .withUsername(bootstrap.getUsername())
-                        .withPassword(bootstrap.getPassword())
-                        .withForceInitialHost(forceInitialHost)
-                        .build()) {
-                    ApplicationUserRepresentation userRepresentation = selfRegistration.register(url, platform
-                            .rest(), name);
-                    return MicroserviceCredentials.builder().tenant(userRepresentation.getTenant())
-                            .username(userRepresentation.getName())
-                            .password(userRepresentation.getPassword())
-                            .build();
-                }
-            }
-            log.info("Self registration procedure not active");
-
-            return bootstrap;
         }
 
 
@@ -254,13 +220,14 @@ public class PlatformProperties {
             this.isolation = isolation;
             return this;
         }
+
         public PlatformProperties.PlatformPropertiesBuilder forceInitialHost(boolean forceInitialHost) {
             this.forceInitialHost = forceInitialHost;
             return this;
         }
 
         public PlatformProperties build() {
-            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation,forceInitialHost);
+            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation, forceInitialHost);
         }
 
         public String toString() {

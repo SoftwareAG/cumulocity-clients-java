@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>8.19.0</version>
+		<version>8.21.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>8.19.2-SNAPSHOT</version>
+	<version>8.21.2-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -26,17 +26,16 @@
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
 		<module>java-me-maven-plugin</module>
-		<module>java-me-smartrest</module>
-		<module>agent-framework</module>		
+		<module>java-me-smartrest</module>		
 		<module>java-email-client</module>
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
-		<!--<module>microservice</module>-->
+<!--		<module>microservice</module> -->
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>8.19.1</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.19.2</cumulocity.shared-components.version>
+		<cumulocity.model.version>8.21.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>8.21.0</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>

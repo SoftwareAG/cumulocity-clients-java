@@ -4,6 +4,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.core.spi.component.ioc.IoCComponentProviderFactory;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,9 @@ public class CumulocityHttpClient extends ApacheHttpClient {
     }
 
     protected String resolvePath(String path) {
+        if (path.startsWith("/")) {
+            path = getInitialHost() + path;
+        }
         return platformParameters.isForceInitialHost() ? insertInitialHost(path) : path;
     }
 

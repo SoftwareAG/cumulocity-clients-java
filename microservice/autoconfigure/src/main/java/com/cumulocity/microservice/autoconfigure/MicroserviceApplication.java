@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.autoconfigure;
 
 import com.cumulocity.microservice.context.annotation.EnableContextSupport;
-import com.cumulocity.microservice.logging.annotation.EnableMicroserviceLogging;
+import com.cumulocity.microservice.health.annotation.EnableHealthIndicator;
 import com.cumulocity.microservice.platform.api.annotation.EnableMicroservicePlatformInternalApi;
 import com.cumulocity.microservice.security.annotation.EnableMicroserviceSecurity;
 import com.cumulocity.microservice.subscription.annotation.EnableMicroserviceSubscription;
@@ -12,11 +12,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 
+ * Runs spring-boot microservice application with configured Microservice SDK features.
+ * 
+ */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootApplication
 @EnableContextSupport
-@EnableMicroserviceLogging
+@EnableHealthIndicator
 @EnableMicroserviceSecurity
 @EnableMicroserviceSubscription
 @EnableMicroservicePlatformInternalApi

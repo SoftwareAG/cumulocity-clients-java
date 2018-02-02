@@ -1,22 +1,20 @@
 package com.cumulocity.microservice.subscription.annotation;
 
-
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.cumulocity.microservice.subscription.service.impl.SelfRegistration;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformBuilder;
-import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Supplier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
 
 @Configuration
 @ComponentScan(basePackageClasses = {
@@ -27,8 +25,8 @@ import org.springframework.context.annotation.Configuration;
 public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider(SelfRegistration selfRegistration) {
-        return new PlatformProperties.PlatformPropertiesProvider(selfRegistration);
+    public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider() {
+        return new PlatformProperties.PlatformPropertiesProvider();
     }
 
     @Bean
@@ -43,29 +41,19 @@ public class EnableMicroserviceSubscriptionConfiguration {
         final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
         return MicroserviceRepository.microserviceApi()
                 .baseUrl(properties.getUrl())
-                .connector(new Supplier<RestOperations>() {
-                    @Override
-                    public RestOperations get() {
-                        try (Platform platform = PlatformBuilder.platform()
-                                .withBaseUrl(properties.getUrl().get())
-                                .withUsername(boostrapUser.getUsername())
-                                .withPassword(boostrapUser.getPassword())
-                                .withTenant(boostrapUser.getTenant())
-                                .withForceInitialHost(properties.getForceInitialHost())
-                                .build()) {
-                            return platform.rest();
-                        }
-                    }
-                })
+                .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
+                        .switchTo(cumulocityCredentials(boostrapUser.getUsername(), boostrapUser.getPassword())
+                                .withTenantId(boostrapUser.getTenant())
+                                .build()))
                 .objectMapper(objectMapper)
                 // When no isolation level defined then application must be registered
                 .register(properties.getIsolation() == null)
                 .build();
     }
 
-
     @Bean
-    public SelfRegistration selfRegistration() {
-        return new SelfRegistration();
+    @ConditionalOnMissingBean
+    public MicroserviceMetadataRepresentation metadata() {
+        return new MicroserviceMetadataRepresentation();
     }
 }
