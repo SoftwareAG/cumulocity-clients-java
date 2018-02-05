@@ -73,6 +73,9 @@ public class MicroserviceDeployMojo extends AbstractMojo {
 
     private Optional<String> getServerUrl() {
         final Server server = settings.getServer(serviceId);
+        if(server == null){
+            return Optional.absent();
+        }
         final Object configuration = server.getConfiguration();
         if (!(configuration instanceof Xpp3Dom)) {
             return Optional.absent();

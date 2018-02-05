@@ -1,0 +1,109 @@
+<HTML>
+<BODY>
+<style>p.indent{ padding-left: 1.8em }</style>
+Cumulocity Microservice SDK Java library provides functionalities to make microservice applications ready to intract with Cumulocity.
+
+<p>The Cumulocity Microservice SDK provides the following components:
+<ul>
+    <li>Packaging</li>
+    <li>Auto-configure</li>
+    <li>Context</li>
+    <li>Health Indicator</li>
+    <li>Logging</li>
+    <li>Internal Cumulocity Platform</li>
+    <li>Security</li>
+    <li>Subscription</li>
+</ul>
+
+<p>
+    Example for fastest usage of microservice SDK:
+    <p class="indent">
+        Add auto-configure maven dependency to your project.
+    </p>
+    <pre>
+    &lt;dependencies&gt;
+        ...
+        &lt;dependency&gt;
+            &lt;groupId>com.nsn.cumulocity.clients-java&lt;/groupId&gt;
+            &lt;artifactId>microservice-autoconfigure&lt;/artifactId&gt;
+            &lt;version>{enter_cumulocity-clients-java_version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt; 
+    </pre>
+    <p class="indent">
+        Afterwards, add @MicroserviceApplication annotation to your application. This enables all the necessary components of microservice SDK except packaging.
+    </p>
+
+
+<p>
+    Introduction and example for creating the microservice package:
+    <p class="indent">
+        Microservice SDK provides maven plugin to create a deployable zip package of the microservice application.<br>
+        Prerequisites are to have docker installed and permissions granted to use docker commands with non-root users.<br><br>
+        As a first step, add microservice package maven plugin to your project.
+    </p>
+
+    <pre>
+    &lt;build&gt;
+        &lt;plugins&gt;
+            ...
+            &lt;plugin&gt;
+                &lt;groupId&gt;com.nsn.cumulocity.clients-java&lt;/groupId&gt;
+                &lt;artifactId&gt;microservice-package-maven-plugin&lt;/artifactId&gt;
+                &lt;version&gt;{enter_cumulocity-clients-java_version}&lt;/version&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;package&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;package&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;microservice-package&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;microservice-package&lt;/goal&gt;
+                        &lt;/goals&gt;
+                        &lt;configuration&gt;
+                            &lt;manifestFile&gt;${basedir}/src/main/microservice/cumulocity.json&lt;/manifestFile&gt;
+                        &lt;/configuration&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+    </pre>
+
+    <p class="indent">
+        Create the manifest file cumulocity.json with the example content in the path that is defined in maven plugin configuration.
+    </p>
+    <pre>
+    {
+        "apiVersion":"1",
+        "version":"@project.version@",
+        "provider": {
+            "name":"... GmbH"
+        },
+        "isolation":"MULTI_TENANT",
+        "requiredRoles": [
+        ],
+        "roles":[
+        ]
+    }
+    </pre>
+
+    <p class="indent">
+        Build project and create the microservice zip package using the command:
+    </p>
+    <pre>
+    mvn clean install -Dskip.agent.package.container=false -Dskip.microservice.package=false
+    </pre>
+
+    <p class="indent">
+        The microservice application can be deployed to Cumulocity by uploading the zip package as application to Cumulocity platform.
+    </p>
+
+@since 8.21
+</BODY>
+</HTML>
