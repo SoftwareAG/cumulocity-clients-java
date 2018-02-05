@@ -271,7 +271,7 @@ class MessageExchange {
                     request = executorService.submit(new ResponseConsumer(response));
                 }
             } catch (Exception e) {
-                log.debug("connection failed", e);
+                log.error("connection failed " + e.getMessage(), e);
                 unauthorizedConnectionWatcher.resetCounter();
                 listener.onConnectException(e, messages);
                 onFinish();

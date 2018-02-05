@@ -24,11 +24,13 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 
+@Slf4j
 public class ResponseParser {
     
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
@@ -111,11 +113,31 @@ public class ResponseParser {
         return new GId(gid);
     }
 
+    public Object write(Object object) {
+        if (mapper != null) {
+            try {
+                final CharSequence result = mapper.write(object);
+                if (result != null) {
+                    return result;
+                }
+            } catch (final Exception ex) {
+                log.error(ex.getMessage());
+            }
+        }
+        return object;
+    }
+
     private <T> T read(ClientResponse response, Class<T> clazz) {
         if (mapper != null) {
-            return mapper.read(response.getEntityInputStream(), clazz);
-        } else {
-            return response.getEntity(clazz);
+            try {
+                final T result = mapper.read(response.getEntityInputStream(), clazz);
+                if (result != null) {
+                    return result;
+                }
+            } catch (final Exception ex) {
+                log.error(ex.getMessage());
+            }
         }
+        return response.getEntity(clazz);
     }
 }

@@ -13,6 +13,11 @@ public class MicroserviceContextServiceImpl implements MicroserviceContextServic
     private final ContextService<MicroserviceCredentials> contextService;
     private final MicroserviceSubscriptionsService subscriptionsService;
 
+    @Override
+    public String getTenant() {
+        return contextService.getContext().getTenant();
+    }
+
     @Autowired
     public MicroserviceContextServiceImpl(
             final ContextService<MicroserviceCredentials> contextService,

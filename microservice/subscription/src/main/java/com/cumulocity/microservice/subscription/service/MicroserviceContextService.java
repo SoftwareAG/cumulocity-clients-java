@@ -5,6 +5,8 @@ package com.cumulocity.microservice.subscription.service;
  */
 public interface MicroserviceContextService {
 
+    String getTenant();
+
     /**
      * Invokes runnable in context of all tenants.
      */

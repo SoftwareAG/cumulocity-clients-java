@@ -38,11 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-common</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>

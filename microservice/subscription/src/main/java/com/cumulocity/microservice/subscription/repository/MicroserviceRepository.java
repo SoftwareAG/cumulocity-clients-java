@@ -205,6 +205,7 @@ public class MicroserviceRepository implements EnvironmentAware {
                 log.warn("User has no permission to api " + method + " " + url);
                 return null;
             } else if (sdkException.getHttpStatus() == SC_NOT_FOUND) {
+                log.warn("Not found " + method + " " + url + "(" + ex.getMessage() + ")");
                 return null;
             }
         }

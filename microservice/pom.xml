@@ -125,12 +125,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <!-- fixing clients java - jetty version -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
@@ -151,30 +145,6 @@
             </dependency>
 
             <!-- fixing client java -->
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>agent-framework-mvc</artifactId>
-                <version>${cumulocity.clients.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>agent-framework-repositories</artifactId>
-                <version>${cumulocity.clients.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>com.nsn.cumulocity.model</groupId>
                 <artifactId>rest-representation</artifactId>
@@ -202,18 +172,6 @@
                         <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>agent-framework-device-context</artifactId>
-                <version>${cumulocity.clients.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>agent-framework-core</artifactId>
-                <version>${cumulocity.clients.version}</version>
             </dependency>
 
             <dependency>
