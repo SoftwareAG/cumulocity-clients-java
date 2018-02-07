@@ -113,8 +113,8 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
     
     @Override
-    public MeasurementCollectionRepresentation ping() throws SDKException {
-        String url = getSelfUri() + "/ping";
+    public MeasurementCollectionRepresentation getLast() throws SDKException {
+        String url = getSelfUri() + "/last";
         return restConnector.get(url, MeasurementMediaType.MEASUREMENT_COLLECTION, MeasurementCollectionRepresentation.class);
     }
 
