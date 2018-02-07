@@ -111,6 +111,11 @@ public class MeasurementApiImpl implements MeasurementApi {
     public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
           return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
+    
+    @Override
+    public MeasurementCollectionRepresentation ping() throws SDKException {
+        return restConnector.get(getSelfUri(), MeasurementMediaType.MEASUREMENT, MeasurementCollectionRepresentation.class);
+    }
 
     protected String getSelfUri() throws SDKException {
         return getMeasurementApiRepresentation().getMeasurements().getSelf();
