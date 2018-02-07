@@ -34,7 +34,7 @@ public class SubscriberBuilder<T, R> {
 
     public static final String REALTIME = "cep/realtime";
 
-    public static final <T> SubscriptionNameResolver<T> noOpNameResolver() {
+    public static final <T> SubscriptionNameResolver<T>  identityNameResolve() {
         return new SubscriptionNameResolver<T>() {
             public String apply(T input) {
                 return String.valueOf(input);
@@ -81,8 +81,8 @@ public class SubscriberBuilder<T, R> {
         return this;
     }
 
-    public SubscriberBuilder<T, R> withNoOpSubscriptionNameResolver() {
-        return withSubscriptionNameResolver(SubscriberBuilder.<T>noOpNameResolver());
+    public SubscriberBuilder<T, R> withIdentityNameResolver() {
+        return withSubscriptionNameResolver(SubscriberBuilder.<T>identityNameResolve());
     }
 
     public SubscriberBuilder<T, R> withSubscriptionNameResolver(SubscriptionNameResolver<T> subscriptionNameResolver) {

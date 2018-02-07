@@ -29,16 +29,67 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class ResponseParser {
+
+    private static abstract class MapperWrapper {
+        abstract Object write(Object object);
+        abstract <T> T read(ClientResponse response, Class<T> clazz);
+
+        static MapperWrapper nullMapper() {
+            return new MapperWrapper() {
+                Object write(Object object) {
+                    return object;
+                }
+
+                <T> T read(ClientResponse response, Class<T> clazz) {
+                    return response.getEntity(clazz);
+                }
+            };
+        }
+
+        static MapperWrapper objectMapper(final ResponseMapper mapper) {
+            return new MapperWrapper() {
+                Object write(Object object) {
+                    try {
+                        final CharSequence result = mapper.write(object);
+                        if (result != null) {
+                            return result;
+                        }
+                    } catch (final Exception ex) {
+                        log.error(ex.getMessage());
+                    }
+                    return null;
+                }
+
+                <T> T read(ClientResponse response, Class<T> clazz) {
+                    try {
+                        final T result = mapper.read(response.getEntityInputStream(), clazz);
+                        if (result != null) {
+                            return result;
+                        }
+                    } catch (final Exception ex) {
+                        log.error(ex.getMessage());
+                    }
+                    return null;
+                }
+            };
+        }
+    }
     
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
-    private final ResponseMapper mapper;
+    private final List<MapperWrapper> mappers;
 
-    public ResponseParser(ResponseMapper mapper) {
-        this.mapper = mapper;
+    public ResponseParser(final ResponseMapper mapper) {
+        this.mappers = new ArrayList<>();
+        if (mapper != null) {
+            this.mappers.add(MapperWrapper.objectMapper(mapper));
+        }
+        this.mappers.add(MapperWrapper.nullMapper());
     }
 
     public ResponseParser() {
@@ -114,30 +165,22 @@ public class ResponseParser {
     }
 
     public Object write(Object object) {
-        if (mapper != null) {
-            try {
-                final CharSequence result = mapper.write(object);
-                if (result != null) {
-                    return result;
-                }
-            } catch (final Exception ex) {
-                log.error(ex.getMessage());
+        for (MapperWrapper mapper : this.mappers) {
+            Object write = mapper.write(object);
+            if (write != null) {
+                return write;
             }
         }
-        return object;
+        return null;
     }
 
     private <T> T read(ClientResponse response, Class<T> clazz) {
-        if (mapper != null) {
-            try {
-                final T result = mapper.read(response.getEntityInputStream(), clazz);
-                if (result != null) {
-                    return result;
-                }
-            } catch (final Exception ex) {
-                log.error(ex.getMessage());
+        for (MapperWrapper mapper : this.mappers) {
+            T read = mapper.read(response, clazz);
+            if (read != null) {
+                return read;
             }
         }
-        return response.getEntity(clazz);
+        return null;
     }
 }
