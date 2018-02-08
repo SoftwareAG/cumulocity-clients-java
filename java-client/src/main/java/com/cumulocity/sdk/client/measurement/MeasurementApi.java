@@ -121,11 +121,11 @@ public interface MeasurementApi {
     void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException;
     
     /**
-     * Gets the last measurement in the platform
+     * Gets one measurement from the platform
      * This request does not increase the request count of the platform
      *
      * @return collection of measurements in first page
      * @throws SDKException if the query failed
      */
-    MeasurementCollectionRepresentation getLast() throws SDKException;
+    MeasurementCollectionRepresentation getOne() throws SDKException;
 }

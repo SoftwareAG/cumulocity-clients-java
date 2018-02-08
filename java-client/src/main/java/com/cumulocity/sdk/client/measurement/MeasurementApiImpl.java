@@ -113,8 +113,8 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
     
     @Override
-    public MeasurementCollectionRepresentation getLast() throws SDKException {
-        String url = getSelfUri() + "/last";
+    public MeasurementCollectionRepresentation getOne() throws SDKException {
+        String url = getSelfUri() + "/one";
         return restConnector.get(url, MeasurementMediaType.MEASUREMENT_COLLECTION, MeasurementCollectionRepresentation.class);
     }
 
