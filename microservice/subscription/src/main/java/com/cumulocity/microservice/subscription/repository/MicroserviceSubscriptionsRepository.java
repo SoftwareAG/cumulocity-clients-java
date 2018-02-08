@@ -8,9 +8,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.beans.ConstructorProperties;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,7 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 @Repository
 public class MicroserviceSubscriptionsRepository {
-    @java.beans.ConstructorProperties({"repository"})
+    @ConstructorProperties({"repository"})
     @Autowired
     public MicroserviceSubscriptionsRepository(MicroserviceRepository repository) {
         this.repository = repository;
@@ -30,12 +32,13 @@ public class MicroserviceSubscriptionsRepository {
         return this.currentSubscriptions;
     }
 
+    @ToString
     public static class Subscriptions {
         private final Collection<MicroserviceCredentials> all;
         private final Collection<MicroserviceCredentials> removed;
         private final Collection<MicroserviceCredentials> added;
 
-        @java.beans.ConstructorProperties({"all", "removed", "added"})
+        @ConstructorProperties({"all", "removed", "added"})
         Subscriptions(Collection<MicroserviceCredentials> all, Collection<MicroserviceCredentials> removed, Collection<MicroserviceCredentials> added) {
             this.all = all;
             this.removed = removed;

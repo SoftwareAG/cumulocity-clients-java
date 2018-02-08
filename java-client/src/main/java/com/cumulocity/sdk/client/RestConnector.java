@@ -351,7 +351,7 @@ public class RestConnector implements RestOperations {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.post(ClientResponse.class, representation);
+        return builder.post(ClientResponse.class, responseParser.write(representation));
     }
 
     private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType, T representation) {
@@ -364,7 +364,7 @@ public class RestConnector implements RestOperations {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.put(ClientResponse.class, representation);
+        return builder.put(ClientResponse.class, responseParser.write(representation));
     }
 
     @Override

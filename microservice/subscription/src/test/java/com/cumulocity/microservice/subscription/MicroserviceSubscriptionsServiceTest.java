@@ -1,5 +1,7 @@
 package com.cumulocity.microservice.subscription;
 
+import com.cumulocity.microservice.context.ContextService;
+import com.cumulocity.microservice.context.ContextServiceImpl;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -13,26 +15,29 @@ import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MicroserviceSubscriptionsServiceTest {
@@ -46,11 +51,23 @@ public class MicroserviceSubscriptionsServiceTest {
     @Mock
     private MicroserviceSubscriptionsRepository repository;
 
+    @Mock
+    private ContextServiceImpl contextService;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
     
     @InjectMocks
     private MicroserviceSubscriptionsServiceImpl subscriptionsService;
+
+    @Before
+    public void before() {
+        when(contextService.callWithinContext(anyObject(), any(Callable.class))).thenAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return invocationOnMock.callRealMethod();
+            }
+        });
+    }
 
     @Test
     public void shouldNotUpdateCurrentSubscriptionWhenEventProcessingFails() {

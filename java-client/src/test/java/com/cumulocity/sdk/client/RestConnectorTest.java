@@ -35,7 +35,9 @@ import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -85,6 +87,8 @@ public class RestConnectorTest {
         restConnector = new RestConnector(clientParameters, parser, client);
 
         when(client.resource(PATH)).thenReturn(webResource);
+
+        when(parser.write(anyObject())).thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
     @Test

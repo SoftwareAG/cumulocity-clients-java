@@ -61,6 +61,11 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
                     public <T> T read(InputStream stream, Class<T> clazz) {
                         return mapper.readValue(stream, clazz);
                     }
+
+                    @SneakyThrows
+                    public String write(Object object) {
+                        return mapper.writeValueAsString(object);
+                    }
                 });
     }
 

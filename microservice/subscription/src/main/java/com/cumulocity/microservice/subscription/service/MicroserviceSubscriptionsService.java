@@ -12,6 +12,19 @@ import java.util.Collection;
  */
 public interface MicroserviceSubscriptionsService {
 
+    String getTenant();
+
+    /**
+     * Invokes runnable in context of all tenants.
+     */
+    void runForEachTenant(Runnable runnable);
+
+    /**
+     * Invokes runnable in context of all tenants.
+     */
+    void runForTenant(String tenant, Runnable runnable);
+
+
     /**
      * Fetches microservice subscriptions and emits MicroserviceSubscriptionRemovedEvent, 
      * MicroserviceSubscriptionAddedEvent to the MicroserviceChangedListener listeners
@@ -35,5 +48,4 @@ public interface MicroserviceSubscriptionsService {
      *          <code>Optional.<MicroserviceCredentials>absent()</code> otherwise
      */
     Optional<MicroserviceCredentials> getCredentials(String tenant);
-
 }

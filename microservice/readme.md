@@ -1,1 +1,0 @@
-Note that now microservice sdk is mainly wrapper to device context sdk. It will be refactored soon to microservice sdk.
