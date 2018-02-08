@@ -35,51 +35,6 @@ import java.util.List;
 @Slf4j
 public class ResponseParser {
 
-    private static abstract class MapperWrapper {
-        abstract Object write(Object object);
-        abstract <T> T read(ClientResponse response, Class<T> clazz);
-
-        static MapperWrapper nullMapper() {
-            return new MapperWrapper() {
-                Object write(Object object) {
-                    return object;
-                }
-
-                <T> T read(ClientResponse response, Class<T> clazz) {
-                    return response.getEntity(clazz);
-                }
-            };
-        }
-
-        static MapperWrapper objectMapper(final ResponseMapper mapper) {
-            return new MapperWrapper() {
-                Object write(Object object) {
-                    try {
-                        final CharSequence result = mapper.write(object);
-                        if (result != null) {
-                            return result;
-                        }
-                    } catch (final Exception ex) {
-                        log.error(ex.getMessage());
-                    }
-                    return null;
-                }
-
-                <T> T read(ClientResponse response, Class<T> clazz) {
-                    try {
-                        final T result = mapper.read(response.getEntityInputStream(), clazz);
-                        if (result != null) {
-                            return result;
-                        }
-                    } catch (final Exception ex) {
-                        log.error(ex.getMessage());
-                    }
-                    return null;
-                }
-            };
-        }
-    }
-    
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
     private final List<MapperWrapper> mappers;
@@ -182,5 +137,51 @@ public class ResponseParser {
             }
         }
         return null;
+    }
+}
+
+@Slf4j
+abstract class MapperWrapper {
+    abstract Object write(Object object);
+    abstract <T> T read(ClientResponse response, Class<T> clazz);
+
+    static MapperWrapper nullMapper() {
+        return new MapperWrapper() {
+            Object write(Object object) {
+                return object;
+            }
+
+            <T> T read(ClientResponse response, Class<T> clazz) {
+                return response.getEntity(clazz);
+            }
+        };
+    }
+
+    static MapperWrapper objectMapper(final ResponseMapper mapper) {
+        return new MapperWrapper() {
+            Object write(Object object) {
+                try {
+                    final CharSequence result = mapper.write(object);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (final Exception ex) {
+                    log.error(ex.getMessage());
+                }
+                return null;
+            }
+
+            <T> T read(ClientResponse response, Class<T> clazz) {
+                try {
+                    final T result = mapper.read(response.getEntityInputStream(), clazz);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (final Exception ex) {
+                    log.error(ex.getMessage());
+                }
+                return null;
+            }
+        };
     }
 }

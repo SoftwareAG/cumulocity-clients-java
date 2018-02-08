@@ -208,6 +208,25 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         return absent();
     }
 
+    @Override
+    public String getTenant() {
+        return contextService.getContext().getTenant();
+    }
+
+    @Override
+    public void runForEachTenant(final Runnable runnable) {
+        for (final MicroserviceCredentials credentials : getAll()) {
+            contextService.runWithinContext(credentials, runnable);
+        }
+    }
+
+    @Override
+    public void runForTenant(String tenant, final Runnable runnable) {
+        for (final MicroserviceCredentials credentials : getCredentials(tenant).asSet()) {
+            contextService.runWithinContext(credentials, runnable);
+        }
+    }
+
     private void log(String s, MicroserviceCredentials user) {
         String newPassword = user.getPassword();
         if (newPassword != null && newPassword.length() > 3) {
