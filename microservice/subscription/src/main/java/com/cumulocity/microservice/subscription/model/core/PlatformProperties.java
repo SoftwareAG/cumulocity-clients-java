@@ -93,7 +93,7 @@ public class PlatformProperties {
         return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
     }
 
-    enum IsolationLevel {
+    public enum IsolationLevel {
         PER_TENANT, MULTI_TENANT
     }
 
