@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.subscription.service.impl;
 
+import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
@@ -41,13 +43,15 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     private final ApplicationEventPublisher eventPublisher;
     private final MicroserviceSubscriptionsRepository repository;
     private final MicroserviceMetadataRepresentation microserviceMetadataRepresentation;
+    private final ContextService<MicroserviceCredentials> contextService;
+
     private volatile Credentials processed;
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
                 public boolean apply(HasCredentials event) {
                     try {
-//                        these are two different methods
                         if (event instanceof ApplicationEvent) {
+//                            backwards compatibility - in older spring version there was no publishEvent(Object) method
                             eventPublisher.publishEvent((ApplicationEvent) event);
                         } else {
                             eventPublisher.publishEvent(event);
@@ -63,28 +67,23 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     @Autowired
     public MicroserviceSubscriptionsServiceImpl(
-            PlatformProperties properties,
-            ApplicationEventPublisher eventPublisher,
-            MicroserviceSubscriptionsRepository repository,
-            MicroserviceMetadataRepresentation microserviceMetadataRepresentation) {
+            final PlatformProperties properties,
+            final ApplicationEventPublisher eventPublisher,
+            final MicroserviceSubscriptionsRepository repository,
+            final MicroserviceMetadataRepresentation microserviceMetadataRepresentation,
+            final ContextService<MicroserviceCredentials> contextService) {
         this.properties = properties;
         this.eventPublisher = eventPublisher;
         this.repository = repository;
         this.microserviceMetadataRepresentation = microserviceMetadataRepresentation;
+        this.contextService = contextService;
     }
 
     @Synchronized
     public void listen(MicroserviceChangedListener listener) {
         this.listeners.add(listener);
         for (final MicroserviceCredentials user : repository.getCurrentSubscriptions()) {
-            try {
-                processed = user;
-                listener.apply(new MicroserviceSubscriptionAddedEvent(user));
-            } catch (final Exception ex) {
-                log.error(ex.getMessage(), ex);
-            } finally {
-                processed = null;
-            }
+            invokeAdded(user, listener);
         }
     }
 
@@ -114,12 +113,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                         log("Remove subscription: {}", user);
 
                         for (final MicroserviceChangedListener listener : listeners) {
-                            try {
-                                if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
-                                    return false;
-                                }
-                            } catch (final Exception ex) {
-                                log.error(ex.getMessage(), ex);
+                            if (!invokeRemoved(user, listener)) {
                                 return false;
                             }
                         }
@@ -132,16 +126,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                         log("Add subscription: {}", user);
 
                         for (final MicroserviceChangedListener listener : listeners) {
-                            try {
-                                processed = user;
-                                if (!listener.apply(new MicroserviceSubscriptionAddedEvent(user))) {
-                                    return false;
-                                }
-                            } catch (final Exception ex) {
-                                log.error(ex.getMessage(), ex);
+                            if (!invokeAdded(user, listener)) {
                                 return false;
-                            } finally {
-                                processed = null;
                             }
                         }
                         return true;
@@ -166,6 +152,40 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         }
     }
 
+    private boolean invokeRemoved(MicroserviceCredentials user, MicroserviceChangedListener listener) {
+        try {
+            if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
+                return false;
+            }
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
+        try {
+            processed = user;
+
+            final boolean successful = contextService.callWithinContext(user, new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    return listener.apply(new MicroserviceSubscriptionAddedEvent(user));
+                }
+            });
+
+            if (!successful) {
+                return false;
+            }
+        } catch (final Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return false;
+        } finally {
+            processed = null;
+        }
+        return true;
+    }
+
     @Override
     @Synchronized
     public Collection<MicroserviceCredentials> getAll() {
@@ -186,6 +206,25 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
         }
         return absent();
+    }
+
+    @Override
+    public String getTenant() {
+        return contextService.getContext().getTenant();
+    }
+
+    @Override
+    public void runForEachTenant(final Runnable runnable) {
+        for (final MicroserviceCredentials credentials : getAll()) {
+            contextService.runWithinContext(credentials, runnable);
+        }
+    }
+
+    @Override
+    public void runForTenant(String tenant, final Runnable runnable) {
+        for (final MicroserviceCredentials credentials : getCredentials(tenant).asSet()) {
+            contextService.runWithinContext(credentials, runnable);
+        }
     }
 
     private void log(String s, MicroserviceCredentials user) {

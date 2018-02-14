@@ -203,8 +203,11 @@ public class MicroserviceRepository implements EnvironmentAware {
             final SDKException sdkException = (SDKException) ex;
             if (sdkException.getHttpStatus() == SC_FORBIDDEN || sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
                 log.warn("User has no permission to api " + method + " " + url);
+                log.debug("Details :" ,ex );
                 return null;
             } else if (sdkException.getHttpStatus() == SC_NOT_FOUND) {
+                log.warn("Not found " + method + " " + url + "(" + ex.getMessage() + ")");
+                log.debug("Details :" ,ex );
                 return null;
             }
         }

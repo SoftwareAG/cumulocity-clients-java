@@ -19,17 +19,28 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import static com.cumulocity.sdk.client.notification.DefaultBayeuxClientProvider.createProvider;
+import com.cumulocity.sdk.client.PlatformParameters;
+import org.cometd.bayeux.client.ClientSession.Extension;
+import org.cometd.client.ext.AckExtension;
 
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.cometd.bayeux.client.ClientSession.Extension;
-import org.cometd.client.ext.AckExtension;
-
-import com.cumulocity.sdk.client.PlatformParameters;
+import static com.cumulocity.sdk.client.notification.DefaultBayeuxClientProvider.createProvider;
 
 public class SubscriberBuilder<T, R> {
+
+    public static final String NOTIFICATIONS = "cep/notifications";
+
+    public static final String REALTIME = "cep/realtime";
+
+    public static final <T> SubscriptionNameResolver<T>  identityNameResolve() {
+        return new SubscriptionNameResolver<T>() {
+            public String apply(T input) {
+                return String.valueOf(input);
+            }
+        };
+    }
 
     private String endpoint;
 
@@ -47,6 +58,14 @@ public class SubscriberBuilder<T, R> {
         return new SubscriberBuilder<T, R>();
     }
 
+    public SubscriberBuilder<T, R> withRealtimeEndpoint() {
+        return withEndpoint(REALTIME);
+    }
+
+    public SubscriberBuilder<T, R> withNotificationEndpoint() {
+        return withEndpoint(NOTIFICATIONS);
+    }
+
     public SubscriberBuilder<T, R> withEndpoint(String endpoint) {
         this.endpoint = endpoint;
         return this;
@@ -62,13 +81,17 @@ public class SubscriberBuilder<T, R> {
         return this;
     }
 
+    public SubscriberBuilder<T, R> withIdentityNameResolver() {
+        return withSubscriptionNameResolver(SubscriberBuilder.<T>identityNameResolve());
+    }
+
     public SubscriberBuilder<T, R> withSubscriptionNameResolver(SubscriptionNameResolver<T> subscriptionNameResolver) {
         this.subscriptionNameResolver = subscriptionNameResolver;
         return this;
     }
 
     public SubscriberBuilder<T, R> withMessageDeliveryAcknowlage(boolean enabled) {
-        this.messageReliability = true;
+        this.messageReliability = enabled;
         return this;
     }
 

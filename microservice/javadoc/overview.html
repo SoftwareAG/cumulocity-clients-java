@@ -58,6 +58,12 @@ Cumulocity Microservice SDK Java library provides functionalities to make micros
                         &lt;goals&gt;
                             &lt;goal&gt;package&lt;/goal&gt;
                         &lt;/goals&gt;
+                        &lt;configuration&gt;
+                            &lt;name&gt;hello-world&lt;/name&gt;
+                            &lt;encoding&gt;UTF-8&lt;/encoding&gt;
+                            &lt;rpmSkip&gt;true&lt;/rpmSkip&gt;
+                            &lt;containerSkip&gt;false&lt;/containerSkip&gt;
+                        &lt;/configuration&gt;
                     &lt;/execution&gt;
                     &lt;execution&gt;
                         &lt;id&gt;microservice-package&lt;/id&gt;
@@ -66,7 +72,10 @@ Cumulocity Microservice SDK Java library provides functionalities to make micros
                             &lt;goal&gt;microservice-package&lt;/goal&gt;
                         &lt;/goals&gt;
                         &lt;configuration&gt;
-                            &lt;manifestFile&gt;${basedir}/src/main/microservice/cumulocity.json&lt;/manifestFile&gt;
+                            &lt;name&gt;hello-world&lt;/name&gt;
+                            &lt;image&gt;hello-world&lt;/image&gt;
+                            &lt;encoding&gt;UTF-8&lt;/encoding&gt;
+                            &lt;skip&gt;false&lt;/skip&gt;
                         &lt;/configuration&gt;
                     &lt;/execution&gt;
                 &lt;/executions&gt;
@@ -76,14 +85,14 @@ Cumulocity Microservice SDK Java library provides functionalities to make micros
     </pre>
 
     <p class="indent">
-        Create the manifest file cumulocity.json with the example content in the path that is defined in maven plugin configuration.
+        Create the manifest file cumulocity.json with the example content in the project directory src/main/microservice/.
     </p>
     <pre>
     {
         "apiVersion":"1",
         "version":"@project.version@",
         "provider": {
-            "name":"... GmbH"
+            "name":"..."
         },
         "isolation":"MULTI_TENANT",
         "requiredRoles": [
@@ -97,7 +106,7 @@ Cumulocity Microservice SDK Java library provides functionalities to make micros
         Build project and create the microservice zip package using the command:
     </p>
     <pre>
-    mvn clean install -Dskip.agent.package.container=false -Dskip.microservice.package=false
+    mvn clean install
     </pre>
 
     <p class="indent">
