@@ -6,7 +6,6 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionRemovedEvent;
-import com.cumulocity.microservice.subscription.model.core.HasCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -35,7 +34,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceSubscriptionsService.class);
 
-    public interface MicroserviceChangedListener<T extends HasCredentials> {
+    public interface MicroserviceChangedListener<T> {
         boolean apply(T event) throws Exception;
     }
 
@@ -48,7 +47,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     private volatile Credentials processed;
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
-                public boolean apply(HasCredentials event) {
+                public boolean apply(Object event) {
                     try {
                         if (event instanceof ApplicationEvent) {
 //                            backwards compatibility - in older spring version there was no publishEvent(Object) method
@@ -88,10 +87,9 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     }
 
     @Synchronized
-    public <T extends HasCredentials> void listen(final Class<T> clazz, final MicroserviceChangedListener<T> listener) {
-        listen(new MicroserviceChangedListener() {
-            @Override
-            public boolean apply(HasCredentials event) throws Exception {
+    public <T> void listen(final Class<T> clazz, final MicroserviceChangedListener<T> listener) {
+        listen(new MicroserviceChangedListener<T>() {
+            public boolean apply(T event) throws Exception {
                 if (clazz.isInstance(event)) {
                     return listener.apply((T) event);
                 }
@@ -154,7 +152,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private boolean invokeRemoved(MicroserviceCredentials user, MicroserviceChangedListener listener) {
         try {
-            if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
+            if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant()))) {
                 return false;
             }
         } catch (final Exception ex) {

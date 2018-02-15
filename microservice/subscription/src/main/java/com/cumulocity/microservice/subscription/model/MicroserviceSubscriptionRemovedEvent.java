@@ -1,51 +1,44 @@
 package com.cumulocity.microservice.subscription.model;
 
-import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
-import com.cumulocity.microservice.subscription.model.core.HasCredentials;
 import org.springframework.context.ApplicationEvent;
+
+import java.util.Objects;
 
 /**
  * 
  * An event to be emitted with the microservice credentials of newly removed microservice subscription.
  *
+ * Note: extends {@link ApplicationEvent} because of spring backwards compatibility.
  */
-public class MicroserviceSubscriptionRemovedEvent extends ApplicationEvent implements HasCredentials {
-    private final MicroserviceCredentials credentials;
+public class MicroserviceSubscriptionRemovedEvent extends ApplicationEvent {
+    private final String tenant;
 
-    public MicroserviceSubscriptionRemovedEvent(MicroserviceCredentials credentials) {
-        super(credentials);
-        this.credentials = credentials;
+    public MicroserviceSubscriptionRemovedEvent(String tenant) {
+        super(tenant);
+        this.tenant = tenant;
     }
 
-    public MicroserviceCredentials getCredentials() {
-        return this.credentials;
+    public String getTenant() {
+        return this.tenant;
     }
 
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof MicroserviceSubscriptionRemovedEvent)) return false;
-        final MicroserviceSubscriptionRemovedEvent other = (MicroserviceSubscriptionRemovedEvent) o;
-        if (!other.canEqual((Object) this)) return false;
-        final Object this$credentials = this.getCredentials();
-        final Object other$credentials = other.getCredentials();
-        if (this$credentials == null ? other$credentials != null : !this$credentials.equals(other$credentials))
-            return false;
-        return true;
-    }
-
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $credentials = this.getCredentials();
-        result = result * PRIME + ($credentials == null ? 43 : $credentials.hashCode());
-        return result;
-    }
-
-    protected boolean canEqual(Object other) {
-        return other instanceof MicroserviceSubscriptionRemovedEvent;
-    }
-
+    @Override
     public String toString() {
-        return "MicroserviceSubscriptionRemovedEvent(credentials=" + this.getCredentials() + ")";
+        return "MicroserviceSubscriptionRemovedEvent{" +
+                "tenant='" + tenant + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MicroserviceSubscriptionRemovedEvent that = (MicroserviceSubscriptionRemovedEvent) o;
+        return Objects.equals(tenant, that.tenant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tenant);
     }
 }
