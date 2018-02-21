@@ -32,7 +32,7 @@ public interface RestOperations {
     <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                   Class<T> responseClass);
 
-    <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException;
+    <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException;
 
     <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType, T representation)
                                             throws SDKException;
@@ -41,9 +41,9 @@ public interface RestOperations {
                                                     throws SDKException;
 
     @SuppressWarnings("unchecked")
-    <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException;
+    <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException;
 
-    <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException;
+    <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException;
 
     <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException;
 
@@ -55,7 +55,7 @@ public interface RestOperations {
             Class<Result> clazz);
 
     @SuppressWarnings("unchecked")
-    <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException;
+    <T extends ResourceRepresentation> T put(String path, MediaType mediaType, T representation) throws SDKException;
 
     void delete(String path) throws SDKException;
 }

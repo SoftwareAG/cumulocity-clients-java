@@ -1,6 +1,8 @@
 package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
+import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
@@ -8,6 +10,7 @@ import com.cumulocity.rest.representation.application.ApplicationUserRepresentat
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import lombok.Builder;
 import lombok.Setter;
@@ -36,7 +39,7 @@ public class MicroserviceRepository implements EnvironmentAware {
 
     private final CredentialsSwitchingPlatform platform;
     private final ObjectMapper objectMapper;
-    private final MicroserviceApiRepresentation api;
+    private final ApplicationApiRepresentation api;
     private boolean register;
 
     @Override
@@ -44,11 +47,11 @@ public class MicroserviceRepository implements EnvironmentAware {
         this.environment = environment;
     }
 
-    public MicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, MicroserviceApiRepresentation api, boolean register) {
+    public MicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api, boolean register) {
         this.platform = platform;
         this.objectMapper = objectMapper;
-        this.api = api;
         this.register = register;
+        this.api = api;
     }
 
     @Builder(builderMethodName = "microserviceApi")
@@ -57,17 +60,16 @@ public class MicroserviceRepository implements EnvironmentAware {
             final String tenant,
             final String username,
             final String password,
-            ObjectMapper objectMapper,
-            CredentialsSwitchingPlatform connector,
+            final ObjectMapper objectMapper,
+            final CredentialsSwitchingPlatform connector,
             boolean register) {
-        return new MicroserviceRepository(connector != null ? connector :
-                new DefaultCredentialsSwitchingPlatform(baseUrl)
-                        .switchTo(
-                                cumulocityCredentials(username, password)
-                                        .withTenantId(tenant)
-                                        .build()
-                        ), objectMapper == null ? new ObjectMapper() : objectMapper,
-                MicroserviceApiRepresentation.of(baseUrl), register);
+
+        final ObjectMapper nonNullObjectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
+        final CumulocityCredentials credentials = cumulocityCredentials(username, password).withTenantId(tenant).build();
+        final CredentialsSwitchingPlatform nonNullConnector = connector != null ? connector : new DefaultCredentialsSwitchingPlatform(baseUrl).switchTo(credentials);
+        final ApplicationApiRepresentation api = ApplicationApiRepresentation.of(baseUrl);
+
+        return new MicroserviceRepository(nonNullConnector, nonNullObjectMapper, api, register);
     }
 
     public ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata) {
@@ -102,8 +104,8 @@ public class MicroserviceRepository implements EnvironmentAware {
             log.info("Self registration procedure activated");
             try {
                 log.info("Attempt to self register with name {}", applicationName);
-                application = applicationApi().getByName(applicationName);
-                if (application == null) {
+                final Optional<ApplicationRepresentation> existingApplication = applicationApi().getByName(applicationName);
+                if (!existingApplication.isPresent()) {
                     application = new ApplicationRepresentation();
                     application.setName(applicationName);
                     application.setKey(applicationName + "-application-key");
@@ -111,6 +113,7 @@ public class MicroserviceRepository implements EnvironmentAware {
                     log.info("Application not registered creating {}", application);
                     application = applicationApi().create(application);
                 } else {
+                    application = existingApplication.get();
                     log.info("Application already registered");
                 }
                 platform.switchTo(getBoostrapUser(application));

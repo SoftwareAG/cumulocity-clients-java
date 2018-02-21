@@ -1,19 +1,22 @@
-package com.cumulocity.microservice.subscription.repository;
+package com.cumulocity.microservice.subscription.repository.application;
 
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.google.common.base.Supplier;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import org.springframework.util.StringUtils;
 
 import static java.lang.String.valueOf;
 
 @AllArgsConstructor
 @Builder(builderMethodName = "microserviceApiRepresentation")
 @EqualsAndHashCode(callSuper = true)
-public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentation {
+public class ApplicationApiRepresentation extends AbstractExtensibleRepresentation {
     public final static String APPLICATION_ID = "{{applicationId}}";
     public final static String APPLICATION_NAME = "{{applicationName}}";
 
-    public static MicroserviceApiRepresentation of(Supplier<String> baseUrl) {
+    public static ApplicationApiRepresentation of(Supplier<String> baseUrl) {
        return  microserviceApiRepresentation()
                 .baseUrl(baseUrl)
                 .collectionUrl("/application/applications")
@@ -60,8 +63,11 @@ public class MicroserviceApiRepresentation extends AbstractExtensibleRepresentat
         return url(bootstrapUserUrl, null, id);
     }
 
-
     private String url(String url, String applicationName, String applicationId) {
-        return baseUrl.get() + url.replace(APPLICATION_NAME, valueOf(applicationName)).replace(APPLICATION_ID, valueOf(applicationId));
+        final String prefix = StringUtils.trimTrailingCharacter(baseUrl.get(), '/');
+
+        String suffix = StringUtils.trimLeadingCharacter(url.replace(APPLICATION_NAME, valueOf(applicationName)).replace(APPLICATION_ID, valueOf(applicationId)), '/');
+
+        return prefix + "/" + suffix;
     }
 }
