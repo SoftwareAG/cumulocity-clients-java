@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
@@ -60,6 +61,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
     }
 
     @Bean
+    @TenantScope
     @ConditionalOnMissingBean
     public ApplicationApi applicationApi(RestOperations restOperations) {
         return new ApplicationApi(restOperations);

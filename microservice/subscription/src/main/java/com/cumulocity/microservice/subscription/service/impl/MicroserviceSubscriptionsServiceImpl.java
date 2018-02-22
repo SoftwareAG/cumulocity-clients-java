@@ -156,38 +156,34 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         }
     }
 
-    private boolean invokeRemoved(MicroserviceCredentials user, MicroserviceChangedListener listener) {
+    private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
-            if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant()))) {
-                return false;
-            }
+            return contextService.callWithinContext(user, new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    return listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant()));
+                }
+            });
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
         }
-        return true;
     }
 
     private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
             processed = user;
 
-            final boolean successful = contextService.callWithinContext(user, new Callable<Boolean>() {
+            return contextService.callWithinContext(user, new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     return listener.apply(new MicroserviceSubscriptionAddedEvent(user));
                 }
             });
-
-            if (!successful) {
-                return false;
-            }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
         } finally {
             processed = null;
         }
-        return true;
     }
 
     @Override
