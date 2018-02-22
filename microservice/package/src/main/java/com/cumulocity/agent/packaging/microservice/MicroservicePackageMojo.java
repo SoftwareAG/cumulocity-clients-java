@@ -1,8 +1,6 @@
 package com.cumulocity.agent.packaging.microservice;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -17,7 +15,6 @@ import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
@@ -26,7 +23,6 @@ import java.util.zip.ZipOutputStream;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.Files.asByteSource;
 import static java.nio.file.Files.createDirectories;
-import static org.apache.commons.io.IOUtils.copyLarge;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 @Mojo(name = "microservice-package", defaultPhase = PACKAGE)
@@ -43,7 +39,7 @@ public class MicroservicePackageMojo extends AbstractMojo {
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession mavenSession;
 
-    @Parameter(defaultValue = "true", property = "skip.microservice.package")
+    @Parameter(defaultValue = "false", property = "skip.microservice.package")
     private boolean skip;
     @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     private String image;

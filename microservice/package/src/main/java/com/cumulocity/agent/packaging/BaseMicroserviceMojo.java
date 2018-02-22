@@ -73,10 +73,10 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip.agent.package")
     protected boolean skip;
 
-    @Parameter(defaultValue = "false", property = "skip.agent.package.rpm")
+    @Parameter(defaultValue = "true", property = "skip.agent.package.rpm")
     protected boolean rpmSkip;
 
-    @Parameter(defaultValue = "true", property = "skip.agent.package.container")
+    @Parameter(defaultValue = "false", property = "skip.agent.package.container")
     protected boolean containerSkip;
 
     @Parameter(defaultValue = "${maven.compiler.target}")
