@@ -19,11 +19,6 @@ public class SecurityExpressionServiceImpl implements SecurityExpressionService 
 
     @Override
     public boolean isFeatureEnabled(String featureName) {
-        if (!featureName.startsWith("feature-")) {
-//            todo review: is the assumption that every feature name will start with "feature-" is correct?
-            return applicationApi.getByName("feature-" + featureName).isPresent();
-        }
-
         return applicationApi.getByName(featureName).isPresent();
     }
 

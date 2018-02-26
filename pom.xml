@@ -32,28 +32,6 @@
 		<module>java-client-services</module>
 	</modules>
 
-	<profiles>
-		<profile>
-			<id>development</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-
-			<modules>
-				<module>device-capability-model</module>
-				<module>java-client</module>
-				<module>java-me-client</module>
-				<module>java-me-client-test</module>
-				<module>java-me-maven-plugin</module>
-				<module>java-me-smartrest</module>
-				<module>java-email-client</module>
-				<module>java-sms-client</module>
-				<module>java-client-services</module>
-				<module>microservice</module>
-			</modules>
-		</profile>
-	</profiles>
-
 	<properties>
 		<cumulocity.model.version>9.1.0-SNAPSHOT</cumulocity.model.version>
 		<cumulocity.shared-components.version>9.1.0-SNAPSHOT</cumulocity.shared-components.version>
