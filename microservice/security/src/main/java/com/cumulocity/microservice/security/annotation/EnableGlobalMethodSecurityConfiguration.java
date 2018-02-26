@@ -1,7 +1,8 @@
 package com.cumulocity.microservice.security.annotation;
 
-import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
+import com.cumulocity.microservice.security.service.SecurityExpressionService;
 import lombok.Data;
+import lombok.experimental.Delegate;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -14,21 +15,18 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Objects;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true, securedEnabled = true)
 public class EnableGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
-    @Autowired(required = false)
-    private ApplicationApi applicationApi;
+    @Autowired
+    private SecurityExpressionService expressionService;
 
     @Override
     protected MethodSecurityExpressionHandler createExpressionHandler() {
-        if (applicationApi != null) {
-            return new CustomMethodSecurityExpressionHandler(applicationApi);
+        if (expressionService != null) {
+            return new CustomMethodSecurityExpressionHandler(expressionService);
         }
         return super.createExpressionHandler();
     }
@@ -36,14 +34,14 @@ public class EnableGlobalMethodSecurityConfiguration extends GlobalMethodSecurit
     @Data
     public static class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
         private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
-        private final ApplicationApi applicationApi;
+        private final SecurityExpressionService expressionService;
 
         @Override
         protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
-            CustomMethodSecurityExpressionRoot root = new CustomMethodSecurityExpressionRoot(authentication, applicationApi);
+            CustomMethodSecurityExpressionRoot root = new CustomMethodSecurityExpressionRoot(authentication, expressionService);
             root.setTarget(invocation.getThis());
             root.setPermissionEvaluator(getPermissionEvaluator());
-            root.setTrustResolver(this.trustResolver);
+            root.setTrustResolver(getTrustResolver());
             root.setRoleHierarchy(getRoleHierarchy());
             return root;
         }
@@ -52,33 +50,15 @@ public class EnableGlobalMethodSecurityConfiguration extends GlobalMethodSecurit
     @Data
     public static class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations {
 
-        private final ApplicationApi applicationApi;
+        @Delegate
+        private final SecurityExpressionService expressionService;
         private Object filterObject;
         private Object returnObject;
         private Object target;
 
-        public CustomMethodSecurityExpressionRoot(Authentication authentication, ApplicationApi applicationApi) {
+        public CustomMethodSecurityExpressionRoot(Authentication authentication, SecurityExpressionService expressionService) {
             super(authentication);
-            this.applicationApi = applicationApi;
-        }
-
-        public boolean isFeatureEnabled(String featureName) {
-            if (!featureName.startsWith("feature-")) {
-//                todo review: is the assumption that every feature name will start with "feature-" is correct?
-                return applicationApi.getByName("feature-" + featureName).isPresent();
-            }
-
-            return applicationApi.getByName(featureName).isPresent();
-        }
-
-        public boolean isServiceUser(String service) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof UserDetails) {
-                final String username = ((UserDetails) principal).getUsername();
-
-                return Objects.equals(username, "service_" + service);
-            }
-            return false;
+            this.expressionService = expressionService;
         }
 
         public Object getThis() {

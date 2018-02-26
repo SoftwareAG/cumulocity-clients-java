@@ -1,5 +1,7 @@
 package com.cumulocity.microservice.security.annotation;
 
+import com.cumulocity.microservice.security.service.SecurityExpressionService;
+import com.cumulocity.microservice.security.service.impl.SecurityExpressionServiceImpl;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.google.common.base.Optional;
@@ -49,6 +51,11 @@ public class EnableGlobalMethodSecurityConfigurationTest {
                     return true;
                 }
             };
+        }
+
+        @Bean
+        public SecurityExpressionService securityExpressionService(ApplicationApi applications) {
+            return new SecurityExpressionServiceImpl(applications);
         }
     }
 
