@@ -17,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 @Configuration
 @ConditionalOnBean({
         PlatformParameters.class,
-        EnableMicroserviceSecurityConfiguration.class,
+        EnableWebSecurityConfiguration.class,
 })
 @ConditionalOnMissingBean({UserDetailsService.class, RoleService.class})
 public class UserDetailsServiceConfiguration {

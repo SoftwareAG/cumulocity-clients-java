@@ -46,6 +46,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     private final ContextService<MicroserviceCredentials> contextService;
 
     private volatile Credentials processed;
+    private volatile boolean subscribing = false;
+
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
                 public boolean apply(HasCredentials event) {
@@ -104,6 +106,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     @Synchronized
     public void subscribe() {
         try {
+            subscribing = true;
+
             final Optional<ApplicationRepresentation> application = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
             if (application.isPresent()) {
                 final MicroserviceSubscriptionsRepository.Subscriptions subscriptions = repository.retrieveSubscriptions(application.get().getId());
@@ -149,41 +153,40 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
         } catch (Throwable e) {
             log.error("Error while reacting on microservice subscription", e);
+        } finally {
+            subscribing = false;
         }
     }
 
+    private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
     private boolean invokeRemoved(MicroserviceCredentials user, MicroserviceChangedListener listener) {
         try {
-            if (!listener.apply(new MicroserviceSubscriptionRemovedEvent(user))) {
-                return false;
-            }
+            return contextService.callWithinContext(user, new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    return listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant()));
+                }
+            });
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
         }
-        return true;
     }
 
     private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
             processed = user;
 
-            final boolean successful = contextService.callWithinContext(user, new Callable<Boolean>() {
+            return contextService.callWithinContext(user, new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     return listener.apply(new MicroserviceSubscriptionAddedEvent(user));
                 }
             });
-
-            if (!successful) {
-                return false;
-            }
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
         } finally {
             processed = null;
         }
-        return true;
     }
 
     @Override
@@ -200,11 +203,23 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                 return of(subscription);
             }
         }
+
         if (processed != null) {
             if (processed.getTenant().equals(tenant)) {
                 return Optional.of((MicroserviceCredentials) processed);
             }
         }
+
+        if (!subscribing) {
+            subscribe();
+
+            for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
+                if (subscription.getTenant().equals(tenant)) {
+                    return of(subscription);
+                }
+            }
+        }
+
         return absent();
     }
 
@@ -222,9 +237,20 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     @Override
     public void runForTenant(String tenant, final Runnable runnable) {
+        callForTenant(tenant, new Callable<Void>() {
+            public Void call() {
+                runnable.run();
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public <T> T callForTenant(String tenant, Callable<T> runnable) {
         for (final MicroserviceCredentials credentials : getCredentials(tenant).asSet()) {
-            contextService.runWithinContext(credentials, runnable);
+            return contextService.callWithinContext(credentials, runnable);
         }
+        return null;
     }
 
     private void log(String s, MicroserviceCredentials user) {

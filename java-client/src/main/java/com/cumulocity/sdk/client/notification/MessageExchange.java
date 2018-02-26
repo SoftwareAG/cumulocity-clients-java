@@ -246,7 +246,8 @@ class MessageExchange {
         }
 
         private void onConnectionFailed(Exception e) {
-            log.debug("connection failed");
+            log.error("connection failed " + e.getMessage(), e);
+
             unauthorizedConnectionWatcher.resetCounter();
             listener.onConnectException(e, messages);
         }
@@ -272,6 +273,7 @@ class MessageExchange {
                 }
             } catch (Exception e) {
                 log.error("connection failed " + e.getMessage(), e);
+
                 unauthorizedConnectionWatcher.resetCounter();
                 listener.onConnectException(e, messages);
                 onFinish();

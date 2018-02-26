@@ -32,43 +32,24 @@ public class EnableContextSupportConfiguration {
         return new ContextServiceImpl<>(UserCredentials.class);
     }
 
-//    @Bean
-//    public <T> ContextService<T> contextService(InjectionPoint injectionPoint) {
-//        final Class clazz = getClassParameter(injectionPoint);
-//        return new ContextServiceImpl<T>(clazz);
-//    }
-
-//    public static Class getClassParameter(InjectionPoint injectionPoint) {
-//        final Field field = injectionPoint.getField();
-//        if (field != null) {
-//            final ParameterizedType genericParameterType = (ParameterizedType) field.getGenericType();
-//            return (Class) genericParameterType.getActualTypeArguments()[0];
-//        }
-//        final MethodParameter methodParameter = injectionPoint.getMethodParameter();
-//        if (methodParameter != null) {
-//            final ParameterizedType genericParameterType = (ParameterizedType) methodParameter.getGenericParameterType();
-//            return (Class) genericParameterType.getActualTypeArguments()[0];
-//        }
-//        return null;
-//    }
-
     @Bean
     public CustomScopeConfigurer contextScopeConfigurer(
             final ContextService<MicroserviceCredentials> microserviceContextService,
-            final ContextService<UserCredentials> deviceContextService) {
+            final ContextService<UserCredentials> userContextService) {
         final CustomScopeConfigurer configurer = new CustomScopeConfigurer();
 
+//        todo implement scope clearing after SubscriptionRemovedEvent
         configurer.setScopes(ImmutableMap.<String, Object> builder()
                 .put(USER_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
-                        final UserCredentials context = deviceContextService.getContext();
+                        final UserCredentials context = userContextService.getContext();
                         return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," + context.getTfaToken();
                     }
                 })
                 .put(TENANT_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
                         final MicroserviceCredentials context = microserviceContextService.getContext();
-                        return context.getTenant();
+                        return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," + context.getTfaToken();
                     }
                 })
                 .build()

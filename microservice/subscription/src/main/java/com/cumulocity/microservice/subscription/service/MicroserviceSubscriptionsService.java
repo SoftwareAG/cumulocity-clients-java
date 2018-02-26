@@ -4,6 +4,7 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.google.common.base.Optional;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 /**
  * 
@@ -24,6 +25,10 @@ public interface MicroserviceSubscriptionsService {
      */
     void runForTenant(String tenant, Runnable runnable);
 
+    /**
+     * Invokes runnable in context of subscribed tenant.
+     */
+    <T> T callForTenant(String tenant, Callable<T> runnable);
 
     /**
      * Fetches microservice subscriptions and emits MicroserviceSubscriptionRemovedEvent, 

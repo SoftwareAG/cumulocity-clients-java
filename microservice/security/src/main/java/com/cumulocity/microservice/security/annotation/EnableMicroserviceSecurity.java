@@ -11,6 +11,9 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(EnableMicroserviceSecurityConfiguration.class)
+@Import({
+        EnableWebSecurityConfiguration.class,
+        EnableGlobalMethodSecurityConfiguration.class
+})
 public @interface EnableMicroserviceSecurity {
 }
