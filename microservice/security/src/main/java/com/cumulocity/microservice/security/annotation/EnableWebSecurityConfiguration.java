@@ -3,12 +3,10 @@ package com.cumulocity.microservice.security.annotation;
 
 import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,10 +17,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Order(99)
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = PreAuthenticateServletFilter.class)
-@EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true, securedEnabled = true)
-public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(EnableMicroserviceSecurityConfiguration.class);
     @Autowired
     private UserDetailsService userDetailsService;
 

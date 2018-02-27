@@ -1,12 +1,15 @@
 package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
+import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
+import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -55,5 +58,12 @@ public class EnableMicroserviceSubscriptionConfiguration {
     @ConditionalOnMissingBean
     public MicroserviceMetadataRepresentation metadata() {
         return new MicroserviceMetadataRepresentation();
+    }
+
+    @Bean
+    @TenantScope
+    @ConditionalOnMissingBean
+    public ApplicationApi applicationApi(RestOperations restOperations) {
+        return new ApplicationApi(restOperations);
     }
 }
