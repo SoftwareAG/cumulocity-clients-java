@@ -142,7 +142,7 @@ public class MicroserviceRepository implements EnvironmentAware {
     private class NoSelfRegistration implements MicroserviceRepository.SelfRegistration {
         @Override
         public ApplicationRepresentation register(String appliation, MicroserviceMetadataRepresentation representation) {
-            log.info("Self registration procedure not active");
+            log.debug("Self registration procedure not active");
             final ApplicationRepresentation application = getApplication();
             if (application == null) {
                 throw new SDKException("No microservice with name " + appliation + " registered. Microservice must be configured before running the SDK, please contact administrator");
