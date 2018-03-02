@@ -35,7 +35,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceSubscriptionsService.class);
 
-    public interface MicroserviceChangedListener<T extends HasCredentials> {
+    public interface MicroserviceChangedListener<T> {
         boolean apply(T event) throws Exception;
     }
 
@@ -50,7 +50,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
-                public boolean apply(HasCredentials event) {
+                public boolean apply(Object event) {
                     try {
                         if (event instanceof ApplicationEvent) {
 //                            backwards compatibility - in older spring version there was no publishEvent(Object) method
@@ -93,7 +93,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     public <T extends HasCredentials> void listen(final Class<T> clazz, final MicroserviceChangedListener<T> listener) {
         listen(new MicroserviceChangedListener() {
             @Override
-            public boolean apply(HasCredentials event) throws Exception {
+            public boolean apply(Object event) throws Exception {
                 if (clazz.isInstance(event)) {
                     return listener.apply((T) event);
                 }
@@ -159,7 +159,6 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     }
 
     private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
-    private boolean invokeRemoved(MicroserviceCredentials user, MicroserviceChangedListener listener) {
         try {
             return contextService.callWithinContext(user, new Callable<Boolean>() {
                 public Boolean call() throws Exception {
