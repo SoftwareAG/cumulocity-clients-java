@@ -12,15 +12,18 @@ import java.util.Collection;
  */
 public interface MicroserviceSubscriptionsService {
 
+    /**
+     * Returns current tenant.
+     */
     String getTenant();
 
     /**
-     * Invokes runnable in context of all tenants.
+     * Invokes runnable in context of all subscribed tenants.
      */
     void runForEachTenant(Runnable runnable);
 
     /**
-     * Invokes runnable in context of all tenants.
+     * Invokes runnable in context of subscribed tenant.
      */
     void runForTenant(String tenant, Runnable runnable);
 

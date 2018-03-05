@@ -16,7 +16,7 @@ import java.beans.ConstructorProperties;
 import java.util.Collection;
 import java.util.List;
 
-import static com.google.common.base.Optional.*;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -61,18 +61,6 @@ public class MicroserviceSubscriptionsRepository {
             return this.added;
         }
 
-        public Subscriptions withAll(Collection<MicroserviceCredentials> all) {
-            return this.all == all ? this : new Subscriptions(all, this.removed, this.added);
-        }
-
-        public Subscriptions withRemoved(Collection<MicroserviceCredentials> removed) {
-            return this.removed == removed ? this : new Subscriptions(this.all, removed, this.added);
-        }
-
-        public Subscriptions withAdded(Collection<MicroserviceCredentials> added) {
-            return this.added == added ? this : new Subscriptions(this.all, this.removed, added);
-        }
-
         public static class SubscriptionsBuilder {
             private Collection<MicroserviceCredentials> all;
             private Collection<MicroserviceCredentials> removed;
@@ -98,10 +86,6 @@ public class MicroserviceSubscriptionsRepository {
 
             public Subscriptions build() {
                 return new Subscriptions(all, removed, added);
-            }
-
-            public String toString() {
-                return "MicroserviceSubscriptionsRepository.Subscriptions.SubscriptionsBuilder(all=" + this.all + ", removed=" + this.removed + ", added=" + this.added + ")";
             }
         }
     }
@@ -135,7 +119,7 @@ public class MicroserviceSubscriptionsRepository {
                 .build();
     }
 
-    public Collection<MicroserviceCredentials> subtract(Collection<MicroserviceCredentials> a, final Collection<MicroserviceCredentials> b) {
+    private Collection<MicroserviceCredentials> subtract(Collection<MicroserviceCredentials> a, final Collection<MicroserviceCredentials> b) {
         return FluentIterable.from(a).filter(new Predicate<MicroserviceCredentials>() {
             @Override
             public boolean apply(MicroserviceCredentials credentials) {
@@ -149,14 +133,5 @@ public class MicroserviceSubscriptionsRepository {
 
     public void updateCurrentSubscriptions(final Collection<MicroserviceCredentials> subscriptions) {
         currentSubscriptions = subscriptions;
-    }
-
-    public Optional<MicroserviceCredentials> getCredentials(String tenant) {
-        for (final MicroserviceCredentials subscription : currentSubscriptions) {
-            if (subscription.getTenant().equals(tenant)) {
-                return of(subscription);
-            }
-        }
-        return absent();
     }
 }
