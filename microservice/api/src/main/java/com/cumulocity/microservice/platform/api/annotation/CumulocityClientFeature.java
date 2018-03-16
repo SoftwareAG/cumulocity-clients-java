@@ -17,6 +17,7 @@ import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.user.UserApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -161,5 +162,18 @@ public class CumulocityClientFeature {
     @TenantScope
     public UserApi userApi(Platform platform) throws SDKException {
         return platform.getUserApi();
+    }
+
+    @Bean
+    @UserScope
+    public TenantOptionApi userTenantOptionApi(@Qualifier("userPlatform") Platform userPlatform) throws SDKException {
+        return userPlatform.getTenantOptionApi();
+    }
+
+    @Bean
+    @TenantScope
+    @Primary
+    public TenantOptionApi tenantOptionApi(Platform platform) throws SDKException {
+        return platform.getTenantOptionApi();
     }
 }
