@@ -1,6 +1,6 @@
 package com.cumulocity.microservice.subscription.repository;
 
-import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
@@ -64,7 +64,7 @@ public class MicroserviceRepositoryTest {
     FakeCredentialsSwitchingPlatform platform = new FakeCredentialsSwitchingPlatform();
 
 
-    MicroserviceApiRepresentation api = MicroserviceApiRepresentation.of(Suppliers.ofInstance(BASE_URL));
+    ApplicationApiRepresentation api = ApplicationApiRepresentation.of(Suppliers.ofInstance(BASE_URL));
 
     @Before
     public void setup() {
@@ -395,7 +395,7 @@ public class MicroserviceRepositoryTest {
                 }
 
                 @Override
-                public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+                public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException {
                     pushRequest(Request.builder()
                             .path(path)
                             .mediaType(mediaType)
@@ -434,7 +434,7 @@ public class MicroserviceRepositoryTest {
                 }
 
                 @Override
-                public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+                public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
                     pushRequest(Request.builder()
                             .path(path)
                             .mediaType(mediaType)
@@ -454,7 +454,7 @@ public class MicroserviceRepositoryTest {
                 }
 
                 @Override
-                public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+                public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
                     pushRequest(Request.builder()
                             .path(path)
                             .mediaType(mediaType)
@@ -499,7 +499,7 @@ public class MicroserviceRepositoryTest {
                 }
 
                 @Override
-                public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+                public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, T representation) throws SDKException {
                     pushRequest(Request.builder()
                             .path(path)
                             .mediaType(mediaType)

@@ -222,11 +222,9 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
-    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
-
+    public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
-
     }
 
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response, int responseCode)
@@ -264,13 +262,13 @@ public class RestConnector implements RestOperations {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
     }
 
     @Override
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
@@ -299,7 +297,7 @@ public class RestConnector implements RestOperations {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, OK.getStatusCode());
@@ -342,7 +340,7 @@ public class RestConnector implements RestOperations {
         return responseParser.parse(response, responseCode, type);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType, CumulocityMediaType accept, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, MediaType contentType, MediaType accept, T representation) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(accept);
@@ -354,7 +352,7 @@ public class RestConnector implements RestOperations {
         return builder.post(ClientResponse.class, responseParser.write(representation));
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, MediaType mediaType, T representation) {
 
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {

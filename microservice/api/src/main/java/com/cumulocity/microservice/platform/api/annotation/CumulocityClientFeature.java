@@ -91,6 +91,13 @@ public class CumulocityClientFeature {
     }
 
     @Bean
+    @UserScope
+    public InventoryApi userInventoryApi(@Qualifier("userPlatform") Platform userPlatform) throws SDKException {
+        return userPlatform.getInventoryApi();
+    }
+
+    @Bean
+    @Primary
     @TenantScope
     public InventoryApi inventoryApi(Platform platform) throws SDKException {
         return platform.getInventoryApi();

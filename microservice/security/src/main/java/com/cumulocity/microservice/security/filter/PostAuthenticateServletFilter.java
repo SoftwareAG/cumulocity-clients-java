@@ -7,6 +7,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static com.google.common.collect.FluentIterable.from;
 
+@Slf4j
 @Component
 public class PostAuthenticateServletFilter extends OncePerRequestFilter {
     @Autowired(required = false)
@@ -39,6 +41,10 @@ public class PostAuthenticateServletFilter extends OncePerRequestFilter {
                 }
             }
         };
+        if (contextService == null) {
+            log.warn("Context service not available.");
+        }
+
         if (contextService != null && credentialsResolvers != null) {
             final ImmutableList<Credentials> credentials = from(credentialsResolvers)
                     .filter(new Predicate<PostAuthorizationContextProvider<SecurityContext>>() {
