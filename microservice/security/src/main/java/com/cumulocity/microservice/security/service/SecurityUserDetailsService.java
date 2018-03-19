@@ -27,6 +27,7 @@ public class SecurityUserDetailsService implements UserDetailsService {
         return SecurityUserDetails.activeUser(roleService.getUserRoles())
                 .username(platformParameters.getUser())
                 .password(platformParameters.getPassword())
+                .tenant(platformParameters.getTenantId())
                 .build();
     }
 }
