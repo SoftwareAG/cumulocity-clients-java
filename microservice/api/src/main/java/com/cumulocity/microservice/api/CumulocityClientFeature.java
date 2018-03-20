@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.platform.api.annotation;
+package com.cumulocity.microservice.api;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
