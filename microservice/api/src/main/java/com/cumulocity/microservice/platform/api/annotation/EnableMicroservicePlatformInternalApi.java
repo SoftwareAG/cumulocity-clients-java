@@ -5,14 +5,15 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * 
- * Indicates that usage of internal Cumulocity APIs are enabled.
- * Internal Cumulocity API requests do not increase the request counts unlike regular Cumulocity API requests.
+ *  Prepares environment to work with platform api. Injects basic beans for comuunication with the platform.
+ *
+ *  @deprecated Use @EnableMicroservicePlatformApi
  *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import(EnableMicroservicePlatformInternalApiConfiguration.class)
+@Deprecated
 public @interface EnableMicroservicePlatformInternalApi {
 }
