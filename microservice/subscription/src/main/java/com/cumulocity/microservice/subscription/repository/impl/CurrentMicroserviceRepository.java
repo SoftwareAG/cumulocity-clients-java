@@ -45,10 +45,10 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         log.debug("Self registration procedure not activated for application {} with {}", applicationName, metadata);
         final ApplicationRepresentation application = getApplication();
         if (application == null) {
-            throw new SDKException("No microservice with name " + applicationName + " registered. Microservice must be configured before running the SDK, please contact administrator");
+            throw new SDKException("Failed to load current microservice. Microservice \"" + applicationName + "\" must be configured before running the SDK, please contact administrator");
         } else {
             if (!MICROSERVICE.equals(application.getType())) {
-                throw new SDKException("Cannot register application. There is another application with name \"" + application.getName() + "\"");
+                throw new SDKException("Failed to load current microservice. There is another application with name \"" + application.getName() + "\"");
             }
             return application;
         }
