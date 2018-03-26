@@ -50,6 +50,11 @@ public class CurrentMicroserviceRepositoryTest {
 
     @Test
     public void shouldFailWhenNoCurrentApplication() {
+        ApplicationRepresentation notRegistered = applicationRepresentation()
+                .type(MICROSERVICE)
+                .name("cep")
+                .build();
+        platform.switchTo(asCredentials(platform.bootstrapUserFor(notRegistered)));
 
         Throwable exception = catchThrowable(new ThrowingCallable() {
             @Override
@@ -60,7 +65,7 @@ public class CurrentMicroserviceRepositoryTest {
 
         assertThat(exception)
                 .isInstanceOf(SDKException.class)
-                .hasMessageContaining("No microservice with name cep registered.");
+                .hasMessageContaining("Failed to load current microservice.");
     }
 
     @Test
