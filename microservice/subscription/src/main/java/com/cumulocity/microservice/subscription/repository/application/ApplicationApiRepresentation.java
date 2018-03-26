@@ -10,14 +10,14 @@ import org.springframework.util.StringUtils;
 import static java.lang.String.valueOf;
 
 @AllArgsConstructor
-@Builder(builderMethodName = "microserviceApiRepresentation")
+@Builder(builderMethodName = "applicationApiRepresentation")
 @EqualsAndHashCode(callSuper = true)
 public class ApplicationApiRepresentation extends AbstractExtensibleRepresentation {
     public final static String APPLICATION_ID = "{{applicationId}}";
     public final static String APPLICATION_NAME = "{{applicationName}}";
 
     public static ApplicationApiRepresentation of(Supplier<String> baseUrl) {
-       return  microserviceApiRepresentation()
+        return applicationApiRepresentation()
                 .baseUrl(baseUrl)
                 .collectionUrl("/application/applications")
                 .currentApplicationSubscriptions("/application/currentApplication/subscriptions")
@@ -25,8 +25,8 @@ public class ApplicationApiRepresentation extends AbstractExtensibleRepresentati
                 .findByNameUrl("/application/applicationsByName/" + APPLICATION_NAME)
                 .getById("/application/applications/" + APPLICATION_ID)
                 .bootstrapUserUrl("/application/applications/" + APPLICATION_ID + "/bootstrapUser")
+                .applicationSubscriptions("/application/applications/" + APPLICATION_ID + "/subscriptions")
                 .build();
-
     }
 
     private final Supplier<String> baseUrl;
@@ -37,6 +37,7 @@ public class ApplicationApiRepresentation extends AbstractExtensibleRepresentati
     private final String getById;
     private final String findByNameUrl;
     private final String bootstrapUserUrl;
+    private final String applicationSubscriptions;
 
     public String getCollectionUrl() {
         return url(collectionUrl, null, null);
@@ -54,6 +55,9 @@ public class ApplicationApiRepresentation extends AbstractExtensibleRepresentati
         return url(currentApplicationSubscriptions, null, null);
     }
 
+    public String getApplicationSubscriptions(String applicationId) {
+        return url(applicationSubscriptions, null, applicationId);
+    }
 
     public String getByIdUrl(String id) {
         return url(getById, null, id);
