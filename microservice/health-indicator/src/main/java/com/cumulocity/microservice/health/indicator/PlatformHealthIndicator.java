@@ -4,10 +4,7 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
-import com.cumulocity.sdk.client.Platform;
-import com.cumulocity.sdk.client.PlatformBuilder;
-import com.cumulocity.sdk.client.ResponseMapper;
-import com.cumulocity.sdk.client.RestOperations;
+import com.cumulocity.sdk.client.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -15,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -25,26 +24,45 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "management.health.platform.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class PlatformHealthIndicator extends AbstractHealthIndicator {
 
     private final ContextService<MicroserviceCredentials> microservice;
     private final PlatformProperties properties;
+    private final PlatformHealthIndicatorProperties configuration;
 
     @Override
     @SuppressWarnings("unchecked")
     protected void doHealthCheck(Health.Builder builder) {
         try (final Platform platform = platform().build()) {
             final RestOperations rest = platform.rest();
-            final Map<String, Object> health = rest.get("/tenant/health", APPLICATION_JSON_TYPE, Map.class);
+            try {
+                final Map<String, Object> health = rest.get(configuration.getPath(), APPLICATION_JSON_TYPE, Map.class);
 
-            builder.status(new Status(String.valueOf(health.get("status"))));
-            for (final Entry<String, Object> entry : health.entrySet()) {
-//                tenant health endpoint contains detailed information about database connections
+                if (health.containsKey("status") && configuration.getDetails()) {
+                    builder.status(new Status(String.valueOf(health.get("status"))));
+                    // tenant health endpoint contains detailed information about database connections
+                    assignDetails(builder, health);
+                }
+
+            } catch (SDKException ex) {
+                if (ex.getHttpStatus() == HttpStatus.FORBIDDEN.value()) {
+                    builder.unknown().withDetail("message", ex.getMessage());
+                } else {
+                    builder.down(ex);
+                }
+            }
+            log.debug("health {}", builder.build());
+        }
+    }
+
+    private void assignDetails(Health.Builder builder, Map<String, Object> health) {
+
+        for (final Entry<String, Object> entry : health.entrySet()) {
+            if (!entry.getKey().equals("status")) {
                 builder.withDetail(entry.getKey(), entry.getValue());
             }
-
-            log.debug("health {}", builder.build());
         }
     }
 
