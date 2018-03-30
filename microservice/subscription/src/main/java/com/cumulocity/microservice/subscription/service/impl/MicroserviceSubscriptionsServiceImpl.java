@@ -138,6 +138,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                     }
                 }).toList();
 
+//                Must be done at the very end of subscription synchronization because this process is very time consuming.
+//                Before this process ends the method #getCredentials will return the old state.
                 repository.updateCurrentSubscriptions(from(subscriptions.getAll())
                         .filter(new Predicate<MicroserviceCredentials>() {
                             public boolean apply(MicroserviceCredentials user) {
@@ -188,14 +190,14 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         }
     }
 
+//    During subscription synchronization the method will just return old state.
     @Override
-    @Synchronized
     public Collection<MicroserviceCredentials> getAll() {
         return repository.getCurrentSubscriptions();
     }
 
+//    During subscription synchronization the method will just return old state.
     @Override
-    @Synchronized
     public Optional<MicroserviceCredentials> getCredentials(String tenant) {
         for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
             if (subscription.getTenant().equals(tenant)) {
