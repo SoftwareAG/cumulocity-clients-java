@@ -50,7 +50,7 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private String packageName;
 
     @Getter(lazy = true)
-    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(credentials), getLog());
+    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(credentials, getLog()), getLog());
 
     @Override
     public void execute() {
@@ -104,7 +104,12 @@ public class MicroserviceUploadMojo extends AbstractMojo {
                 for (final Tenant tenant : subscriptions) {
                     repository.unsubscribeApplication(tenant, applicationMaybe.get());
                 }
-                repository.deleteApplication(applicationMaybe.get());
+                try {
+                    repository.deleteApplication(applicationMaybe.get());
+                } catch (final Exception ex) {
+//                    todo api responds with 400 after successful deletion
+                    getLog().error(ex.getMessage());
+                }
             } else {
                 subscriptions = Sets.newHashSet();
             }
@@ -124,6 +129,12 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     }
 
     private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application) {
+        try {
+//            todo don't ask me why....
+            Thread.sleep(1000 * 2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         uploadFile(repository, application.getApplication());
 
         application.addSubscriptions(repository.getTenantsByNames(this.application.getSubscriptions()));

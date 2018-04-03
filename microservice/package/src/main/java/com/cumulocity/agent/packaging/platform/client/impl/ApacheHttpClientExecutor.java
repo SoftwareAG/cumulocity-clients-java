@@ -3,11 +3,11 @@ package com.cumulocity.agent.packaging.platform.client.impl;
 import com.cumulocity.agent.packaging.platform.client.Executor;
 import com.cumulocity.agent.packaging.platform.client.Request;
 import com.cumulocity.agent.packaging.platform.model.CredentialsConfiguration;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import jersey.repackaged.com.google.common.base.Throwables;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,14 +22,15 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import static com.cumulocity.agent.packaging.platform.client.impl.UrlUtils.concat;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
+@Getter(value = AccessLevel.PRIVATE)
 public class ApacheHttpClientExecutor implements Executor {
 
     private final ObjectMapper mapper = new ObjectMapper(){{
@@ -40,11 +41,10 @@ public class ApacheHttpClientExecutor implements Executor {
     }};
 
     private final CloseableHttpClient client;
-
-    @Getter
     private final String baseUrl;
+    private final Log log;
 
-    public ApacheHttpClientExecutor(final CredentialsConfiguration credentials) {
+    public ApacheHttpClientExecutor(final CredentialsConfiguration credentials, Log log) {
         baseUrl = UrlUtils.ensureHttpSchema(credentials.getBaseUrl());
         client = HttpClients.custom()
                 .setDefaultCredentialsProvider(new BasicCredentialsProvider() {
@@ -53,6 +53,7 @@ public class ApacheHttpClientExecutor implements Executor {
                     }
                 })
                 .build();
+        this.log = log;
     }
 
     @Override
@@ -84,7 +85,7 @@ public class ApacheHttpClientExecutor implements Executor {
         return null;
     }
 
-    private HttpUriRequest build(Request request) throws JsonProcessingException, UnsupportedEncodingException {
+    private HttpUriRequest build(final Request request) throws IOException {
         if (Request.Method.GET.equals(request.getMethod())) {
             final HttpGet result = new HttpGet(concat(getBaseUrl(), request.getPath()));
             result.setHeader("Accept", "application/json");
@@ -98,9 +99,10 @@ public class ApacheHttpClientExecutor implements Executor {
             result.setHeader("Accept", "application/json");
 
             if (request.getMultipartBody() != null) {
+
                 final HttpEntity entity = MultipartEntityBuilder.create()
                         .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                        .addBinaryBody("file", request.getMultipartBody())
+                        .addPart("file", new ProgressFileBody(request.getMultipartBody()))
                         .build();
                 result.setEntity(entity);
             }
