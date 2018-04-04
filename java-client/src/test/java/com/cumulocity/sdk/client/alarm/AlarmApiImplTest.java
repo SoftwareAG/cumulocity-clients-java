@@ -19,23 +19,6 @@
  */
 package com.cumulocity.sdk.client.alarm;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
@@ -45,6 +28,22 @@ import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class AlarmApiImplTest {
 
@@ -184,4 +183,41 @@ public class AlarmApiImplTest {
         // Then
         assertThat(alarms, is(expected));
     }
+
+    @Test
+    public void shouldDeleteByFilterStatus() throws Exception {
+        // Given
+        CumulocityAlarmStatuses status = CumulocityAlarmStatuses.ACKNOWLEDGED;
+        AlarmFilter alarmFilter = new AlarmFilter().byStatus(status);
+        String alarmsByStatusUrl = ALARM_COLLECTION_URL + "?status=" + CumulocityAlarmStatuses.ACKNOWLEDGED.toString();
+        when(urlProcessor.replaceOrAddQueryParam(ALARM_COLLECTION_URL, alarmFilter.getQueryParams()))
+                .thenReturn(alarmsByStatusUrl);
+
+        // When
+        alarmApi.deleteAlarmsByFilter(alarmFilter);
+
+        // Then
+        verify(restConnector, times(1)).delete(alarmsByStatusUrl);
+    }
+
+    @Test
+    public void shouldDeleteByEmptyFilter() throws Exception {
+        // Given
+        AlarmFilter emptyFilter = new AlarmFilter();
+        String alarmsUrl = ALARM_COLLECTION_URL;
+        when(urlProcessor.replaceOrAddQueryParam(ALARM_COLLECTION_URL, emptyFilter.getQueryParams()))
+                .thenReturn(alarmsUrl);
+
+        // When
+        alarmApi.deleteAlarmsByFilter(emptyFilter);
+
+        // Then
+        verify(restConnector, times(1)).delete(alarmsUrl);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testDeleteByNullFilter() {
+        alarmApi.deleteAlarmsByFilter(null);
+    }
+
 }
