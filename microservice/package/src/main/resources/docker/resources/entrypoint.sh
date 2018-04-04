@@ -49,4 +49,4 @@ if [ -n "$PROXY_SOCKS_PORT" ]; then proxy_params="${proxy_params} -DsocksProxyPo
 
 mkdir -p /var/log/@package.name@; echo "heap dumps  /var/log/@package.name@/heap-dump-<pid>.hprof"
 
-java ${jvm_opts} ${jvm_gc} ${jvm_mem} ${sys_props} ${proxy_params} -jar /data/@package.name@.jar ${arguments}
+java ${jvm_opts} ${jvm_gc} ${jvm_mem} ${proxy_params} -jar /data/@package.name@.jar ${arguments}
