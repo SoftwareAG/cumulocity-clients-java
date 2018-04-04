@@ -108,4 +108,15 @@ public class AlarmApiImpl implements AlarmApi {
         Map<String, String> params = filter.getQueryParams();
         return new AlarmCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getSelfUri(), params), pageSize);
     }
+
+    @Override
+    public void deleteAlarmsByFilter(AlarmFilter filter) throws IllegalArgumentException, SDKException {
+
+        if (filter == null) {
+            throw new IllegalArgumentException("Alarm filter is null");
+        } else {
+            Map<String, String> params = filter.getQueryParams();
+            restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+        }
+    }
 }

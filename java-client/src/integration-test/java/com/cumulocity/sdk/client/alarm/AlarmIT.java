@@ -19,6 +19,19 @@
  */
 package com.cumulocity.sdk.client.alarm;
 
+import com.cumulocity.model.event.CumulocityAlarmStatuses;
+import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
+import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
+import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.util.List;
+
 import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -27,20 +40,6 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepr
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import com.cumulocity.model.event.CumulocityAlarmStatuses;
-import com.cumulocity.rest.representation.alarm.AlarmCollectionRepresentation;
-import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
-import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
 public class AlarmIT extends JavaSdkITBase {
 
@@ -205,10 +204,12 @@ public class AlarmIT extends JavaSdkITBase {
     public void getAlarmCollectionByStatus() throws Exception {
         // Given
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("ACTIVE")
                 .withSource(mo1).build());
 
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("ACKNOWLEDGED")
                 .withSource(mo1).build());
 
@@ -225,19 +226,23 @@ public class AlarmIT extends JavaSdkITBase {
     public void getAlarmCollectionByStatusAndSource() throws Exception {
         // Given
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("CLEARED")
                 .withSource(mo1).build());
 
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("ACKNOWLEDGED")
                 .withSource(mo1).build());
 
         alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
                 .withStatus("CUSTOM")
                 .withSource(mo2).build());
 
         // When
-        AlarmFilter acknowledgedFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED")).bySource(mo1);
+        AlarmFilter acknowledgedFilter =
+                new AlarmFilter().byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED")).bySource(mo1);
         AlarmCollectionRepresentation acknowledgedAlarms = alarmApi.getAlarmsByFilter(acknowledgedFilter).get();
 
         // Then
@@ -298,6 +303,68 @@ public class AlarmIT extends JavaSdkITBase {
         assertThat(returned.getSource().getId(), is(mo1.getId()));
     }
 
+    @Test
+    public void shouldDeleteAlarmCollectionByEmptyFilter() throws Exception {
+        // Given
+        for (int i = 0; i<5 ; i++) {
+            alarmApi.create(aSampleAlarm(mo1));
+            alarmApi.create(aSampleAlarm(mo2));
+            alarmApi.create(aSampleAlarm(mo3));
+        }
+
+        AlarmFilter emptyFilter = new AlarmFilter();
+
+        //When
+        alarmApi.deleteAlarmsByFilter(emptyFilter);
+
+        //Then
+        int resultNumber = 0;
+        Iterable<AlarmRepresentation> pager = alarmApi.getAlarms().get().allPages();
+        for (AlarmRepresentation alarm : pager) {
+            resultNumber++;
+        }
+
+        assertThat(resultNumber, is(0));
+    }
+
+    @Test
+    public void shouldDeleteByFilterStatus() throws Exception {
+        // Given
+        alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
+                .withStatus("ACTIVE")
+                .withSource(mo1).build());
+
+        alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
+                .withStatus("ACKNOWLEDGED")
+                .withSource(mo1).build());
+
+        alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
+                .withStatus("ACKNOWLEDGED")
+                .withSource(mo2).build());
+
+        alarmApi.create(anAlarmRepresentationLike(ALARM_REPRESENTATION)
+                .withType("com_nsn_bts_TrxFaulty" + t++)
+                .withStatus("CLEARED")
+                .withSource(mo2).build());
+
+        AlarmFilter alarmFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED"));
+
+        // When
+        alarmApi.deleteAlarmsByFilter(alarmFilter);
+
+        // Then
+        List<AlarmRepresentation> allAlarms = alarmApi.getAlarms().get().getAlarms();
+
+        assertThat(allAlarms.size(), is(equalTo(2)));
+
+        for (AlarmRepresentation alarm : allAlarms) {
+            assertThat(alarm.getStatus(), anyOf(is("ACTIVE"), is("CLEARED")));
+        }
+    }
+
     private AlarmRepresentation aSampleAlarm(ManagedObjectRepresentation source) {
         return anAlarmRepresentationLike(ALARM_REPRESENTATION)
                 .withType("com_nsn_bts_TrxFaulty" + t++)
@@ -307,4 +374,5 @@ public class AlarmIT extends JavaSdkITBase {
                 .withText("Alarm for mo")
                 .withDateTime(nowLocal()).build();
     }
+
 }
