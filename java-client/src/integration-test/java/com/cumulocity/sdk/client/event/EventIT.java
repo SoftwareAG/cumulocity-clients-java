@@ -304,7 +304,7 @@ public class EventIT extends JavaSdkITBase {
         iShouldGetNumberOfEvents(0);
     }
 
-    //
+//
 //    Scenario: Delete Events collection by filter
 
     @Test
