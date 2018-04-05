@@ -74,7 +74,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     @Override
     public void deleteMeasurementsByFilter(MeasurementFilter filter) throws IllegalArgumentException, SDKException {
         if (filter == null) {
-            throw new IllegalArgumentException("Alarm filter is null");
+            throw new IllegalArgumentException("Measurement filter is null");
         } else {
             Map<String, String> params = filter.getQueryParams();
             restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));

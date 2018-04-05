@@ -468,7 +468,7 @@ public class MeasurementIT extends JavaSdkITBase {
         iShouldGetNumberOfMeasurements(3);
 //    When I query all measurements by type 'com.type2'
         iQueryAllByType("com.type2");
-//    Then I should get '3' measurements
+//    Then I should get '0' measurements
         iShouldGetNumberOfMeasurements(0);
     }
 
