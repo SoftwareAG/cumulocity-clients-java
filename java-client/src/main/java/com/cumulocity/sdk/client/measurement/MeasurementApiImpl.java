@@ -20,8 +20,6 @@
 
 package com.cumulocity.sdk.client.measurement;
 
-import java.util.Map;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
@@ -31,6 +29,8 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+
+import java.util.Map;
 
 public class MeasurementApiImpl implements MeasurementApi {
 
@@ -69,6 +69,16 @@ public class MeasurementApiImpl implements MeasurementApi {
     public void delete(MeasurementRepresentation measurement) throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf() + "/" + measurement.getId().getValue();
         restConnector.delete(url);
+    }
+
+    @Override
+    public void deleteMeasurementsByFilter(MeasurementFilter filter) throws IllegalArgumentException, SDKException {
+        if (filter == null) {
+            throw new IllegalArgumentException("Alarm filter is null");
+        } else {
+            Map<String, String> params = filter.getQueryParams();
+            restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+        }
     }
 
     @Override
