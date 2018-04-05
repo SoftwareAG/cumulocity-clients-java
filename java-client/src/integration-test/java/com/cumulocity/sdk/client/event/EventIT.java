@@ -282,6 +282,60 @@ public class EventIT extends JavaSdkITBase {
     }
 
 //
+//    Scenario: Delete all Event collection by an empty filter
+
+    @Test
+    public void deleteEventCollectionByEmptyFilter() throws Exception {
+//    Given I have '3' Events of type 'type1' for the managed object
+        iHaveEvents(3, "type1");
+//    And I have '2' Events of type 'type2' for the managed object
+        iHaveEvents(2, "type2");
+//    When I create all Events
+        iCreateAll();
+//    And I get all Events
+        iGetAllEvents();
+//    Then I should get '5' Events
+        iShouldGetNumberOfEvents(5);
+//    And I delete all Event collection
+        iDeleteEventCollection();
+//    And I get all Events
+        iGetAllEvents();
+//    Then I should get '0' Events
+        iShouldGetNumberOfEvents(0);
+    }
+
+    //
+//    Scenario: Delete Events collection by filter
+
+    @Test
+    public void deleteEventsByTypeFilter() throws Exception {
+//    Given I have '3' Events of type 'type1' for the managed object
+        iHaveEvents(3, "type1");
+//    And I have '2' Events of type 'type2' for the managed object
+        iHaveEvents(2, "type2");
+//    When I create all Events
+        iCreateAll();
+//    And I get all Events
+        iGetAllEvents();
+//    Then I should get '5' Events
+        iShouldGetNumberOfEvents(5);
+//    And I delete all Events by type 'type2'
+        iDeleteAllByType("type2");
+//    And I get all Events
+        iGetAllEvents();
+//    Then I should get '3' Events
+        iShouldGetNumberOfEvents(3);
+//    And I query all Events by type 'type1'
+        iQueryAllByType("type1");
+//    Then I should get '3' Events
+        iShouldGetNumberOfEvents(3);
+//    And I query all Events by type 'type2'
+        iQueryAllByType("type2");
+//    Then I should get '0' Events
+        iShouldGetNumberOfEvents(0);
+    }
+
+//
 //    Scenario: Get event collection by paging
 
     @Test
@@ -498,6 +552,25 @@ public class EventIT extends JavaSdkITBase {
     public void iDeleteEventsWithCreatedId() throws SDKException {
         try {
             eventApi.delete(result.get(0));
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I delete all Event collection$")
+    public void iDeleteEventCollection() throws SDKException {
+        try {
+            eventApi.deleteEventsByFilter(new EventFilter());
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I delete all Events by type '([^']*)'$")
+    public void iDeleteAllByType(String type) throws SDKException {
+        try {
+            EventFilter typeFilter = new EventFilter().byType(type);
+            eventApi.deleteEventsByFilter(typeFilter);
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }

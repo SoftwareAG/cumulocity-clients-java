@@ -81,6 +81,16 @@ public class EventApiImpl implements EventApi {
     }
 
     @Override
+    public void deleteEventsByFilter(EventFilter filter) throws IllegalArgumentException, SDKException {
+        if (filter == null) {
+            throw new IllegalArgumentException("Event filter is null");
+        } else {
+            Map<String, String> params = filter.getQueryParams();
+            restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+        }
+    }
+
+    @Override
     public EventCollection getEventsByFilter(EventFilter filter) throws SDKException {
         if (filter == null) {
             return getEvents();
