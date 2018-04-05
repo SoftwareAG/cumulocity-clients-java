@@ -71,6 +71,7 @@ public interface EventApi {
      * Deletes events from the platform based on the specified filter
      *
      * @param filter the filter criteria(s)
+     * @throws IllegalArgumentException
      * @throws SDKException if the event(s) could not be deleted
      */
     void deleteEventsByFilter(EventFilter filter) throws IllegalArgumentException, SDKException;

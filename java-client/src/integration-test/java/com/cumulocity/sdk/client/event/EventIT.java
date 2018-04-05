@@ -19,28 +19,26 @@
  */
 package com.cumulocity.sdk.client.event;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
 public class EventIT extends JavaSdkITBase {
@@ -305,7 +303,7 @@ public class EventIT extends JavaSdkITBase {
     }
 
 //
-//    Scenario: Delete Events collection by filter
+//    Scenario: Delete Events by filter
 
     @Test
     public void deleteEventsByTypeFilter() throws Exception {

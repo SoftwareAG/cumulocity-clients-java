@@ -20,8 +20,6 @@
 
 package com.cumulocity.sdk.client.event;
 
-import java.util.Map;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
@@ -30,6 +28,8 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+
+import java.util.Map;
 
 public class EventApiImpl implements EventApi {
 
