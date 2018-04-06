@@ -6,6 +6,7 @@ import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepres
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
+import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -42,15 +43,13 @@ public class EnableMicroserviceSubscriptionConfiguration {
     @ConditionalOnMissingBean
     public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties) {
         final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
-        return MicroserviceRepository.microserviceApi()
+        return MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
                 .baseUrl(properties.getUrl())
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
                         .switchTo(cumulocityCredentials(boostrapUser.getUsername(), boostrapUser.getPassword())
                                 .withTenantId(boostrapUser.getTenant())
                                 .build()))
                 .objectMapper(objectMapper)
-                // When no isolation level defined then application must be registered
-                .register(properties.getIsolation() == null)
                 .build();
     }
 

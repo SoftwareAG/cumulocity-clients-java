@@ -70,8 +70,8 @@ public class ResponseParserTest {
         when(response.getEntity(BaseResourceRepresentation.class)).thenReturn(representation);
 
         // When
-        BaseResourceRepresentation result = parser.parse(response, EXPECTED_STATUS,
-                BaseResourceRepresentation.class);
+        BaseResourceRepresentation result = parser.parse(response,
+                BaseResourceRepresentation.class, EXPECTED_STATUS);
 
         // Then
         assertThat(result, sameInstance(representation));
@@ -85,7 +85,7 @@ public class ResponseParserTest {
         when(response.getEntity(InventoryRepresentation.class)).thenReturn(representation);
 
         // When
-        InventoryRepresentation result = parser.parse(response, EXPECTED_STATUS, InventoryRepresentation.class);
+        InventoryRepresentation result = parser.parse(response, InventoryRepresentation.class, EXPECTED_STATUS);
 
         // Then
         assertThat(result, sameInstance(representation));
@@ -105,7 +105,7 @@ public class ResponseParserTest {
         thrown.expectMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation.toString());
 
         // When
-        parser.parse(response, EXPECTED_STATUS, BaseResourceRepresentation.class);
+        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
     }
 
     @Test
@@ -121,7 +121,7 @@ public class ResponseParserTest {
         thrown.expectMessage("Http status code: " + ERROR_STATUS);
 
         // When
-        parser.parse(response, EXPECTED_STATUS, BaseResourceRepresentation.class);
+        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
     }
 
     @Test

@@ -116,7 +116,7 @@ public class RestConnector implements RestOperations {
     @Override
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
-        return responseParser.parse(response, OK.getStatusCode(), responseType);
+        return responseParser.parse(response, responseType, OK.getStatusCode());
     }
     
     @Override
@@ -230,7 +230,7 @@ public class RestConnector implements RestOperations {
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response, int responseCode)
             throws SDKException {
         @SuppressWarnings("unchecked")
-        T repFromPlatform = responseParser.parse(response, responseCode, (Class<T>) representation.getClass());
+        T repFromPlatform = responseParser.parse(response, (Class<T>) representation.getClass(), responseCode);
         T repToReturn = isDefined(repFromPlatform) ? repFromPlatform : representation;
         if (response.getLocation() != null) {
             repToReturn.setId(responseParser.parseIdFromLocation(response));
@@ -264,7 +264,7 @@ public class RestConnector implements RestOperations {
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
-        return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
+        return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode(), OK.getStatusCode());
     }
 
     @Override
@@ -335,9 +335,9 @@ public class RestConnector implements RestOperations {
         return builder;
     }
 
-    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
+    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int... responseCodes)
             throws SDKException {
-        return responseParser.parse(response, responseCode, type);
+        return responseParser.parse(response, type, responseCodes);
     }
 
     private <T extends ResourceRepresentation> ClientResponse httpPost(String path, MediaType contentType, MediaType accept, T representation) {

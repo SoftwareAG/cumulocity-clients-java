@@ -51,10 +51,9 @@ public class ResponseParser {
         this(null);
     }
 
-    public <T extends ResourceRepresentation> T parse(ClientResponse response, int expectedStatusCode,
-            Class<T> type) throws SDKException {
+    public <T extends ResourceRepresentation> T parse(ClientResponse response, Class<T> type, int... expectedStatusCodes) throws SDKException {
 
-        checkStatus(response, expectedStatusCode);
+        checkStatus(response, expectedStatusCodes);
         return read(response, type);
     }
     
