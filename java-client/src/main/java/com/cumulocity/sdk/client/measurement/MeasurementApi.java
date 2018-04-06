@@ -94,6 +94,15 @@ public interface MeasurementApi {
     void delete(MeasurementRepresentation measurement) throws SDKException;
 
     /**
+     * Delete measurements from the platform based on the specified filter
+     *
+     * @param filter the filter criteria(s)
+     * @throws IllegalArgumentException
+     * @throws SDKException if the query failed
+     */
+    void deleteMeasurementsByFilter(MeasurementFilter filter) throws IllegalArgumentException, SDKException;
+
+    /**
      * Gets the all the measurement in the platform
      *
      * @return collection of measurements with paging functionality
