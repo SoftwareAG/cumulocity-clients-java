@@ -1,6 +1,5 @@
 package com.cumulocity.agent.packaging.platform.client.impl;
 
-
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.AbstractContentBody;
 import org.apache.http.util.Args;
@@ -11,10 +10,6 @@ public class ProgressFileBody extends AbstractContentBody {
     private final File file;
     private final String filename;
 
-    public ProgressFileBody(File file) {
-        this(file, ContentType.DEFAULT_BINARY, file != null ? file.getName() : null);
-    }
-
     public ProgressFileBody(File file, ContentType contentType, String filename) {
         super(contentType);
         Args.notNull(file, "File");
@@ -22,16 +17,9 @@ public class ProgressFileBody extends AbstractContentBody {
         this.filename = filename == null ? file.getName() : filename;
     }
 
-    public ProgressFileBody(File file, ContentType contentType) {
-        this(file, contentType, file != null ? file.getName() : null);
-    }
-
-    public InputStream getInputStream() throws IOException {
-        return createInputStream(file);
-    }
-
     public void writeTo(OutputStream out) throws IOException {
         Args.notNull(out, "Output stream");
+
         InputStream in = createInputStream(file);
 
         try {
@@ -52,7 +40,8 @@ public class ProgressFileBody extends AbstractContentBody {
         final FileInputStream fileInputStream = new FileInputStream(file);
         return ProgressInputStream.builder()
                 .inputStream(fileInputStream)
-                .progressListener(ProgressInputStream.SYSOUT_PROGRESS)
+                .maxNumBytes(file.length())
+                .progressListener(new ProgressInputStream.SysOutProgress())
                 .build();
     }
 
@@ -61,6 +50,8 @@ public class ProgressFileBody extends AbstractContentBody {
     }
 
     public long getContentLength() {
+////        todo if the content length is unknown the entity is not repeatable
+//        return -1;
         return this.file.length();
     }
 

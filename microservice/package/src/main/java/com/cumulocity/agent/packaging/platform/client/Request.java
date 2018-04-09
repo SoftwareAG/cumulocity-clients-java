@@ -29,6 +29,7 @@ public class Request<T> {
     private final Class<T> result;
     private final Object jsonBody;
     private final File multipartBody;
+    private final String multipartName;
 
     public static Request<Map> Get(final String path) {
         return Request.<Map>builder()
@@ -59,6 +60,6 @@ public class Request<T> {
     }
 
     public <S> Request<S> withResponse(Class<S> clazz) {
-        return new Request<S>(method, path, clazz, jsonBody, multipartBody);
+        return new Request<S>(method, path, clazz, jsonBody, multipartBody, multipartName);
     }
 }

@@ -35,11 +35,12 @@ public class PlatformRepository {
         return applications.first();
     }
 
-    public void uploadApplicationBinary(Application application, File content) {
-        getLog().info("upload application binary " + application + ", " + content.getAbsolutePath());
+    public void uploadApplicationBinary(Application application, File content, String name) {
+        getLog().info("upload application binary " + application + ", " + content.getAbsolutePath() + ", " + name);
 
         final Request<Map> request = Post("/application/applications/:id/binaries")
                 .withUrlParam(":id", application.getId())
+                .withMultipartName(name)
                 .withMultipartBody(content);
 
         getExecutor().execute(request);

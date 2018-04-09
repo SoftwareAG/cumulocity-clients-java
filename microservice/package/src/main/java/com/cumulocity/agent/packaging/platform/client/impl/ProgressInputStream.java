@@ -4,7 +4,9 @@ import com.google.common.base.Strings;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.*;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -34,7 +36,9 @@ public class ProgressInputStream extends FilterInputStream {
         }
     };
 
-    public static final UpdateProgressListener SYSOUT_PROGRESS = new UpdateProgressListener() {
+    public static class SysOutProgress implements UpdateProgressListener {
+        private AtomicInteger progress = new AtomicInteger();
+
         @Override
         public void onStart() {
             System.out.println("|" + Strings.repeat("-", 100) + "|");
@@ -44,8 +48,13 @@ public class ProgressInputStream extends FilterInputStream {
         }
 
         public void onProgress(int prevValue, int newValue) {
-            System.out.print(Strings.repeat("*", newValue - prevValue));
-            System.out.flush();
+            if (newValue > progress.get()) {
+                final int count = newValue - progress.get();
+                progress.set(newValue);
+
+                System.out.print(Strings.repeat("*", count));
+                System.out.flush();
+            }
         }
 
         @Override
@@ -62,16 +71,12 @@ public class ProgressInputStream extends FilterInputStream {
     private volatile long marked;
 
     @Builder
-    public static InputStream create(final InputStream inputStream, UpdateProgressListener progressListener) throws IOException {
+    public ProgressInputStream(InputStream inputStream, long maxNumBytes, UpdateProgressListener progressListener) {
+        super(inputStream);
         if (progressListener == null) {
             progressListener = NO_OP_PROGRESS;
         }
-        return new ProgressInputStream(inputStream, inputStream.available(), progressListener);
-    }
-
-    public ProgressInputStream(InputStream in, long maxNumBytes, UpdateProgressListener updateListener) {
-        super(in);
-        this.progressListener = updateListener;
+        this.progressListener = progressListener;
         this.maxNumBytes = maxNumBytes;
     }
 
@@ -94,14 +99,18 @@ public class ProgressInputStream extends FilterInputStream {
 
     @Override
     public void mark(int readLimit) {
-        this.marked = totalNumBytesRead.get();
         super.mark(readLimit);
+
+        this.marked = totalNumBytesRead.get();
     }
 
     @Override
     public void reset() throws IOException {
-        totalNumBytesRead.set(marked);
         super.reset();
+
+        long prev = totalNumBytesRead.get();
+        totalNumBytesRead.set(marked);
+        updateProgress(totalNumBytesRead.get() - prev);
     }
 
     @Override
@@ -111,7 +120,7 @@ public class ProgressInputStream extends FilterInputStream {
 
     private long updateProgress(long numBytesRead) {
         try {
-            if (numBytesRead > 0) {
+            if (numBytesRead != 0) {
                 int prevPercents = percents.get();
                 long newBytes = totalNumBytesRead.addAndGet(numBytesRead);
                 int newPercents = (int) ((newBytes * 100) / maxNumBytes);

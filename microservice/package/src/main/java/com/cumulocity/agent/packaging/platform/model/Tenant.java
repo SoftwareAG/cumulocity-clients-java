@@ -1,9 +1,6 @@
 package com.cumulocity.agent.packaging.platform.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Wither;
 
 @Wither
@@ -11,6 +8,7 @@ import lombok.experimental.Wither;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(of = "id")
+@EqualsAndHashCode(of = "id")
 public class Tenant {
     private String id;
     private ApplicationsReferences applications;

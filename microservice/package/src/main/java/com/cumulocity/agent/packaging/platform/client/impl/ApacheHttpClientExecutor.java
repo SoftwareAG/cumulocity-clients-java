@@ -16,6 +16,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -24,6 +25,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.maven.plugin.logging.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
@@ -98,14 +100,15 @@ public class ApacheHttpClientExecutor implements Executor {
             final HttpPost result = new HttpPost(concat(getBaseUrl(), request.getPath()));
             result.setHeader("Accept", "application/json");
 
-            if (request.getMultipartBody() != null) {
-
+            final File multipartBody = request.getMultipartBody();
+            final String multipartName = request.getMultipartName();
+            if (multipartBody != null) {
                 final HttpEntity entity = MultipartEntityBuilder.create()
-                        .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                        .addPart("file", new ProgressFileBody(request.getMultipartBody()))
+                        .addPart("file", new ProgressFileBody(multipartBody, getContentType(multipartBody), multipartName))
                         .build();
                 result.setEntity(entity);
             }
+
             if (request.getJsonBody() != null) {
                 final String string = mapper.writeValueAsString(request.getJsonBody());
                 result.setHeader("Content-Type", "application/json");
@@ -116,5 +119,12 @@ public class ApacheHttpClientExecutor implements Executor {
         }
 
         throw new IllegalArgumentException("Unsupported method " + request.getMethod());
+    }
+
+    private ContentType getContentType(File file) {
+        if (file.getName().endsWith("zip")) {
+            return ContentType.create("application/zip");
+        }
+        return ContentType.DEFAULT_BINARY;
     }
 }

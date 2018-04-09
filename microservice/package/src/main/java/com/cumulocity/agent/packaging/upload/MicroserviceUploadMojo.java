@@ -129,12 +129,6 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     }
 
     private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application) {
-        try {
-//            todo don't ask me why....
-            Thread.sleep(1000 * 2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         uploadFile(repository, application.getApplication());
 
         application.addSubscriptions(repository.getTenantsByNames(this.application.getSubscriptions()));
@@ -145,12 +139,21 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     }
 
     public void uploadFile(final PlatformRepository repository, Application application) {
-        repository.uploadApplicationBinary(application, new File(createFinalName()));
+        final File file = new File(createFinalName());
+        repository.uploadApplicationBinary(application, file, normalizeName(file));
 
 //        final String url = baseUrl + "/application/applications/" + application.getId() + "/binaries";
 //        final String user = tenant + "/" + username + ":" + replace(password, "!", "\\!");
 //        final String curl = "curl --progress-bar --verbose -u " + user + " -F file=@" + finalFileName + " " + url;
 //        getLog().info(curl);
+    }
+
+    private String normalizeName(File file) {
+        final String lowerCase = file.getName().toLowerCase();
+        final String noDots = StringUtils.replace(lowerCase, ".", "");
+        final String noColonts = StringUtils.replace(noDots, ":", "");
+        final String result = StringUtils.replace(noColonts, "-", "");
+        return result;
     }
 
     private String createFinalName() {
