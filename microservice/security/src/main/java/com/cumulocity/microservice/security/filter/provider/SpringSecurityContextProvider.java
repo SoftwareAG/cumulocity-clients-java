@@ -50,7 +50,7 @@ public class SpringSecurityContextProvider implements PostAuthorizationContextPr
 
         if (split.length > 1) {
             return split[0];
-        } else if (user != null) {
+        } else if (user != null && user.isInContext()) {
             return user.getContext().getTenant();
         }
         return null;

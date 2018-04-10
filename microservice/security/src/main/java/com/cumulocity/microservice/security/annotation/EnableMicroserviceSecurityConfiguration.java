@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Order(99)
@@ -32,22 +33,21 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     @Autowired
     private PostAuthenticateServletFilter postAuthenticateServletFilter;
 
-    public void configure(WebSecurity webSecurity) {
-        webSecurity.ignoring().antMatchers("/metadata");
-    }
+
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
     }
 
     protected void configure(HttpSecurity http) throws Exception {
-        final HttpSecurity security = http.authorizeRequests().anyRequest().
-
-                fullyAuthenticated().and().
-
-                httpBasic().and().
-
-                csrf().disable();
+        final HttpSecurity security = http
+                .authorizeRequests()
+                .antMatchers("/metadata","/health", "/prometheus", "/metrics").permitAll()
+                .anyRequest().fullyAuthenticated()
+                .and()
+                .httpBasic()
+                .and()
+                .csrf().disable();
 
         security.addFilterBefore(preAuthenticateServletFilter, BasicAuthenticationFilter.class);
         security.addFilterAfter(postAuthenticateServletFilter, BasicAuthenticationFilter.class);
