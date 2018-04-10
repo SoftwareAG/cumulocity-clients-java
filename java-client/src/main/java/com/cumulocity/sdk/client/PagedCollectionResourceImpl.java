@@ -21,8 +21,6 @@
 package com.cumulocity.sdk.client;
 
 import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
-import static com.cumulocity.rest.pagination.RestPageRequest.PARAM_START_KEY;
-import static com.cumulocity.rest.pagination.RestPageRequest.PARAM_START_KEY_DOCID;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -82,7 +80,6 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
         params.put(PAGE_NUMBER_KEY, String.valueOf(pageNumber));
 
         String url = urlProcessor.replaceOrAddQueryParam(collectionRepresentation.getSelf(), params);
-        url = urlProcessor.removeQueryParam(url, Arrays.asList(PARAM_START_KEY, PARAM_START_KEY_DOCID));
 
         LOG.debug(" URL : " + url);
 	    return url;

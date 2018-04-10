@@ -330,19 +330,6 @@ public class PagedCollectionResourceImplTest {
         assertThat(hashCode, is(expectedHashCode));
     }
     
-    @Test
-    public void shouldRemoveRowCoordinatesFromUrlWhenGettingPageWithGivenNumber() throws Exception {
-    	target = createPagedCollectionResource(restConnector, URL, PAGE_SIZE, MEDIA_TYPE, CLAZZ);    	
-        TestCollectionRepresentation input = new TestCollectionRepresentation();
-        input.setPageStatistics(new PageStatisticsRepresentation(PAGE_SIZE));
-        input.setSelf(URL + "/measurement/measurments" + "?startkey=abc&startkey_docid=cde");
-        
-        String url = ((PagedCollectionResourceImpl) target).getPageUrl(input, 3, 5);
-        
-        assertThat(url).doesNotContain(RestPageRequest.PARAM_START_KEY);
-
-    }
-
     private PagedCollectionResource<Object, TestCollectionRepresentation<Object>> createPagedCollectionResource(RestConnector restConnector,
             String url, int pageSize, final CumulocityMediaType mediaType, final Class<TestCollectionRepresentation<Object>> clazz) {
         return new PagedCollectionResourceImpl<Object, TestCollectionRepresentation<Object>, TestCollectionRepresentation<Object>>(restConnector, url, pageSize) {

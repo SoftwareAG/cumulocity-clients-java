@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client.event;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -102,6 +103,41 @@ public class EventApiImplTest {
 
         // Then
         verify(restConnector).delete(EVENTS_COLLECTION_URL + "/" + gidValue);
+    }
+
+    @Test
+    public void shouldDeleteByTypeFilter() throws Exception {
+        // Given
+        EventFilter filter = new EventFilter().byType(TYPE);
+        String eventsByTypeUrl = EVENTS_COLLECTION_URL + "?type=" + TYPE;
+        when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, filter.getQueryParams()))
+                .thenReturn(eventsByTypeUrl);
+
+        // When
+        eventApi.deleteEventsByFilter(filter);
+
+        // Then
+        verify(restConnector, times(1)).delete(eventsByTypeUrl);
+    }
+
+    @Test
+    public void shouldDeleteByEmptyFilter() throws Exception {
+        // Given
+        EventFilter emptyFilter = new EventFilter();
+        String eventsUrl = EVENTS_COLLECTION_URL;
+        when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, emptyFilter.getQueryParams()))
+                .thenReturn(eventsUrl);
+
+        // When
+        eventApi.deleteEventsByFilter(emptyFilter);
+
+        // Then
+        verify(restConnector, times(1)).delete(eventsUrl);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testDeleteByNullFilter() {
+        eventApi.deleteEventsByFilter(null);
     }
 
     @Test

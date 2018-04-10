@@ -20,8 +20,6 @@
 
 package com.cumulocity.sdk.client.event;
 
-import java.util.Map;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
@@ -30,6 +28,8 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+
+import java.util.Map;
 
 public class EventApiImpl implements EventApi {
 
@@ -78,6 +78,16 @@ public class EventApiImpl implements EventApi {
     public void delete(EventRepresentation event) throws SDKException {
         String url = getSelfUri() + "/" + event.getId().getValue();
         restConnector.delete(url);
+    }
+
+    @Override
+    public void deleteEventsByFilter(EventFilter filter) throws IllegalArgumentException, SDKException {
+        if (filter == null) {
+            throw new IllegalArgumentException("Event filter is null");
+        } else {
+            Map<String, String> params = filter.getQueryParams();
+            restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+        }
     }
 
     @Override
