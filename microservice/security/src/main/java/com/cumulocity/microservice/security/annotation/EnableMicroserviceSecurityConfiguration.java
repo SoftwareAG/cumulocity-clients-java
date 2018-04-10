@@ -33,8 +33,6 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     @Autowired
     private PostAuthenticateServletFilter postAuthenticateServletFilter;
 
-
-
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
     }
@@ -42,12 +40,15 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     protected void configure(HttpSecurity http) throws Exception {
         final HttpSecurity security = http
                 .authorizeRequests()
-                .antMatchers("/metadata","/health", "/prometheus", "/metrics").permitAll()
+                .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
                 .anyRequest().fullyAuthenticated()
                 .and()
                 .httpBasic()
                 .and()
-                .csrf().disable();
+                .csrf().disable()
+                .securityContext().disable()
+                .sessionManagement().disable()
+                .requestCache().disable();
 
         security.addFilterBefore(preAuthenticateServletFilter, BasicAuthenticationFilter.class);
         security.addFilterAfter(postAuthenticateServletFilter, BasicAuthenticationFilter.class);
