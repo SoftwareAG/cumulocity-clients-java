@@ -95,6 +95,9 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
                 file(getenv("CONF_DIR"), applicationName, "logging.xml"),
 
                 file("/etc", applicationName, applicationName + "-agent-server-logging.xml"),
+                file("/etc", applicationName, applicationName + "-server-logging.xml"),
+                file("/etc", applicationName, applicationName + "-logging.xml"),
+
                 file("/etc", applicationName, "logging.xml")
         );
     }
