@@ -25,7 +25,7 @@ import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.async.FutureListener;
-import org.cometd.bayeux.Message;
+import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
 import org.slf4j.Logger;
@@ -36,10 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -60,7 +57,7 @@ class MessageExchange {
 
     private final TransportListener listener;
 
-    private final Message[] messages;
+    private final List<Mutable> messages;
 
     private volatile Future<?> request;
 
@@ -76,7 +73,7 @@ class MessageExchange {
 
     MessageExchange(CumulocityLongPollingTransport transport, Client client, ScheduledExecutorService executorService,
                     TransportListener listener, ConnectionHeartBeatWatcher watcher,
-                    UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, Message... messages) {
+                    UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, List<Mutable> messages) {
         this.transport = transport;
         this.client = client;
         this.executorService = executorService;
@@ -99,7 +96,7 @@ class MessageExchange {
 
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
-        listener.onException(new RuntimeException("request cancelled"), messages);
+        listener.onFailure(new RuntimeException("request cancelled"), messages);
         request.cancel(true);
         onFinish();
     }
@@ -216,7 +213,7 @@ class MessageExchange {
         private void onException(Exception x) {
             log.debug("request failed ", x);
             waitBeforeAnotherReconnect();
-            listener.onException(x, messages);
+            listener.onFailure(x, messages);
         }
 
         private void onException(final int code) {
@@ -248,11 +245,11 @@ class MessageExchange {
         private void onConnectionFailed(Exception e) {
             log.debug("connection failed");
             unauthorizedConnectionWatcher.resetCounter();
-            listener.onConnectException(e, messages);
+            listener.onFailure(e, messages);
         }
 
         private void handleContent(String content) throws ParseException {
-            List<Message.Mutable> messages = transport.parseMessages(content);
+            List<Mutable> messages = transport.parseMessages(content);
             log.debug("Received messages {}", messages);
             listener.onMessages(messages);
         }
@@ -273,7 +270,7 @@ class MessageExchange {
             } catch (Exception e) {
                 log.debug("connection failed", e);
                 unauthorizedConnectionWatcher.resetCounter();
-                listener.onConnectException(e, messages);
+                listener.onFailure(e, messages);
                 onFinish();
             }
         }

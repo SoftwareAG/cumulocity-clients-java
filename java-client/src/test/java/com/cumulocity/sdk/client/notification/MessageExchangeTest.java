@@ -7,7 +7,6 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.async.FutureListener;
-import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
@@ -23,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +49,7 @@ public class MessageExchangeTest {
     private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
 
     @Mock
-    private Message message;
+    private Mutable message;
 
     @Mock
     private TransportListener listener;
@@ -79,7 +79,7 @@ public class MessageExchangeTest {
 
     @Before
     public void setup() {
-        exchange = new MessageExchange(transport, client, executorService, listener, watcher, unauthorizedConnectionWatcher, message);
+        exchange = new MessageExchange(transport, client, executorService, listener, watcher, unauthorizedConnectionWatcher, Arrays.asList(message));
         exchange.reconnectionWaitingTime = SECONDS.toMillis(1);
         when(client.asyncResource(any(String.class))).thenReturn(resource);
         when(resource.handle(any(ClientRequest.class), responseHandler.capture())).thenReturn(request);
@@ -96,7 +96,7 @@ public class MessageExchangeTest {
         exchange.execute(URL, MESSAGES);
         exchange.cancel();
         //Then
-        verify(listener).onException(any(RuntimeException.class), eq(new Message[] { message }));
+        verify(listener).onFailure(any(RuntimeException.class), eq(Arrays.asList(message)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
@@ -124,7 +124,7 @@ public class MessageExchangeTest {
         //When
         recivedResponse();
         //Then
-        verify(listener).onConnectException(any(RuntimeException.class), eq(new Message[] { message }));
+        verify(listener).onFailure(any(RuntimeException.class), eq(Arrays.asList(message)));
         verify(watcher).stop();
     }
 
@@ -137,7 +137,7 @@ public class MessageExchangeTest {
         recivedResponse();
         responseConsumed();
         //Then
-        verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
+        verify(listener).onFailure(any(TransportException.class), eq(Arrays.asList(message)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
@@ -169,7 +169,7 @@ public class MessageExchangeTest {
         responseConsumed();
         //Then
         verify(listener, never()).onMessages(Mockito.anyList());
-        verify(listener).onException(any(TransportException.class), eq(new Message[] { message }));
+        verify(listener).onFailure(any(TransportException.class), eq(Arrays.asList(message)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }

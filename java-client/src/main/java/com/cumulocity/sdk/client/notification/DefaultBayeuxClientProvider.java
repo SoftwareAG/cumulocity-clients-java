@@ -123,7 +123,7 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private Map<String, Object> createTransportOptions() {
         final Map<String, Object> options = new HashMap<String, Object>();
-        options.put(ClientTransport.JSON_CONTEXT, new ClientSvensonJSONContext(endpointDataType));
+        options.put(ClientTransport.JSON_CONTEXT_OPTION, new ClientSvensonJSONContext(endpointDataType));
         return options;
     }
 
