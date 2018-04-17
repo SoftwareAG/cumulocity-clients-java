@@ -1,8 +1,8 @@
-package com.cumulocity.agent.packaging.platform;
+package com.cumulocity.agent.packaging.uploadMojo.platform;
 
-import com.cumulocity.agent.packaging.platform.client.Executor;
-import com.cumulocity.agent.packaging.platform.client.Request;
-import com.cumulocity.agent.packaging.platform.model.*;
+import com.cumulocity.agent.packaging.uploadMojo.platform.client.Executor;
+import com.cumulocity.agent.packaging.uploadMojo.platform.client.Request;
+import com.cumulocity.agent.packaging.uploadMojo.platform.model.*;
 import com.google.common.base.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.cumulocity.agent.packaging.platform.client.Request.*;
+import static com.cumulocity.agent.packaging.uploadMojo.platform.client.Request.*;
 
 @AllArgsConstructor
 public class PlatformRepository {
@@ -101,6 +101,11 @@ public class PlatformRepository {
         final Request<Map> request = Delete("application/applications/:id")
                 .withUrlParam(":id", application.getId());
 
-        executor.execute(request);
+        try {
+            executor.execute(request);
+        } catch (final Exception ex) {
+//            todo api responds with 400 after successful deletion
+            getLog().error(ex.getMessage());
+        }
     }
 }

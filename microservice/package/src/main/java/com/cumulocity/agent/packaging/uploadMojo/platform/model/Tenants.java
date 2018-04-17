@@ -1,4 +1,4 @@
-package com.cumulocity.agent.packaging.platform.model;
+package com.cumulocity.agent.packaging.uploadMojo.platform.model;
 
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;

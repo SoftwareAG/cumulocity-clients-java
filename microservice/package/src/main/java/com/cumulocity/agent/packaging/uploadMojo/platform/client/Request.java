@@ -1,4 +1,4 @@
-package com.cumulocity.agent.packaging.platform.client;
+package com.cumulocity.agent.packaging.uploadMojo.platform.client;
 
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +19,6 @@ import java.util.Map;
 @Wither
 @Builder
 public class Request<T> {
-//    todo no put method implemented
     public enum Method {
         GET,POST,DELETE
     }

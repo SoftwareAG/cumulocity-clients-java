@@ -1,4 +1,4 @@
-package com.cumulocity.agent.packaging.platform.client.impl;
+package com.cumulocity.agent.packaging.uploadMojo.platform.client.impl;
 
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.AbstractContentBody;
@@ -50,7 +50,7 @@ public class ProgressFileBody extends AbstractContentBody {
     }
 
     public long getContentLength() {
-////        todo if the content length is unknown the entity is not repeatable
+////        if the content length is unknown the entity is not repeatable
 //        return -1;
         return this.file.length();
     }

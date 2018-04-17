@@ -1,4 +1,4 @@
-package com.cumulocity.agent.packaging.platform.client.impl;
+package com.cumulocity.agent.packaging.uploadMojo.platform.client.impl;
 
 import com.google.common.base.Strings;
 import lombok.Builder;

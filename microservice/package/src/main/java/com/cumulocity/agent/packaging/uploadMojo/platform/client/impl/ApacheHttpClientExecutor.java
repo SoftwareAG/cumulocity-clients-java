@@ -1,8 +1,8 @@
-package com.cumulocity.agent.packaging.platform.client.impl;
+package com.cumulocity.agent.packaging.uploadMojo.platform.client.impl;
 
-import com.cumulocity.agent.packaging.platform.client.Executor;
-import com.cumulocity.agent.packaging.platform.client.Request;
-import com.cumulocity.agent.packaging.platform.model.CredentialsConfiguration;
+import com.cumulocity.agent.packaging.uploadMojo.platform.client.Executor;
+import com.cumulocity.agent.packaging.uploadMojo.platform.client.Request;
+import com.cumulocity.agent.packaging.uploadMojo.configuration.CredentialsConfiguration;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -18,7 +18,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -28,8 +27,9 @@ import org.apache.maven.plugin.logging.Log;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Map;
 
-import static com.cumulocity.agent.packaging.platform.client.impl.UrlUtils.concat;
+import static com.cumulocity.agent.packaging.uploadMojo.platform.client.impl.UrlUtils.concat;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @Getter(value = AccessLevel.PRIVATE)
@@ -43,15 +43,15 @@ public class ApacheHttpClientExecutor implements Executor {
     }};
 
     private final CloseableHttpClient client;
-    private final String baseUrl;
+    private final String url;
     private final Log log;
 
     public ApacheHttpClientExecutor(final CredentialsConfiguration credentials, Log log) {
-        baseUrl = UrlUtils.ensureHttpSchema(credentials.getBaseUrl());
+        url = UrlUtils.ensureHttpSchema(credentials.getUrl());
         client = HttpClients.custom()
                 .setDefaultCredentialsProvider(new BasicCredentialsProvider() {
                     public Credentials getCredentials(AuthScope authscope) {
-                        return new UsernamePasswordCredentials(credentials.getTenant() + "/" + credentials.getUsername(), credentials.getPassword());
+                        return new UsernamePasswordCredentials(credentials.getUsername(), credentials.getPassword());
                     }
                 })
                 .build();
@@ -65,7 +65,13 @@ public class ApacheHttpClientExecutor implements Executor {
             final CloseableHttpResponse response = client.execute(httpRequest);
 
             if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RuntimeException(String.valueOf(response.getStatusLine()) + " - " + result(String.class, response));
+                final Map result = result(Map.class, response);
+                Object message = null;
+                if (result != null) {
+                    message = result.get("message");
+                }
+
+                throw new RuntimeException(String.valueOf(response.getStatusLine()) + " - " + message);
             }
 
             return result(request.getResult(), response);
@@ -89,15 +95,15 @@ public class ApacheHttpClientExecutor implements Executor {
 
     private HttpUriRequest build(final Request request) throws IOException {
         if (Request.Method.GET.equals(request.getMethod())) {
-            final HttpGet result = new HttpGet(concat(getBaseUrl(), request.getPath()));
+            final HttpGet result = new HttpGet(concat(getUrl(), request.getPath()));
             result.setHeader("Accept", "application/json");
             return result;
         }
         if (Request.Method.DELETE.equals(request.getMethod())) {
-            return new HttpDelete(concat(getBaseUrl(), request.getPath()));
+            return new HttpDelete(concat(getUrl(), request.getPath()));
         }
         if (Request.Method.POST.equals(request.getMethod())) {
-            final HttpPost result = new HttpPost(concat(getBaseUrl(), request.getPath()));
+            final HttpPost result = new HttpPost(concat(getUrl(), request.getPath()));
             result.setHeader("Accept", "application/json");
 
             final File multipartBody = request.getMultipartBody();

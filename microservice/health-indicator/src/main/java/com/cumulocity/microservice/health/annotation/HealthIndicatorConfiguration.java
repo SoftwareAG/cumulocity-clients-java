@@ -21,8 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 })
 @ComponentScan(basePackageClasses = PlatformHealthIndicator.class)
 @EnableConfigurationProperties(PlatformHealthIndicatorProperties.class)
-public class HealthIndicatorConfiguration extends WebSecurityConfigurerAdapter {
-    public void configure(WebSecurity webSecurity) {
-        webSecurity.ignoring().antMatchers("/health");
-    }
+public class HealthIndicatorConfiguration {
+
 }

@@ -1,24 +1,22 @@
 package com.cumulocity.agent.packaging;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+
+import javax.annotation.Nullable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
 import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-
-import java.nio.file.*;
 
 @Mojo(name = "push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
 public class DeployMojo extends BaseMicroserviceMojo {
