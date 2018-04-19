@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MemoryHealthIndicatorConfiguration {
     @Configuration
-//    @ConditionalOnEnabledHealthIndicator("heapmemory")
     public static class HeapMemoryHealthIndicatorConfiguration {
 
         @Bean
@@ -29,7 +28,6 @@ public class MemoryHealthIndicatorConfiguration {
     }
 
     @Configuration
-//    @ConditionalOnEnabledHealthIndicator("nonheapmemory")
     public static class NonHeapMemoryHealthIndicatorConfiguration {
 
         @Bean
