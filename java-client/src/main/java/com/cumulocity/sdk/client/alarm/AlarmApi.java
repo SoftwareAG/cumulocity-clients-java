@@ -84,6 +84,14 @@ public interface AlarmApi {
      * @throws SDKException if the query failed
      */
     AlarmCollection getAlarmsByFilter(AlarmFilter filter) throws SDKException;
+
+    /**
+     * Delete alarms from the platform based on the specified filter
+     *
+     * @param filter the filter criteria(s)
+     * @throws SDKException if the query failed
+     */
+    void deleteAlarmsByFilter(AlarmFilter filter) throws IllegalArgumentException, SDKException;
     
     /**
      * Updates an alarm in the platform.
