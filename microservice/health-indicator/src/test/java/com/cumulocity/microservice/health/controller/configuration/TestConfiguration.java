@@ -12,7 +12,6 @@ import javax.annotation.PostConstruct;
 
 @AutoConfigureMockMvc
 @SpringBootTest(classes = {
-        PlatformConfiguration.class,
         IndicatorConfiguration.class,
         TestConfiguration.MainConfiguration.class,
 })
