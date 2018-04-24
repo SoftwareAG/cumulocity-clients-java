@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.health.indicator;
+package com.cumulocity.microservice.health.indicator.platform;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
