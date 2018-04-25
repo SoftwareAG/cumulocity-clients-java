@@ -233,13 +233,6 @@
                             </goals>
                         </execution>
                         <execution>
-                            <id>microservice-package</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>microservice-package</goal>
-                            </goals>
-                        </execution>
-                        <execution>
                             <id>microservice-deploy</id>
                             <phase>package</phase>
                             <goals>

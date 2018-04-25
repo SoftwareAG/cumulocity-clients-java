@@ -18,7 +18,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 
-import static com.cumulocity.agent.packaging.microservice.MicroservicePackageMojo.TARGET_FILENAME_PATTERN;
+import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;

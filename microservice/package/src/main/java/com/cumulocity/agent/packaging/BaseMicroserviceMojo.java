@@ -79,11 +79,14 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip.agent.package.container")
     protected boolean containerSkip;
 
+    @Parameter(defaultValue = "false", property = "skip.microservice.package")
+    protected boolean skipMicroservicePackage;
+
     @Parameter(defaultValue = "${maven.compiler.target}")
     protected String javaRuntime;
 
     @Component
-    private MavenResourcesFiltering mavenResourcesFiltering;
+    protected MavenResourcesFiltering mavenResourcesFiltering;
 
     @Parameter(property = "package.description", defaultValue = "${project.description}")
     private String description;
