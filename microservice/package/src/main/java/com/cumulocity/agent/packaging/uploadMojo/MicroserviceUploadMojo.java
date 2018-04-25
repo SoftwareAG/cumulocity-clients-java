@@ -77,16 +77,19 @@ public class MicroserviceUploadMojo extends AbstractMojo {
                 return;
             }
 
-            getLog().info("credentials configuration " + getCredentialsSupplier().getObject());
-            getLog().info("application configuration " + getApplicationSupplier().getObject());
+            final Optional<CredentialsConfiguration> credentialsMaybe = getCredentialsSupplier().getObject();
+            final Optional<ApplicationConfiguration> applicationMaybe = getApplicationSupplier().getObject();
 
-            if (!getApplicationSupplier().getObject().isPresent()) {
+            getLog().info("credentials configuration " + credentialsMaybe);
+            getLog().info("application configuration " + applicationMaybe);
+
+            if (!applicationMaybe.isPresent() || !credentialsMaybe.isPresent()) {
                 getLog().info("Skipping");
                 return;
             }
 
             final PlatformRepository repository = getRepository();
-            final ApplicationConfiguration configuration = getApplicationSupplier().getObject().get();
+            final ApplicationConfiguration configuration = applicationMaybe.get();
             final Optional<ApplicationWithSubscriptions> application = getOrCreateApplication(repository, configuration);
             if (application.isPresent()) {
                 uploadAndSubscribe(repository, application.get(), configuration);

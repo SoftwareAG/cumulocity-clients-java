@@ -27,60 +27,55 @@ public class ApplicationConfigurationSupplier {
     private final Optional<ApplicationConfiguration> object = get();
 
     private Optional<ApplicationConfiguration> get() {
-        Optional<ApplicationConfiguration> settingsConfig = getSettingsConfig();
+        final Optional<ApplicationConfiguration> settingsConfig = getSettingsConfig();
 
-//        if there is no configuration for application let's just ignore it by default (not to deploy all microservices by mistake at the same time)
-        if (!settingsConfig.isPresent() && !application.isPresent()) {
-            return Optional.absent();
-        }
-
-        ApplicationConfiguration.ApplicationConfigurationBuilder builder = this.application.toBuilder();
+        final ApplicationConfiguration.ApplicationConfigurationBuilder builder = this.application.toBuilder();
 
 //        application name
-        if (StringUtils.isBlank(application.getName())) {
-            if (settingsConfig.isPresent()) {
-                String value = settingsConfig.get().getName();
-                if (StringUtils.isNotBlank(value)) {
-                    builder.name(value);
-                } else {
-                    builder.name(packageName);
-                }
+        if (StringUtils.isBlank(application.getName()) && settingsConfig.isPresent()) {
+            String value = settingsConfig.get().getName();
+            if (StringUtils.isNotBlank(value)) {
+                builder.name(value);
+            } else {
+                builder.name(packageName);
             }
+        } else {
+            builder.name(packageName);
         }
 //        delete
-        if (application.getDelete() == null) {
-            if (settingsConfig.isPresent()) {
-                Boolean value = settingsConfig.get().getDelete();
-                if (value != null) {
-                    builder.delete(value);
-                } else {
-                    builder.delete(true);
-                }
+        if (application.getDelete() == null && settingsConfig.isPresent()) {
+            Boolean value = settingsConfig.get().getDelete();
+            if (value != null) {
+                builder.delete(value);
+            } else {
+                builder.delete(true);
             }
+        } else {
+            builder.delete(true);
         }
 
 //        create
-        if (application.getCreate() == null) {
-            if (settingsConfig.isPresent()) {
-                Boolean value = settingsConfig.get().getCreate();
-                if (value != null) {
-                    builder.create(value);
-                } else {
-                    builder.create(true);
-                }
+        if (application.getCreate() == null && settingsConfig.isPresent()) {
+            Boolean value = settingsConfig.get().getCreate();
+            if (value != null) {
+                builder.create(value);
+            } else {
+                builder.create(true);
             }
+        } else {
+            builder.create(true);
         }
 
 //        subscriptions
-        if (application.getSubscriptions() == null) {
-            if (settingsConfig.isPresent()) {
-                List<String> subscriptions = settingsConfig.get().getSubscriptions();
-                if (subscriptions != null) {
-                    builder.subscriptions(subscriptions);
-                } else {
-                    builder.subscriptions(Lists.<String>newArrayList());
-                }
+        if (application.getSubscriptions() == null && settingsConfig.isPresent()) {
+            List<String> subscriptions = settingsConfig.get().getSubscriptions();
+            if (subscriptions != null) {
+                builder.subscriptions(subscriptions);
+            } else {
+                builder.subscriptions(Lists.<String>newArrayList());
             }
+        } else {
+            builder.subscriptions(Lists.<String>newArrayList());
         }
 
         return Optional.of(builder.build());
