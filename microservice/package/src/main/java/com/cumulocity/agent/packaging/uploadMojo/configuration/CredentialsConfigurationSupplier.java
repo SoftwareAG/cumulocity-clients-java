@@ -6,13 +6,10 @@ import com.google.common.collect.FluentIterable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 
-import static com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils.getConfigurationString;
-import static com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils.getServerPassword;
-import static com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils.getServerUsername;
+import static com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils.*;
 
 @RequiredArgsConstructor
 public class CredentialsConfigurationSupplier {
@@ -20,15 +17,14 @@ public class CredentialsConfigurationSupplier {
     private final String serviceId;
     private final Settings settings;
     private final CredentialsConfiguration source;
-    private final Log log;
 
     @Getter(lazy = true)
-    private final CredentialsConfiguration object = get();
+    private final Optional<CredentialsConfiguration> object = get();
 
     /**
      * Returns configuration from credentials property. Looks up for defaults in settings xml.
      */
-    private CredentialsConfiguration get() {
+    private Optional<CredentialsConfiguration> get() {
         final CredentialsConfiguration.CredentialsConfigurationBuilder builder = source.toBuilder();
 
         if (StringUtils.isBlank(source.getPassword())) {
@@ -43,7 +39,11 @@ public class CredentialsConfigurationSupplier {
             builder.url(getSettingsUrl().orNull());
         }
 
-        return builder.build();
+        final CredentialsConfiguration result = builder.build();
+        if (result.isPresent()) {
+            return Optional.of(result);
+        }
+        return Optional.absent();
     }
 
     private Optional<String> getSettingsUsername() {

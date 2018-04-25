@@ -64,10 +64,10 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private final ApplicationConfigurationSupplier applicationSupplier = new ApplicationConfigurationSupplier(serviceId,  settings, application, packageName, project);
 
     @Getter(lazy = true)
-    private final CredentialsConfigurationSupplier credentialsSupplier = new CredentialsConfigurationSupplier(serviceId, settings, credentials, getLog());
+    private final CredentialsConfigurationSupplier credentialsSupplier = new CredentialsConfigurationSupplier(serviceId, settings, credentials);
 
     @Getter(lazy = true)
-    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject(), getLog()), getLog());
+    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject().get(), getLog()), getLog());
 
     @Override
     public void execute() {
@@ -80,22 +80,23 @@ public class MicroserviceUploadMojo extends AbstractMojo {
             getLog().info("credentials configuration " + getCredentialsSupplier().getObject());
             getLog().info("application configuration " + getApplicationSupplier().getObject());
 
-            final PlatformRepository repository = getRepository();
+            if (!getApplicationSupplier().getObject().isPresent()) {
+                getLog().info("Skipping");
+                return;
+            }
 
-            final Optional<ApplicationWithSubscriptions> application = getOrCreateApplication(repository);
+            final PlatformRepository repository = getRepository();
+            final ApplicationConfiguration configuration = getApplicationSupplier().getObject().get();
+            final Optional<ApplicationWithSubscriptions> application = getOrCreateApplication(repository, configuration);
             if (application.isPresent()) {
-                uploadAndSubscribe(repository, application.get());
+                uploadAndSubscribe(repository, application.get(), configuration);
             }
         } catch (final Exception ex) {
-            if (getApplicationSupplier().getObject().getFailOnError()) {
-                throw ex;
-            }
             getLog().error(ex);
         }
     }
 
-    private Optional<ApplicationWithSubscriptions> getOrCreateApplication(PlatformRepository repository) {
-        final ApplicationConfiguration configuration = getApplicationSupplier().getObject();
+    private Optional<ApplicationWithSubscriptions> getOrCreateApplication(PlatformRepository repository, ApplicationConfiguration configuration) {
         final Optional<Application> applicationMaybe = repository.findApplicationByName(configuration.getName());
 
         if (configuration.getDelete()) {
@@ -127,10 +128,10 @@ public class MicroserviceUploadMojo extends AbstractMojo {
         return Optional.absent();
     }
 
-    private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application) {
+    private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application, ApplicationConfiguration configuration) {
         uploadFile(repository, application.getApplication());
 
-        application.addSubscriptions(repository.getTenantsByNames(getApplicationSupplier().getObject().getSubscriptions()));
+        application.addSubscriptions(repository.getTenantsByNames(configuration.getSubscriptions()));
 
         for (final Tenant tenant : application.getSubscriptions()) {
             repository.subscribeApplication(tenant, application.getApplication());

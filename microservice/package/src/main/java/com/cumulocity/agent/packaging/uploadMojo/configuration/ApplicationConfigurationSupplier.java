@@ -24,10 +24,15 @@ public class ApplicationConfigurationSupplier {
     private final MavenProject project;
 
     @Getter(lazy = true)
-    private final ApplicationConfiguration object = get();
+    private final Optional<ApplicationConfiguration> object = get();
 
-    private ApplicationConfiguration get() {
+    private Optional<ApplicationConfiguration> get() {
         Optional<ApplicationConfiguration> settingsConfig = getSettingsConfig();
+
+//        if there is no configuration for application let's just ignore it by default (not to deploy all microservices by mistake at the same time)
+        if (!settingsConfig.isPresent() && !application.isPresent()) {
+            return Optional.absent();
+        }
 
         ApplicationConfiguration.ApplicationConfigurationBuilder builder = this.application.toBuilder();
 
@@ -66,18 +71,6 @@ public class ApplicationConfigurationSupplier {
             }
         }
 
-//        fail on errors
-        if (application.getFailOnError() == null) {
-            if (settingsConfig.isPresent()) {
-                Boolean value = settingsConfig.get().getFailOnError();
-                if (value != null) {
-                    builder.failOnError(value);
-                } else {
-                    builder.failOnError(true);
-                }
-            }
-        }
-
 //        subscriptions
         if (application.getSubscriptions() == null) {
             if (settingsConfig.isPresent()) {
@@ -90,7 +83,7 @@ public class ApplicationConfigurationSupplier {
             }
         }
 
-        return builder.build();
+        return Optional.of(builder.build());
     }
 
     private Optional<ApplicationConfiguration> getSettingsConfig() {
