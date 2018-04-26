@@ -1,6 +1,19 @@
+### Usage
+To use the plugin you need to add it to the pom.xml
+
+```
+    <plugins>
+        <plugin>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-package-maven-plugin</artifactId>
+            <version>latest</version>
+        </plugin>
+    </plugins>
+```
+
 ### Packaging
 
-To build from command line
+To build microservice package from command line:
 ```
 mvn clean install microservice:package 
 ```
@@ -12,6 +25,7 @@ or adding to pom.xml
             <plugin>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-package-maven-plugin</artifactId>
+                <version>latest</version>
 
                 <executions>
                     <execution>
@@ -23,6 +37,12 @@ or adding to pom.xml
             </plugin>
         </plugins>
 ```
+
+and run
+```
+mvn clean install
+```
+
 
 ### Uploading
 To upload microservice first configure settings.xml
