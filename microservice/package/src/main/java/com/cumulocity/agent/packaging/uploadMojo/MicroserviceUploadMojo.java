@@ -12,7 +12,6 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -24,6 +23,7 @@ import java.io.File;
 import java.util.Set;
 
 import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
+import static com.cumulocity.agent.packaging.uploadMojo.configuration.ApplicationConfiguration.normalizeName;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
@@ -88,11 +88,17 @@ public class MicroserviceUploadMojo extends AbstractMojo {
                 return;
             }
 
+            final File file = targetFile();
+            if (!file.exists()) {
+                getLog().info("Skipping");
+                return;
+            }
+
             final PlatformRepository repository = getRepository();
             final ApplicationConfiguration configuration = applicationMaybe.get();
             final Optional<ApplicationWithSubscriptions> application = getOrCreateApplication(repository, configuration);
             if (application.isPresent()) {
-                uploadAndSubscribe(repository, application.get(), configuration);
+                uploadAndSubscribe(repository, application.get(), configuration, file);
             }
         } catch (final Exception ex) {
             getLog().error(ex);
@@ -131,8 +137,8 @@ public class MicroserviceUploadMojo extends AbstractMojo {
         return Optional.absent();
     }
 
-    private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application, ApplicationConfiguration configuration) {
-        uploadFile(repository, application.getApplication());
+    private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application, ApplicationConfiguration configuration, File file) {
+        uploadFile(repository, application.getApplication(), file);
 
         application.addSubscriptions(repository.getTenantsByNames(configuration.getSubscriptions()));
 
@@ -141,23 +147,12 @@ public class MicroserviceUploadMojo extends AbstractMojo {
         }
     }
 
-    public void uploadFile(final PlatformRepository repository, Application application) {
-        final File file = new File(createFinalName());
-        repository.uploadApplicationBinary(application, file, normalizeName(file));
+    public void uploadFile(final PlatformRepository repository, Application application, final File file) {
+        repository.uploadApplicationBinary(application, file, normalizeName(file.getName()));
     }
 
-    private String normalizeName(File file) {
-        final String lowerCase = file.getName().toLowerCase();
-        final String noDots = StringUtils.replace(lowerCase, ".", "");
-        final String noColons = StringUtils.replace(noDots, ":", "");
-        final String result = StringUtils.replace(noColons, "-", "");
-        if (result.length() > 10) {
-            return result.substring(0, 10);
-        }
-        return result;
+    private File targetFile() {
+        return new File(getProject().getBuild().getDirectory(), format(TARGET_FILENAME_PATTERN, packageName, project.getVersion()));
     }
 
-    private String createFinalName() {
-        return getProject().getBuild().getDirectory() + "/" + format(TARGET_FILENAME_PATTERN, getPackageName(), getProject().getVersion());
-    }
 }
