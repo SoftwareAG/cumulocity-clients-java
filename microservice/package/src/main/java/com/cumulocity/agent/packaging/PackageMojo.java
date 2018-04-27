@@ -125,7 +125,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             docker(),
             goal("build"),
             configuration(
-                element(name("imageName"), name),
+                element(name("imageName"), image),
                 element("imageTags",
                     element("imageTag",project.getVersion()),
                     element("imageTag","latest")
