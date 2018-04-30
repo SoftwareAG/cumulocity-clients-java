@@ -1,8 +1,9 @@
-package com.cumulocity.microservice.health.indicator;
+package com.cumulocity.microservice.health.indicator.platform;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.health.indicator.platform.PlatformHealthIndicatorProperties;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.sdk.client.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
