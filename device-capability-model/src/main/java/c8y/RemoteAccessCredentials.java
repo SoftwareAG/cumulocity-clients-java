@@ -92,11 +92,19 @@ public class RemoteAccessCredentials {
         return MoreObjects.toStringHelper(this)
                 .add("type", type)
                 .add("user", username)
-                .add("password", password)
-                .add("publicKey", publicKey)
-                .add("privateKey", privateKey)
-                .add("hostCertificate", hostCertificate)
+                .add("password", getHiddenValuesIfPresent(password))
+                .add("publicKey", getHiddenValuesIfPresent(publicKey))
+                .add("privateKey", getHiddenValuesIfPresent(privateKey))
+                .add("hostCertificate", getHiddenValuesIfPresent(hostCertificate))
                 .toString();
     }
+
+    private String getHiddenValuesIfPresent(String valueToCheck) {
+        if (valueToCheck != null) {
+            return "<hidden>";
+        }
+        return null;
+    }
+
 }
 
