@@ -1,14 +1,14 @@
 package c8y;
 
-import java.util.Map;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import org.svenson.AbstractDynamicProperties;
+
+import java.util.Map;
 
 public class RemoteAccess extends AbstractDynamicProperties {
 
     private static final long serialVersionUID = 6652959747455810127L;
-
-    public static final String PROTOCOL_VNC = "VNC";
 
     private String id;
 
@@ -18,23 +18,38 @@ public class RemoteAccess extends AbstractDynamicProperties {
 
     private Integer port;
 
-    private String protocol;
+    private RemoteAccessProtocol protocol;
 
-    private String username;
-
-    private String password; // {cipher} as prefix
+    private RemoteAccessCredentials credentials;
 
     public RemoteAccess() {
     }
 
     public RemoteAccess(Map<String, Object> map) {
-        this.setId((String) map.get("id"));
-        this.name = (String) map.get("name");
-        this.hostname = (String) map.get("hostname");
+        this.setId(getValueAsString(map, "id"));
+        this.name = getValueAsString(map, "name");
+        this.hostname = getValueAsString(map, "hostname");
         this.port = ((Long) map.get("port")).intValue();
-        this.protocol = (String) map.get("protocol");
-        this.username = (String) map.get("username");
-        this.password = (String) map.get("password");
+        this.protocol = RemoteAccessProtocol.valueOf(getValueAsString(map, "protocol"));
+        this.credentials = credentialsFromMap(map, this.protocol);
+    }
+
+    private RemoteAccessCredentials credentialsFromMap(Map<String, Object> map, RemoteAccessProtocol protocol) {
+        return new RemoteAccessCredentialsBuilder(getValueAs(map, "type", RemoteAccessCredentialsType.class), protocol).
+                user(getValueAsString(map, "username")).
+                password(getValueAsString(map, "password")).
+                privateKey(getValueAsString(map,"privateKey")).
+                publicKey(getValueAsString(map,"publicKey")).
+                hostCertificate(getValueAsString(map,"hostCertificate")).
+                build();
+    }
+
+    private String getValueAsString(Map<String, Object> map, String key) {
+        return getValueAs(map, key, String.class);
+    }
+
+    private <T> T getValueAs(Map<String, Object> map, String key, Class<T> type) {
+        return (T) map.get(key);
     }
 
     public String getId() {
@@ -61,32 +76,20 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.port = port;
     }
 
-    public String getProtocol() {
+    public RemoteAccessProtocol getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(String protocol) {
+    public void setProtocol(RemoteAccessProtocol protocol) {
         this.protocol = protocol;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setProtocol(String protocol) {
+        this.protocol = RemoteAccessProtocol.valueOf(protocol);
     }
 
     public static long getSerialversionuid() {
         return serialVersionUID;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getName() {
@@ -97,70 +100,42 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.name = name;
     }
 
-    @Override
-    public String toString() {
-        return "RemoteAccess [id=" + id + ", name=" + name + ", hostname=" + hostname + ", port=" + port + ", protocol=" + protocol
-                + ", username=" + username + "]";
+    public RemoteAccessCredentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(RemoteAccessCredentials credentials) {
+        this.credentials = credentials;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
-        result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
-        result = prime * result + ((username == null) ? 0 : username.hashCode());
-        return result;
+        return Objects.hashCode(id, name, hostname, port, protocol, credentials);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        RemoteAccess other = (RemoteAccess) obj;
-        if (hostname == null) {
-            if (other.hostname != null)
-                return false;
-        } else if (!hostname.equals(other.hostname))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
-            return false;
-        if (port == null) {
-            if (other.port != null)
-                return false;
-        } else if (!port.equals(other.port))
-            return false;
-        if (protocol == null) {
-            if (other.protocol != null)
-                return false;
-        } else if (!protocol.equals(other.protocol))
-            return false;
-        if (username == null) {
-            if (other.username != null)
-                return false;
-        } else if (!username.equals(other.username))
-            return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RemoteAccess that = (RemoteAccess) o;
+        return Objects.equal(id, that.id) &&
+                Objects.equal(name, that.name) &&
+                Objects.equal(hostname, that.hostname) &&
+                Objects.equal(port, that.port) &&
+                protocol == that.protocol &&
+                Objects.equal(credentials, that.credentials);
     }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .add("name", name)
+                .add("hostname", hostname)
+                .add("port", port)
+                .add("protocol", protocol)
+                .add("credentials", credentials)
+                .toString();
+    }
+
 }
