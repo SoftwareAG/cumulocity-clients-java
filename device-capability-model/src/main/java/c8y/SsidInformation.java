@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SsidInformation extends AbstractDynamicProperties {
+    private static final String MAC_ADDRESS_KEY = "macAddress";
+    private static final String SSID_KEY = "ssid";
+    private static final String SIGNAL_STRENGTH_KEY = "signalStrength";
+
 
     private String macAddress;
     private String ssid;
@@ -21,6 +25,28 @@ public class SsidInformation extends AbstractDynamicProperties {
     }
 
     public SsidInformation(Map<String, Object> map) {
+        for (String key : map.keySet()) {
+            Object value = map.get(key);
+            if (value == null) {
+                continue;
+            }
+            switch (key) {
+                case MAC_ADDRESS_KEY:
+                    this.macAddress = value.toString();
+                    continue;
+                case SSID_KEY:
+                    this.ssid = value.toString();
+                    continue;
+                case SIGNAL_STRENGTH_KEY:
+                    if (value instanceof Number) {
+                        this.signalStrength = ((Number) value).intValue();
+                    }
+                    continue;
+                default:
+                    setProperty(key, value);
+            }
+        }
+
         Object macAddress = map.get("macAddress");
         if (macAddress != null) {
             this.macAddress = macAddress.toString();
