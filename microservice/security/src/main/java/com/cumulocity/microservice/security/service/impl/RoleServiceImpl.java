@@ -7,6 +7,7 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 import static com.cumulocity.rest.representation.user.UserMediaType.CURRENT_USER;
 
+@Slf4j
 @Service
 public class RoleServiceImpl implements RoleService {
     private final RestConnector userRestConnector;
@@ -37,10 +39,17 @@ public class RoleServiceImpl implements RoleService {
     
             final List<RoleRepresentation> effectiveRoles = currrentUser.getEffectiveRoles();
             if (effectiveRoles != null && !effectiveRoles.isEmpty()) {
-                for (final Object roleRepresentation : effectiveRoles) {
-                    // todo: why rest connector parses role representation to map?
-                    final Map<String, String> map = (Map<String, String>) roleRepresentation;
-                    result.add(map.get("name"));
+                for (final Object roleObject : effectiveRoles) {
+                    if (roleObject instanceof Map) {
+//                        todo by default svenson parses list elements to map, it doesn't happen if you use custom ResponseMapper
+                        final Map<String, String> roleMap = (Map<String, String>) roleObject;
+                        result.add(roleMap.get("name"));
+                    } else if (roleObject instanceof RoleRepresentation) {
+                        final RoleRepresentation role = (RoleRepresentation) roleObject;
+                        result.add(role.getName());
+                    } else {
+                        throw new IllegalStateException("user/currentUser response body is not parsable");
+                    }
                 }
             }
         } catch(SDKException e) {
