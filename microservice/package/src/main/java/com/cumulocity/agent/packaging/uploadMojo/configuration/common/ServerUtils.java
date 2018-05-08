@@ -2,6 +2,7 @@ package com.cumulocity.agent.packaging.uploadMojo.configuration.common;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.settings.Server;
@@ -28,7 +29,7 @@ public class ServerUtils {
             public List<T> apply(Server input) {
                 return getPropertyNode(input.getConfiguration(), path)
                         .transform(getListValue(target))
-                        .orNull();
+                        .or(Lists.<T>newArrayList());
             }
         };
     }

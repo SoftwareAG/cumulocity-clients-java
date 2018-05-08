@@ -32,16 +32,8 @@ public class ApplicationConfigurationSupplier {
         final ApplicationConfiguration.ApplicationConfigurationBuilder builder = this.application.toBuilder();
 
 //        application name
-        if (StringUtils.isBlank(application.getName()) && settingsConfig.isPresent()) {
-            String value = settingsConfig.get().getName();
-            if (StringUtils.isNotBlank(value)) {
-                builder.name(value);
-            } else {
-                builder.name(packageName);
-            }
-        } else {
-            builder.name(packageName);
-        }
+        builder.name(ApplicationConfiguration.shortenName(findApplicationName()));
+
 //        delete
         if (application.getDelete() == null && settingsConfig.isPresent()) {
             Boolean value = settingsConfig.get().getDelete();
@@ -79,6 +71,22 @@ public class ApplicationConfigurationSupplier {
         }
 
         return Optional.of(builder.build());
+    }
+
+    private String findApplicationName() {
+        if (StringUtils.isNotBlank(application.getName())) {
+            return application.getName();
+        }
+
+        final Optional<ApplicationConfiguration> settingsConfig = getSettingsConfig();
+        if (settingsConfig.isPresent()) {
+            final String value = settingsConfig.get().getName();
+            if (StringUtils.isNotBlank(value)) {
+                return value;
+            }
+        }
+
+        return packageName;
     }
 
     private Optional<ApplicationConfiguration> getSettingsConfig() {
