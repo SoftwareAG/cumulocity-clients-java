@@ -18,10 +18,24 @@ public class RemoteAccessCredentialsBuilder {
     }
 
     public RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType credentialsType, RemoteAccessProtocol protocol) {
-        this.type = credentialsType;
+        this(credentialsType);
         if (!protocol.isCredentialTypeSupported(type)) {
             throw new RemoteAccessConfigurationException("Credentials type %s is not supported for protocol %s", type, protocol);
         }
+    }
+
+    public RemoteAccessCredentialsBuilder(RemoteAccessCredentials credentials) {
+        this(credentials.getType());
+        this.
+                user(credentials.getUsername()).
+                password(credentials.getPassword()).
+                privateKey(credentials.getPrivateKey()).
+                publicKey(credentials.getPublicKey()).
+                hostCertificate(credentials.getHostCertificate());
+    }
+
+    public RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType credentialsType) {
+        this.type = credentialsType;
     }
 
     public RemoteAccessCredentialsBuilder user(String user) {
