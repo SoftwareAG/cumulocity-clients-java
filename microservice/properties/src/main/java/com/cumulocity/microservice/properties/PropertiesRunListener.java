@@ -49,7 +49,7 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         final ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
-        Iterable<File> locations = provider.find(".properties", "-agent-server.properties");
+        Iterable<File> locations = provider.find(".properties", "-server.properties", "-agent-server.properties");
         processPropertySource(environment, locations);
     }
 
