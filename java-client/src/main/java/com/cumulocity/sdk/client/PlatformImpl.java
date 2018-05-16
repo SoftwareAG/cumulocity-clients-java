@@ -251,7 +251,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     @Override
     public TenantOptionApi getTenantOptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
-        return new TenantOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant(), getPageSize());
+        return new TenantOptionApiImpl(restConnector, getHost(), getPlatformApi(restConnector).getTenant(), getPageSize());
     }
 
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
