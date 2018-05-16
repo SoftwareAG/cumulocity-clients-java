@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class TenantOptionApiImplTest {
-    private static final String HOST = "http://test";
     private static final String TENANT_OPTION_COLLECTION_URL = "/tenant/options";
     private static final String TENANT_OPTION_FOR_CATEGORY = TENANT_OPTION_COLLECTION_URL + "/{category}";
     private static final String TENANT_OPTION_FOR_CATEGORY_AND_KEY = TENANT_OPTION_COLLECTION_URL + "/{category}/{key}";
@@ -53,7 +52,7 @@ public class TenantOptionApiImplTest {
         tenantsApiRepresentation.setTenantOptionForCategoryAndKey(TENANT_OPTION_FOR_CATEGORY_AND_KEY);
         tenantsApiRepresentation.setTenantOptionsForCategory(TENANT_OPTION_FOR_CATEGORY);
 
-        optionApi = new TenantOptionApiImpl(restConnector, HOST, tenantsApiRepresentation, DEFAULT_PAGE_SIZE);
+        optionApi = new TenantOptionApiImpl(restConnector, tenantsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test

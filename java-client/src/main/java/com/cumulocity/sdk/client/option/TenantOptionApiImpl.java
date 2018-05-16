@@ -18,16 +18,14 @@ public class TenantOptionApiImpl implements TenantOptionApi {
 
     private final int pageSize;
 
-    private String host;
-    
     private TenantApiRepresentation tenantApiRepresentation;
 
-    public TenantOptionApiImpl(RestConnector restConnector, String host, TenantApiRepresentation tenantApiRepresentation, int pageSize) {
+    public TenantOptionApiImpl(RestConnector restConnector, TenantApiRepresentation tenantApiRepresentation, int pageSize) {
         this.restConnector = restConnector;
-        this.host = host;
         this.tenantApiRepresentation = tenantApiRepresentation;
         this.pageSize = pageSize;
     }
+
 
     @Override
     public OptionRepresentation getOption(OptionPK optionPK) throws SDKException {
@@ -79,17 +77,17 @@ public class TenantOptionApiImpl implements TenantOptionApi {
 
     private TenantApiRepresentation getTenantApiRepresentation() {
         if (tenantApiRepresentation == null) {
-            tenantApiRepresentation = buildTenantApiRepresentation(host);
+            tenantApiRepresentation = buildTenantApiRepresentation();
         }
         return tenantApiRepresentation;
     }
 
-    private TenantApiRepresentation buildTenantApiRepresentation(final String host) {
+    private TenantApiRepresentation buildTenantApiRepresentation() {
         final OptionCollectionRepresentation optionCollectionRepresentation = new OptionCollectionRepresentation();
-        optionCollectionRepresentation.setSelf(host + "/tenant/options");
+        optionCollectionRepresentation.setSelf("/tenant/options");
 
         final TenantCollectionRepresentation tenants = new TenantCollectionRepresentation();
-        tenants.setSelf(host + "/tenant/tenants");
+        tenants.setSelf("/tenant/tenants");
 
         final TenantApiRepresentation tenantApiRepresentation = new TenantApiRepresentation();
         tenantApiRepresentation.setOptions(optionCollectionRepresentation);
