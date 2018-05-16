@@ -44,6 +44,17 @@ public class Mobile extends AbstractDynamicProperties {
 		this.iccid = iccid;
 	}
 
+    public Mobile(String imei, String cellId, String iccid, String mcc, String mnc, String imsi, String lac, String msisdn) {
+        this.imei = imei;
+        this.cellId = cellId;
+        this.iccid = iccid;
+        this.mcc = mcc;
+        this.mnc = mnc;
+        this.imsi = imsi;
+        this.lac = lac;
+        this.msisdn = msisdn;
+    }
+
     @JSONProperty(ignoreIfNull = true)
 	public String getImei() {
 		return imei;
@@ -114,6 +125,20 @@ public class Mobile extends AbstractDynamicProperties {
 
     public void setMsisdn(String msisdn) {
         this.msisdn = msisdn;
+    }
+
+    @Override
+    public String toString() {
+        return "Mobile{" +
+                "imei='" + imei + '\'' +
+                ", cellId='" + cellId + '\'' +
+                ", iccid='" + iccid + '\'' +
+                ", mcc='" + mcc + '\'' +
+                ", mnc='" + mnc + '\'' +
+                ", imsi='" + imsi + '\'' +
+                ", lac='" + lac + '\'' +
+                ", msisdn='" + msisdn + '\'' +
+                '}';
     }
 
     @Override

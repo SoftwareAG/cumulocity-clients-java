@@ -12,6 +12,7 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -40,11 +41,25 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     @Parameter(property = "microservice-upload.skip", defaultValue = "true")
     protected boolean skip;
 
-    @Parameter(name = "credentials", property = "microservice-upload.credentials")
+//    todo refactor it using sisu-maven-plugin
+    @Parameter(name = "credentials", property = "upload.credentials")
     private CredentialsConfiguration credentials;
 
-    @Parameter(name = "application", property = "microservice-upload.application")
+//    todo refactor it using sisu-maven-plugin
+    @Parameter(name = "application", property = "upload.application")
     private ApplicationConfiguration application;
+
+    @Parameter(property = "upload.application.name")
+    private String applicationName;
+
+    @Parameter(property = "upload.url")
+    private String url;
+
+    @Parameter(property = "upload.username")
+    private String username;
+
+    @Parameter(property = "upload.password")
+    private String password;
 
     @Getter
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -75,6 +90,19 @@ public class MicroserviceUploadMojo extends AbstractMojo {
             if (skipMicroserviceUpload) {
                 getLog().info("Skipping");
                 return;
+            }
+
+            if (StringUtils.isNotBlank(applicationName)) {
+                application.setName(applicationName);
+            }
+            if (StringUtils.isNotBlank(url)) {
+                credentials.setUrl(url);
+            }
+            if (StringUtils.isNotBlank(username)) {
+                credentials.setUsername(username);
+            }
+            if (StringUtils.isNotBlank(password)) {
+                credentials.setPassword(password);
             }
 
             final Optional<CredentialsConfiguration> credentialsMaybe = getCredentialsSupplier().getObject();
@@ -154,5 +182,4 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private File targetFile() {
         return new File(getProject().getBuild().getDirectory(), format(TARGET_FILENAME_PATTERN, packageName, project.getVersion()));
     }
-
 }
