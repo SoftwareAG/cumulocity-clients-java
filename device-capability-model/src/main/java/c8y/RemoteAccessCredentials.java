@@ -1,13 +1,10 @@
 package c8y;
 
-
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import sun.org.mozilla.javascript.internal.annotations.JSGetter;
 
 /**
  * Password publicKey, privateKey & hostCertificate will be encoded and with {cipher} as prefix
