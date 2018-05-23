@@ -67,5 +67,5 @@ public class RemoteAccess extends AbstractDynamicProperties {
     public void setProtocol(RemoteAccessProtocol protocol) {
         this.protocol = protocol;
     }
-    
+
 }
