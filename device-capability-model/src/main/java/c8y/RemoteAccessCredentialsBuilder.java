@@ -64,7 +64,7 @@ public class RemoteAccessCredentialsBuilder {
     }
 
     public RemoteAccessCredentials build() {
-        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, privateKey, publicKey, hostCertificate);
+        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, privateKey, hostCertificate);
         type.validateCredentials(credentials);
         return credentials;
     }
