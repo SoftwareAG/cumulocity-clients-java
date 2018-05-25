@@ -88,14 +88,13 @@ public class Position extends AbstractDynamicProperties {
 
     private boolean checkedCompare(Comparable left, Comparable right){
         if (left == null && right == null) {
+            return true;
         } else if (left != null && right != null) {
-            if (left.compareTo(right) != 0) {
-                return false;
+            if (left.compareTo(right) == 0) {
+                return true;
             }
-        } else {
-            return false;
         }
-        return true;
+        return false;
     }
 
     @Override
