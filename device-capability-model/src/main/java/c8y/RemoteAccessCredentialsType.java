@@ -9,16 +9,23 @@ public enum RemoteAccessCredentialsType {
 
         }
     }),
+    PASS_ONLY(new CredentialsValidator() {
+        @Override
+        public void validateCredentials(RemoteAccessCredentials credentials) {
+            validateValueNotEmpty(credentials.getPassword(), "Password", PASS_ONLY);
+        }
+    }),
     USER_PASS(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
             validateValueNotEmpty(credentials.getUsername(), "User", USER_PASS);
+            validateValueNotEmpty(credentials.getPassword(), "Password", USER_PASS);
         }
     }),
     KEY_PAIR(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
-            validateValueNotEmpty(credentials.getUsername(), "User", USER_PASS);
+            validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR);
             validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR);
             validateValueNotEmpty(credentials.getPublicKey(), "Public key", KEY_PAIR);
         }
@@ -26,7 +33,7 @@ public enum RemoteAccessCredentialsType {
     KEY_PAIR_HOST(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
-            validateValueNotEmpty(credentials.getUsername(), "User", USER_PASS);
+            validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR_HOST);
             validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR_HOST);
             validateValueNotEmpty(credentials.getPublicKey(), "Public key", KEY_PAIR_HOST);
             validateValueNotEmpty(credentials.getHostCertificate(), "Host certificate", KEY_PAIR_HOST);
