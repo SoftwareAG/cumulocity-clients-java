@@ -2,8 +2,7 @@ package com.cumulocity.sms.client;
 
 import com.cumulocity.model.sms.*;
 import com.cumulocity.sms.client.messaging.MessagingClient;
-import lombok.*;
-import lombok.experimental.Wither;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -21,20 +20,18 @@ import static org.apache.http.client.fluent.Executor.newInstance;
 @Getter
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
-    @Data
-    @Wither
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SmsCredentialsProvider {
-        private String tenant;
-        private String username;
-        private String password;
+    public interface CredentialsProvider {
+        String getTenant();
+        String getUsername();
+        String getPassword();
     }
-
     private final MessagingClient messagingClient;
 
-    public SmsMessagingApiImpl(final String host, final String rootEndpoint, final SmsCredentialsProvider auth) {
+    public SmsMessagingApiImpl(final String host, final CredentialsProvider auth) {
+        this(host, "service/messaging/smsmessaging/v1", auth);
+    }
+
+    public SmsMessagingApiImpl(final String host, final String rootEndpoint, final CredentialsProvider auth) {
         this(addLeadingSlash(host) + rootEndpoint, newInstance().use(new BasicCredentialsProvider() {
             public Credentials getCredentials(AuthScope authscope) {
                 return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
@@ -42,11 +39,7 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
         }).authPreemptive(getHost(host)));
     }
 
-    public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
-        this(host, "service/messaging/smsmessaging/v1", auth);
-    }
-
-    public SmsMessagingApiImpl(final String host, Executor executor) {
+    private SmsMessagingApiImpl(final String host, Executor executor) {
         messagingClient = new MessagingClient(host, executor);
     }
 
