@@ -5,9 +5,9 @@ import java.util.List;
 
 import static c8y.RemoteAccessCredentialsType.*;
 
-public enum RemoteAccessProtocol {
+    public enum RemoteAccessProtocol {
 
-    VNC(RemoteAccessCredentialsType.PASS_ONLY), TELNET(NONE), SSH(USER_PASS, KEY_PAIR, KEY_PAIR_HOST);
+    VNC(RemoteAccessCredentialsType.PASS_ONLY, USER_PASS), TELNET(NONE), SSH(USER_PASS, KEY_PAIR, KEY_PAIR_HOST);
 
     public static final String PROTOCOL_VNC = "VNC";
     public static final String PROTOCOL_SSH = "SSH";
