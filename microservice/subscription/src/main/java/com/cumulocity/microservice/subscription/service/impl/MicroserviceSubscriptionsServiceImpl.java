@@ -8,6 +8,7 @@ import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAd
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionRemovedEvent;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
+import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.google.common.base.Optional;
@@ -106,9 +107,10 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         try {
             subscribing = true;
 
-            final Optional<ApplicationRepresentation> application = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
-            if (application.isPresent()) {
-                final MicroserviceSubscriptionsRepository.Subscriptions subscriptions = repository.retrieveSubscriptions(application.get().getId());
+            final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
+            if (maybeApplication.isPresent()) {
+                ApplicationRepresentation application = maybeApplication.get();
+                final Subscriptions subscriptions = repository.retrieveSubscriptions(application.getId(), application.getKey());
 
                 from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
                     public boolean apply(final MicroserviceCredentials user) {
