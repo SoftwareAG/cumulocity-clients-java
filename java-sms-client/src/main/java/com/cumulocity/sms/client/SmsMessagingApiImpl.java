@@ -4,43 +4,19 @@ import com.cumulocity.model.sms.*;
 import com.cumulocity.sms.client.messaging.MessagingClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.fluent.Executor;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-
-import java.net.URI;
 
 import static com.cumulocity.sms.client.messaging.MessagingClient.addLeadingSlash;
-import static org.apache.http.client.fluent.Executor.newInstance;
 
 @Slf4j
 @Getter
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
-    public interface CredentialsProvider {
-        String getTenant();
-        String getUsername();
-        String getPassword();
-    }
     private final MessagingClient messagingClient;
 
-    public SmsMessagingApiImpl(final String host, final CredentialsProvider auth) {
-        this(host, "service/messaging/smsmessaging/v1", auth);
-    }
-
-    public SmsMessagingApiImpl(final String host, final String rootEndpoint, final CredentialsProvider auth) {
-        this(addLeadingSlash(host) + rootEndpoint, newInstance().use(new BasicCredentialsProvider() {
-            public Credentials getCredentials(AuthScope authscope) {
-                return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
-            }
-        }).authPreemptive(getHost(host)));
-    }
-
-    private SmsMessagingApiImpl(final String host, Executor executor) {
-        messagingClient = new MessagingClient(host, executor);
+    public SmsMessagingApiImpl(final String host, Executor executor) {
+        final String url = addLeadingSlash(host) + "service/messaging/smsmessaging/v1";
+        messagingClient = new MessagingClient(url, executor);
     }
 
     @Override
@@ -66,11 +42,5 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
             throw new NullPointerException("Receive address and message id can not be null");
         }
         return messagingClient.getMessage(receiveAddress, messageId);
-    }
-
-
-    private static HttpHost getHost(String host) {
-        final URI uri = URI.create(host);
-        return new HttpHost(uri.getHost(), uri.getPort());
     }
 }
