@@ -21,8 +21,6 @@ public class EmailApiImpl implements EmailApi {
 
     public int sendEmail(Email email) {
         try {
-            log.info("aaaaaaaaaaaaa sendEmail {}", email);
-
             final String url = host + "email/emails/";
             final Request request = Post(url).bodyString(defaultJSON().forValue(email), APPLICATION_JSON);
             final Response response = authorizedTemplate.execute(request);
@@ -31,5 +29,4 @@ public class EmailApiImpl implements EmailApi {
             throw new EmailClientException("Send email request failure", e);
         }
     }
-
 }
