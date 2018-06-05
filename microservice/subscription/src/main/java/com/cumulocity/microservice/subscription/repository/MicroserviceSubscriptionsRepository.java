@@ -98,7 +98,7 @@ public class MicroserviceSubscriptionsRepository {
         return fromNullable(repository.register(applicationName, metadata));
     }
 
-    public Subscriptions retrieveSubscriptions(String applicationId) {
+    public Subscriptions retrieveSubscriptions(String applicationId, final String applicationKey) {
         final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId))
                 .transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
                     public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
@@ -106,6 +106,7 @@ public class MicroserviceSubscriptionsRepository {
                                 .username(representation.getName())
                                 .tenant(representation.getTenant())
                                 .password(representation.getPassword())
+                                .appKey(applicationKey)
                                 .build();
                     }
                 })
