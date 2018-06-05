@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -62,7 +63,7 @@ class MessageExchange {
 
     private final Message[] messages;
 
-    private volatile Future<?> request;
+    private volatile Future<ClientResponse> request;
 
     private final ConnectionHeartBeatWatcher watcher;
 
@@ -99,8 +100,18 @@ class MessageExchange {
 
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
-        listener.onException(new RuntimeException("request cancelled"), messages);
-        request.cancel(true);
+        if (request.cancel(true)) {
+            listener.onException(new RuntimeException("request cancelled"), messages);
+        } else {
+            try {
+                final ClientResponse response = request.get();
+                if (response != null) {
+                    response.close();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.warn("canceling failed ", e);
+            }
+        }
         onFinish();
     }
 
@@ -268,7 +279,7 @@ class MessageExchange {
                     log.debug("wait for response headers {}", (Object) messages);
                     ClientResponse response = f.get();
                     log.debug("recived response headers {} ", (Object) messages);
-                    request = executorService.submit(new ResponseConsumer(response));
+                    executorService.submit(new ResponseConsumer(response));
                 }
             } catch (Exception e) {
                 log.debug("connection failed", e);
