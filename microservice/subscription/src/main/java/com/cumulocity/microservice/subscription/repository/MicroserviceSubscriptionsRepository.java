@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import static com.google.common.base.Optional.fromNullable;
@@ -98,7 +99,7 @@ public class MicroserviceSubscriptionsRepository {
         return fromNullable(repository.register(applicationName, metadata));
     }
 
-    public Subscriptions retrieveSubscriptions(String applicationId, final String applicationKey) {
+    public Subscriptions retrieveSubscriptions(String applicationId) {
         final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId))
                 .transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
                     public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
@@ -106,7 +107,6 @@ public class MicroserviceSubscriptionsRepository {
                                 .username(representation.getName())
                                 .tenant(representation.getTenant())
                                 .password(representation.getPassword())
-                                .appKey(applicationKey)
                                 .build();
                     }
                 })

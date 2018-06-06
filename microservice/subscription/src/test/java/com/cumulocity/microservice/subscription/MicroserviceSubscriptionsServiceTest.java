@@ -76,7 +76,7 @@ public class MicroserviceSubscriptionsServiceTest {
         final Subscriptions subscriptions = givenSubscriptions();
 
         given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
-        given(repository.retrieveSubscriptions(anyString(), anyString())).willReturn(subscriptions);
+        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
 
         doThrow(new SDKException("mongo connection timeout")).when(eventPublisher).publishEvent(any(ApplicationEvent.class));
 
@@ -94,7 +94,7 @@ public class MicroserviceSubscriptionsServiceTest {
         final Subscriptions subscriptions = givenSubscriptions();
 
         given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
-        given(repository.retrieveSubscriptions(anyString(),anyString())).willReturn(subscriptions);
+        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
 
         //when
         subscriptionsService.subscribe();
@@ -110,7 +110,7 @@ public class MicroserviceSubscriptionsServiceTest {
         final Subscriptions subscriptions = givenSubscriptions();
 
         given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
-        given(repository.retrieveSubscriptions(anyString(), anyString())).willReturn(subscriptions);
+        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
             public boolean apply(MicroserviceSubscriptionAddedEvent event) {
                 final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(event.getCredentials().getTenant());
