@@ -47,8 +47,8 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
                     throw ex;
                 }
 
-                if (configuration.getDetailsEnabled()) {
-                    final Map<String, Object> details = rest.get(configuration.getDetailsPath(), APPLICATION_JSON_TYPE, Map.class);
+                if (configuration.getDetails().getEnabled()) {
+                    final Map<String, Object> details = rest.get(configuration.getDetails().getPath(), APPLICATION_JSON_TYPE, Map.class);
                     if (details.containsKey("status")) {
                         // tenant health endpoint contains detailed information about database connections
                         assignDetails(builder, details);
