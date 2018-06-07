@@ -6,10 +6,14 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sms.client.SmsMessagingApi;
 import com.cumulocity.sms.client.SmsMessagingApiImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+
+import java.net.URI;
 
 import static org.apache.http.client.fluent.Executor.newInstance;
 
@@ -18,12 +22,14 @@ public class ServicesPlatformImpl implements ServicesPlatform {
 
     public interface CredentialsProvider {
         String getTenant();
+
         String getUsername();
+
         String getPassword();
     }
 
     private final String host;
-    private final SmsMessagingApiImpl.CredentialsProvider credentials;
+    private final Executor executor;
 
     public ServicesPlatformImpl(String host, final CumulocityCredentials credentials) {
         this(host, new CredentialsProvider() {
@@ -46,35 +52,31 @@ public class ServicesPlatformImpl implements ServicesPlatform {
             host = host + "/";
         }
         this.host = host;
-        this.credentials = new SmsMessagingApiImpl.CredentialsProvider() {
-            @Override
-            public String getTenant() {
-                return auth.getTenant();
-            }
-
-            @Override
-            public String getUsername() {
-                return auth.getUsername();
-            }
-
-            @Override
-            public String getPassword() {
-                return auth.getPassword();
-            }
-        };
+        this.executor = createExecutor(host, auth);
     }
 
     @Override
     public SmsMessagingApi getSmsMessagingApi() {
-        return new SmsMessagingApiImpl(host, credentials);
+        return new SmsMessagingApiImpl(host, executor);
     }
 
     @Override
     public EmailApi getEmailApi() {
-        return new EmailApiImpl(host, newInstance().use(new BasicCredentialsProvider() {
-            public Credentials getCredentials(AuthScope authscope) {
-                return new UsernamePasswordCredentials(credentials.getTenant() + "/" + credentials.getUsername(), credentials.getPassword());
-            }
-        }));
+        return new EmailApiImpl(host, executor);
+    }
+
+    private static Executor createExecutor(final String url, final CredentialsProvider auth) {
+        return newInstance()
+                .use(new BasicCredentialsProvider() {
+                    public Credentials getCredentials(AuthScope authscope) {
+                        return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
+                    }
+                })
+                .authPreemptive(getHost(url));
+    }
+
+    private static HttpHost getHost(String host) {
+        final URI uri = URI.create(host);
+        return new HttpHost(uri.getHost(), uri.getPort());
     }
 }
