@@ -155,7 +155,6 @@ public class MicroserviceSubscriptionsService {
         }
     }
 
-    @Synchronized
     public Collection<MicroserviceCredentials> getAll() {
         return repository.getCurrentSubscriptions();
     }
@@ -163,7 +162,6 @@ public class MicroserviceSubscriptionsService {
     /**
      * This method should not be invoked in listener because it will return previous state
      */
-    @Synchronized
     public Optional<MicroserviceCredentials> getCredentials(String tenant) {
         for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
             if (subscription.getTenant().equals(tenant)) {
