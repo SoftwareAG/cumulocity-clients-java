@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>agent-framework</artifactId>
-		<version>8.18.4-SNAPSHOT</version>
+		<version>8.18.4</version>
 	</parent>
 
 	<artifactId>agent-framework-device-control</artifactId>
