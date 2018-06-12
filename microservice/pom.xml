@@ -274,7 +274,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.6.5.201403032054</version>
+                        <version>0.8.1</version>
                         <configuration>
                             <destFile>${project.basedir}/../target/jacoco.exec</destFile>
                             <append>true</append>
