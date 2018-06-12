@@ -23,6 +23,15 @@ public class MicroserviceCredentials implements Credentials {
         return new MicroserviceCredentialsBuilder();
     }
 
+    public static MicroserviceCredentialsBuilder copyOf(MicroserviceCredentials source) {
+        return builder()
+                .tenant(source.getTenant())
+                .username(source.getUsername())
+                .password(source.getPassword())
+                .tfaToken(source.getTfaToken())
+                .appKey(source.getAppKey());
+    }
+
     public UserCredentials withIdentifier(String identifier) {
         return UserCredentials.builder()
                 .tenant(tenant)

@@ -2,8 +2,7 @@ package com.cumulocity.sms.client;
 
 import com.cumulocity.model.sms.*;
 import com.cumulocity.sms.client.messaging.MessagingClient;
-import lombok.*;
-import lombok.experimental.Wither;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -21,33 +20,26 @@ import static org.apache.http.client.fluent.Executor.newInstance;
 @Getter
 public class SmsMessagingApiImpl implements SmsMessagingApi {
 
-    @Data
-    @Wither
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SmsCredentialsProvider {
-        private String tenant;
-        private String username;
-        private String password;
+    // used directly by tracker agent
+    public static abstract class SmsCredentialsProvider {
+        public abstract String getTenant();
+
+        public abstract String getUsername();
+
+        public abstract String getPassword();
     }
 
     private final MessagingClient messagingClient;
 
-    public SmsMessagingApiImpl(final String host, final String rootEndpoint, final SmsCredentialsProvider auth) {
-        this(addLeadingSlash(host) + rootEndpoint, newInstance().use(new BasicCredentialsProvider() {
-            public Credentials getCredentials(AuthScope authscope) {
-                return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
-            }
-        }).authPreemptive(getHost(host)));
-    }
-
-    public SmsMessagingApiImpl(final String host, final SmsCredentialsProvider auth) {
-        this(host, "service/messaging/smsmessaging/v1", auth);
-    }
-
     public SmsMessagingApiImpl(final String host, Executor executor) {
-        messagingClient = new MessagingClient(host, executor);
+        final String url = concat(host, "service/messaging/smsmessaging/v1");
+        messagingClient = new MessagingClient(url, executor);
+    }
+
+    // used directly by tracker agent
+    public SmsMessagingApiImpl(final String host, String contextPath, SmsCredentialsProvider executor) {
+        final String url = concat(host, contextPath);
+        messagingClient = new MessagingClient(url, createExecutor(url, executor));
     }
 
     @Override
@@ -75,6 +67,19 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
         return messagingClient.getMessage(receiveAddress, messageId);
     }
 
+    private String concat(String host, String contextPath) {
+        return addLeadingSlash(host) + contextPath;
+    }
+
+    private static Executor createExecutor(final String url, final SmsCredentialsProvider auth) {
+        return newInstance()
+                .use(new BasicCredentialsProvider() {
+                    public Credentials getCredentials(AuthScope authscope) {
+                        return new UsernamePasswordCredentials(auth.getTenant() + "/" + auth.getUsername(), auth.getPassword());
+                    }
+                })
+                .authPreemptive(getHost(url));
+    }
 
     private static HttpHost getHost(String host) {
         final URI uri = URI.create(host);

@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static javax.ws.rs.core.MediaType.*;
 
 @Slf4j
 @Component
@@ -39,12 +39,20 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
         try (final Platform platform = platform().build()) {
             final RestOperations rest = platform.rest();
             try {
-                final Map<String, Object> health = rest.get(configuration.getPath(), APPLICATION_JSON_TYPE, Map.class);
 
-                if (health.containsKey("status") && configuration.getDetails()) {
-                    builder.status(new Status(String.valueOf(health.get("status"))));
-                    // tenant health endpoint contains detailed information about database connections
-                    assignDetails(builder, health);
+                try {
+                    rest.get(configuration.getPath(), APPLICATION_JSON_TYPE, Map.class);
+                    builder.up();
+                } catch (SDKException ex) {
+                    throw ex;
+                }
+
+                if (configuration.getDetails().getEnabled()) {
+                    final Map<String, Object> details = rest.get(configuration.getDetails().getPath(), APPLICATION_JSON_TYPE, Map.class);
+                    if (details.containsKey("status")) {
+                        // tenant health endpoint contains detailed information about database connections
+                        assignDetails(builder, details);
+                    }
                 }
 
             } catch (SDKException ex) {
