@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -18,7 +19,8 @@ import com.cumulocity.sdk.client.polling.AlteringRateResultPoller.GetResultTask;
 public class AlteringRateResultPollerTest {
     
     private GetResultTask<String> task = mock(GetResultTask.class);
-    
+
+    @Ignore
     @Test
     public void shouldExecuteAllPlannedCallsThenExpire() throws Exception {
         final AtomicInteger counter = new AtomicInteger(3);

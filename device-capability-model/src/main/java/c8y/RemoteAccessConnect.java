@@ -1,14 +1,12 @@
 package c8y;
 
-import java.io.Serializable;
-
 import org.svenson.AbstractDynamicProperties;
+
+import java.io.Serializable;
 
 public class RemoteAccessConnect extends AbstractDynamicProperties implements Serializable {
 
     private static final long serialVersionUID = -6443811928706492241L;
-    
-    public static final String PROTOCOL_VNC = RemoteAccess.PROTOCOL_VNC;
 
     private String connectionKey;
 

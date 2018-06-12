@@ -20,72 +20,83 @@
 
 package c8y;
 
-import java.math.BigDecimal;
-
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
 
+import java.math.BigDecimal;
+
 public class Position extends AbstractDynamicProperties {
-	private static final long serialVersionUID = -8365376637780307348L;
-	
-	private BigDecimal lat;
+    private static final long serialVersionUID = -8365376637780307348L;
+
+    private BigDecimal lat;
     private BigDecimal lng;
     private BigDecimal alt;
     private Long accuracy;
 
-	public BigDecimal getLat() {
-		return lat;
-	}
+    public BigDecimal getLat() {
+        return lat;
+    }
 
-	public void setLat(BigDecimal latitude) {
-		this.lat = latitude;
-	}
+    public void setLat(BigDecimal latitude) {
+        this.lat = latitude;
+    }
 
-	public BigDecimal getLng() {
-		return lng;
-	}
+    public BigDecimal getLng() {
+        return lng;
+    }
 
-	public void setLng(BigDecimal longitude) {
-		this.lng = longitude;
-	}
+    public void setLng(BigDecimal longitude) {
+        this.lng = longitude;
+    }
 
-	public BigDecimal getAlt() {
-		return alt;
-	}
+    public BigDecimal getAlt() {
+        return alt;
+    }
 
-	public void setAlt(BigDecimal altitude) {
-		this.alt = altitude;
-	}
-	
-	@JSONProperty(ignoreIfNull = true)
-	public Long getAccuracy() {
+    public void setAlt(BigDecimal altitude) {
+        this.alt = altitude;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public Long getAccuracy() {
         return accuracy;
     }
 
     public void setAccuracy(long accuracy) {
         this.accuracy = new Long(accuracy);
     }
-    
+
     public void setAccuracy(Long accuracy) {
         this.accuracy = accuracy;
     }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null)
-			return false;
-		if (obj == this)
-			return true;
-		if (!(obj instanceof Position))
-			return false;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (!(obj instanceof Position))
+            return false;
 
-		Position rhs = (Position) obj;
-		boolean result = (lat == null) ? (rhs.lat == null) : lat.equals(rhs.lat);
-		result = result && ((lng == null) ? (rhs.lng == null) : lng.equals(rhs.lng));
-		result = result && ((alt == null) ? (rhs.alt == null) : alt.equals(rhs.alt));
-		return result;
-	}
-	
+        Position rhs = (Position) obj;
+        return checkedCompare(lat, rhs.lat)
+                && checkedCompare(lng, rhs.lng)
+                && checkedCompare(alt, rhs.alt)
+                && checkedCompare(accuracy, rhs.accuracy);
+    }
+
+    private boolean checkedCompare(Comparable left, Comparable right){
+        if (left == null && right == null) {
+            return true;
+        } else if (left != null && right != null) {
+            if (left.compareTo(right) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public int hashCode() {
         int result = lat == null ? 0 : lat.hashCode();
