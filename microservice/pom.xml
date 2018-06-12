@@ -28,6 +28,8 @@
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
+
+        <nexus.url>http://localhost:8080</nexus.url>
     </properties>
 
     <modules>
@@ -301,11 +303,11 @@
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>
-            <url>http://nexus:8081/nexus/content/repositories/snapshots/</url>
+            <url>${nexus.url}/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>release</id>
-            <url>http://nexus:8081/nexus/content/repositories/releases/</url>
+            <url>${nexus.url}/nexus/content/repositories/releases/</url>
         </repository>
     </distributionManagement>
 </project>
