@@ -1,7 +1,7 @@
 #!/bin/ash
 jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
 jvm_mem=${JAVA_MEM:-"@package.jvm-mem@"}
-jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/log/@package.directory@/heap-dump-%p.hprof -XX:NativeMemoryTracking=summary -XX:+PrintGCDetails -XX:+PrintGCDateStamps"}
+jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/log/@package.directory@/heap-dump-%p.hprof"}
 arguments=${ARGUMENTS:-"@package.arguments@"}
 
 mkdir -p /var/log/@package.name@; echo "heap dumps  /log/@package.name@/heap-dump-<pid>.hprof"
