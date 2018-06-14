@@ -10,7 +10,7 @@ fi
 JAVA_PATH=`$BIN/detect-java`
 jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
 jvm_mem=${JAVA_MEM:-"@package.jvm-mem@"}
-jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.directory@/@package.name@-%p.hprof -XX:NativeMemoryTracking=summary -XX:+PrintGCDetails -XX:+PrintGCDateStamps"}
+jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.directory@/@package.name@-%p.hprof -XX:NativeMemoryTracking=summary -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/var/log/@package.directory@/@package.name@-gc.log -XX:-UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=50M"}
 arguments=${ARGUMENTS:-"@package.arguments@"}
 
 proxy_params=""
