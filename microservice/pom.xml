@@ -27,6 +27,8 @@
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
+
+        <nexus.url>http://localhost:8080</nexus.url>
     </properties>
 
     <modules>
@@ -266,11 +268,46 @@
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>
-            <url>http://localhost:8080/nexus/content/repositories/snapshots/</url>
+            <url>${nexus.url}/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>release</id>
-            <url>http://localhost:8080/nexus/content/repositories/releases/</url>
+            <url>${nexus.url}/nexus/content/repositories/releases/</url>
         </repository>
     </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.1</version>
+                        <configuration>
+                            <destFile>${project.basedir}/../target/jacoco.exec</destFile>
+                            <append>true</append>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
