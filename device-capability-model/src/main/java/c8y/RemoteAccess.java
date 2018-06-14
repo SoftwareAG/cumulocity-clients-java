@@ -60,12 +60,4 @@ public class RemoteAccess extends AbstractDynamicProperties {
         return (T) map.get(key);
     }
 
-    public void setProtocol(String protocol) {
-        this.protocol = RemoteAccessProtocol.valueOf(protocol);
-    }
-
-    public void setProtocol(RemoteAccessProtocol protocol) {
-        this.protocol = protocol;
-    }
-
 }
