@@ -2,10 +2,7 @@ package com.cumulocity.sdk.client.option;
 
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.tenant.OptionMediaType;
-import com.cumulocity.rest.representation.tenant.OptionRepresentation;
-import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
-import com.cumulocity.rest.representation.tenant.TenantApiRepresentation;
+import com.cumulocity.rest.representation.tenant.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.buffering.Future;
@@ -79,6 +76,27 @@ public class TenantOptionApiImpl implements TenantOptionApi {
     }
 
     private TenantApiRepresentation getTenantApiRepresentation() {
+        if (tenantApiRepresentation == null) {
+            tenantApiRepresentation = buildTenantApiRepresentation();
+        }
+        return tenantApiRepresentation;
+    }
+
+    private TenantApiRepresentation buildTenantApiRepresentation() {
+        final OptionCollectionRepresentation optionCollectionRepresentation = new OptionCollectionRepresentation();
+        optionCollectionRepresentation.setSelf("/tenant/options");
+
+        final TenantCollectionRepresentation tenants = new TenantCollectionRepresentation();
+        tenants.setSelf("/tenant/tenants");
+
+        final TenantApiRepresentation tenantApiRepresentation = new TenantApiRepresentation();
+        tenantApiRepresentation.setOptions(optionCollectionRepresentation);
+        tenantApiRepresentation.setTenants(tenants);
+        tenantApiRepresentation.setTenantApplicationForId("/tenant/tenants/{tenantId}/applications/{applicationId}");
+        tenantApiRepresentation.setTenantApplications("/tenant/tenants/{tenantId}/applications");
+        tenantApiRepresentation.setTenantForId("/tenant/tenants/{tenantId}");
+        tenantApiRepresentation.setTenantOptionForCategoryAndKey("/tenant/options/{category}/{key}");
+        tenantApiRepresentation.setTenantOptionsForCategory("/tenant/options/{category}");
         return tenantApiRepresentation;
     }
 
