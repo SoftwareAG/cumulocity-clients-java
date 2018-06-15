@@ -40,7 +40,12 @@ public enum RemoteAccessCredentialsType {
         }
     });
 
-
+    public static RemoteAccessCredentialsType fromString(String type) {
+        if (StringUtils.isEmpty(type)) {
+            return null;
+        }
+        return valueOf(type);
+    }
 
     private static void validateValueNotEmpty(String valueToCheck, final String fieldName, RemoteAccessCredentialsType credentialsType) {
         if (StringUtils.isEmpty(valueToCheck)) {
