@@ -9,14 +9,6 @@ public class RemoteAccessCredentialsBuilder {
     private String privateKey;
     private String hostCertificate;
 
-    public RemoteAccessCredentialsBuilder(String credentialType, String protocol) {
-        this(RemoteAccessCredentialsType.valueOf(credentialType), RemoteAccessProtocol.valueOf(protocol));
-    }
-
-    public RemoteAccessCredentialsBuilder(String credentialType, RemoteAccessProtocol protocol) {
-        this(RemoteAccessCredentialsType.valueOf(credentialType), protocol);
-    }
-
     public RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType credentialsType, RemoteAccessProtocol protocol) {
         this(credentialsType);
         if (!protocol.isCredentialTypeSupported(type)) {
@@ -65,7 +57,9 @@ public class RemoteAccessCredentialsBuilder {
 
     public RemoteAccessCredentials build() {
         RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, privateKey, hostCertificate);
-        type.validateCredentials(credentials);
+        if (type != null) {
+            type.validateCredentials(credentials);
+        }
         return credentials;
     }
 }
