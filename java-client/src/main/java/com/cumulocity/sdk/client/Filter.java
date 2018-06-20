@@ -37,9 +37,12 @@ public abstract class Filter {
     }
 
     public Map<String, String> getQueryParams() {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         Class clazz = getClass();
         for (Field field : clazz.getDeclaredFields()) {
+            if(field.getName().equals("$jacocoData")){
+                continue;
+            }
             field.setAccessible(true);
             String value = (String) safelyGetFieldValue(field, this);
             if (value != null) {
