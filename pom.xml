@@ -35,7 +35,7 @@
 
 	<properties>
 		<cumulocity.model.version>8.15.6</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.15.5</cumulocity.shared-components.version>
+		<cumulocity.shared-components.version>8.15.6</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
