@@ -19,34 +19,31 @@
  */
 package com.cumulocity.sdk.client;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-
-import java.net.URI;
-
-import javax.ws.rs.core.MediaType;
-
-import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
+import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import javax.ws.rs.core.MediaType;
+import java.net.URI;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(WebResource.Builder.class)
@@ -85,6 +82,8 @@ public class RestConnectorTest {
         restConnector = new RestConnector(clientParameters, parser, client);
 
         when(client.resource(PATH)).thenReturn(webResource);
+
+        when(parser.write(anyObject())).thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
     @Test
@@ -94,7 +93,7 @@ public class RestConnectorTest {
         when(typeBuilder.get(ClientResponse.class)).thenReturn(response);
 
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
-        when(parser.parse(response, 200, BaseResourceRepresentation.class)).thenReturn(representation);
+        when(parser.parse(response, BaseResourceRepresentation.class, 200)).thenReturn(representation);
 
         // When
         BaseResourceRepresentation result = restConnector.get(PATH, mediaType,
@@ -110,7 +109,7 @@ public class RestConnectorTest {
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
-        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, BaseResourceRepresentation.class, 201, 200)).thenReturn(outputRepresentation);
 
         // When
         BaseResourceRepresentation result = restConnector.post(PATH, mediaType, representation);
@@ -125,7 +124,7 @@ public class RestConnectorTest {
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
         ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
-        when(parser.parse(response, 201, ManagedObjectRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
 
         // When
         ManagedObjectRepresentation result = restConnector.post(PATH, mediaType, representation);
@@ -141,7 +140,7 @@ public class RestConnectorTest {
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
-        when(parser.parse(response, 201, ManagedObjectRepresentation.class)).thenReturn(null);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(null);
         when(response.getLocation()).thenReturn(new URI("http://URI"));
         when(parser.parseIdFromLocation(response)).thenReturn(new GId("mo_id"));
 
@@ -161,7 +160,7 @@ public class RestConnectorTest {
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
-        when(parser.parse(response, 201, ManagedObjectRepresentation.class)).thenReturn(null);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(null);
         when(response.getLocation()).thenReturn(null);
 
         // When
@@ -203,7 +202,7 @@ public class RestConnectorTest {
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
         returnResponseWhenPut(representation);
-        when(parser.parse(response, 200, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, BaseResourceRepresentation.class, 200)).thenReturn(outputRepresentation);
 
         // When
         BaseResourceRepresentation result = restConnector.put(PATH, mediaType, representation);
@@ -223,7 +222,7 @@ public class RestConnectorTest {
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPut(representation);
         ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
-        when(parser.parse(response, 200, ManagedObjectRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 200)).thenReturn(outputRepresentation);
 
         // When
         ManagedObjectRepresentation result = restConnector.put(PATH, mediaType, representation);
@@ -239,7 +238,7 @@ public class RestConnectorTest {
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPut(representation);
-        when(parser.parse(response, 200, ManagedObjectRepresentation.class)).thenReturn(null);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 200)).thenReturn(null);
         when(response.getLocation()).thenReturn(new URI("http://URI"));
         when(parser.parseIdFromLocation(response)).thenReturn(new GId("mo_id"));
 
@@ -259,7 +258,7 @@ public class RestConnectorTest {
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPut(representation);
-        when(parser.parse(response, 200, ManagedObjectRepresentation.class)).thenReturn(null);
+        when(parser.parse(response, ManagedObjectRepresentation.class, 200)).thenReturn(null);
         when(response.getLocation()).thenReturn(null);
 
         // When
@@ -285,7 +284,7 @@ public class RestConnectorTest {
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
-        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, BaseResourceRepresentation.class, 201, 200)).thenReturn(outputRepresentation);
 
         // When
         BaseResourceRepresentation result = restConnector.post(PATH, mediaType, representation);
@@ -309,7 +308,7 @@ public class RestConnectorTest {
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
-        when(parser.parse(response, 201, BaseResourceRepresentation.class)).thenReturn(outputRepresentation);
+        when(parser.parse(response, BaseResourceRepresentation.class, 201)).thenReturn(outputRepresentation);
 
         { // recheck if work ok on register interceptor
             clientParameters.registerInterceptor(addHeaderFake);

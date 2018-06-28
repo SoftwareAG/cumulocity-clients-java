@@ -20,9 +20,8 @@
 
 package com.cumulocity.sdk.client.measurement;
 
-import java.util.Map;
-
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentation;
@@ -30,6 +29,8 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+
+import java.util.Map;
 
 public class MeasurementApiImpl implements MeasurementApi {
 
@@ -71,6 +72,16 @@ public class MeasurementApiImpl implements MeasurementApi {
     }
 
     @Override
+    public void deleteMeasurementsByFilter(MeasurementFilter filter) throws IllegalArgumentException, SDKException {
+        if (filter == null) {
+            throw new IllegalArgumentException("Measurement filter is null");
+        } else {
+            Map<String, String> params = filter.getQueryParams();
+            restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+        }
+    }
+
+    @Override
     public MeasurementCollection getMeasurementsByFilter(MeasurementFilter filter)
             throws SDKException {
         if (filter == null) {
@@ -90,7 +101,17 @@ public class MeasurementApiImpl implements MeasurementApi {
     public MeasurementRepresentation create(MeasurementRepresentation measurementRepresentation) throws SDKException {
           return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
-    
+
+    @Override
+    public MeasurementCollectionRepresentation createBulk(MeasurementCollectionRepresentation measurementCollection) {
+        return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
+    }
+
+    @Override
+    public void createBulkWithoutResponse(MeasurementCollectionRepresentation measurementCollection) {
+        restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
+    }
+
     @Override
     public void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException {
           restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);

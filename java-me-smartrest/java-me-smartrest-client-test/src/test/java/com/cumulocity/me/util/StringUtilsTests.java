@@ -1,10 +1,12 @@
 package com.cumulocity.me.util;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import junit.framework.Assert;
 
+import org.fest.assertions.Assertions;
 import org.junit.Test;
 
 public class StringUtilsTests {
@@ -176,4 +178,46 @@ public class StringUtilsTests {
 	    
 	    Assert.assertEquals(false, insideQuotes);
 	}
+
+	@Test
+	public void shouldPadStartCorrectly() throws Exception {
+		//given
+		String input = "1234567890";
+
+		//when
+		String padded = StringUtils.padStart(input, '0', 20);
+
+		//then
+		assertThat(padded).hasSize(20);
+		assertThat(padded).startsWith("0000000000");
+		assertThat(padded).endsWith(input);
+	}
+
+	@Test
+	public void shouldNotPadStartIfLengthAlreadyReached() throws Exception {
+		//given
+		String input = "1234567890";
+
+		//when
+		String padded = StringUtils.padStart(input, '0', 10);
+
+		//then
+		assertThat(padded).hasSize(10);
+		assertThat(padded).isEqualTo(input);
+	}
+
+	@Test
+	public void shouldNotPadStartIfLengthAlreadySurpassed() throws Exception {
+		//given
+		String input = "1234567890";
+
+		//when
+		String padded = StringUtils.padStart(input, '0', 5);
+
+		//then
+		assertThat(padded).hasSize(10);
+		assertThat(padded).isEqualTo(input);
+	}
+
+
 }

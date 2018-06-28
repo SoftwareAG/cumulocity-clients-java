@@ -59,7 +59,7 @@ import java.net.URL;
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
-public class RestConnector {
+public class RestConnector implements RestOperations {
 
     public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
 
@@ -113,16 +113,19 @@ public class RestConnector {
         return responseParser;
     }
 
+    @Override
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
-        return responseParser.parse(response, OK.getStatusCode(), responseType);
+        return responseParser.parse(response, responseType, OK.getStatusCode());
     }
     
+    @Override
     public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parseObject(response, OK.getStatusCode(), responseType);
     }
 
+    @Override
     public Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
         return response.getResponseStatus();
@@ -137,8 +140,9 @@ public class RestConnector {
         return builder.get(ClientResponse.class);
     }
 
+    @Override
     public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
-            Class<T> responseClass) throws SDKException {
+                                                           Class<T> responseClass) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -153,6 +157,7 @@ public class RestConnector {
 
     }
     
+    @Override
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
         builder = addApplicationKeyHeader(builder);
@@ -160,6 +165,7 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
     }
 
+    @Override
     public <T extends ResourceRepresentation> T putText(String path, String content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
         builder = addApplicationKeyHeader(builder);
@@ -167,8 +173,9 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
     }
 
+    @Override
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
-            Class<T> responseClass) {
+                                                          Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -180,8 +187,9 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), CREATED.getStatusCode());
     }
     
+    @Override
     public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
-            Class<T> responseClass) {
+                                                          Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -195,8 +203,9 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
     }
     
+    @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
-            Class<T> responseClass) {
+                                                         Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -212,17 +221,16 @@ public class RestConnector {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
-
+    @Override
+    public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
-
     }
 
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response, int responseCode)
             throws SDKException {
         @SuppressWarnings("unchecked")
-        T repFromPlatform = responseParser.parse(response, responseCode, (Class<T>) representation.getClass());
+        T repFromPlatform = responseParser.parse(response, (Class<T>) representation.getClass(), responseCode);
         T repToReturn = isDefined(repFromPlatform) ? repFromPlatform : representation;
         if (response.getLocation() != null) {
             repToReturn.setId(responseParser.parseIdFromLocation(response));
@@ -234,11 +242,13 @@ public class RestConnector {
         return repFromPlatform != null;
     }
 
+    @Override
     public <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType, T representation)
             throws SDKException {
         return sendAsyncRequest(HttpMethod.POST, path, mediaType, representation);
     }
 
+    @Override
     public <T extends ResourceRepresentation> Future putAsync(String path, CumulocityMediaType mediaType, T representation)
             throws SDKException {
         return sendAsyncRequest(HttpMethod.PUT, path, mediaType, representation);
@@ -250,17 +260,20 @@ public class RestConnector {
         return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
-        return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode());
+        return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode(), OK.getStatusCode());
     }
 
-    public <T extends ResourceRepresentationWithId> T post(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    @Override
+    public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
         ClientResponse response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
 
+    @Override
     public <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException {
         WebResource.Builder builder = client.resource(path).type(mediaType);
         builder = addApplicationKeyHeader(builder);
@@ -271,6 +284,7 @@ public class RestConnector {
         responseParser.checkStatus(response, CREATED.getStatusCode(), ACCEPTED.getStatusCode());
     }
 
+    @Override
     public <Result extends ResourceRepresentation, Param extends ResourceRepresentation> Result post(
             final String path,
             final CumulocityMediaType contentType,
@@ -281,8 +295,9 @@ public class RestConnector {
         return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode());
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    public <T extends ResourceRepresentation> T put(String path, CumulocityMediaType mediaType, T representation) throws SDKException {
+    public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, T representation) throws SDKException {
 
         ClientResponse response = httpPut(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, OK.getStatusCode());
@@ -320,12 +335,12 @@ public class RestConnector {
         return builder;
     }
 
-    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int responseCode)
+    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int... responseCodes)
             throws SDKException {
-        return responseParser.parse(response, responseCode, type);
+        return responseParser.parse(response, type, responseCodes);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, CumulocityMediaType contentType, CumulocityMediaType accept, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, MediaType contentType, MediaType accept, T representation) {
         WebResource.Builder builder = client.resource(path).type(contentType);
         if (platformParameters.requireResponseBody()) {
             builder.accept(accept);
@@ -334,10 +349,10 @@ public class RestConnector {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.post(ClientResponse.class, representation);
+        return builder.post(ClientResponse.class, responseParser.write(representation));
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, CumulocityMediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, MediaType mediaType, T representation) {
 
         WebResource.Builder builder = client.resource(path).type(mediaType);
         if (platformParameters.requireResponseBody()) {
@@ -347,9 +362,10 @@ public class RestConnector {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.put(ClientResponse.class, representation);
+        return builder.put(ClientResponse.class, responseParser.write(representation));
     }
 
+    @Override
     public void delete(String path) throws SDKException {
         Builder builder = client.resource(path).getRequestBuilder();
 

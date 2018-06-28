@@ -415,6 +415,76 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
 //
+// Scenario: Delete all measurement collection by an empty filter
+
+    @Test
+    public void deleteMeasurementCollectionByEmptyFilter() throws Exception {
+//    Given I have '3' measurements of type 'com.type1' for the managed object
+        iHaveMeasurements(3, "com.type1");
+//    And I have '2' measurements of type 'com.type2' for the managed object
+        iHaveMeasurements(2, "com.type2");
+//    When I create all measurements
+        iCreateAll();
+//    Then All measurements should be created
+        allShouldBeCreated();
+//    When I query all measurements
+        iQueryAll();
+//    Then I should get '5' measurements
+        iShouldGetNumberOfMeasurements(5);
+//    When I delete all measurement collection
+        iDeleteMeasurementCollection();
+//    And I query all measurements
+        iQueryAll();
+//    Then I should get '0' measurements
+        iShouldGetNumberOfMeasurements(0);
+    }
+
+//
+// Scenario: Delete measurements by filter
+
+    @Test
+    public void deleteMeasurementsByTypeFilter() throws Exception {
+//    Given I have '3' measurements of type 'com.type1' for the managed object
+        iHaveMeasurements(3, "com.type1");
+//    And I have '2' measurements of type 'com.type2' for the managed object
+        iHaveMeasurements(2, "com.type2");
+//    When I create all measurements
+        iCreateAll();
+//    Then All measurements should be created
+        allShouldBeCreated();
+//    When I query all measurements
+        iQueryAll();
+//    Then I should get '5' measurements
+        iShouldGetNumberOfMeasurements(5);
+//    When I delete all measurements by type 'com.type2'
+        iDeleteMeasurementsByType("com.type2");
+//    And I query all measurements
+        iQueryAll();
+//    Then I should get '3' measurements
+        iShouldGetNumberOfMeasurements(3);
+//    When I query all measurements by type 'com.type1'
+        iQueryAllByType("com.type1");
+//    Then I should get '3' measurements
+        iShouldGetNumberOfMeasurements(3);
+//    When I query all measurements by type 'com.type2'
+        iQueryAllByType("com.type2");
+//    Then I should get '0' measurements
+        iShouldGetNumberOfMeasurements(0);
+    }
+
+//    Scenario: Create measurement in bulk
+
+    @Test
+    public void createMeasurementsInBulk() throws Exception {
+//    Given I have '2' measurements of type 'com.type1' for the managed object
+        iHaveMeasurements(3, "com.type2");
+//    When I create all measurements in bulk
+        iCreateAllBulk();
+//    Then All measurements should be created
+        allShouldBeCreated();
+    }
+
+//
 //    Scenario: Get measurements collection by default page settings
 
     @Test
@@ -555,6 +625,17 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
+    @When("I create all measurements as bulk")
+    public void iCreateAllBulk() throws SDKException {
+        try {
+            MeasurementCollectionRepresentation collection = new MeasurementCollectionRepresentation();
+            collection.setMeasurements(input);
+            result1.addAll(measurementApi.createBulk(collection).getMeasurements());
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
     @When("I get the measurement with the created id")
     public void iGetMeasurementWithCreatedId() throws SDKException {
         try {
@@ -568,6 +649,44 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iDeleteMeasurementWithCreatedId() throws SDKException {
         try {
             measurementApi.deleteMeasurement(result1.get(0));
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I delete all measurement collection")
+    public void iDeleteMeasurementCollection() throws SDKException {
+        try {
+            measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I delete all measurements by type '([^']*)'")
+    public void iDeleteMeasurementsByType(String type) throws SDKException {
+        try {
+            MeasurementFilter typeFilter = new MeasurementFilter().byType(type);
+            measurementApi.deleteMeasurementsByFilter(typeFilter);
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I query all measurements")
+    public void iQueryAll() throws SDKException {
+        try {
+            collection1 = measurementApi.getMeasurements().get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    @When("I query all measurements by type '([^']*)'")
+    public void iQueryAllByType(String type) throws SDKException {
+        try {
+            MeasurementFilter typeFilter = new MeasurementFilter().byType(type);
+            collection1 = measurementApi.getMeasurementsByFilter(typeFilter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }

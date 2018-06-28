@@ -52,8 +52,6 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     public static final String PREFIX = "long-polling.json";
 
-    private final PlatformParameters paramters;
-
     private final Client httpClient;
 
     final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
@@ -64,12 +62,14 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher;
 
+    private String applicationKey;
+
     CumulocityLongPollingTransport(Map<String, Object> options, Provider<Client> httpClient, PlatformParameters paramters,
                                    UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
         super(NAME, null, options);
         this.httpClient = new ManagedHttpClient(httpClient).get();
         setOptionPrefix(PREFIX);
-        this.paramters = paramters;
+        this.applicationKey = paramters.getApplicationKey();
         this.unauthorizedConnectionWatcher = unauthorizedConnectionWatcher;
     }
 
@@ -185,8 +185,8 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private void addApplicationKeyHeader(ClientRequest request) {
-        if (paramters.getApplicationKey() != null) {
-            request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, paramters.getApplicationKey());
+        if (applicationKey != null) {
+            request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, applicationKey);
         }
     }
 

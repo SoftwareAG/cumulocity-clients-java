@@ -1,0 +1,2 @@
+org.springframework.boot.SpringApplicationRunListener=\
+com.cumulocity.microservice.logging.configuration.LoggingEnvironmentRunListener

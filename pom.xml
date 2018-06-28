@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>8.12.0-SNAPSHOT</version>
+		<version>9.10.0-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>8.12.0-SNAPSHOT</version>
+	<version>9.10.0-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -26,16 +26,16 @@
 		<module>java-me-client</module>
 		<module>java-me-client-test</module>
 		<module>java-me-maven-plugin</module>
-		<module>java-me-smartrest</module>
-		<module>agent-framework</module>
+		<module>java-me-smartrest</module>		
 		<module>java-email-client</module>
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>8.12.0-SNAPSHOT</cumulocity.model.version>
-		<cumulocity.shared-components.version>8.12.0-SNAPSHOT</cumulocity.shared-components.version>
+		<cumulocity.model.version>9.10.0-SNAPSHOT</cumulocity.model.version>
+		<cumulocity.shared-components.version>9.10.0-SNAPSHOT</cumulocity.shared-components.version>
+		<lombok.version>1.16.20</lombok.version>
 		<jersey1.version>1.8</jersey1.version>
 		<jaxrs.version>1.1.1</jaxrs.version>
 	</properties>
@@ -156,6 +156,11 @@
 			<artifactId>fest-assert</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
 		</dependency>
@@ -193,6 +198,12 @@
 					<groupId>org.eclipse.jetty</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+    		   <groupId>org.projectlombok</groupId>
+    		   <artifactId>lombok</artifactId>
+    		   <version>${lombok.version}</version>
+    		   <scope>provided</scope>
 		</dependency>
 	</dependencies>
 

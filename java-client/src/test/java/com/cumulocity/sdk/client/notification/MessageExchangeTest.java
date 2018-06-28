@@ -92,6 +92,8 @@ public class MessageExchangeTest {
 
     @Test
     public void shouldStopWatcherAndNotifyWhenCancel() throws InterruptedException, ExecutionException {
+        //Given
+        when(request.cancel(anyBoolean())).thenReturn(true);
         //When
         exchange.execute(URL, MESSAGES);
         exchange.cancel();

@@ -57,6 +57,7 @@ public interface EventApi {
      * @throws SDKException if the event could not be created
      */
     Future createAsync(EventRepresentation event) throws SDKException;
+
     /**
      * Deletes event from the platform.
      * The event to be deleted is identified by the id within the given event.
@@ -65,6 +66,15 @@ public interface EventApi {
      * @throws SDKException if the event could not be deleted
      */
     void delete(EventRepresentation event) throws SDKException;
+
+    /**
+     * Deletes events from the platform based on the specified filter
+     *
+     * @param filter the filter criteria(s)
+     * @throws IllegalArgumentException
+     * @throws SDKException if the event(s) could not be deleted
+     */
+    void deleteEventsByFilter(EventFilter filter) throws IllegalArgumentException, SDKException;
 
     /**
      * Gets the all the event in the platform

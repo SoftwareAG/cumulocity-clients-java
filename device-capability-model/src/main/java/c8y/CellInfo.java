@@ -37,6 +37,14 @@ public class CellInfo extends AbstractDynamicProperties {
     }
 
     @Override
+    public String toString() {
+        return "CellInfo{" +
+                "radioType='" + radioType + '\'' +
+                ", cellTowers=" + cellTowers +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

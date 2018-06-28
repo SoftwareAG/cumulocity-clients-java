@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -59,7 +60,7 @@ class MessageExchange {
 
     private final List<Mutable> messages;
 
-    private volatile Future<?> request;
+    private volatile Future<ClientResponse> request;
 
     private final ConnectionHeartBeatWatcher watcher;
 
@@ -96,8 +97,18 @@ class MessageExchange {
 
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
-        listener.onFailure(new RuntimeException("request cancelled"), messages);
-        request.cancel(true);
+        if (request.cancel(true)) {
+            listener.onFailure(new RuntimeException("request cancelled"), messages);
+        } else {
+            try {
+                final ClientResponse response = request.get();
+                if (response != null) {
+                    response.close();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.warn("canceling failed ", e);
+            }
+        }
         onFinish();
     }
 
@@ -243,7 +254,8 @@ class MessageExchange {
         }
 
         private void onConnectionFailed(Exception e) {
-            log.debug("connection failed");
+            log.error("connection failed " + e.getMessage(), e);
+
             unauthorizedConnectionWatcher.resetCounter();
             listener.onFailure(e, messages);
         }
@@ -265,10 +277,11 @@ class MessageExchange {
                     log.debug("wait for response headers {}", (Object) messages);
                     ClientResponse response = f.get();
                     log.debug("recived response headers {} ", (Object) messages);
-                    request = executorService.submit(new ResponseConsumer(response));
+                    executorService.submit(new ResponseConsumer(response));
                 }
             } catch (Exception e) {
-                log.debug("connection failed", e);
+                log.error("connection failed " + e.getMessage(), e);
+
                 unauthorizedConnectionWatcher.resetCounter();
                 listener.onFailure(e, messages);
                 onFinish();

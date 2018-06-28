@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.nsn.cumulocity.clients-java</groupId>
+    <artifactId>microservice-dependencies</artifactId>
+    <version>9.10.0-SNAPSHOT</version>
+
+    <name>Cumulocity :: Clients Java :: Microservice</name>
+    <description>Microservice</description>
+    <packaging>pom</packaging>
+    <scm>
+        <connection>scm:hg:ssh://hg@bitbucket.org/m2m/cumulocity-clients-java</connection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+
+        <cumulocity.model.version>9.10.0-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.dependencies.version>9.10.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>9.10.0-SNAPSHOT</cumulocity.clients.version>
+
+        <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
+        <jetty.version>8.1.7.v20120910</jetty.version>
+        <guava.version>20.0</guava.version>
+        <googleauth.version>1.1.1</googleauth.version>
+
+        <nexus.url>http://localhost:8080</nexus.url>
+    </properties>
+
+    <modules>
+        <module>autoconfigure</module>
+        <module>context</module>
+        <module>api</module>
+        <module>security</module>
+        <module>subscription</module>
+        <module>logging</module>
+        <module>package</module>
+        <module>properties</module>
+        <module>health-indicator</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- spring boot -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+
+                <!-- fixing clients java - jetty version -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-util</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-continuation</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-jmx</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <!-- microservice libraries -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-subscription</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-context</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-properties</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-health-indicator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- fixing clients java - jetty version -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-continuation</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jmx</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- fixing client java -->
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>rest-representation</artifactId>
+                <version>${cumulocity.model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>core-model</artifactId>
+                <version>${cumulocity.model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>java-client</artifactId>
+                <version>${cumulocity.clients.version}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.9</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <complianceLevel>${maven.compiler.target}</complianceLevel>
+                        <showWeaveInfo>true</showWeaveInfo>
+                        <verbose>true</verbose>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.nsn.cumulocity.clients-java</groupId>
+                    <artifactId>microservice-package-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <executions>
+                        <execution>
+                            <id>package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>package</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>push</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>push</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>microservice-deploy</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>microservice-deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Javadoc -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.0</version>
+                        <configuration>
+                            <doctitle>Cumulocity Microservice SDK</doctitle>
+                            <windowtitle>Cumulocity Microservice SDK</windowtitle>
+                            <overview>${project.basedir}/javadoc/overview.html</overview>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                          <goal>aggregate</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>${nexus.url}/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>release</id>
+            <url>${nexus.url}/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.1</version>
+                        <configuration>
+                            <destFile>${project.basedir}/../target/jacoco.exec</destFile>
+                            <append>true</append>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

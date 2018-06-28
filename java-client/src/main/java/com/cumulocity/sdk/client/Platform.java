@@ -30,8 +30,11 @@ import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
+import com.cumulocity.sdk.client.user.UserApi;
 
-public interface Platform {
+public interface Platform extends AutoCloseable{
+    RestOperations rest();
 
     InventoryApi getInventoryApi() throws SDKException;
 
@@ -53,4 +56,9 @@ public interface Platform {
     
     BinariesApi getBinariesApi() throws SDKException;
 
+    UserApi getUserApi() throws SDKException;
+
+    TenantOptionApi getTenantOptionApi() throws SDKException;
+
+    void close();
 }

@@ -180,4 +180,12 @@ public abstract class StringUtils {
     	result += array[array.length - 1];
     	return result;
     }
+
+    public static String padStart(String input, char padding, int length) {
+        StringBuffer output = new StringBuffer(input);
+        while (output.length() < length) {
+            output.insert(0, padding);
+        }
+        return output.toString();
+    }
 }

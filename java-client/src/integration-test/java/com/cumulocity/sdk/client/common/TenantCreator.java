@@ -75,7 +75,7 @@ public class TenantCreator {
         WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE);
         String tenantJson = "{ " +
                 "\"id\": \"" + tenantId + "\", " +
-                "\"domain\": \"sample-tenant.com\", " +
+                "\"domain\": \"sample-tenant.cumulocity.com\", " +
                 "\"company\": \"sample-tenant\", " +
                 "\"adminName\": \"" + platform.getUser() + "\", " +
                 "\"adminPass\": \"" + platform.getPassword() + "\" " +

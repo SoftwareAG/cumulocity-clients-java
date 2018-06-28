@@ -32,10 +32,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.cumulocity.me.util.DateUtils;
 
+@Ignore
 public class DateUtilsTest {
 
     private static final String GMT = "GMT";

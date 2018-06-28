@@ -43,8 +43,12 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryApiImpl;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
+import com.cumulocity.sdk.client.option.TenantOptionApiImpl;
+import com.cumulocity.sdk.client.user.UserApi;
+import com.cumulocity.sdk.client.user.UserApiImpl;
 
-public class PlatformImpl extends PlatformParameters implements Platform {
+public class PlatformImpl extends PlatformParameters implements Platform, AutoCloseable {
 
     private static final String PLATFORM_URL = "platform";
 
@@ -238,6 +242,18 @@ public class PlatformImpl extends PlatformParameters implements Platform {
         return new BinariesApiImpl(restConnector, getPlatformApi(restConnector).getInventory());
     }
 
+    @Override
+    public UserApi getUserApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new UserApiImpl(restConnector, new TemplateUrlParser(), getPlatformApi(restConnector).getUser());
+    }
+
+    @Override
+    public TenantOptionApi getTenantOptionApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new TenantOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant(), getPageSize());
+    }
+
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
         if (platformApiRepresentation == null) {
             platformApiRepresentation = restConnector.get(platformUrl(), PlatformMediaType.PLATFORM_API, PlatformApiRepresentation.class);
@@ -249,4 +265,13 @@ public class PlatformImpl extends PlatformParameters implements Platform {
         return getHost() + PLATFORM_URL;
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+    }
+
+    @Override
+    public RestConnector rest() {
+        return new RestConnector(this, new ResponseParser(this.getResponseMapper()));
+    }
 }

@@ -19,19 +19,6 @@
  */
 package com.cumulocity.sdk.client.measurement;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
@@ -41,6 +28,17 @@ import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentat
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.*;
 
 public class MeasurementApiImplTest {
 
@@ -111,6 +109,41 @@ public class MeasurementApiImplTest {
     }
 
     @Test
+    public void shouldDeleteByTypeFilter() throws Exception {
+        // Given
+        MeasurementFilter typeFilter = new MeasurementFilter().byType(TYPE);
+        String measurementsByTypeUrl = MEASUREMENT_COLLECTION_URL + "?type=" + TYPE;
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, typeFilter.getQueryParams()))
+                .thenReturn(measurementsByTypeUrl);
+
+        // When
+        measurementApi.deleteMeasurementsByFilter(typeFilter);
+
+        // Then
+        verify(restConnector, times(1)).delete(measurementsByTypeUrl);
+    }
+
+    @Test
+    public void shouldDeleteByEmptyFilter() throws Exception {
+        // Given
+        MeasurementFilter emptyFilter = new MeasurementFilter();
+        String measurementsUrl = MEASUREMENT_COLLECTION_URL;
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, emptyFilter.getQueryParams()))
+                .thenReturn(measurementsUrl);
+
+        // When
+        measurementApi.deleteMeasurementsByFilter(emptyFilter);
+
+        // Then
+        verify(restConnector, times(1)).delete(measurementsUrl);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testDeleteByNullFilter() {
+        measurementApi.deleteMeasurementsByFilter(null);
+    }
+
+    @Test
     public void shouldReturnMeasurements() throws SDKException {
         // Given
         MeasurementCollection expected = new MeasurementCollectionImpl(restConnector,
@@ -168,6 +201,32 @@ public class MeasurementApiImplTest {
 
         //then
         assertThat(result, sameInstance(created));
+    }
+
+    @Test
+    public void shouldCreateBulk() throws SDKException {
+        //Given
+        MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
+        MeasurementCollectionRepresentation created = new MeasurementCollectionRepresentation();
+        when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate)).thenReturn(created);
+
+        // When
+        MeasurementCollectionRepresentation result = measurementApi.createBulk(toCreate);
+
+        //then
+        assertThat(result, sameInstance(created));
+    }
+
+    @Test
+    public void shouldCreateBulkWithoutResponse() throws SDKException {
+        //Given
+        MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
+
+        // When
+        measurementApi.createBulkWithoutResponse(toCreate);
+
+        //then
+        verify(restConnector).postWithoutResponse(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate);
     }
 
     public static class NonRelevantFragmentType {
