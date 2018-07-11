@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
@@ -22,6 +23,7 @@ import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.svenson.JSON.defaultJSON;
 import static org.svenson.JSONParser.defaultJSONParser;
 
+@Slf4j
 @Getter
 @RequiredArgsConstructor
 public class MessagingClient {
@@ -40,7 +42,9 @@ public class MessagingClient {
         try {
             final String body = defaultJSON().forValue(outgoingMessageRequest);
             final String s = senderAddressAsUrlParameter(senderAddress);
-            final Request request = Post(sendEndpoint() + s + "/requests").bodyString(body, APPLICATION_JSON);
+            final String url = sendEndpoint() + s + "/requests";
+            final Request request = Post(url).bodyString(body, APPLICATION_JSON);
+
             final Response response = authorizedTemplate.execute(request);
             return parseResponse(response);
         } catch (IOException e) {

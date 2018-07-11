@@ -9,10 +9,10 @@ public class SmsMessagingApiTest {
 
     @Test
     public void shouldCreateClient() {
-        final SmsMessagingApiImpl messaging = new SmsMessagingApiImpl("http://host", "root", null);
+        final SmsMessagingApiImpl messaging = new SmsMessagingApiImpl("http://host", null);
 
         final MessagingClient messagingClient = messaging.getMessagingClient();
 
-        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/root");
+        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/service/messaging/smsmessaging/v1");
     }
 }
