@@ -3,6 +3,7 @@ package c8y;
 import org.springframework.util.StringUtils;
 
 public enum RemoteAccessCredentialsType {
+
     NONE(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
@@ -28,15 +29,6 @@ public enum RemoteAccessCredentialsType {
             validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR);
             validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR);
             validateValueNotEmpty(credentials.getPublicKey(), "Public key", KEY_PAIR);
-        }
-    }),
-    KEY_PAIR_HOST(new CredentialsValidator() {
-        @Override
-        public void validateCredentials(RemoteAccessCredentials credentials) {
-            validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR_HOST);
-            validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR_HOST);
-            validateValueNotEmpty(credentials.getPublicKey(), "Public key", KEY_PAIR_HOST);
-            validateValueNotEmpty(credentials.getHostCertificate(), "Host certificate", KEY_PAIR_HOST);
         }
     });
 

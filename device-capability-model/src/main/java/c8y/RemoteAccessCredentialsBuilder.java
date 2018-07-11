@@ -7,7 +7,7 @@ public class RemoteAccessCredentialsBuilder {
     private String password;
     private String publicKey;
     private String privateKey;
-    private String hostCertificate;
+    private String hostKey;
 
     public RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType credentialsType, RemoteAccessProtocol protocol) {
         this(credentialsType);
@@ -18,12 +18,11 @@ public class RemoteAccessCredentialsBuilder {
 
     public RemoteAccessCredentialsBuilder(RemoteAccessCredentials credentials) {
         this(credentials.getType());
-        this.
-                user(credentials.getUsername()).
-                password(credentials.getPassword()).
-                privateKey(credentials.getPrivateKey()).
-                publicKey(credentials.getPublicKey()).
-                hostCertificate(credentials.getHostCertificate());
+        this.user(credentials.getUsername())
+                .password(credentials.getPassword())
+                .privateKey(credentials.getPrivateKey())
+                .publicKey(credentials.getPublicKey())
+                .hostKey(credentials.getHostKey());
     }
 
     public RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType credentialsType) {
@@ -50,13 +49,13 @@ public class RemoteAccessCredentialsBuilder {
         return this;
     }
 
-    public RemoteAccessCredentialsBuilder hostCertificate(String hostCertificate) {
-        this.hostCertificate = hostCertificate;
+    public RemoteAccessCredentialsBuilder hostKey(String hostKey) {
+        this.hostKey = hostKey;
         return this;
     }
 
     public RemoteAccessCredentials build() {
-        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, privateKey, hostCertificate);
+        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, privateKey, hostKey);
         if (type != null) {
             type.validateCredentials(credentials);
         }
