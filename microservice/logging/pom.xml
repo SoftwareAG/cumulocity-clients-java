@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice-dependencies</artifactId>
-        <version>9.8.2</version>
+        <version>9.8.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-logging</artifactId>
