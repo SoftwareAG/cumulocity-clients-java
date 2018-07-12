@@ -33,6 +33,7 @@ public class PlatformBuilder {
         if (responseMapper != null) {
             platform.setResponseMapper(responseMapper);
         }
+        platform.setTfaToken(tfaToken);
         platform.setForceInitialHost(forceInitialHost);
         return platform;
     }
