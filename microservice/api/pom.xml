@@ -26,11 +26,5 @@
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>java-client</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-            <artifactId>googleauth</artifactId>
-            <version>${googleauth.version}-${cumulocity.dependencies.version}</version>
-        </dependency>
     </dependencies>
 </project>

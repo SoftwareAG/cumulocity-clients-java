@@ -26,7 +26,6 @@
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
-        <googleauth.version>1.1.1</googleauth.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
     </properties>
@@ -156,11 +155,6 @@
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
                     </exclusion>
-
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -168,12 +162,6 @@
                 <groupId>com.nsn.cumulocity.model</groupId>
                 <artifactId>core-model</artifactId>
                 <version>${cumulocity.model.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -185,10 +173,6 @@
                     <exclusion>
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
