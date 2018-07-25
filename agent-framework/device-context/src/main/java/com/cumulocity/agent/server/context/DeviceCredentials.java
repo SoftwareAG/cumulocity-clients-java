@@ -18,7 +18,7 @@ public class DeviceCredentials {
 
     public static final int DEFAULT_PAGE_SIZE = 25;
 
-    public static final String AUTH_ENCODING = "ASCII";
+    public static final String AUTH_ENCODING = "UTF-8";
 
     public static final String AUTH_PREFIX = "BASIC ";
 
