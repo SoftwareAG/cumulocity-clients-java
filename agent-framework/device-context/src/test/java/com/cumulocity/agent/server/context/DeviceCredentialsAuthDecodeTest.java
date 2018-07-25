@@ -7,7 +7,7 @@ import org.junit.Test;
 public class DeviceCredentialsAuthDecodeTest {
 
     @Test
-    public void shouldDecodeChineseCharFromBase64Format() {
+    public void shouldDecodeUTFCharactersFromBase64Format() {
 
         //given
         String login = "management/你好";
