@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
 
@@ -41,10 +42,11 @@ public class EnableMicroserviceSubscriptionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties) {
+    public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties, final Environment environment) {
         final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
         return MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
                 .baseUrl(properties.getUrl())
+                .environment(environment)
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
                         .switchTo(cumulocityCredentials(boostrapUser.getUsername(), boostrapUser.getPassword())
                                 .withTenantId(boostrapUser.getTenant())

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Password publicKey, privateKey & hostCertificate will be encoded and with {cipher} as prefix
+ * Password publicKey, privateKey & hostKey will be encoded and with {cipher} as prefix
  */
 @Getter
 @Setter
@@ -20,7 +20,8 @@ public class RemoteAccessCredentials {
     private String password;
     private String publicKey;
     private String privateKey;
-    private String hostCertificate;
+    /**Can be either hostKey or hostCertificate*/
+    private String hostKey;
 
     @Override
     public String toString() {
@@ -30,7 +31,7 @@ public class RemoteAccessCredentials {
                 .add("password", getHiddenValuesIfPresent(password))
                 .add("publicKey", getHiddenValuesIfPresent(publicKey))
                 .add("privateKey", getHiddenValuesIfPresent(privateKey))
-                .add("hostCertificate", getHiddenValuesIfPresent(hostCertificate))
+                .add("hostKey", getHiddenValuesIfPresent(hostKey))
                 .toString();
     }
 

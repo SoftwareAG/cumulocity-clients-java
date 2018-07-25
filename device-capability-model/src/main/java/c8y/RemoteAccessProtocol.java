@@ -9,7 +9,7 @@ import static c8y.RemoteAccessCredentialsType.*;
 public enum RemoteAccessProtocol {
 
     // Null has been introduced to fix backward compatibility for VNC
-    VNC(null, RemoteAccessCredentialsType.NONE, PASS_ONLY), TELNET(NONE), SSH(USER_PASS, KEY_PAIR, KEY_PAIR_HOST);
+    VNC(null, RemoteAccessCredentialsType.NONE, PASS_ONLY), TELNET(NONE), SSH(USER_PASS, KEY_PAIR);
 
     private final List<RemoteAccessCredentialsType> supportedCredentialTypes;
 
