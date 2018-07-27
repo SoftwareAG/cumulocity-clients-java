@@ -13,6 +13,7 @@ public class PlatformBuilder {
     private String tenant;
     private String username;
     private String password;
+    private String oAuthAccessToken;
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
@@ -39,9 +40,12 @@ public class PlatformBuilder {
     }
 
     private CumulocityCredentials buildCredentials() {
-        final CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
+        CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
         if (tenant != null && !tenant.isEmpty()) {
-            return credentials.withTenantId(tenant).build();
+            credentials = credentials.withTenantId(tenant);
+        }
+        if (oAuthAccessToken != null && !oAuthAccessToken.isEmpty()) {
+            credentials = credentials.withOAuthAccessToken(oAuthAccessToken);
         }
         return credentials.build();
     }

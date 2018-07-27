@@ -49,6 +49,8 @@ public class PlatformParameters {
 
     private String password;
 
+    private String oAuthAccessToken;
+
     private CumulocityLogin cumulocityLogin;
 
     private String proxyHost;
@@ -99,6 +101,7 @@ public class PlatformParameters {
         this.tenantId = credentials.getTenantId();
         this.user = credentials.getUsername();
         this.password = credentials.getPassword();
+        this.oAuthAccessToken = credentials.getOAuthAccessToken();
         this.applicationKey = credentials.getApplicationKey();
         this.cumulocityLogin = credentials.getLogin();
         this.requestOrigin = credentials.getRequestOrigin();
@@ -147,6 +150,10 @@ public class PlatformParameters {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getOAuthAccessToken() {
+        return oAuthAccessToken;
     }
 
     public String getProxyHost() {
@@ -238,6 +245,10 @@ public class PlatformParameters {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setOAuthAccessToken(String oAuthAccessToken) {
+        this.oAuthAccessToken = oAuthAccessToken;
     }
     
     public String getRequestOrigin() {
