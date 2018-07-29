@@ -43,13 +43,19 @@ public class EnableContextSupportConfiguration {
                 .put(USER_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
                         final UserCredentials context = userContextService.getContext();
-                        return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," + context.getTfaToken();
+                        return context.getTenant() + "/" +
+                                context.getUsername() + ":" +
+                                (context.getPassword() == null ? context.getOAuthAccessToken() : context.getPassword()) + "," +
+                                context.getTfaToken();
                     }
                 })
                 .put(TENANT_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
                         final MicroserviceCredentials context = microserviceContextService.getContext();
-                        return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," + context.getTfaToken();
+                        return context.getTenant() + "/" +
+                                context.getUsername() + ":" +
+                                (context.getPassword() == null ? context.getOAuthAccessToken() : context.getPassword()) + "," +
+                                context.getTfaToken();
                     }
                 })
                 .build()
