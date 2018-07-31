@@ -56,4 +56,6 @@ public interface MicroserviceSubscriptionsService {
      *          <code>Optional.<MicroserviceCredentials>absent()</code> otherwise
      */
     Optional<MicroserviceCredentials> getCredentials(String tenant);
+
+    boolean isSubscribed();
 }

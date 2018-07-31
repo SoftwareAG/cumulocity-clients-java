@@ -48,6 +48,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private volatile Credentials processed;
     private volatile boolean subscribing = false;
+    private volatile boolean subscribed = false;
 
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
@@ -109,7 +110,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             subscribing = true;
 
             final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
-            if (maybeApplication.isPresent()) {
+            if (subscribed = maybeApplication.isPresent()) {
                 final ApplicationRepresentation application = maybeApplication.get();
                 final Subscriptions subscriptions = repository.retrieveSubscriptions(application.getId());
 
@@ -254,6 +255,11 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             return contextService.callWithinContext(credentials, runnable);
         }
         return null;
+    }
+
+    @Override
+    public boolean isSubscribed() {
+        return subscribed;
     }
 
     private void log(String s, MicroserviceCredentials user) {

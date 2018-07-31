@@ -2,6 +2,7 @@ package com.cumulocity.microservice.health.annotation;
 
 import com.cumulocity.microservice.health.indicator.MemoryHealthIndicatorConfiguration;
 import com.cumulocity.microservice.health.indicator.PlatformHealthIndicatorConfiguration;
+import com.cumulocity.microservice.health.indicator.SubscriptionHealthIndicatorConfiguration;
 import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
 import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
 import org.springframework.context.annotation.Import;
@@ -20,7 +21,8 @@ import java.lang.annotation.*;
 @EnableSpringBootMetricsCollector
 @Import({
         PlatformHealthIndicatorConfiguration.class,
-        MemoryHealthIndicatorConfiguration.class
+        MemoryHealthIndicatorConfiguration.class,
+        SubscriptionHealthIndicatorConfiguration.class
 })
 public @interface EnableHealthIndicator {
 }
