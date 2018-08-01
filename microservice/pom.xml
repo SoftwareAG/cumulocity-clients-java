@@ -170,6 +170,26 @@
                 <version>${cumulocity.model.version}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>cep-model</artifactId>
+                <version>${cumulocity.model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>com.springsource.javax.validation</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
                         <artifactId>guava</artifactId>
                     </exclusion>
