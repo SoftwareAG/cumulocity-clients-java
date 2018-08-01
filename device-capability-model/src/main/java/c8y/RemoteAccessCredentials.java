@@ -2,9 +2,11 @@ package c8y;
 
 import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 /**
  * Password publicKey, privateKey & hostKey will be encoded and with {cipher} as prefix
@@ -13,9 +15,9 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode
 @AllArgsConstructor
+@Builder
 public class RemoteAccessCredentials {
 
-    private RemoteAccessCredentialsType type;
     private String username;
     private String password;
     private String publicKey;
@@ -23,10 +25,19 @@ public class RemoteAccessCredentials {
     /**Can be either hostKey or hostCertificate*/
     private String hostKey;
 
+    public RemoteAccessCredentials copy() {
+        return builder()
+                .username(username)
+                .password(password)
+                .publicKey(publicKey)
+                .privateKey(privateKey)
+                .hostKey(hostKey)
+                .build();
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("type", type)
                 .add("user", username)
                 .add("password", getHiddenValuesIfPresent(password))
                 .add("publicKey", getHiddenValuesIfPresent(publicKey))
@@ -40,6 +51,14 @@ public class RemoteAccessCredentials {
             return "<hidden>";
         }
         return null;
+    }
+
+    public boolean isUserPasswordCredentials() {
+        return !StringUtils.isEmpty(username) && !StringUtils.isEmpty(password);
+    }
+
+    public boolean isKeyPairCredentials() {
+        return !StringUtils.isEmpty(username) && !StringUtils.isEmpty(privateKey);
     }
 
 }

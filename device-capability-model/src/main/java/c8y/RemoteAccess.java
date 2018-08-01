@@ -39,8 +39,8 @@ public class RemoteAccess extends AbstractDynamicProperties {
     }
 
     private RemoteAccessCredentials credentialsFromMap(Map<String, Object> map, RemoteAccessProtocol protocol) {
-        return new RemoteAccessCredentialsBuilder(RemoteAccessCredentialsType.fromString(getValueAsString(map, "type")), protocol)
-                .user(getValueAsString(map, "username"))
+        return RemoteAccessCredentials.builder()
+                .username(getValueAsString(map, "username"))
                 .password(getValueAsString(map, "password"))
                 .privateKey(getValueAsString(map,"privateKey"))
                 .publicKey(getValueAsString(map,"publicKey"))
