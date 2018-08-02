@@ -72,7 +72,7 @@ public class CumulocityClientFeature {
                 .withProxyPort(proxyPort)
                 .withTenant(login.getTenant())
                 .withPassword(login.getPassword())
-                .withUsername(login.getOAuthAccessToken())
+                .withUsername(login.getUsername())
                 .withOAuthAccessToken(login.getOAuthAccessToken())
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
