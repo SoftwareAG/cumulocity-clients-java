@@ -41,7 +41,10 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
 
                 httpBasic().and().
 
-                csrf().disable();
+                csrf().disable().
+                securityContext().disable().
+                sessionManagement().disable().
+                requestCache().disable();
 
 //        in microservice sdk we won't have device-context-filter (we will have microservice equivalent)
         if (deviceContextFilter != null) {

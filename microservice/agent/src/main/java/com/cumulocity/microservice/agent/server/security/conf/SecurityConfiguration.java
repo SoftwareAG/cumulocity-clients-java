@@ -54,7 +54,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         httpBasic().and().
 
-        csrf().disable();
+        csrf().disable().
+        securityContext().disable().
+        sessionManagement().disable().
+        requestCache().disable();
 
         http.addFilterBefore(deviceContextFilter, BasicAuthenticationFilter.class);
     }
