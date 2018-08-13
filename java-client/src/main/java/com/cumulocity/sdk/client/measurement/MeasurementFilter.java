@@ -125,6 +125,8 @@ public class MeasurementFilter extends Filter {
      *
      * @param valueFragmentType the value fragment type to filter.
      * @return the event filter with {@code valueFragmentType} set.
+     * @see #byValueFragmentSeries(String)
+     * @see #byValueFragmentTypeAndSeries(String, String)
      */
     public MeasurementFilter byValueFragmentType(String valueFragmentType) {
         this.valueFragmentType = valueFragmentType;
@@ -136,6 +138,8 @@ public class MeasurementFilter extends Filter {
      *
      * @param valueFragmentSeries value fragment series to filter.
      * @return the event filter with {@code valueFragmentSeries} set.
+     * @see #byValueFragmentType(String)
+     * @see #byValueFragmentTypeAndSeries(String, String)
      */
     public MeasurementFilter byValueFragmentSeries(String valueFragmentSeries) {
         this.valueFragmentSeries = valueFragmentSeries;
