@@ -151,7 +151,7 @@ public class MeasurementFilter extends Filter {
      *
      * @param valueFragmentType value fragment type to filter, example: {@code c8y_TemperatureMeasurement}
      * @param valueFragmentSeries value fragment series to filter, example: {@code T}
-     * @return @return the event filter with {@code valueFragmentType} and {@code valueFragmentSeries} set.
+     * @return the event filter with {@code valueFragmentType} and {@code valueFragmentSeries} set.
      */
     public MeasurementFilter byValueFragmentTypeAndSeries(String valueFragmentType, String valueFragmentSeries) {
         this.valueFragmentType = valueFragmentType;
