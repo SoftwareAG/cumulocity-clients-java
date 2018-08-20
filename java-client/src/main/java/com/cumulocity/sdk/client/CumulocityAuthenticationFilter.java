@@ -34,13 +34,15 @@ class CumulocityAuthenticationFilter extends ClientFilter {
     @Override
     public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
 
-        if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION) && token == null) {
-            cr.getMetadata().add(HttpHeaders.AUTHORIZATION, authentication);
+        if (token == null) {
+            if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION)) {
+                cr.getMetadata().add(HttpHeaders.AUTHORIZATION, authentication);
+            }
         } else {
             cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
             cr.getHeaders().putSingle("Cookie", "authorization=" + token);
         }
-
+        
         return getNext().handle(cr);
     }
 

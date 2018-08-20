@@ -46,6 +46,18 @@ public class MeasurementFilterTest {
         assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
     }
 
+    @Test
+    public void shouldHoldValueFragmentTypeAndValueFragmentSeries() {
+        MeasurementFilter filter = new MeasurementFilter().byValueFragmentType("c8y_TemperatureMeasurement").byValueFragmentSeries("T");
+        assertThat(filter.getValueFragmentType(), is("c8y_TemperatureMeasurement"));
+        assertThat(filter.getValueFragmentSeries(), is("T"));
+
+        MeasurementFilter valueFragmentTypeAndSeriesFilter = new MeasurementFilter().byValueFragmentTypeAndSeries(
+                "c8y_TemperatureMeasurement", "T");
+        assertThat(filter.getValueFragmentType(), is("c8y_TemperatureMeasurement"));
+        assertThat(filter.getValueFragmentSeries(), is("T"));
+    }
+
     private static class NonRelevantFragmentType {
     }
 }
