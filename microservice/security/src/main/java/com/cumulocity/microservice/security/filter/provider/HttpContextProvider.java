@@ -39,6 +39,9 @@ public class HttpContextProvider implements PreAuthorizationContextProvider<Http
     }
 
     private String obtainOAuthAccessToken(HttpServletRequest request) {
+        if (request == null || request.getCookies() == null) {
+            return null;
+        }
         Optional<Cookie> cookieOptional = FluentIterable.from(request.getCookies())
                 .firstMatch(new Predicate<Cookie>() {
                     @Override
