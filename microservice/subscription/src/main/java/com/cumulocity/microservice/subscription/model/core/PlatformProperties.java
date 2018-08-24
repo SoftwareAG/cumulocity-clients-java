@@ -152,6 +152,7 @@ public class PlatformProperties {
                             .tenant(microserviceBootstrapTenant)
                             .username(microserviceBootstrapName)
                             .password(microserviceBootstrapPassword)
+                            .oAuthAccessToken(null)
                             .build())
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)

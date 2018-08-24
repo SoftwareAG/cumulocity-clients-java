@@ -396,7 +396,7 @@ public class RestConnector implements RestOperations {
         CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new CumulocityAuthenticationFilter(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getOAuthAccessToken()));
         return client;
     }
 
@@ -425,7 +425,7 @@ public class RestConnector implements RestOperations {
         Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
         client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new CumulocityAuthenticationFilter(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getOAuthAccessToken()));
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
             client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
                     .getProxyPassword()));
