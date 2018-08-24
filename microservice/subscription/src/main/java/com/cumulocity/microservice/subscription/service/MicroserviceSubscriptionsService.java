@@ -57,5 +57,5 @@ public interface MicroserviceSubscriptionsService {
      */
     Optional<MicroserviceCredentials> getCredentials(String tenant);
 
-    boolean isSubscribed();
+    boolean isRegisteredSuccessfully();
 }

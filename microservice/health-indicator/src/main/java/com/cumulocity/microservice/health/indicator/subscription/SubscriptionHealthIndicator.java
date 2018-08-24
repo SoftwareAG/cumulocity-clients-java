@@ -19,7 +19,7 @@ public class SubscriptionHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        if (subscriptionsService.isSubscribed()) {
+        if (subscriptionsService.isRegisteredSuccessfully()) {
             builder.up();
         } else {
             builder.down().withDetail("details", "Microservice subscription failed. Check logs.");

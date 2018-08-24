@@ -14,7 +14,6 @@ import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import lombok.Synchronized;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private volatile Credentials processed;
     private volatile boolean subscribing = false;
-    private volatile boolean subscribed = false;
+    private volatile boolean registeredSuccessfully = false;
 
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
             new MicroserviceChangedListener() {
@@ -110,7 +109,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             subscribing = true;
 
             final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
-            if (subscribed = maybeApplication.isPresent()) {
+            if (registeredSuccessfully = maybeApplication.isPresent()) {
                 final ApplicationRepresentation application = maybeApplication.get();
                 final Subscriptions subscriptions = repository.retrieveSubscriptions(application.getId());
 
@@ -258,8 +257,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     }
 
     @Override
-    public boolean isSubscribed() {
-        return subscribed;
+    public boolean isRegisteredSuccessfully() {
+        return registeredSuccessfully;
     }
 
     private void log(String s, MicroserviceCredentials user) {
