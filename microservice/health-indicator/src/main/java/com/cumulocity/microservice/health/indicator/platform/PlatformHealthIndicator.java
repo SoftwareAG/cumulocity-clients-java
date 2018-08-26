@@ -83,6 +83,7 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
                 .withUsername(context.getUsername())
                 .withPassword(context.getPassword())
                 .withOAuthAccessToken(context.getOAuthAccessToken())
+                .withXsrfToken(context.getXsrfToken())
                 .withTenant(context.getTenant())
                 .withResponseMapper(new ResponseMapper() {
                     @SneakyThrows

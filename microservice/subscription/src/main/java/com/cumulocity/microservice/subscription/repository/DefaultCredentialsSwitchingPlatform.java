@@ -28,6 +28,7 @@ public class DefaultCredentialsSwitchingPlatform implements CredentialsSwitching
                         .withUsername(credentials.getUsername())
                         .withPassword(credentials.getPassword())
                         .withOAuthAccessToken(credentials.getOAuthAccessToken())
+                        .withXsrfToken(credentials.getXsrfToken())
                         .withTenant(credentials.getTenantId())
                         .withForceInitialHost(true)
                         .build()) {

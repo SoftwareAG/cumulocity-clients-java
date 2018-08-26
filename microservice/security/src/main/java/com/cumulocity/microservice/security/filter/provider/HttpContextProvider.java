@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.TFA_TOKEN_HEADER;
+import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.XSRF_TOKEN_HEADER;
 import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.X_CUMULOCITY_APPLICATION_KEY;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -31,6 +32,7 @@ public class HttpContextProvider implements PreAuthorizationContextProvider<Http
                     .username(from.getUsername())
                     .password(from.getPassword())
                     .oAuthAccessToken(obtainOAuthAccessToken(request))
+                    .xsrfToken(request.getHeader(XSRF_TOKEN_HEADER))
                     .appKey(applicationKey)
                     .tfaToken(tfaToken)
                     .build();
