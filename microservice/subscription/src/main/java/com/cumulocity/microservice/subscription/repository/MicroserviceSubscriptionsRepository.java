@@ -108,6 +108,7 @@ public class MicroserviceSubscriptionsRepository {
                                 .tenant(representation.getTenant())
                                 .password(representation.getPassword())
                                 .oAuthAccessToken(null)
+                                .xsrfToken(null)
                                 .build();
                     }
                 })

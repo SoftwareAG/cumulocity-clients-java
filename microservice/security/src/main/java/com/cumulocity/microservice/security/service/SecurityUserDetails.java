@@ -10,13 +10,14 @@ import java.util.Collection;
 import static com.google.common.collect.Lists.newArrayList;
 
 public class SecurityUserDetails implements UserDetails {
-    @java.beans.ConstructorProperties({"authorities", "tenant", "password", "username", "oAuthAccessToken","accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
-    SecurityUserDetails(Collection<? extends GrantedAuthority> authorities, String tenant, String password, String username, String oAuthAccessToken, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
+    @java.beans.ConstructorProperties({"authorities", "tenant", "password", "username", "oAuthAccessToken", "xsrfToken", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
+    SecurityUserDetails(Collection<? extends GrantedAuthority> authorities, String tenant, String password, String username, String oAuthAccessToken, String xsrfToken, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
         this.authorities = authorities;
         this.tenant = tenant;
         this.password = password;
         this.username = username;
         this.oAuthAccessToken = oAuthAccessToken;
+        this.xsrfToken = xsrfToken;
         this.accountNonExpired = accountNonExpired;
         this.accountNonLocked = accountNonLocked;
         this.credentialsNonExpired = credentialsNonExpired;
@@ -52,6 +53,7 @@ public class SecurityUserDetails implements UserDetails {
     private String password;
     private String username;
     private String oAuthAccessToken;
+    private String xsrfToken;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
@@ -79,6 +81,10 @@ public class SecurityUserDetails implements UserDetails {
 
     public String getOAuthAccessToken() {
         return this.oAuthAccessToken;
+    }
+
+    public String getXsrfToken() {
+        return this.xsrfToken;
     }
 
     public boolean isAccountNonExpired() {
@@ -114,6 +120,9 @@ public class SecurityUserDetails implements UserDetails {
         final Object this$oAuthAccessToken = this.getOAuthAccessToken();
         final Object other$oAuthAccessToken = other.getOAuthAccessToken();
         if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(other$oAuthAccessToken)) return false;
+        final Object this$xsrfToken = this.getXsrfToken();
+        final Object other$xsrfToken = other.getXsrfToken();
+        if (this$xsrfToken == null ? other$xsrfToken != null : !this$xsrfToken.equals(other$xsrfToken)) return false;
         final Object this$username = this.getUsername();
         final Object other$username = other.getUsername();
         if (this$username == null ? other$username != null : !this$username.equals(other$username)) return false;
@@ -135,6 +144,8 @@ public class SecurityUserDetails implements UserDetails {
         result = result * PRIME + ($password == null ? 43 : $password.hashCode());
         final Object $oAuthAccessToken = this.getOAuthAccessToken();
         result = result * PRIME + ($oAuthAccessToken == null ? 43 : $oAuthAccessToken.hashCode());
+        final Object $xsrfToken = this.getXsrfToken();
+        result = result * PRIME + ($xsrfToken == null ? 43 : $xsrfToken.hashCode());
         final Object $username = this.getUsername();
         result = result * PRIME + ($username == null ? 43 : $username.hashCode());
         result = result * PRIME + (this.isAccountNonExpired() ? 79 : 97);
@@ -154,6 +165,7 @@ public class SecurityUserDetails implements UserDetails {
         private String password;
         private String username;
         private String oAuthAccessToken;
+        private String xsrfToken;
         private boolean accountNonExpired;
         private boolean accountNonLocked;
         private boolean credentialsNonExpired;
@@ -201,6 +213,11 @@ public class SecurityUserDetails implements UserDetails {
             return this;
         }
 
+        public SecurityUserDetails.SecurityUserDetailsBuilder xsrfToken(String xsrfToken) {
+            this.xsrfToken = xsrfToken;
+            return this;
+        }
+
         public SecurityUserDetails.SecurityUserDetailsBuilder accountNonExpired(boolean accountNonExpired) {
             this.accountNonExpired = accountNonExpired;
             return this;
@@ -234,11 +251,11 @@ public class SecurityUserDetails implements UserDetails {
                     authorities = java.util.Collections.unmodifiableList(new ArrayList<GrantedAuthority>(this.authorities));
             }
 
-            return new SecurityUserDetails(authorities, tenant, password, username, oAuthAccessToken, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
+            return new SecurityUserDetails(authorities, tenant, password, username, oAuthAccessToken, xsrfToken, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
         }
 
         public String toString() {
-            return "SecurityUserDetails.SecurityUserDetailsBuilder(authorities=" + this.authorities + ", tenant=" + this.tenant + ", password=" + this.password + ", username=" + this.username+ ", oAuthAccessToken=" + this.oAuthAccessToken + ", accountNonExpired=" + this.accountNonExpired + ", accountNonLocked=" + this.accountNonLocked + ", credentialsNonExpired=" + this.credentialsNonExpired + ", enabled=" + this.enabled + ")";
+            return "SecurityUserDetails.SecurityUserDetailsBuilder(authorities=" + this.authorities + ", tenant=" + this.tenant + ", password=" + this.password + ", username=" + this.username + ", oAuthAccessToken=" + this.oAuthAccessToken + ", xsrfToken=" + this.xsrfToken + ", accountNonExpired=" + this.accountNonExpired + ", accountNonLocked=" + this.accountNonLocked + ", credentialsNonExpired=" + this.credentialsNonExpired + ", enabled=" + this.enabled + ")";
         }
     }
 }

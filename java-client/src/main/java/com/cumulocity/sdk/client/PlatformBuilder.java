@@ -14,6 +14,7 @@ public class PlatformBuilder {
     private String username;
     private String password;
     private String oAuthAccessToken;
+    private String xsrfToken;
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
@@ -45,7 +46,8 @@ public class PlatformBuilder {
             credentials = credentials.withTenantId(tenant);
         }
         if (oAuthAccessToken != null && !oAuthAccessToken.isEmpty()) {
-            credentials = credentials.withOAuthAccessToken(oAuthAccessToken);
+            credentials = credentials.withOAuthAccessToken(oAuthAccessToken).withXsrfToken(xsrfToken);
+
         }
         return credentials.build();
     }

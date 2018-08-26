@@ -28,6 +28,7 @@ public class SecurityUserDetailsService implements UserDetailsService {
                 .username(platformParameters.getUser())
                 .password(platformParameters.getPassword())
                 .oAuthAccessToken(platformParameters.getOAuthAccessToken())
+                .xsrfToken(platformParameters.getXsrfToken())
                 .tenant(platformParameters.getTenantId())
                 .build();
     }
