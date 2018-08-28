@@ -32,6 +32,10 @@ public class DeviceCredentials {
 
     private final String password;
 
+    private String oAuthAccessToken;
+
+    private String xsrfToken;
+
     private final String appKey;
     
     private final GId deviceId;
@@ -56,9 +60,11 @@ public class DeviceCredentials {
     public static DeviceCredentials from(DeviceCredentialsRepresentation credentials) {
         return new DeviceCredentials(credentials.getTenantId(), credentials.getUsername(), credentials.getPassword(), null, null);
     }
-    
-    public static DeviceCredentials from(String authorization, String appKey, String tfaToken, int pageSize) {
+
+    public static DeviceCredentials from(String authorization, String oAuthAccessToken, String xsrfToken, String appKey, String tfaToken, int pageSize) {
         DeviceCredentials deviceCredentials = from(authorization, appKey, pageSize);
+        deviceCredentials.setoAuthAccessToken(oAuthAccessToken);
+        deviceCredentials.setXsrfToken(xsrfToken);
         deviceCredentials.setTfaToken(tfaToken);
         return deviceCredentials;
     }
@@ -108,10 +114,18 @@ public class DeviceCredentials {
         return password;
     }
 
+    public String getOAuthAccessToken() {
+        return oAuthAccessToken;
+    }
+
+    public String getXsrfToken() {
+        return xsrfToken;
+    }
+
     public String getAppKey() {
         return appKey;
     }
-    
+
     public String getTfaToken() {
         return tfaToken;
     }
@@ -130,6 +144,14 @@ public class DeviceCredentials {
 
     private String tenant(DeviceCredentials credentials) {
         return isNullOrEmpty(credentials.getTenant()) ? "" : credentials.getTenant() + "/";
+    }
+
+    public void setoAuthAccessToken(String oAuthAccessToken) {
+        this.oAuthAccessToken = oAuthAccessToken;
+    }
+
+    public void setXsrfToken(String xsrfToken) {
+        this.xsrfToken = xsrfToken;
     }
 
     private void setTfaToken(String tfaToken) {

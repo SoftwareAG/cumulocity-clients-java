@@ -12,5 +12,11 @@ public interface Credentials {
     String getPassword();
 
     @JsonIgnore
+    String getOAuthAccessToken();
+
+    @JsonIgnore
+    String getXsrfToken();
+
+    @JsonIgnore
     String getTfaToken();
 }

@@ -26,13 +26,29 @@ public class MicroserviceCredentials implements Credentials {
 
     @Wither
     @JsonIgnore
+    private String oAuthAccessToken;
+
+    @Wither
+    @JsonIgnore
+    private String xsrfToken;
+
+    @Wither
+    @JsonIgnore
     private String tfaToken;
 
     public MicroserviceCredentials(String tenant, String name, String password) {
-        this(tenant, name, password, null);
+        this(tenant, name, password, null, null, null);
     }
 
     public DeviceCredentials withIdentifier(String identifier) {
-        return DeviceCredentials.builder().tenant(tenant).name(name).password(password).identifier(identifier).tfaToken(tfaToken).build();
+        return DeviceCredentials.builder()
+                .tenant(tenant)
+                .name(name)
+                .password(password)
+                .oAuthAccessToken(oAuthAccessToken)
+                .xsrfToken(xsrfToken)
+                .identifier(identifier)
+                .tfaToken(tfaToken)
+                .build();
     }
 }
