@@ -287,11 +287,10 @@ class MessageExchange {
                     log.debug("wait for response headers {}", (Object) messages);
                     ClientResponse response = f.get();
                     log.debug("recived response headers {} ", (Object) messages);
-                    consumer = executorService.submit(new ResponseConsumer(response));
+                    executorService.submit(new ResponseConsumer(response));
                 }
             } catch (Exception e) {
-                log.error("connection failed " + e.getMessage(), e);
-
+                log.debug("connection failed", e);
                 unauthorizedConnectionWatcher.resetCounter();
                 listener.onConnectException(e, messages);
                 onFinish();
