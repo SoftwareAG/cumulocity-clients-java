@@ -30,7 +30,7 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>5.22.0</cumulocity.model.version>
+		<cumulocity.model.version>5.22.1</cumulocity.model.version>
 		<cumulocity.shared-components.version>5.22.0</cumulocity.shared-components.version>
 	</properties>
 
