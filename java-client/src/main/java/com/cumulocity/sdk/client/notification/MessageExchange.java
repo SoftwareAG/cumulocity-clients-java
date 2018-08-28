@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -185,8 +185,18 @@ class MessageExchange {
             log.debug("getting heartbeants  {}", response);
             InputStream entityInputStream = response.getEntityInputStream();
             entityInputStream.mark(MAX_VALUE);
-            int value = -1;
-            while ((value = entityInputStream.read()) >= 0) {
+            while (true) {
+                if (entityInputStream.available() == 0) {
+                    Thread.yield();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException(e);
+                    }
+                    continue;
+                }
+                final int value = entityInputStream.read();
                 if (isHeartBeat(value)) {
                     log.debug("recived heartbeat");
                     watcher.heartBeat();
@@ -252,7 +262,7 @@ class MessageExchange {
                     onException(code);
                 }
             } else {
-                onException(code); 
+                onException(code);
             }
         }
 
