@@ -19,6 +19,7 @@ import org.mockito.stubbing.Answer;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -43,10 +44,11 @@ import static org.mockito.Mockito.*;
 
 public class MessageExchangeBlockingThreadsTest {
 
-    @Test
+    private ScheduledExecutorService executorService = newScheduledThreadPool(1);
+
+    @Test(timeout = 2000)
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
         //given
-        final ScheduledExecutorService executorService = newScheduledThreadPool(1);
         final Client client = mock(Client.class);
         final TransportListener listener = mock(TransportListener.class);
         final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class));
@@ -55,20 +57,32 @@ public class MessageExchangeBlockingThreadsTest {
 
         //when
         messageExchange.execute("", "");
-        Thread.sleep(SECONDS.toMillis(1));
         messageExchange.cancel();
 
         //then
-        executorShouldHaveFreeThread(executorService);
-
+        executorShouldHaveFreeThread();
         verify(listener).onConnectException(any(Throwable.class), any(Message[].class));
         verify(listener, never()).onException(any(Throwable.class), any(Message[].class));
     }
 
     private void givenUnfinishedClientResponse(final Client client) throws Exception {
-        final ServerSocket serverSocket = new ServerSocket(0);
-        final Socket clientSocket = new Socket(serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort());
         final AsyncWebResource asyncWebResource = mock(AsyncWebResource.class);
+        final InputStream blockOnRead = new InputStream() {
+            @Override
+            public synchronized int read() throws IOException {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException(e);
+                }
+                return 0;
+            }
+
+            @Override
+            public synchronized void close() throws IOException {
+            }
+        };
 
         given(client.asyncResource(anyString())).willReturn(asyncWebResource);
         given(asyncWebResource.handle(any(ClientRequest.class), any(FutureListener.class))).will(new Answer<Future<ClientResponse>>() {
@@ -81,12 +95,12 @@ public class MessageExchangeBlockingThreadsTest {
                     @Override
                     public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
                         final CumulocityJSONMessageBodyReader reader = new CumulocityJSONMessageBodyReader();
-                        return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null, clientSocket.getInputStream());
+                        return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null,blockOnRead);
                     }
                 });
                 given(workers.getMessageBodyReader(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class))).willReturn(messageBodyReader);
                 
-                final ClientResponse response = new ClientResponse(OK.getStatusCode(), new InBoundHeaders(), clientSocket.getInputStream(), workers);
+                final ClientResponse response = new ClientResponse(OK.getStatusCode(), new InBoundHeaders(), blockOnRead, workers);
                 final FutureTask<ClientResponse> futureTask = new FutureTask<ClientResponse>(returning(response)) {
                     protected void done() {
                         try {
@@ -97,13 +111,13 @@ public class MessageExchangeBlockingThreadsTest {
                         }
                     }
                 };
-                newScheduledThreadPool(1).schedule(futureTask, 100, MILLISECONDS);
+                executorService.schedule(futureTask, 0, MILLISECONDS).get();
                 return futureTask;
             }
         });
     }
 
-    private void executorShouldHaveFreeThread(final ScheduledExecutorService executorService) throws Exception {
+    private void executorShouldHaveFreeThread() throws Exception {
         final Future<String> task = executorService.submit(new Callable<String>() {
             @Override
             public String call() {

@@ -1,27 +1,28 @@
 package com.cumulocity.sdk.client.notification;
 
-import static com.cumulocity.sdk.client.notification.ConnectionHeartBeatWatcher.HEARTBEAT_INTERVAL;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import static org.joda.time.DateTimeUtils.currentTimeMillis;
 import static org.joda.time.DateTimeUtils.setCurrentMillisFixed;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
 public class ConnectionHeartBeatWatcherTest {
 
+    public static final int HEARTBEAT_INTERVAL = 12;
     private ScheduledExecutorService executorService = Mockito.mock(ScheduledExecutorService.class);
 
-    private final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService);
+    private final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService, TimeUnit.MINUTES.toSeconds(HEARTBEAT_INTERVAL));
 
     private final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
 
-    private ConnectionIdleListener listener = Mockito.mock(ConnectionIdleListener.class);;
+    private ConnectionIdleListener listener = Mockito.mock(ConnectionIdleListener.class);
+    ;
 
     @Test
     public void shouldDontSendNotificationWhenConnectionIsActive() {
@@ -43,7 +44,7 @@ public class ConnectionHeartBeatWatcherTest {
         //When
         watcher.start();
         verifyWatcherStarted();
-        moveTimeForward(HEARTBEAT_INTERVAL+1);
+        moveTimeForward(HEARTBEAT_INTERVAL + 1);
         watcher.heartBeat();
         executeWatcherTask();
         //Then
@@ -66,7 +67,7 @@ public class ConnectionHeartBeatWatcherTest {
         //When
         watcher.start();
         verifyWatcherStarted();
-        moveTimeForward(HEARTBEAT_INTERVAL+1);
+        moveTimeForward(HEARTBEAT_INTERVAL + 1);
         executeWatcherTask();
         //Then
         verify(listener).onConnectionIdle();
