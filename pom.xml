@@ -34,9 +34,21 @@
 	</modules>
 
 	<properties>
+		<nexus.url>http://localhost:8080</nexus.url>
 		<cumulocity.model.version>8.15.6</cumulocity.model.version>
 		<cumulocity.shared-components.version>8.15.6</cumulocity.shared-components.version>
 	</properties>
+	
+	<distributionManagement>
+		<snapshotRepository>
+			<id>snapshot</id>
+			<url>${nexus.url}/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>release</id>
+			<url>${nexus.url}/nexus/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
 
 	<licenses>
 		<license>
