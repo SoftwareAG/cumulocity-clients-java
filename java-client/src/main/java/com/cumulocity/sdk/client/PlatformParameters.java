@@ -49,6 +49,10 @@ public class PlatformParameters {
 
     private String password;
 
+    private Supplier<String> oAuthAccessToken;
+
+    private Supplier<String> xsrfToken;
+
     private CumulocityLogin cumulocityLogin;
 
     private String proxyHost;
@@ -147,6 +151,22 @@ public class PlatformParameters {
         return password;
     }
 
+    public Supplier<String> getOAuthAccessToken() {
+        return oAuthAccessToken;
+    }
+
+    public void setOAuthAccessToken(Supplier<String> oAuthAccessToken) {
+        this.oAuthAccessToken = oAuthAccessToken;
+    }
+
+    public Supplier<String> getXsrfToken() {
+        return xsrfToken;
+    }
+
+    public void setXsrfToken(Supplier<String> xsrfToken) {
+        this.xsrfToken = xsrfToken;
+    }
+
     public String getProxyHost() {
         return proxyHost;
     }
@@ -237,7 +257,7 @@ public class PlatformParameters {
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     public String getRequestOrigin() {
         return requestOrigin;
     }

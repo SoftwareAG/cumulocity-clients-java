@@ -193,6 +193,18 @@ public class CumulocityClientFeature {
             final PlatformImpl platformImpl = new PlatformImpl(host, new CumulocityCredentials(login.getTenant(), login.getUsername(), login.getPassword(),
                     login.getAppKey()), new ClientConfiguration(null, false), login.getPageSize());
             platformImpl.setForceInitialHost(forceInitialHost);
+            platformImpl.setOAuthAccessToken(new Supplier<String>() {
+                @Override
+                public String get() {
+                    return contextService.getCredentials().getOAuthAccessToken();
+                }
+            });
+            platformImpl.setXsrfToken(new Supplier<String>() {
+                @Override
+                public String get() {
+                    return contextService.getCredentials().getXsrfToken();
+                }
+            });
             platformImpl.setTfaToken(new Supplier<String>() {
                 public String get() {
                     return contextService.getCredentials().getTfaToken();

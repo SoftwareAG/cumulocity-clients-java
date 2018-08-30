@@ -77,7 +77,7 @@ public class RestConnector implements RestOperations {
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
     
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
-    
+
     private static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
@@ -311,14 +311,14 @@ public class RestConnector implements RestOperations {
         }
         return builder;
     }
-    
+
     private Builder addTfaHeader(Builder builder) {
         if (platformParameters.getTfaToken() != null) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
-    
+
     private Builder addRequestOriginHeader(Builder builder) {
         if (platformParameters.getRequestOrigin() != null) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
@@ -398,7 +398,12 @@ public class RestConnector implements RestOperations {
         CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new CumulocityAuthenticationFilter(
+                platformParameters.getPrincipal(),
+                platformParameters.getPassword(),
+                platformParameters.getOAuthAccessToken(),
+                platformParameters.getXsrfToken()
+        ));
         return client;
     }
 
@@ -427,7 +432,12 @@ public class RestConnector implements RestOperations {
         Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
         client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
         client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter(platformParameters.getPrincipal(), platformParameters.getPassword()));
+        client.addFilter(new CumulocityAuthenticationFilter(
+                platformParameters.getPrincipal(),
+                platformParameters.getPassword(),
+                platformParameters.getOAuthAccessToken(),
+                platformParameters.getXsrfToken()
+        ));
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
             client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
                     .getProxyPassword()));

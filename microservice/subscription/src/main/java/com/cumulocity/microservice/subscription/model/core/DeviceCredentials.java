@@ -26,6 +26,14 @@ public class DeviceCredentials implements Credentials {
     private String password;
 
     @Wither
+    @JsonIgnore
+    private String oAuthAccessToken;
+
+    @Wither
+    @JsonIgnore
+    private String xsrfToken;
+
+    @Wither
     @JsonProperty
     private String identifier;
 
