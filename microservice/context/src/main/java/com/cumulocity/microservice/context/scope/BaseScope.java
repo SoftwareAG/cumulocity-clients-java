@@ -1,12 +1,12 @@
 package com.cumulocity.microservice.context.scope;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.google.common.cache.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
+
+import java.util.concurrent.TimeUnit;
 
 public abstract class BaseScope implements Scope {
 
@@ -14,7 +14,15 @@ public abstract class BaseScope implements Scope {
 
     private final KeyBasedLocksMap locks = new KeyBasedLocksMap();
 
-    private LoadingCache<String, ScopeContainer> scopes = CacheBuilder.newBuilder().concurrencyLevel(16)
+    private LoadingCache<String, ScopeContainer> scopes = CacheBuilder.newBuilder()
+            .concurrencyLevel(16)
+            .expireAfterAccess(5, TimeUnit.MINUTES)
+            .removalListener(new RemovalListener<String, ScopeContainer>() {
+                @Override
+                public void onRemoval(RemovalNotification<String, ScopeContainer> removalNotification) {
+                    log.debug("bean was removed, key: {}", removalNotification.getKey());
+                }
+            })
             .build(new CacheLoader<String, ScopeContainer>() {
                 public ScopeContainer load(String key) {
                     return new DefaultScopeContainer();

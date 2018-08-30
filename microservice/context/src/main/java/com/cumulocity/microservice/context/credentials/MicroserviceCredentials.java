@@ -5,15 +5,17 @@ public class MicroserviceCredentials implements Credentials {
     private String username;
     private String password;
     private String oAuthAccessToken;
+    private String xsrfToken;
     private String tfaToken;
     private String appKey;
 
-    @java.beans.ConstructorProperties({"tenant", "username", "password", "oAuthAccessToken", "tfaToken", "appKey"})
-    public MicroserviceCredentials(String tenant, String username, String password, String oAuthAccessToken, String tfaToken, String appKey) {
+    @java.beans.ConstructorProperties({"tenant", "username", "password", "oAuthAccessToken", "xsrfToken", "tfaToken", "appKey"})
+    public MicroserviceCredentials(String tenant, String username, String password, String oAuthAccessToken, String xsrfToken, String tfaToken, String appKey) {
         this.tenant = tenant;
         this.username = username;
         this.password = password;
         this.oAuthAccessToken = oAuthAccessToken;
+        this.xsrfToken = xsrfToken;
         this.tfaToken = tfaToken;
         this.appKey = appKey;
     }
@@ -31,6 +33,7 @@ public class MicroserviceCredentials implements Credentials {
                 .username(source.getUsername())
                 .password(source.getPassword())
                 .oAuthAccessToken(source.getOAuthAccessToken())
+                .xsrfToken(source.getXsrfToken())
                 .tfaToken(source.getTfaToken())
                 .appKey(source.getAppKey());
     }
@@ -41,6 +44,7 @@ public class MicroserviceCredentials implements Credentials {
                 .username(username)
                 .password(password)
                 .oAuthAccessToken(oAuthAccessToken)
+                .xsrfToken(xsrfToken)
                 .identifier(identifier)
                 .tfaToken(tfaToken)
                 .appKey(appKey)
@@ -63,6 +67,10 @@ public class MicroserviceCredentials implements Credentials {
         return this.oAuthAccessToken;
     }
 
+    public String getXsrfToken() {
+        return this.xsrfToken;
+    }
+
     public String getTfaToken() {
         return this.tfaToken;
     }
@@ -81,6 +89,10 @@ public class MicroserviceCredentials implements Credentials {
 
     public void setOAuthAccessToken(String oAuthAccessToken) {
         this.oAuthAccessToken = oAuthAccessToken;
+    }
+
+    public void setXsrfToken(String xsrfToken) {
+        this.xsrfToken = xsrfToken;
     }
 
     public void setPassword(String password) {
@@ -112,6 +124,9 @@ public class MicroserviceCredentials implements Credentials {
         final Object this$oAuthAccessToken = this.getOAuthAccessToken();
         final Object other$oAuthAccessToken = other.getOAuthAccessToken();
         if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(other$oAuthAccessToken)) return false;
+        final Object this$xsrfToken = this.getXsrfToken();
+        final Object other$xsrfToken = other.getXsrfToken();
+        if (this$xsrfToken == null ? other$xsrfToken != null : !this$xsrfToken.equals(other$xsrfToken)) return false;
         final Object this$tfaToken = this.getTfaToken();
         final Object other$tfaToken = other.getTfaToken();
         if (this$tfaToken == null ? other$tfaToken != null : !this$tfaToken.equals(other$tfaToken)) return false;
@@ -132,6 +147,8 @@ public class MicroserviceCredentials implements Credentials {
         result = result * PRIME + ($password == null ? 43 : $password.hashCode());
         final Object $oAuthAccessToken = this.getOAuthAccessToken();
         result = result * PRIME + ($oAuthAccessToken == null ? 43 : $oAuthAccessToken.hashCode());
+        final Object $xsrfToken = this.getXsrfToken();
+        result = result * PRIME + ($xsrfToken == null ? 43 : $xsrfToken.hashCode());
         final Object $tfaToken = this.getTfaToken();
         result = result * PRIME + ($tfaToken == null ? 43 : $tfaToken.hashCode());
         final Object $appKey = this.getAppKey();
@@ -144,27 +161,31 @@ public class MicroserviceCredentials implements Credentials {
     }
 
     public MicroserviceCredentials withTenant(String tenant) {
-        return this.tenant == tenant ? this : new MicroserviceCredentials(tenant, this.username, this.password, this.oAuthAccessToken, this.tfaToken, this.appKey);
+        return this.tenant == tenant ? this : new MicroserviceCredentials(tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, this.tfaToken, this.appKey);
     }
 
     public MicroserviceCredentials withUsername(String username) {
-        return this.username == username ? this : new MicroserviceCredentials(this.tenant, username, this.password, this.oAuthAccessToken, this.tfaToken, this.appKey);
+        return this.username == username ? this : new MicroserviceCredentials(this.tenant, username, this.password, this.oAuthAccessToken, this.xsrfToken, this.tfaToken, this.appKey);
     }
 
     public MicroserviceCredentials withPassword(String password) {
-        return this.password == password ? this : new MicroserviceCredentials(this.tenant, this.username, password, this.oAuthAccessToken, this.tfaToken, this.appKey);
+        return this.password == password ? this : new MicroserviceCredentials(this.tenant, this.username, password, this.oAuthAccessToken, this.xsrfToken, this.tfaToken, this.appKey);
     }
 
     public MicroserviceCredentials withOAuthAccessToken(String oAuthAccessToken) {
-        return this.oAuthAccessToken == oAuthAccessToken ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, oAuthAccessToken, this.tfaToken, this.appKey);
+        return this.oAuthAccessToken == oAuthAccessToken ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, oAuthAccessToken, this.xsrfToken, this.tfaToken, this.appKey);
+    }
+
+    public MicroserviceCredentials withXsrfToken(String xsrfToken) {
+        return this.xsrfToken == xsrfToken ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, xsrfToken, this.tfaToken, this.appKey);
     }
 
     public MicroserviceCredentials withTfaToken(String tfaToken) {
-        return this.tfaToken == tfaToken ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, tfaToken, this.appKey);
+        return this.tfaToken == tfaToken ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, tfaToken, this.appKey);
     }
 
     public MicroserviceCredentials withAppKey(String appKey) {
-        return this.appKey == appKey ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.tfaToken, appKey);
+        return this.appKey == appKey ? this : new MicroserviceCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, this.tfaToken, appKey);
     }
 
     public String toString() {
@@ -176,6 +197,7 @@ public class MicroserviceCredentials implements Credentials {
         private String username;
         private String password;
         private String oAuthAccessToken;
+        private String xsrfToken;
         private String tfaToken;
         private String appKey;
 
@@ -202,6 +224,11 @@ public class MicroserviceCredentials implements Credentials {
             return this;
         }
 
+        public MicroserviceCredentials.MicroserviceCredentialsBuilder xsrfToken(String xsrfToken) {
+            this.xsrfToken = xsrfToken;
+            return this;
+        }
+
         public MicroserviceCredentials.MicroserviceCredentialsBuilder tfaToken(String tfaToken) {
             this.tfaToken = tfaToken;
             return this;
@@ -213,11 +240,11 @@ public class MicroserviceCredentials implements Credentials {
         }
 
         public MicroserviceCredentials build() {
-            return new MicroserviceCredentials(tenant, username, password, oAuthAccessToken, tfaToken, appKey);
+            return new MicroserviceCredentials(tenant, username, password, oAuthAccessToken, xsrfToken, tfaToken, appKey);
         }
 
         public String toString() {
-            return "MicroserviceCredentials.MicroserviceCredentialsBuilder(tenant=" + this.tenant + ", username=" + this.username + ", password=" + this.password + ", oAuthAccessToken=" + this.oAuthAccessToken + ", tfaToken=" + this.tfaToken + ", appKey=" + this.appKey + ")";
+            return "MicroserviceCredentials.MicroserviceCredentialsBuilder(tenant=" + this.tenant + ", username=" + this.username + ", password=" + this.password + ", oAuthAccessToken=" + this.oAuthAccessToken+ ", xsrfToken=" + this.xsrfToken + ", tfaToken=" + this.tfaToken + ", appKey=" + this.appKey + ")";
         }
     }
 }
