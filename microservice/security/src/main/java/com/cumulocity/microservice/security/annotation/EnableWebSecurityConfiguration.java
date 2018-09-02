@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Order(99)
@@ -33,10 +32,15 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
         auth.userDetailsService(userDetailsService);
     }
 
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/metadata", "/health", "/prometheus", "/metrics");
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
         final HttpSecurity security = http
                 .authorizeRequests()
-                .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
                 .anyRequest().fullyAuthenticated()
                 .and()
                 .httpBasic()
