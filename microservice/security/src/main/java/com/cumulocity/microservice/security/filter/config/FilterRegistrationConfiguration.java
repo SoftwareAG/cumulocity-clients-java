@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.security.annotation;
+package com.cumulocity.microservice.security.filter.config;
 
 import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
