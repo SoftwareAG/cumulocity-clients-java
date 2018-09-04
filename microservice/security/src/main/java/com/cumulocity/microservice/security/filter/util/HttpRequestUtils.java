@@ -15,6 +15,7 @@ public class HttpRequestUtils {
     public static final String AUTH_ENCODING = "ASCII";
     public static final String AUTH_PREFIX = "BASIC ";
     public static final String AUTH_SEPARATOR = ":";
+    public static final String XSRF_TOKEN_HEADER = "X-XSRF-TOKEN";
 
     public static class AuthorizationHeader {
         private String tenant;
