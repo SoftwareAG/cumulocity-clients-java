@@ -125,6 +125,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
         final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService, resolveHeartbeatInterval());
+        httpClient.setReadTimeout((int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval()+30));
         final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, unauthorizedConnectionWatcher, messages);
         watcher.addConnectionListener(new ConnectionIdleListener() {
             @Override
