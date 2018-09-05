@@ -12,6 +12,7 @@ import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
+import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -124,7 +125,7 @@ public class MessageExchangeBlockingThreadsTest {
                 return "OK";
             }
         });
-        assertThat(task.get(100, MILLISECONDS)).isEqualTo("OK");
+        Assertions.assertThat(task.get(500, MILLISECONDS)).isEqualTo("OK");
     }
 
 }
