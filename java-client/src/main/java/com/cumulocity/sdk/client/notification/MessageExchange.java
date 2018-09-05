@@ -73,7 +73,9 @@ class MessageExchange {
 
     private final Client client;
 
-    private final List<MessageExchangeListener> listeners = new LinkedList<MessageExchangeListener>();
+    private final List<MessageExchangeListener> listeners = new LinkedList<>();
+
+    private volatile Future<?> consumer;
 
     MessageExchange(CumulocityLongPollingTransport transport, Client client, ScheduledExecutorService executorService,
                     TransportListener listener, ConnectionHeartBeatWatcher watcher,
@@ -100,9 +102,14 @@ class MessageExchange {
 
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
+
         if (request.cancel(true)) {
             listener.onException(new RuntimeException("request cancelled"), messages);
         } else {
+            if(consumer != null){
+                consumer.cancel(true);
+            }
+
             try {
                 final ClientResponse response = request.get();
                 if (response != null) {
@@ -280,7 +287,7 @@ class MessageExchange {
                     log.debug("wait for response headers {}", (Object) messages);
                     ClientResponse response = f.get();
                     log.debug("recived response headers {} ", (Object) messages);
-                    executorService.submit(new ResponseConsumer(response));
+                    consumer = executorService.submit(new ResponseConsumer(response));
                 }
             } catch (Exception e) {
                 log.error("connection failed " + e.getMessage(), e);
