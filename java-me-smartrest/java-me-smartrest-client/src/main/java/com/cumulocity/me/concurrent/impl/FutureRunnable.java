@@ -39,8 +39,12 @@ public abstract class FutureRunnable implements Future, Runnable {
     }
 
     public final void run() {
-        execute();
-        executorService.decrementCurrentThreads();
+        try {
+            execute();
+            executorService.decrementCurrentThreads();
+        } finally {
+            done = true;
+        }
     }
 
     private void checkTimeout(long start, int length) throws TimeoutException {
