@@ -124,7 +124,7 @@ public class MessageExchangeBlockingThreadsTest {
                 return "OK";
             }
         });
-        Assertions.assertThat(task.get(100, MILLISECONDS)).isEqualTo("OK");
+        Assertions.assertThat(task.get(500, MILLISECONDS)).isEqualTo("OK");
     }
 
 }
