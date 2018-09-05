@@ -125,6 +125,10 @@ public class RestConnector implements RestOperations {
         return responseParser.parseObject(response, OK.getStatusCode(), responseType);
     }
 
+    public ClientResponse get(String path, MediaType mediaType) {
+        return getClientResponse(path, mediaType);
+    }
+
     @Override
     public Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
