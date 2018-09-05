@@ -56,6 +56,7 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
             }
             log.debug("health {}", builder.build());
         } catch (Exception ex) {
+            log.warn("Error while checking connection to the platform", ex);
             builder.down(ex).withDetail("message", ex.getMessage());
         }
     }
