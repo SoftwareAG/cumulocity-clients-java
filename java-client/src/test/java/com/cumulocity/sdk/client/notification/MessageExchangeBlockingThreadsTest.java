@@ -58,6 +58,7 @@ public class MessageExchangeBlockingThreadsTest {
 
         //when
         messageExchange.execute("", "");
+        Thread.yield();
         messageExchange.cancel();
 
         //then
@@ -102,6 +103,7 @@ public class MessageExchangeBlockingThreadsTest {
                 given(workers.getMessageBodyReader(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class))).willReturn(messageBodyReader);
                 
                 final ClientResponse response = new ClientResponse(OK.getStatusCode(), new InBoundHeaders(), blockOnRead, workers);
+
                 final FutureTask<ClientResponse> futureTask = new FutureTask<ClientResponse>(returning(response)) {
                     protected void done() {
                         try {
@@ -112,7 +114,7 @@ public class MessageExchangeBlockingThreadsTest {
                         }
                     }
                 };
-                executorService.schedule(futureTask, 0, MILLISECONDS).get();
+                executorService.submit(futureTask).get();
                 return futureTask;
             }
         });
