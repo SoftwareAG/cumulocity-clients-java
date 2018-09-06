@@ -25,6 +25,7 @@ import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.async.FutureListener;
+import lombok.Synchronized;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
@@ -100,13 +101,15 @@ class MessageExchange {
         watcher.start();
     }
 
+    @Synchronized("messages")
     public void cancel() {
         log.debug("canceling {}", (Object) messages);
+
 
         if (request.cancel(true)) {
             listener.onException(new RuntimeException("request cancelled"), messages);
         } else {
-            if(consumer != null){
+            if (consumer != null) {
                 consumer.cancel(true);
             }
 
@@ -283,11 +286,15 @@ class MessageExchange {
         @Override
         public void onComplete(Future<ClientResponse> f) throws InterruptedException {
             try {
-                if (!f.isCancelled()) {
-                    log.debug("wait for response headers {}", (Object) messages);
-                    ClientResponse response = f.get();
-                    log.debug("recived response headers {} ", (Object) messages);
-                    consumer = executorService.submit(new ResponseConsumer(response));
+                synchronized (messages) {
+                    if (!f.isCancelled()) {
+                        log.debug("wait for response headers {}", (Object) messages);
+                        ClientResponse response = f.get();
+                        log.debug("recived response headers {} ", (Object) messages);
+                        consumer = executorService.submit(new ResponseConsumer(response));
+                    } else {
+                        throw new ExecutionException(new RuntimeException("Request canceled"));
+                    }
                 }
             } catch (Exception e) {
                 log.error("connection failed " + e.getMessage(), e);
