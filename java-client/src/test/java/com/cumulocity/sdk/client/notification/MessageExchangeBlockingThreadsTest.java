@@ -10,12 +10,15 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.async.FutureListener;
 import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
+import junit.extensions.RepeatedTest;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.fest.assertions.Assertions;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.test.annotation.Repeat;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -46,6 +49,7 @@ public class MessageExchangeBlockingThreadsTest {
 
     private ScheduledExecutorService executorService = newScheduledThreadPool(1);
 
+
     @Test(timeout = 2000)
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
         //given
@@ -57,7 +61,7 @@ public class MessageExchangeBlockingThreadsTest {
 
         //when
         messageExchange.execute("", "");
-        Thread.yield();
+        Thread.sleep(50);
         messageExchange.cancel();
 
         //then
