@@ -58,7 +58,7 @@
 				<exclusion>
 					<groupId>javax.validation</groupId>
 					<artifactId>com.springsource.javax.validation</artifactId>
-				</exclusion>InventoryApiImplTest
+				</exclusion>
 				<exclusion>
 					<groupId>commons-lang</groupId>
 					<artifactId>commons-lang</artifactId>
