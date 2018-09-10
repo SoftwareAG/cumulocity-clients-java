@@ -9,6 +9,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -48,26 +49,27 @@ public class PostAuthenticateServletFilter extends OncePerRequestFilter {
         }
 
         if (contextService != null && credentialsResolvers != null) {
-            final ImmutableList<Credentials> credentials = from(credentialsResolvers)
-                    .filter(new Predicate<PostAuthorizationContextProvider<SecurityContext>>() {
-                        public boolean apply(PostAuthorizationContextProvider<SecurityContext> provider) {
-                            return provider.supports(SecurityContextHolder.getContext());
-                        }
-                    })
-                    .transform(new Function<PostAuthorizationContextProvider<SecurityContext>, Credentials>() {
-                        public Credentials apply(PostAuthorizationContextProvider<SecurityContext> provider) {
-                            return provider.get(SecurityContextHolder.getContext());
-                        }
-                    })
-                    .filter(new Predicate<Credentials>() {
-                        public boolean apply(Credentials credentials) {
-                            return credentials != null;
-                        }
-                    })
-                    .toList();
+            try {
+                final ImmutableList<Credentials> credentials = from(credentialsResolvers).filter(new Predicate<PostAuthorizationContextProvider<SecurityContext>>() {
+                    public boolean apply(PostAuthorizationContextProvider<SecurityContext> provider) {
+                        return provider.supports(SecurityContextHolder.getContext());
+                    }
+                }).transform(new Function<PostAuthorizationContextProvider<SecurityContext>, Credentials>() {
+                    public Credentials apply(PostAuthorizationContextProvider<SecurityContext> provider) {
+                        return provider.get(SecurityContextHolder.getContext());
+                    }
+                }).filter(new Predicate<Credentials>() {
+                    public boolean apply(Credentials credentials) {
+                        return credentials != null;
+                    }
+                }).toList();
 
-            for (final Credentials credential : credentials) {
-                runnable = contextService.withinContext(credential, runnable);
+                for (final Credentials credential : credentials) {
+                    runnable = contextService.withinContext(credential, runnable);
+                }
+            } catch (AccessDeniedException e) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+                return;
             }
         }
 

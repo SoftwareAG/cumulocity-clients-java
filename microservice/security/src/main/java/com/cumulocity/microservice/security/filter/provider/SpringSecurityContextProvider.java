@@ -8,6 +8,7 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.google.common.base.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -50,6 +51,8 @@ public class SpringSecurityContextProvider implements PostAuthorizationContextPr
                 final Optional<MicroserviceCredentials> microservice = subscriptionsService.getCredentials(tenant);
                 if (microservice.isPresent()) {
                     return microservice.get();
+                } else {
+                    throw new AccessDeniedException("Microservice is not subscribed for tenant");
                 }
             }
         }
