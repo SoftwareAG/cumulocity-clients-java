@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-./mvnw compile -P ci
+./mvnw compile
 if [ -f microservice/pom.xml ] ;
 then
     cd microservice
-    ../mvnw compile -P ci
+    ../mvnw compile
 fi

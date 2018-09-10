@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-./mvnw verify  -P ci
+./mvnw verify
 if [ -f microservice/pom.xml ] ;
 then
-    ../mvnw verify  -P ci
+    ../mvnw verify
 fi
