@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -75,13 +75,13 @@ public class RestConnector implements RestOperations {
     }
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
-    
+
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
-    
+
     private static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
-        ErrorMessageRepresentationReader.class};
+            ErrorMessageRepresentationReader.class};
 
     private static final int READ_TIMEOUT_IN_MILLIS = 180000;
 
@@ -118,7 +118,7 @@ public class RestConnector implements RestOperations {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parse(response, responseType, OK.getStatusCode());
     }
-    
+
     @Override
     public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
@@ -156,7 +156,7 @@ public class RestConnector implements RestOperations {
         return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
 
     }
-    
+
     @Override
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
         WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
@@ -186,7 +186,7 @@ public class RestConnector implements RestOperations {
         }
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), CREATED.getStatusCode());
     }
-    
+
     @Override
     public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
                                                           Class<T> responseClass) {
@@ -202,7 +202,7 @@ public class RestConnector implements RestOperations {
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
     }
-    
+
     @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                          Class<T> responseClass) {
@@ -255,7 +255,7 @@ public class RestConnector implements RestOperations {
     }
 
     private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType,
-            T representation) {
+                                                                       T representation) {
         BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
         return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
     }
@@ -309,14 +309,14 @@ public class RestConnector implements RestOperations {
         }
         return builder;
     }
-    
+
     private Builder addTfaHeader(Builder builder) {
         if (platformParameters.getTfaToken() != null) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
-    
+
     private Builder addRequestOriginHeader(Builder builder) {
         if (platformParameters.getRequestOrigin() != null) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
@@ -396,7 +396,14 @@ public class RestConnector implements RestOperations {
         CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
-        client.addFilter(new CumulocityAuthenticationFilter(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getOAuthAccessToken()));
+        client.addFilter(
+                new CumulocityAuthenticationFilter(
+                        platformParameters.getPrincipal(),
+                        platformParameters.getPassword(),
+                        platformParameters.getOAuthAccessToken(),
+                        platformParameters.getXsrfToken()
+                )
+        );
         return client;
     }
 
@@ -425,7 +432,14 @@ public class RestConnector implements RestOperations {
         Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
         client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
         client.setFollowRedirects(true);
-        client.addFilter(new CumulocityAuthenticationFilter(platformParameters.getPrincipal(), platformParameters.getPassword(), platformParameters.getOAuthAccessToken()));
+        client.addFilter(
+                new CumulocityAuthenticationFilter(
+                        platformParameters.getPrincipal(),
+                        platformParameters.getPassword(),
+                        platformParameters.getOAuthAccessToken(),
+                        platformParameters.getXsrfToken()
+                )
+        );
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
             client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
                     .getProxyPassword()));

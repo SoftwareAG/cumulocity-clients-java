@@ -40,6 +40,12 @@ public class MeasurementFilter extends Filter {
     private String fragmentType;
 
     @ParamSource
+    private String valueFragmentType;
+
+    @ParamSource
+    private String valueFragmentSeries;
+
+    @ParamSource
     private String dateFrom;
 
     @ParamSource
@@ -65,7 +71,7 @@ public class MeasurementFilter extends Filter {
     /**
      * Specifies the {@code source} query parameter
      *
-     * @param source the managed object that generated the event(s)
+     * @param id the managed object that generated the event(s)
      * @return the event filter with {@code source} set
      */
     public MeasurementFilter bySource(GId id) {
@@ -111,6 +117,54 @@ public class MeasurementFilter extends Filter {
 
     public String getFragmentType() {
         return fragmentType;
+    }
+
+    /**
+     * Specify value fragment type. This is preferred over the parameter {@code fragmentType}, because working with
+     * structured data and filtering via this parameter is lighter than filtering via {@code fragmentType}.
+     *
+     * @param valueFragmentType the value fragment type to filter.
+     * @return the event filter with {@code valueFragmentType} set.
+     * @see #byValueFragmentSeries(String)
+     * @see #byValueFragmentTypeAndSeries(String, String)
+     */
+    public MeasurementFilter byValueFragmentType(String valueFragmentType) {
+        this.valueFragmentType = valueFragmentType;
+        return this;
+    }
+
+    /**
+     * Specify value fragment series, usually use in conjunction with {@link #byValueFragmentType(String)}
+     *
+     * @param valueFragmentSeries value fragment series to filter.
+     * @return the event filter with {@code valueFragmentSeries} set.
+     * @see #byValueFragmentType(String)
+     * @see #byValueFragmentTypeAndSeries(String, String)
+     */
+    public MeasurementFilter byValueFragmentSeries(String valueFragmentSeries) {
+        this.valueFragmentSeries = valueFragmentSeries;
+        return this;
+    }
+
+    /**
+     * A short version combining of {@link #byValueFragmentType(String)} and {@link #byValueFragmentSeries(String)}.
+     *
+     * @param valueFragmentType value fragment type to filter, example: {@code c8y_TemperatureMeasurement}
+     * @param valueFragmentSeries value fragment series to filter, example: {@code T}
+     * @return the event filter with {@code valueFragmentType} and {@code valueFragmentSeries} set.
+     */
+    public MeasurementFilter byValueFragmentTypeAndSeries(String valueFragmentType, String valueFragmentSeries) {
+        this.valueFragmentType = valueFragmentType;
+        this.valueFragmentSeries = valueFragmentSeries;
+        return this;
+    }
+
+    public String getValueFragmentType() {
+        return valueFragmentType;
+    }
+
+    public String getValueFragmentSeries() {
+        return valueFragmentSeries;
     }
 
     public MeasurementFilter byDate(Date fromDate, Date toDate) {

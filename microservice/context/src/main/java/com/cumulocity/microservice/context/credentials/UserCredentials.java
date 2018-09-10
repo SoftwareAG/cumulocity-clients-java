@@ -5,16 +5,18 @@ public class UserCredentials implements Credentials {
     private String username;
     private String password;
     private String oAuthAccessToken;
+    private String xsrfToken;
     private String identifier;
     private String tfaToken;
     private String appKey;
 
-    @java.beans.ConstructorProperties({"tenant", "username", "password", "oAuthAccessToken", "identifier", "tfaToken", "appKey"})
-    public UserCredentials(String tenant, String username, String password, String oAuthAccessToken, String identifier, String tfaToken, String appKey) {
+    @java.beans.ConstructorProperties({"tenant", "username", "password", "oAuthAccessToken", "xsrfToken","identifier", "tfaToken", "appKey"})
+    public UserCredentials(String tenant, String username, String password, String oAuthAccessToken, String xsrfToken, String identifier, String tfaToken, String appKey) {
         this.tenant = tenant;
         this.username = username;
         this.password = password;
         this.oAuthAccessToken = oAuthAccessToken;
+        this.xsrfToken = xsrfToken;
         this.identifier = identifier;
         this.tfaToken = tfaToken;
         this.appKey = appKey;
@@ -43,6 +45,10 @@ public class UserCredentials implements Credentials {
         return this.oAuthAccessToken;
     }
 
+    public String getXsrfToken() {
+        return this.xsrfToken;
+    }
+
     public String getIdentifier() {
         return this.identifier;
     }
@@ -69,6 +75,10 @@ public class UserCredentials implements Credentials {
 
     public void setOAuthAccessToken(String oAuthAccessToken) {
         this.oAuthAccessToken = oAuthAccessToken;
+    }
+
+    public void setXsrfToken(String xsrfToken) {
+        this.xsrfToken = xsrfToken;
     }
 
     public void setIdentifier(String identifier) {
@@ -100,6 +110,9 @@ public class UserCredentials implements Credentials {
         final Object this$oAuthAccessToken = this.getOAuthAccessToken();
         final Object other$oAuthAccessToken = other.getOAuthAccessToken();
         if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(oAuthAccessToken)) return false;
+        final Object this$xsrfToken = this.getXsrfToken();
+        final Object other$xsrfToken = other.getXsrfToken();
+        if (this$xsrfToken == null ? other$xsrfToken != null : !this$xsrfToken.equals(xsrfToken)) return false;
         final Object this$identifier = this.getIdentifier();
         final Object other$identifier = other.getIdentifier();
         if (this$identifier == null ? other$identifier != null : !this$identifier.equals(other$identifier))
@@ -124,6 +137,8 @@ public class UserCredentials implements Credentials {
         result = result * PRIME + ($password == null ? 43 : $password.hashCode());
         final Object $oAuthAccessToken = this.getOAuthAccessToken();
         result = result * PRIME + ($oAuthAccessToken == null ? 43 : oAuthAccessToken.hashCode());
+        final Object $xsrfToken = this.getXsrfToken();
+        result = result * PRIME + ($xsrfToken == null ? 43 : xsrfToken.hashCode());
         final Object $identifier = this.getIdentifier();
         result = result * PRIME + ($identifier == null ? 43 : $identifier.hashCode());
         final Object $tfaToken = this.getTfaToken();
@@ -138,31 +153,35 @@ public class UserCredentials implements Credentials {
     }
 
     public UserCredentials withTenant(String tenant) {
-        return this.tenant == tenant ? this : new UserCredentials(tenant, this.username, this.password, this.oAuthAccessToken, this.identifier, this.tfaToken, this.appKey);
+        return this.tenant == tenant ? this : new UserCredentials(tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, this.identifier, this.tfaToken, this.appKey);
     }
 
     public UserCredentials withUsername(String username) {
-        return this.username == username ? this : new UserCredentials(this.tenant, username, this.password, this.oAuthAccessToken, this.identifier, this.tfaToken, this.appKey);
+        return this.username == username ? this : new UserCredentials(this.tenant, username, this.password, this.oAuthAccessToken, this.xsrfToken, this.identifier, this.tfaToken, this.appKey);
     }
 
     public UserCredentials withPassword(String password) {
-        return this.password == password ? this : new UserCredentials(this.tenant, this.username, password, this.oAuthAccessToken, this.identifier, this.tfaToken, this.appKey);
+        return this.password == password ? this : new UserCredentials(this.tenant, this.username, password, this.oAuthAccessToken, this.xsrfToken, this.identifier, this.tfaToken, this.appKey);
     }
 
     public UserCredentials withIdentifier(String identifier) {
-        return this.identifier == identifier ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, identifier, this.tfaToken, this.appKey);
+        return this.identifier == identifier ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, identifier, this.tfaToken, this.appKey);
     }
 
     public UserCredentials withOAuthAccessToken(String oAuthAccessToken) {
-        return this.oAuthAccessToken == oAuthAccessToken ? this : new UserCredentials(this.tenant, this.username, this.password, oAuthAccessToken, this.identifier, this.tfaToken, this.appKey);
+        return this.oAuthAccessToken == oAuthAccessToken ? this : new UserCredentials(this.tenant, this.username, this.password, oAuthAccessToken, this.xsrfToken, this.identifier, this.tfaToken, this.appKey);
+    }
+
+    public UserCredentials withXsrfToken(String xsrfToken) {
+        return this.xsrfToken == xsrfToken ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, xsrfToken, this.identifier, this.tfaToken, this.appKey);
     }
 
     public UserCredentials withTfaToken(String tfaToken) {
-        return this.tfaToken == tfaToken ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.identifier, tfaToken, this.appKey);
+        return this.tfaToken == tfaToken ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, this.identifier, tfaToken, this.appKey);
     }
 
     public UserCredentials withAppKey(String appKey) {
-        return this.appKey == appKey ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.identifier, this.tfaToken, appKey);
+        return this.appKey == appKey ? this : new UserCredentials(this.tenant, this.username, this.password, this.oAuthAccessToken, this.xsrfToken, this.identifier, this.tfaToken, appKey);
     }
 
     public String toString() {
@@ -174,6 +193,7 @@ public class UserCredentials implements Credentials {
         private String username;
         private String password;
         private String oAuthAccessToken;
+        private String xsrfToken;
         private String identifier;
         private String tfaToken;
         private String appKey;
@@ -193,6 +213,11 @@ public class UserCredentials implements Credentials {
 
         public UserCredentials.UserCredentialsBuilder oAuthAccessToken(String oAuthAccessToken) {
             this.oAuthAccessToken = oAuthAccessToken;
+            return this;
+        }
+
+        public UserCredentials.UserCredentialsBuilder xsrfToken(String xsrfToken) {
+            this.xsrfToken = xsrfToken;
             return this;
         }
 
@@ -217,11 +242,11 @@ public class UserCredentials implements Credentials {
         }
 
         public UserCredentials build() {
-            return new UserCredentials(tenant, username, password, oAuthAccessToken, identifier, tfaToken, appKey);
+            return new UserCredentials(tenant, username, password, oAuthAccessToken, xsrfToken, identifier, tfaToken, appKey);
         }
 
         public String toString() {
-            return "UserCredentials.UserCredentialsBuilder(tenant=" + this.tenant + ", username=" + this.username + ", password=" + this.password + ", oAuthAccessToken=" + this.oAuthAccessToken + ", identifier=" + this.identifier + ", tfaToken=" + this.tfaToken + ", appKey=" + this.appKey + ")";
+            return "UserCredentials.UserCredentialsBuilder(tenant=" + this.tenant + ", username=" + this.username + ", password=" + this.password + ", oAuthAccessToken=" + this.oAuthAccessToken + ", xsrfToken=" + this.xsrfToken + ", identifier=" + this.identifier + ", tfaToken=" + this.tfaToken + ", appKey=" + this.appKey + ")";
         }
     }
 }

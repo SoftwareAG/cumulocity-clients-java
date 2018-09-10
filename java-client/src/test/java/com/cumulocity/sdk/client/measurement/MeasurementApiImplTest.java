@@ -50,6 +50,10 @@ public class MeasurementApiImplTest {
 
     private static final String TYPE = "type1";
 
+    private static final String VALUE_FRAGMENT_TYPE = "c8y_TemperatureMeasurement_Test";
+
+    private static final String VALUE_FRAGMENT_SERIES = "T";
+
     private static final int DEAFAULT_PAGE_SIZE = 11;
 
     private MeasurementApi measurementApi;
@@ -180,6 +184,43 @@ public class MeasurementApiImplTest {
         when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, filter.getQueryParams())).thenReturn(measurementsByTypeUrl);
 
         MeasurementCollection expected = new MeasurementCollectionImpl(restConnector, measurementsByTypeUrl,
+                DEAFAULT_PAGE_SIZE);
+
+        // When
+        MeasurementCollection result = measurementApi.getMeasurementsByFilter(filter);
+
+        // Then
+        assertThat(result, is(expected));
+    }
+
+    @Test
+    public void shouldReturnMeasurementsByValueFragmentTypeFilter() throws Exception {
+        // Given
+        MeasurementFilter filter = new MeasurementFilter().byValueFragmentType(VALUE_FRAGMENT_TYPE);
+        measurementsApiRepresentation.setMeasurementsForType(TEMPLATE_URL);
+        String measurementsByValueFragmentTypeUrl = MEASUREMENT_COLLECTION_URL + "?valueFragmentType=" + VALUE_FRAGMENT_TYPE;
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, filter.getQueryParams())).thenReturn(measurementsByValueFragmentTypeUrl);
+
+        MeasurementCollection expected = new MeasurementCollectionImpl(restConnector, measurementsByValueFragmentTypeUrl,
+                DEAFAULT_PAGE_SIZE);
+
+        // When
+        MeasurementCollection result = measurementApi.getMeasurementsByFilter(filter);
+
+        // Then
+        assertThat(result, is(expected));
+    }
+
+    @Test
+    public void shouldReturnMeasurementsByValueFragmentTypeAndSeriesFilter() throws Exception {
+        // Given
+        MeasurementFilter filter = new MeasurementFilter().byValueFragmentType(VALUE_FRAGMENT_TYPE).byValueFragmentSeries(VALUE_FRAGMENT_SERIES);
+        measurementsApiRepresentation.setMeasurementsForType(TEMPLATE_URL);
+        String measurementsByValueFragmentTypeAndSeriesUrl = MEASUREMENT_COLLECTION_URL + "?valueFragmentType="
+                + VALUE_FRAGMENT_TYPE + "&valueFragmentSeries=" + VALUE_FRAGMENT_SERIES;
+        when(urlProcessor.replaceOrAddQueryParam(MEASUREMENT_COLLECTION_URL, filter.getQueryParams())).thenReturn(measurementsByValueFragmentTypeAndSeriesUrl);
+
+        MeasurementCollection expected = new MeasurementCollectionImpl(restConnector, measurementsByValueFragmentTypeAndSeriesUrl,
                 DEAFAULT_PAGE_SIZE);
 
         // When

@@ -39,22 +39,20 @@ public class EnableContextSupportConfiguration {
         final CustomScopeConfigurer configurer = new CustomScopeConfigurer();
 
 //        todo implement scope clearing after SubscriptionRemovedEvent
-        configurer.setScopes(ImmutableMap.<String, Object> builder()
+        configurer.setScopes(ImmutableMap.<String, Object>builder()
                 .put(USER_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
                         final UserCredentials context = userContextService.getContext();
-                        return context.getTenant() + "/" +
-                                context.getUsername() + ":" +
-                                (context.getPassword() == null ? context.getOAuthAccessToken() : context.getPassword()) + "," +
+                        return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," +
+                                context.getOAuthAccessToken() + ":" + context.getXsrfToken() + "," +
                                 context.getTfaToken();
                     }
                 })
                 .put(TENANT_SCOPE, new BaseScope(true) {
                     protected String getContextId() {
                         final MicroserviceCredentials context = microserviceContextService.getContext();
-                        return context.getTenant() + "/" +
-                                context.getUsername() + ":" +
-                                (context.getPassword() == null ? context.getOAuthAccessToken() : context.getPassword()) + "," +
+                        return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," +
+                                context.getOAuthAccessToken() + ":" + context.getXsrfToken() + "," +
                                 context.getTfaToken();
                     }
                 })
