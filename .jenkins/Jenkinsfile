@@ -47,11 +47,11 @@ pipeline {
            }
            post {
                always {
-                   junit '**/TEST-*.xml'
+                   junit results: '**/TEST-*.xml', keepLongStdio: true
                }
            }
        }
-       stage('Deploy to Maven') {
+       stage('Deploy to Nexus') {
            agent{
             dockerfile {
              dir '.jenkins/build'
