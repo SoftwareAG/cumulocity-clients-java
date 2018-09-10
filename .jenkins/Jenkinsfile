@@ -63,7 +63,7 @@ pipeline {
            }
        }
        stage('Release') {
-              allOf {
+              when {
                 expression { params.release }
                 expression { BRANCH_NAME ==~ /(release\/).*/ }
               }
@@ -76,10 +76,11 @@ pipeline {
                   sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
               }
         }
-        post {
-            failure {
-                chat 'AAAAvnc5o90'
-            }
+       
+    }
+    post {
+        failure {
+            chat 'AAAAvnc5o90'
         }
     }
 }
