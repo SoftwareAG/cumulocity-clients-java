@@ -1,0 +1,85 @@
+pipeline {
+    agent none
+    triggers { pollSCM('H/5 * * * *') }
+    options{
+     buildDiscarder(logRotator(numToKeepStr: '10'))
+     timeout(time: 1, unit: 'HOURS')
+     disableConcurrentBuilds()
+    }
+    parameters {
+        booleanParam(name: 'release', defaultValue: false, description: 'Defines if this should be a release build')
+    }
+
+    stages {
+
+       stage('Checkout') {
+           agent{
+            dockerfile {
+             dir '.jenkins/build'
+            }
+           }
+           steps {
+               checkout scm
+               sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+           }
+       }
+       stage('Build') {
+           agent{
+            dockerfile {
+             dir '.jenkins/build'
+            }
+           }
+           steps {
+               sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+           }
+       }
+       stage('Unit Test') {
+           options {
+             retry(3)
+           }
+           agent{
+            dockerfile {
+             dir '.jenkins/build'
+            }
+           }
+           steps {
+               sh "chmod +x .jenkins/scripts/test.sh && .jenkins/scripts/test.sh"
+           }
+           post {
+               always {
+                   junit '**/TEST-*.xml'
+               }
+           }
+       }
+       stage('Deploy to Maven') {
+           agent{
+            dockerfile {
+             dir '.jenkins/build'
+             args '--network centos_default'
+            }
+           }
+           steps {
+               sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
+           }
+       }
+       stage('Release') {
+              allOf {
+                expression { params.release }
+                expression { BRANCH_NAME ==~ /(release\/).*/ }
+              }
+              agent{
+               dockerfile {
+                dir '.jenkins/build'
+               }
+              }
+              steps {
+                  sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+              }
+        }
+        post {
+            failure {
+                chat 'AAAAvnc5o90'
+            }
+        }
+    }
+}
