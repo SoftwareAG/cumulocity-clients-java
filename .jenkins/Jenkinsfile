@@ -32,12 +32,6 @@ pipeline {
            steps {
                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
            }
-           post {
-               always {
-                   junit (testResults: '**/TEST-*.xml', keepLongStdio: true)
-                   jacoco()
-               }
-           }
        }
        stage('Unit Test') {
            options {
@@ -50,6 +44,12 @@ pipeline {
            }
            steps {
                sh "chmod +x .jenkins/scripts/test.sh && .jenkins/scripts/test.sh"
+           }
+           post {
+               always {
+                   junit (testResults: '**/TEST-*.xml', keepLongStdio: true)
+                   jacoco()
+               }
            }
        }
        stage('Deploy to Nexus') {
