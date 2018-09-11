@@ -72,41 +72,18 @@ pipeline {
                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
            }
        }
-       stage('Prepare Release') {
+       stage('Release') {
               when {
                 expression { params.release }
                 branch 'release/**'
               }
               steps {
                   sshagent(['jenkins-hg-key']) {
-                    sh "chmod +x .jenkins/scripts/release-prepare.sh && .jenkins/scripts/release-prepare.sh"
+                    sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
               }
         }
 
-        stage('Publish SDK to resources.cumulocity.com') {
-              when {
-                expression { params.release }
-                branch 'release/**'
-              }
-              steps {
-                  sshagent(['jenkins-hg-key']) {
-                    sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
-                  }
-              }
-        }
-
-          stage('Perform Release') {
-              when {
-                expression { params.release }
-                branch 'release/**'
-              }
-              steps {
-                  sshagent(['jenkins-hg-key']) {
-                    sh "chmod +x .jenkins/scripts/release-perform.sh && .jenkins/scripts/release-perform.sh"
-                  }
-              }
-        }
        
     }
     post {

@@ -36,7 +36,7 @@ function next-snapshot {
 }
 
 function tag-version {
+    tag=$1
     hg commit -m "[maven-release-plugin] prepare release ${tag}"
-    hg tag "${tag}"
-    hg commit -m "copy for tag ${tag}"
+    hg tag  -m "copy for tag ${tag}" "${tag}"
 }
