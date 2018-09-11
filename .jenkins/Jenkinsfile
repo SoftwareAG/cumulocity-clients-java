@@ -90,8 +90,8 @@ pipeline {
         success{
             build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
         }
-        // failure {
-        //     chat 'AAAAvnc5o90'
-        // }
+        failure {
+            chat 'AAAAvnc5o90'
+        }
     }
 }
