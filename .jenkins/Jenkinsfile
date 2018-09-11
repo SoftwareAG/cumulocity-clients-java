@@ -19,10 +19,17 @@ pipeline {
 
        stage('Checkout') {
            steps {
-               checkout scm (clearWorkspace:true )
+              checkout([
+                $class: 'MercurialSCM',
+                clear: true,   
+                credentialsId: 'jenkins-hg-key',
+                installation: 'Mercurial',
+                disableChangeLog: true,
+                revision: "${env.BRANCH_NAME}",
+                source: 'ssh://hg@bitbucket.org/m2m/cumulocity-clients-java'])
                checkout([
                 $class: 'MercurialSCM',
-                clearWorkspace: true,
+                clear: true,   
                 credentialsId: 'jenkins-hg-key',
                 installation: 'Mercurial',
                 disableChangeLog: true,
