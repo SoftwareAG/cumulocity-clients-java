@@ -22,7 +22,7 @@ pipeline {
                checkout scm (clearWorkspace:true )
                checkout([
                 $class: 'MercurialSCM',
-                clearWorkspace: true
+                clearWorkspace: true,
                 credentialsId: 'jenkins-hg-key',
                 installation: 'Mercurial',
                 disableChangeLog: true,
