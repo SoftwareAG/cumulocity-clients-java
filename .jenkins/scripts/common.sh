@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export $resources=hudson@resources.cumulocity.com
+export resources=hudson@resources.cumulocity.com
 
 function call-mvn {
     ./mvnw ${@}
