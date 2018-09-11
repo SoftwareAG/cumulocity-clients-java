@@ -15,7 +15,7 @@ function call-mvn {
     if [ -f cumulocity-sdk/pom.xml ] ;
     then
         cd cumulocity-sdk
-        ../mvnw ${@}
+        ../mvnw ${@} 
         cd -
     else
         echo "Skipping cumulocity-sdk"

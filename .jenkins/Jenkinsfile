@@ -69,7 +69,9 @@ pipeline {
                 branch 'release/**'
               }
               steps {
-                  sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                  sshagent(['jenkins-hg-key']) {
+                    sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                  }
               }
         }
 
