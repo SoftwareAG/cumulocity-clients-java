@@ -19,9 +19,10 @@ pipeline {
 
        stage('Checkout') {
            steps {
-               checkout scm
+               checkout scm (clearWorkspace:true )
                checkout([
                 $class: 'MercurialSCM',
+                clearWorkspace: true
                 credentialsId: 'jenkins-hg-key',
                 installation: 'Mercurial',
                 disableChangeLog: true,
