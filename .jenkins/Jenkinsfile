@@ -70,6 +70,15 @@ pipeline {
               }
               steps {
                   sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+              }
+        }
+
+        stage('Publish SDK to resources.cumulocity.com') {
+              when {
+                expression { params.release }
+                branch 'release/**'
+              }
+              steps {
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
                   }

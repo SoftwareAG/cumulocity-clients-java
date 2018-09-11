@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export $resources=hudson@resources.cumulocity.com
 
 function call-mvn {
     ./mvnw ${@}
@@ -20,4 +21,8 @@ function call-mvn {
         echo "Skipping cumulocity-sdk"
     fi
 
+}
+
+function resolve-version {
+    ./mvnw org.apache.maven.plugins:maven-help-plugin:evaluate -Dexpression=project.version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }'
 }
