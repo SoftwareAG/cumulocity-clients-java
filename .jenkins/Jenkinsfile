@@ -1,5 +1,10 @@
 pipeline {
-    agent none
+    agent {
+        dockerfile {
+            dir '.jenkins/build'
+            args '--network centos_default'
+        }
+    }
     triggers { pollSCM('H/5 * * * *') }
     options{
      buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -13,22 +18,20 @@ pipeline {
     stages {
 
        stage('Checkout') {
-           agent{
-            dockerfile {
-             dir '.jenkins/build'
-            }
-           }
            steps {
                checkout scm
-               sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+               checkout([
+                $class: 'MercurialSCM',
+                credentialsId: 'jenkins-hg-key',
+                installation: 'Mercurial',
+                disableChangeLog: true,
+                revision: 'develop',
+                subdir: 'cumulocity-sdk',
+                source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'])
+                sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
            }
        }
        stage('Build') {
-           agent{
-            dockerfile {
-             dir '.jenkins/build'
-            }
-           }
            steps {
                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
            }
@@ -36,11 +39,6 @@ pipeline {
        stage('Unit Test') {
            options {
              retry(3)
-           }
-           agent{
-            dockerfile {
-             dir '.jenkins/build'
-            }
            }
            steps {
                sh "chmod +x .jenkins/scripts/test.sh && .jenkins/scripts/test.sh"
@@ -53,33 +51,37 @@ pipeline {
            }
        }
        stage('Deploy to Nexus') {
-           agent{
-            dockerfile {
-             dir '.jenkins/build'
-             args '--network centos_default'
-            }
+           when {
+                not {
+                    allOf{
+                        expression { params.release }
+                        branch 'release/**'
+                    }
+                }
            }
+          
            steps {
-               sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
+               sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
            }
        }
        stage('Release') {
               when {
                 expression { params.release }
-                expression { BRANCH_NAME ==~ /(release\/).*/ }
-              }
-              agent{
-               dockerfile {
-                dir '.jenkins/build'
-               }
+                branch 'release/**'
               }
               steps {
                   sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                  sshagent(['jenkins-hg-key']) {
+                    sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
+                  }
               }
         }
        
     }
     post {
+        success{
+            build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
+        }
         failure {
             chat 'AAAAvnc5o90'
         }

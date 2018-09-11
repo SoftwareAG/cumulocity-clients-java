@@ -1,7 +1,3 @@
 #!/bin/bash
-./mvnw clean -T 8
-if [ -f microservice/pom.xml ] ;
-then
-    cd microservice
-    ../mvnw  clean -T 8
-fi
+source ${BASH_SOURCE%/*}/common.sh
+call-mvn clean -T 8

@@ -1,8 +1,4 @@
 #!/bin/bash
 set -e
-./mvnw compile
-if [ -f microservice/pom.xml ] ;
-then
-    cd microservice
-    ../mvnw compile
-fi
+source ${BASH_SOURCE%/*}/common.sh
+call-mvn compile
