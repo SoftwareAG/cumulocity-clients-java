@@ -36,6 +36,7 @@ pipeline {
                 revision: "${env.BRANCH_NAME}",
                 subdir: 'cumulocity-sdk',
                 source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'])
+
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
            }
        }
@@ -71,14 +72,14 @@ pipeline {
                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
            }
        }
-       stage('Release') {
+       stage('Prepare Release') {
               when {
                 expression { params.release }
                 branch 'release/**'
               }
               steps {
                   sshagent(['jenkins-hg-key']) {
-                    sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                    sh "chmod +x .jenkins/scripts/release-prepare.sh && .jenkins/scripts/release-prepare.sh"
                   }
               }
         }
@@ -91,6 +92,18 @@ pipeline {
               steps {
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/publish.sh && .jenkins/scripts/publish.sh"
+                  }
+              }
+        }
+
+          stage('Perform Release') {
+              when {
+                expression { params.release }
+                branch 'release/**'
+              }
+              steps {
+                  sshagent(['jenkins-hg-key']) {
+                    sh "chmod +x .jenkins/scripts/release-perform.sh && .jenkins/scripts/release-perform.sh"
                   }
               }
         }
