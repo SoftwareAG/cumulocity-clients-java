@@ -1,7 +1,7 @@
 pipeline {
     agent {
         dockerfile {
-            dir '.jenkins/build'
+            
             args '--network centos_default'
         }
     }
@@ -25,7 +25,7 @@ pipeline {
                 credentialsId: 'jenkins-hg-key',
                 installation: 'Mercurial',
                 disableChangeLog: true,
-                revision: 'develop',
+                revision: "${params.BRANCH_NAME}",
                 subdir: 'cumulocity-sdk',
                 source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'])
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
@@ -59,7 +59,6 @@ pipeline {
                     }
                 }
            }
-          
            steps {
                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
            }
@@ -82,8 +81,8 @@ pipeline {
         success{
             build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
         }
-        failure {
-            chat 'AAAAvnc5o90'
-        }
+        // failure {
+        //     chat 'AAAAvnc5o90'
+        // }
     }
 }
