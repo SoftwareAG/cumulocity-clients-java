@@ -33,8 +33,9 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>9.8.4</cumulocity.model.version>
-		<cumulocity.shared-components.version>9.8.5</cumulocity.shared-components.version>
+		<cumulocity.dependencies.version>9.8.1</cumulocity.dependencies.version>
+		<cumulocity.model.version>9.8.6</cumulocity.model.version>
+		<cumulocity.shared-components.version>9.8.6</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
 	</properties>
 
@@ -209,6 +210,7 @@
 		<dependencies>
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 			<!-- COMPILE DEPENDENCIES START -->
+
 			<dependency>
 				<groupId>com.nsn.cumulocity.clients-java</groupId>
 				<artifactId>java-client</artifactId>

@@ -86,6 +86,11 @@
 			<artifactId>rest-representation</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>core-model</artifactId>
+			<version>${cumulocity.model.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
 			<artifactId>jersey-apache-client</artifactId>
 		</dependency>
