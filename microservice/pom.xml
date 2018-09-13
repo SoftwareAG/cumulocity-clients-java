@@ -32,6 +32,7 @@
     </properties>
 
     <modules>
+        <module>actuator-configuration</module>
         <module>autoconfigure</module>
         <module>context</module>
         <module>api</module>
@@ -112,6 +113,12 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-platform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-actuator-configuration</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
