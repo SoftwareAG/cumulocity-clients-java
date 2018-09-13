@@ -33,6 +33,7 @@
 	</modules>
 
 	<properties>
+        <nexus.url>http://localhost:8080</nexus.url>
 		<cumulocity.model.version>9.0.9</cumulocity.model.version>
 		<cumulocity.shared-components.version>9.0.13</cumulocity.shared-components.version>
 	</properties>
@@ -66,6 +67,17 @@
 	<organization>
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>${nexus.url}/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>release</id>
+            <url>${nexus.url}/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
 
 	<build>
 		<plugins>
