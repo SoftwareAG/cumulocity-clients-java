@@ -3,6 +3,8 @@ package com.cumulocity.microservice.security.filter;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.security.filter.provider.PostAuthorizationContextProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
@@ -68,11 +70,25 @@ public class PostAuthenticateServletFilter extends OncePerRequestFilter {
                     runnable = contextService.withinContext(credential, runnable);
                 }
             } catch (AccessDeniedException e) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+                sendAccessDenied(response, e.getMessage());
                 return;
             }
         }
 
         runnable.run();
+    }
+
+    private void sendAccessDenied(HttpServletResponse response, String errorMessage) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.getWriter().write(toJsonError("Microservice/Access Denied", errorMessage));
+    }
+
+    private String toJsonError(String error, String message) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode node = mapper.createObjectNode();
+        node.put("error", error);
+        node.put("message", message);
+        return node.toString();
     }
 }
