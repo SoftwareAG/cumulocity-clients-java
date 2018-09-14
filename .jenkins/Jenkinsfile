@@ -20,18 +20,8 @@ pipeline {
        stage('Checkout') {
            steps {
                withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_ID} "
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
                }
-
-              checkout([
-                $class: 'MercurialSCM',
-                clear: true,   
-                credentialsId: 'jenkins-hg-key',
-                installation: 'Mercurial',
-                disableChangeLog: true,
-                revision: "${env.BRANCH_NAME}",
-                source: 'ssh://hg@bitbucket.org/m2m/cumulocity-clients-java'])
-
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
            }
        }
@@ -89,7 +79,15 @@ pipeline {
                 branch 'release/**'
               }
               steps {
-                  
+                  checkout([
+                    $class: 'MercurialSCM',
+                    clear: true,   
+                    credentialsId: 'jenkins-hg-key',
+                    installation: 'Mercurial',
+                    disableChangeLog: true,
+                    revision: "${env.BRANCH_NAME}",
+                    source: 'ssh://hg@bitbucket.org/m2m/cumulocity-clients-java'
+                  ])
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
@@ -102,14 +100,14 @@ pipeline {
         success{
             build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
             withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_ID} "
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
             }
 
         }
         failure {
             chat 'AAAAvnc5o90'
             withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_ID} "
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
         }
     }
