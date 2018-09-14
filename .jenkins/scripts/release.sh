@@ -24,7 +24,7 @@ tag-version "sdk-${version}"
 cd -
 
 echo "Update version to ${next_version}"
-call-mvn versions:set -DnewVersion=${next_version} 
+call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd cumulocity-sdk
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
