@@ -19,6 +19,10 @@ pipeline {
 
        stage('Checkout') {
            steps {
+               withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_ID} "
+               }
+
               checkout([
                 $class: 'MercurialSCM',
                 clear: true,   
@@ -97,9 +101,16 @@ pipeline {
     post {
         success{
             build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
+            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_ID} "
+            }
+
         }
         failure {
             chat 'AAAAvnc5o90'
+            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_ID} "
+            }
         }
     }
 }
