@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 source ${BASH_SOURCE%/*}/common.sh
-./mvnw install
+./mvnw install -Pci
 cd microservice
-../mvnw install
+../mvnw install -Pci 
 cd -
