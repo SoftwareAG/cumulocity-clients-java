@@ -10,7 +10,7 @@ next_version=$(next-snapshot ${version})
 
 echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version} 
-call-mvn clean install deploy ${release_args} 
+call-mvn clean deploy ${release_args} 
 
 
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
