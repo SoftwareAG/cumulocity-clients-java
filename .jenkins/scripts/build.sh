@@ -1,4 +1,7 @@
 #!/bin/bash
 set -e
 source ${BASH_SOURCE%/*}/common.sh
-call-mvn install
+./mvnw install
+cd microservice
+../mvnw install
+cd -
