@@ -26,6 +26,11 @@ pipeline {
            }
        }
        stage('Build') {
+           agent {
+                dockerfile {
+                    dir '.jenkins/build'
+                }
+            }
            options {
              retry(3)
            }

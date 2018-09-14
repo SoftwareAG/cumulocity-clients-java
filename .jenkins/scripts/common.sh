@@ -1,7 +1,7 @@
 #!/bin/bash
 source ${BASH_SOURCE%/*}/semver.sh
 export resources=hudson@yum.cumulocity.com
-export release_args="-Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
+export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
 function call-mvn {
     ./mvnw ${@}
     if [ -f microservice/pom.xml ] ;
