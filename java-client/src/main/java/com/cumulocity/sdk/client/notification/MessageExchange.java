@@ -297,8 +297,7 @@ class MessageExchange {
                     }
                 }
             } catch (Exception e) {
-                log.error("connection failed " + e.getMessage(), e);
-
+                log.debug("connection failed", e);
                 unauthorizedConnectionWatcher.resetCounter();
                 listener.onConnectException(e, messages);
                 onFinish();
