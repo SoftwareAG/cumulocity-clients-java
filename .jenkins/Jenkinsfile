@@ -27,30 +27,16 @@ pipeline {
                 disableChangeLog: true,
                 revision: "${env.BRANCH_NAME}",
                 source: 'ssh://hg@bitbucket.org/m2m/cumulocity-clients-java'])
-               checkout([
-                $class: 'MercurialSCM',
-                clear: true,   
-                credentialsId: 'jenkins-hg-key',
-                installation: 'Mercurial',
-                disableChangeLog: true,
-                revision: "${env.BRANCH_NAME}",
-                subdir: 'cumulocity-sdk',
-                source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'])
 
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
            }
        }
        stage('Build') {
-           steps {
-               sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
-           }
-       }
-       stage('Unit Test') {
            options {
              retry(3)
            }
            steps {
-               sh "chmod +x .jenkins/scripts/test.sh && .jenkins/scripts/test.sh"
+               sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
            }
            post {
                always {
@@ -59,6 +45,27 @@ pipeline {
                }
            }
        }
+       stage('Verify maven repo') {
+           when {
+                anyOf{
+                    branch 'develop'
+                    branch 'release/**'
+                }
+           }
+           steps {
+               checkout([
+                    $class: 'MercurialSCM',
+                    clear: true,   
+                    credentialsId: 'jenkins-hg-key',
+                    installation: 'Mercurial',
+                    disableChangeLog: true,
+                    revision: "${env.BRANCH_NAME}",
+                    subdir: 'cumulocity-sdk',
+                    source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
+               ])
+               sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+           }
+       }      
        stage('Deploy to Nexus') {
            when {
                 not {
@@ -78,6 +85,7 @@ pipeline {
                 branch 'release/**'
               }
               steps {
+                  
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
