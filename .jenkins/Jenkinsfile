@@ -85,6 +85,7 @@ pipeline {
               }
               steps {
                   sh "hg up -C ${env.BRANCH_NAME}"
+                  sh "hg pull -u "
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
