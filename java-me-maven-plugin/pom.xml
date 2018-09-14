@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>9.12.7-SNAPSHOT</version>
+        <version>9.12.7</version>
     </parent>
 
     <groupId>com.cumulocity.me</groupId>
     <artifactId>java-me-maven-plugin</artifactId>
-    <version>9.12.7-SNAPSHOT</version>
+    <version>9.12.7</version>
     <packaging>maven-plugin</packaging>
     <name>Cumulocity :: Clients Java :: Java ME Maven Plugin</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
