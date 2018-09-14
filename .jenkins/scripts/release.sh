@@ -12,13 +12,16 @@ echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version} 
 call-mvn clean deploy ${release_args} 
 
-
+echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
 ssh ${resources}  "mkdir  /tmp/maven-repository-${version} ;  tar -xvzf /tmp/maven-repository-${version}.tar.gz -C /tmp/maven-repository-${version}"
+echo "Publish extracted files to maven repository"
 ssh ${resources}  "sudo cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
+echo "Cleanup tmp files"
 ssh ${resources}  "rm -R /tmp/maven-repository-${version}*"
-
+echo "tagging cumulocity-clients-java"
 tag-version "clients-java-${version}"
+echo "tagging cumulocity-sdk"
 cd cumulocity-sdk
 tag-version "sdk-${version}"
 cd -
