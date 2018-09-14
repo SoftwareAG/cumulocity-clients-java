@@ -79,15 +79,7 @@ pipeline {
                 branch 'release/**'
               }
               steps {
-                  checkout([
-                    $class: 'MercurialSCM',
-                    clear: true,   
-                    credentialsId: 'jenkins-hg-key',
-                    installation: 'Mercurial',
-                    disableChangeLog: true,
-                    revision: "${env.BRANCH_NAME}",
-                    source: 'ssh://hg@bitbucket.org/m2m/cumulocity-clients-java'
-                  ])
+                  sh "hg up -C ${env.BRANCH_NAME}"
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
