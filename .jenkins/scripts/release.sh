@@ -4,6 +4,14 @@ source ${BASH_SOURCE%/*}/common.sh
 
 
 call-mvn clean -T 4
+
+hg up -C ${BRANCH_NAME}
+hg pull -u 
+cd cumulocity-sdk
+hg up -C ${BRANCH_NAME}
+hg pull -u 
+cd -
+
 current_version=$(resolve-version)
 version=$(next-release ${current_version})
 next_version=$(next-snapshot ${version})
