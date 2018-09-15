@@ -5,11 +5,11 @@ source ${BASH_SOURCE%/*}/common.sh
 
 call-mvn clean -T 4
 
-hg up -C ${BRANCH_NAME}
 hg pull -u 
+hg up -C ${BRANCH_NAME}
 cd cumulocity-sdk
-hg up -C ${BRANCH_NAME}
 hg pull -u 
+hg up -C ${BRANCH_NAME}
 cd -
 
 current_version=$(resolve-version)
@@ -40,7 +40,7 @@ hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd cumulocity-sdk
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd -
-hg push 
+hg push -r${BRANCH_NAME}
 cd cumulocity-sdk
-hg push 
+hg push -r${BRANCH_NAME}
 
