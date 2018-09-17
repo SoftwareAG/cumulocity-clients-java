@@ -101,7 +101,7 @@ pipeline {
 
         }
         failure {
-            // chat 'AAAAvnc5o90'
+            chat 'AAAAvnc5o90'
             withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
