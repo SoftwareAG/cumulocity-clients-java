@@ -33,7 +33,7 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>9.14.0</cumulocity.model.version>
+		<cumulocity.model.version>9.14.1</cumulocity.model.version>
 		<cumulocity.shared-components.version>9.14.0</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
 	</properties>
