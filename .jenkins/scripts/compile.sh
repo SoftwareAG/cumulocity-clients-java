@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 source ${BASH_SOURCE%/*}/common.sh
-./mvnw compile -Pci
+./mvnw install -DskipTests
 cd microservice
-../mvnw install -Pci 
+../mvnw install -DskipTests
 cd -
