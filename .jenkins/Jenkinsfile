@@ -22,7 +22,12 @@ pipeline {
                withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
                }
-                sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+               sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+           }
+       }
+        stage('Compile') {
+           steps {
+               sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
            }
        }
        stage('Build') {
