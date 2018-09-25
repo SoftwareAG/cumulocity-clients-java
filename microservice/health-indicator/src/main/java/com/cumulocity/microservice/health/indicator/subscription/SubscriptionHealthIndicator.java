@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(value = "management.health.subscription.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class SubscriptionHealthIndicator extends AbstractHealthIndicator {
 
