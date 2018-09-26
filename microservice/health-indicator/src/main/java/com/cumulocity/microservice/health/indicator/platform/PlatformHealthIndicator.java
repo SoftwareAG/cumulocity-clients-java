@@ -27,7 +27,7 @@ import static org.apache.commons.httpclient.HttpStatus.SC_OK;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(value = "management.health.platform.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(value = "management.health.platform.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class PlatformHealthIndicator extends AbstractHealthIndicator {
 
