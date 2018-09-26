@@ -41,9 +41,10 @@ public abstract class Filter {
         Class clazz = getClass();
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
-            String value = (String) safelyGetFieldValue(field, this);
-            if (value != null) {
-                params.put(getParamName(field), encode(value));
+            Object value =  safelyGetFieldValue(field, this);
+            if ((value != null) && (value instanceof String) ) {
+                String stringFieldValue = (String)value;
+                params.put(getParamName(field), encode(stringFieldValue));
             }
         }
         return params;
