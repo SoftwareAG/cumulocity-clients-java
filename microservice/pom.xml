@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>8.19.4-SNAPSHOT</version>
+    <version>8.19.6-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -21,8 +21,8 @@
 
         <cumulocity.model.version>8.19.1</cumulocity.model.version>
         <cumulocity.dependencies.version>8.19.0</cumulocity.dependencies.version>
-        <cumulocity.clients.version>8.19.1</cumulocity.clients.version>
-        <cumulocity.agent-framework.version>8.19.0</cumulocity.agent-framework.version>
+        <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
+        <cumulocity.agent-framework.version>${project.version}</cumulocity.agent-framework.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
