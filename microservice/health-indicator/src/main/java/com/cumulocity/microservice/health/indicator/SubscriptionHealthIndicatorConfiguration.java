@@ -4,13 +4,14 @@ import com.cumulocity.microservice.health.indicator.subscription.SubscriptionHea
 import com.cumulocity.microservice.health.indicator.subscription.SubscriptionHealthIndicatorProperties;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource(value = "classpath:microservice_health.properties", ignoreResourceNotFound = true)
+@ConditionalOnProperty(value = "management.health.subscription.enabled", havingValue = "true")
 @EnableConfigurationProperties(SubscriptionHealthIndicatorProperties.class)
 public class SubscriptionHealthIndicatorConfiguration {
 
