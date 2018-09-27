@@ -34,8 +34,8 @@
 
 	<properties>
 		<cumulocity.dependencies.version>9.8.1</cumulocity.dependencies.version>
-		<cumulocity.model.version>9.8.7</cumulocity.model.version>
-		<cumulocity.shared-components.version>9.8.8</cumulocity.shared-components.version>
+		<cumulocity.model.version>9.8.8</cumulocity.model.version>
+		<cumulocity.shared-components.version>9.8.9</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
 	</properties>
 
