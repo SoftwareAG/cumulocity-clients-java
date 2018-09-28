@@ -29,12 +29,11 @@ import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
@@ -396,7 +395,8 @@ public class RestConnector implements RestOperations {
         registerClasses(config);
         config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
 
-        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(config), null);
+        CumulocityHttpClient client = new CumulocityHttpClient(
+                createDefaultClientHander(config, platformParameters.isAlwaysCloseConnection()), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
         client.addFilter(
@@ -407,14 +407,26 @@ public class RestConnector implements RestOperations {
                         platformParameters.getXsrfToken()
                 )
         );
+        if(platformParameters.isAlwaysCloseConnection()) {
+            client.addFilter(new ClientFilter() {
+                @Override
+                public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
+                    cr.getHeaders().add("Connection", "close");
+                    return getNext().handle(cr);
+                }
+            });
+        }
         return client;
     }
 
-    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc) {
+    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc, boolean alwaysCloseConnection) {
         MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        httpConnectionManager.setMaxConnectionsPerHost(20);
+        httpConnectionManager.getParams().setDefaultMaxConnectionsPerHost(20);
         final HttpClient client = new HttpClient(httpConnectionManager);
         client.getParams().setConnectionManagerTimeout(10000);
+        if(alwaysCloseConnection) {
+            httpConnectionManager.getParams().setStaleCheckingEnabled(false);
+        }
         return new ApacheHttpClientHandler(client, cc);
     }
 
