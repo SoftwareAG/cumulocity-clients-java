@@ -67,6 +67,8 @@ public class PlatformParameters {
     
     private boolean forceInitialHost = false;
 
+    private boolean alwaysCloseConnection = false;
+
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private BufferRequestService bufferRequestService;
@@ -203,6 +205,19 @@ public class PlatformParameters {
 
     public void setForceInitialHost(boolean forceInitialHost) {
         this.forceInitialHost = forceInitialHost;
+    }
+
+    public boolean isAlwaysCloseConnection() {
+        return alwaysCloseConnection;
+    }
+
+    /**
+     * Set header to the http client to close connection always.
+     *
+     * @param alwaysCloseConnection
+     */
+    public void setAlwaysCloseConnection(boolean alwaysCloseConnection) {
+        this.alwaysCloseConnection = alwaysCloseConnection;
     }
 
     public String getTfaToken() {
