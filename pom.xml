@@ -34,8 +34,8 @@
 
 	<properties>
         <nexus.url>http://localhost:8080</nexus.url>
-		<cumulocity.model.version>9.0.9</cumulocity.model.version>
-		<cumulocity.shared-components.version>9.0.13</cumulocity.shared-components.version>
+		<cumulocity.model.version>9.0.11</cumulocity.model.version>
+		<cumulocity.shared-components.version>9.0.14</cumulocity.shared-components.version>
 	</properties>
 
 	<licenses>
