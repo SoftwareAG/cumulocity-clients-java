@@ -4,11 +4,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.notification.Subscriber;
-import com.cumulocity.sdk.client.notification.SubscriberBuilder;
-import com.cumulocity.sdk.client.notification.Subscription;
-import com.cumulocity.sdk.client.notification.SubscriptionListener;
-import com.cumulocity.sdk.client.notification.SubscriptionNameResolver;
+import com.cumulocity.sdk.client.notification.*;
 
 public class OperationNotificationSubscriber implements Subscriber<GId, OperationRepresentation> {
     public static final String DEVICE_CONTROL_NOTIFICATIONS_URL = "devicecontrol/notifications";
@@ -34,6 +30,13 @@ public class OperationNotificationSubscriber implements Subscriber<GId, Operatio
     public Subscription<GId> subscribe(final GId agentId, final SubscriptionListener<GId, OperationRepresentation> handler)
             throws SDKException {
         return subscriber.subscribe(agentId, handler);
+    }
+
+    @Override
+    public Subscription<GId> subscribe(GId agentId,  SubscribingListener subscribingListener,
+                                                    SubscriptionListener<GId, OperationRepresentation> handler,
+                                                    SubscribingRetryPolicy retryPolicy) throws SDKException {
+        return subscriber.subscribe(agentId, subscribingListener, handler, retryPolicy);
     }
 
     public void disconnect() {
