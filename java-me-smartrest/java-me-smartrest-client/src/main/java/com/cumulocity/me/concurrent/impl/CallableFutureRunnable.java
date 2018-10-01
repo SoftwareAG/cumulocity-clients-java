@@ -17,6 +17,5 @@ public class CallableFutureRunnable extends FutureRunnable {
         } catch (Throwable throwable) {
             this.failure = new ExecutionException(throwable);
         }
-        done = true;
     }
 }

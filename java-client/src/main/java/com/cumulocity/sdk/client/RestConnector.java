@@ -35,7 +35,6 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
@@ -123,6 +122,10 @@ public class RestConnector implements RestOperations {
     public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
         ClientResponse response = getClientResponse(path, mediaType);
         return responseParser.parseObject(response, OK.getStatusCode(), responseType);
+    }
+
+    public ClientResponse get(String path, MediaType mediaType) {
+        return getClientResponse(path, mediaType);
     }
 
     @Override

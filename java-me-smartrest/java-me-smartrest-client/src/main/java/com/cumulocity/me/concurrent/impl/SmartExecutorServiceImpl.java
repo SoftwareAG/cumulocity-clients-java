@@ -65,16 +65,16 @@ public class SmartExecutorServiceImpl implements SmartExecutorService {
         }
     }
 
-    private void schedule(FutureRunnable future) {
+    private synchronized void schedule(FutureRunnable future) {
         currentThreads++;
         new Thread(future).start();
     }
 
-    void decrementCurrentThreads() {
+    synchronized void decrementCurrentThreads() {
         currentThreads--;
     }
 
-    public int getCurrentThreads() {
+    public synchronized int getCurrentThreads() {
         return currentThreads;
     }
 }
