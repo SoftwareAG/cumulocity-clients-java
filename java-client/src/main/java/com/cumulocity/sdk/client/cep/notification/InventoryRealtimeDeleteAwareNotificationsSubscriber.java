@@ -19,11 +19,9 @@
  */
 package com.cumulocity.sdk.client.cep.notification;
 
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
-import org.cometd.bayeux.Message;
 
 public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subscriber<String, ManagedObjectDeleteAwareNotification> {
     
@@ -54,10 +52,10 @@ public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subs
     }
 
     @Override
-    public Subscription<String> subscribe(String agentId, SubscribingListener subscribingListener,
+    public Subscription<String> subscribe(String agentId, SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<String, ManagedObjectDeleteAwareNotification> handler,
                                        SubscribingRetryPolicy retryPolicy) throws SDKException {
-        return subscriber.subscribe(agentId, subscribingListener, handler, retryPolicy);
+        return subscriber.subscribe(agentId, subscribeOperationListener, handler, retryPolicy);
     }
 
     public void disconnect() {
