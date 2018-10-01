@@ -29,9 +29,9 @@ public class RemoteAccessCredentials {
                 .add("type", type)
                 .add("user", username)
                 .add("password", getHiddenValuesIfPresent(password))
-                .add("publicKey", getHiddenValuesIfPresent(publicKey))
+                .add("publicKey", publicKey)
                 .add("privateKey", getHiddenValuesIfPresent(privateKey))
-                .add("hostKey", getHiddenValuesIfPresent(hostKey))
+                .add("hostKey", hostKey)
                 .toString();
     }
 

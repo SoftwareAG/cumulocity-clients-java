@@ -28,7 +28,6 @@ public enum RemoteAccessCredentialsType {
         public void validateCredentials(RemoteAccessCredentials credentials) {
             validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR);
             validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR);
-            validateValueNotEmpty(credentials.getPublicKey(), "Public key", KEY_PAIR);
         }
     });
 
