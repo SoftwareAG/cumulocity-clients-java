@@ -26,7 +26,7 @@ public interface Subscriber<T, R> {
 
     Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException;
 
-    Subscription<T> subscribe(T object, final SubscribingListener subscribingListener,
+    Subscription<T> subscribe(T object, final SubscribeOperationListener subscribeOperationListener,
                                         final SubscriptionListener<T, R> handler,
                                         final SubscribingRetryPolicy retryPolicy) throws SDKException;
     void disconnect();

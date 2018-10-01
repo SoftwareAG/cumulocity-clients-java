@@ -1,6 +1,6 @@
 package com.cumulocity.sdk.client.notification;
 
-public interface SubscribingListener {
+public interface SubscribeOperationListener {
 
     void onSubscribingSuccess(String channelId);
 

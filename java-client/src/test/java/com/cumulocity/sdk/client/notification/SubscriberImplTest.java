@@ -1,8 +1,11 @@
 package com.cumulocity.sdk.client.notification;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
@@ -19,6 +22,9 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.cumulocity.sdk.client.SDKException;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriberImplTest {
@@ -55,6 +61,7 @@ public class SubscriberImplTest {
     public void setup() throws SDKException {
         subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
         mockClientProvider();
+        when(metaSubscribeChannel.getId()).thenReturn(Channel.META_SUBSCRIBE);
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
         when(client.getChannel(ClientSessionChannel.META_HANDSHAKE)).thenReturn(metaHandshakeChannel);
         when(client.getChannel(ClientSessionChannel.META_UNSUBSCRIBE)).thenReturn(metaUnsubscribeChannel);
@@ -143,13 +150,25 @@ public class SubscriberImplTest {
         //Given
         final String channelId = "/channel";
         final ClientSessionChannel channel = givenChannel(channelId);
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, listener);
+        final AtomicBoolean onError = new AtomicBoolean(false);
+        SubscribeOperationListener subscribeOperationListener = new SubscribeOperationListener() {
+            @Override
+            public void onSubscribingSuccess(String channelId) {
+
+            }
+
+            @Override
+            public void onSubscribingError(String channelId, String error, Throwable throwable) {
+                onError.set(true);
+            }
+        };
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribingRetryPolicy.NO_RETRY);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
         listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
         //Then
         verifyConnected();
         verifySubscribed(channel);
-        verify(listener).onError(Mockito.eq(subscription), Mockito.any(SDKException.class));
+        assertTrue(onError.get());
     }
 
     @Test
@@ -231,6 +250,32 @@ public class SubscriberImplTest {
         verify(listenerMock).onNotification(subscription, message);
     }
 
+    @Test
+    public void shouldRetryOnSubscribeOperationFailed() {
+        //Given
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = givenChannel(channelId);
+        final AtomicInteger onError = new AtomicInteger(1);
+        SubscribeOperationListener subscribeOperationListener = new SubscribeOperationListener() {
+            @Override
+            public void onSubscribingSuccess(String channelId) {
+
+            }
+
+            @Override
+            public void onSubscribingError(String channelId, String error, Throwable throwable) {
+                onError.incrementAndGet();
+            }
+        };
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribingRetryPolicy.ONE_RETRY);
+        verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
+        listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
+        //Then
+        verifyConnected();
+        verifySubscribed(channel, 2);
+        assertEquals(onError.get(), 2);
+    }
+
     private Subscription<Object> givenSubscription(ClientSessionChannel channel) {
         final Subscription<Object> subscribe = subscriber.subscribe(channel.getId(), listener);
         return subscribe;
@@ -255,7 +300,7 @@ public class SubscriberImplTest {
         verify(client).addExtension(listenerCaptor.capture());
         Extension reconnectListener = listenerCaptor.getValue();
         final Mutable message = Mockito.mock(Mutable.class);
-        when(message.getChannel()).thenReturn(ClientSessionChannel.META_HANDSHAKE);
+        when(message.getChannel()).thenReturn(ClientSessionChannel.META_CONNECT);
         when(message.isSuccessful()).thenReturn(true);
         reconnectListener.rcvMeta(client, message);
     }
