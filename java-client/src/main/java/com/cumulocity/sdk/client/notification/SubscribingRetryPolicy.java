@@ -7,7 +7,7 @@ public final class SubscribingRetryPolicy {
 
     private static final int MAX_RETRIES = 10;
 
-    /** Then you need to handle retry manually by implementing @{@link SubscribingListener#onSubscribingError(String, String, Throwable)} */
+    /** Then you need to handle retry manually by implementing @{@link SubscribeOperationListener#onSubscribingError(String, String, Throwable)} */
     public static final SubscribingRetryPolicy NO_RETRY = new SubscribingRetryPolicy(0);
 
     public static final SubscribingRetryPolicy ONE_RETRY = new SubscribingRetryPolicy(1);

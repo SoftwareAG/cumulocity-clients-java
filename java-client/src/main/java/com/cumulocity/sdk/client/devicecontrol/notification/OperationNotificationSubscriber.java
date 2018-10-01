@@ -33,10 +33,10 @@ public class OperationNotificationSubscriber implements Subscriber<GId, Operatio
     }
 
     @Override
-    public Subscription<GId> subscribe(GId agentId,  SubscribingListener subscribingListener,
+    public Subscription<GId> subscribe(GId agentId,  SubscribeOperationListener subscribeOperationListener,
                                                     SubscriptionListener<GId, OperationRepresentation> handler,
                                                     SubscribingRetryPolicy retryPolicy) throws SDKException {
-        return subscriber.subscribe(agentId, subscribingListener, handler, retryPolicy);
+        return subscriber.subscribe(agentId, subscribeOperationListener, handler, retryPolicy);
     }
 
     public void disconnect() {
