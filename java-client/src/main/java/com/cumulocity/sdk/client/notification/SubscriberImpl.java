@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
@@ -65,12 +66,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     public Subscription<T> subscribe(T object,
-                                     final SubscribingListener subscribingListener,
+                                     final SubscribeOperationListener subscribeOperationListener,
                                      final SubscriptionListener<T, Message> handler,
                                      final SubscribingRetryPolicy retryPolicy) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-        checkArgument(handler != null, "subscribingListener can't be null");
+        checkArgument(handler != null, "subscribeOperationListener can't be null");
         checkArgument(handler != null, "retryPolicy can't be null");
 
         ensureConnection();
@@ -79,7 +80,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
         SubscriptionResultListener subscriptionResultListener = new SubscriptionResultListener(
-                new SubscriptionRecord(object, handler), listener, subscribingListener, channel, retryPolicy);
+                new SubscriptionRecord(object, handler), listener, subscribeOperationListener, channel, retryPolicy);
         metaSubscribeChannel.addListener(subscriptionResultListener);
         channel.subscribe(listener);
 
@@ -87,7 +88,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
-        return this.subscribe(object, new LoggingSubscribingListener(), handler, SubscribingRetryPolicy.xRetries(5));
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribingRetryPolicy.xRetries(5));
     }
 
     private void ensureConnection() {
@@ -201,9 +202,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    public static class LoggingSubscribingListener implements SubscribingListener {
+    public static class LoggingSubscribeOperationListener implements SubscribeOperationListener {
 
-        private static final Logger LOG = LoggerFactory.getLogger(LoggingSubscribingListener.class);
+        private static final Logger LOG = LoggerFactory.getLogger(LoggingSubscribeOperationListener.class);
 
         @Override
         public void onSubscribingSuccess(String channelId) {
@@ -218,7 +219,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private final class SubscriptionResultListener implements MessageListener {
 
-        private final SubscribingListener subscribingListener;
+        private final SubscribeOperationListener subscribeOperationListener;
 
         private final MessageListenerAdapter listener;
 
@@ -229,12 +230,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         private final SubscribingRetryPolicy retryPolicy;
 
         private SubscriptionResultListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
-                                            SubscribingListener subscribingListener,
+                                            SubscribeOperationListener subscribeOperationListener,
                                             ClientSessionChannel channel,
                                             SubscribingRetryPolicy retryPolicy) {
             this.subscription = subscribed;
             this.listener = listener;
-            this.subscribingListener = subscribingListener;
+            this.subscribeOperationListener = subscribeOperationListener;
             this.channel = channel;
             this.retryPolicy = retryPolicy;
         }
@@ -246,15 +247,18 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 log.warn("Unexpected message to wrong channel, to SubscriptionSuccessListener: {}, {}", metaSubscribeChannel, message);
                 return;
             }
-            log.debug("Subscription result: channel {}, {}", this.channel.getId(), message);
+            if (message.isSuccessful() && !isSubscriptionToChannel(message)) {
+                return;
+            }
             try {
                 if (message.isSuccessful()) {
                     log.debug("subscribed successfully to channel {}, {}", this.channel, message);
                     ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
                     unsubscribeChannel.addListener(new UnsubscribeListener(subscription, unsubscribeChannel));
                     subscriptions.add(subscription);
-                    subscribingListener.onSubscribingSuccess(this.channel.getId());
+                    subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
+                    log.debug("Error subscribing channel: {}, {}", this.channel.getId(), message);
                     handleError(message);
                 }
             } catch (NullPointerException ex) {
@@ -263,6 +267,10 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
+        }
+
+        private boolean isSubscriptionToChannel(Message message) {
+            return Objects.equals(channel.getId(), message.get(Message.SUBSCRIPTION_FIELD));
         }
 
         private void handleError(Message message) {
@@ -286,16 +294,16 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             } else {
                 errorMessage = (String) error;
             }
-            subscribingListener.onSubscribingError(channel.getId(), errorMessage, throwable);
+            subscribeOperationListener.onSubscribingError(channel.getId(), errorMessage, throwable);
         }
 
         private void handleRetryIfPossible() {
             int maxRetries = retryPolicy.getRetries();
             if(maxRetries > 0) {
-                log.warn("Failed to subscribe channel: {}, retrying..., remaining possible retries: {}",
+                log.warn("Retrying... to subscribe to channel {}, remaining possible retries: {}",
                         channel.getId(), maxRetries - 1);
                 final SubscribingRetryPolicy usedOnePolicy = SubscribingRetryPolicy.xRetries(maxRetries - 1);
-                subscribe(subscription.getId(), subscribingListener, listener.handler, usedOnePolicy);
+                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, usedOnePolicy);
             } else {
                 log.error("Failed to subscribe channel: {} and retry policy is 0 or maximum number of retries reached", channel.getId());
             }
