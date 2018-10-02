@@ -204,10 +204,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 reHandshakeSuccessful = true;
             } else if (isSuccessfulConnected(message)) {
                 reconnectedSuccessful = true;
+            } else {
+                return true;
             }
             // Resubscribe only there is a successful handshake and successfully connected.
             if (reHandshakeSuccessful && reconnectedSuccessful) {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
+                reHandshakeSuccessful = false;
+                reconnectedSuccessful = false;
                 resubscribe();
             }
             return true;
