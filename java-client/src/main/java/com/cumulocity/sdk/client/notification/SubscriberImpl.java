@@ -110,7 +110,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     public Collection<SubscriptionRecord> getPendingSubscriptions() {
-        return pendingSubscriptions;
+        return Collections.unmodifiableCollection(pendingSubscriptions);
     }
 
     public Collection<SubscriptionRecord> getActiveSubscriptions() {
