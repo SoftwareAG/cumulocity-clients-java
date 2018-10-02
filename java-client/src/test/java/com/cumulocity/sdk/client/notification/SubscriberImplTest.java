@@ -302,7 +302,12 @@ public class SubscriberImplTest {
         final Mutable message = Mockito.mock(Mutable.class);
         when(message.getChannel()).thenReturn(ClientSessionChannel.META_HANDSHAKE);
         when(message.isSuccessful()).thenReturn(true);
+
+        final Mutable connectedMessage = Mockito.mock(Mutable.class);
+        when(connectedMessage.getChannel()).thenReturn(ClientSessionChannel.META_CONNECT);
+        when(connectedMessage.isSuccessful()).thenReturn(true);
         reconnectListener.rcvMeta(client, message);
+        reconnectListener.rcvMeta(client, connectedMessage);
     }
 
     private Message mockSubscribeMessge(String channelID, boolean successful) {
