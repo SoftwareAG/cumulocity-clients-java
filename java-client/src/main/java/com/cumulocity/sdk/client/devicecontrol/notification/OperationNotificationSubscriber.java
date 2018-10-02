@@ -35,7 +35,7 @@ public class OperationNotificationSubscriber implements Subscriber<GId, Operatio
     @Override
     public Subscription<GId> subscribe(GId agentId,  SubscribeOperationListener subscribeOperationListener,
                                                     SubscriptionListener<GId, OperationRepresentation> handler,
-                                                    SubscribingRetryPolicy retryPolicy) throws SDKException {
+                                                    SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
         return subscriber.subscribe(agentId, subscribeOperationListener, handler, retryPolicy);
     }
 

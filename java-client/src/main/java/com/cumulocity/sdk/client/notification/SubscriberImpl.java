@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,10 +30,10 @@ import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import static com.cumulocity.sdk.client.notification.SubscribeOperationRetryPolicy.Mode.AUTO;
 
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
@@ -44,6 +44,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     private final BayeuxSessionProvider bayeuxSessionProvider;
 
     private final Collection<SubscriptionRecord> subscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
+
+    private final Collection<SubscriptionRecord> pendingSubscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
 
     private final Object lock = new Object();
 
@@ -57,18 +59,18 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     public void start() throws SDKException {
         log.trace("starting new subscriber");
-        checkState(!isConnected(), "subscriber already started");
+        checkState(!isHandshaked(), "subscriber already started");
         session = bayeuxSessionProvider.get();
     }
 
-    private boolean isConnected(Mutable message) {
-        return ClientSessionChannel.META_CONNECT.equals(message.getChannel()) && message.isSuccessful();
+    private boolean isSuccessfulHandshake(Mutable message) {
+        return ClientSessionChannel.META_HANDSHAKE.equals(message.getChannel()) && message.isSuccessful();
     }
 
     public Subscription<T> subscribe(T object,
                                      final SubscribeOperationListener subscribeOperationListener,
                                      final SubscriptionListener<T, Message> handler,
-                                     final SubscribingRetryPolicy retryPolicy) throws SDKException {
+                                     final SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
         checkArgument(handler != null, "subscribeOperationListener can't be null");
@@ -79,28 +81,32 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         log.debug("subscribing to channel {}", channel.getId());
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
+        SubscriptionRecord subscriptionRecord = new SubscriptionRecord(object, handler);
         SubscriptionResultListener subscriptionResultListener = new SubscriptionResultListener(
-                new SubscriptionRecord(object, handler), listener, subscribeOperationListener, channel, retryPolicy);
+                subscriptionRecord, listener, subscribeOperationListener, channel, retryPolicy);
         metaSubscribeChannel.addListener(subscriptionResultListener);
         channel.subscribe(listener);
+        if (AUTO.equals(retryPolicy.getMode())) {
+            pendingSubscriptions.add(subscriptionRecord);
+        }
 
         return listener.getSubscription();
     }
 
     public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
-        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribingRetryPolicy.xRetries(5));
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribeOperationRetryPolicy.semi(1));
     }
 
     private void ensureConnection() {
         synchronized (lock) {
-            if (!isConnected()) {
+            if (!isHandshaked()) {
                 start();
                 session.addExtension(new ReconnectOnSuccessfulHandshake());
             }
         }
     }
 
-    private boolean isConnected() {
+    private boolean isHandshaked() {
         return session != null;
     }
 
@@ -113,7 +119,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     @Override
     public void disconnect() {
         synchronized (lock) {
-            if (isConnected()) {
+            if (isHandshaked()) {
                 subscriptions.clear();
                 session.disconnect();
                 session = null;
@@ -134,13 +140,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     private void resubscribe() {
-        for (SubscriptionRecord subscribed : subscriptions) {
-            try {
-                ClientSessionChannel channel = getChannel(subscribed.getId());
-                channel.unsubscribe();
-            } catch(Exception e) {
-                log.warn("Unable to subscribe channel, ignore...");
-            }
+        Set<SubscriptionRecord> allSubscriptions = new HashSet<>(subscriptions);
+        allSubscriptions.addAll(pendingSubscriptions);
+        for (SubscriptionRecord subscribed : allSubscriptions) {
             Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
             subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
         }
@@ -166,7 +168,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public boolean rcvMeta(ClientSession session, Mutable message) {
-            if (isConnected(message)) {
+            if (isSuccessfulHandshake(message)) {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
                 resubscribe();
             }
@@ -193,7 +195,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             if (subscriptionNameResolver.apply(subscribed.getId()).equals(message.get(Message.SUBSCRIPTION_FIELD))
                     && message.isSuccessful()) {
                 try {
-                    log.debug("unsubscribed successfuly from channel {}", channel.getId());
+                    log.debug("unsubscribed successfully from channel {}", channel.getId());
                     subscribed.remove();
                 } finally {
                     unsubscribeChannel.removeListener(this);
@@ -227,12 +229,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionRecord subscription;
 
-        private final SubscribingRetryPolicy retryPolicy;
+        private final SubscribeOperationRetryPolicy retryPolicy;
 
         private SubscriptionResultListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
-                                            SubscribeOperationListener subscribeOperationListener,
-                                            ClientSessionChannel channel,
-                                            SubscribingRetryPolicy retryPolicy) {
+                                           SubscribeOperationListener subscribeOperationListener,
+                                           ClientSessionChannel channel,
+                                           SubscribeOperationRetryPolicy retryPolicy) {
             this.subscription = subscribed;
             this.listener = listener;
             this.subscribeOperationListener = subscribeOperationListener;
@@ -242,7 +244,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public void onMessage(ClientSessionChannel metaSubscribeChannel, Message message) {
-            if(!Channel.META_SUBSCRIBE.equals(metaSubscribeChannel.getId())) {
+            if (!Channel.META_SUBSCRIBE.equals(metaSubscribeChannel.getId())) {
                 // Should never be here
                 log.warn("Unexpected message to wrong channel, to SubscriptionSuccessListener: {}, {}", metaSubscribeChannel, message);
                 return;
@@ -253,6 +255,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             try {
                 if (message.isSuccessful()) {
                     log.debug("subscribed successfully to channel {}, {}", this.channel, message);
+                    pendingSubscriptions.remove(subscription);
                     ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
                     unsubscribeChannel.addListener(new UnsubscribeListener(subscription, unsubscribeChannel));
                     subscriptions.add(subscription);
@@ -274,20 +277,19 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
 
         private void handleError(Message message) {
-            channel.unsubscribe(listener);
-            informSubscribingListener(message);
             handleRetryIfPossible();
+            informSubscribingListener(message);
         }
 
         private void informSubscribingListener(Message message) {
             String errorMessage = "Unknow error (unspecified by server)";
             Throwable throwable = null;
             Object error = message.get(Message.ERROR_FIELD);
-            if(error == null) {
+            if (error == null) {
                 error = message.get("failure");
-                if(error != null && error instanceof Map) {
+                if (error != null && error instanceof Map) {
                     throwable = (Throwable) ((Map) error).get("exception");
-                    if(throwable != null) {
+                    if (throwable != null) {
                         errorMessage = throwable.getMessage();
                     }
                 }
@@ -299,13 +301,19 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private void handleRetryIfPossible() {
             int maxRetries = retryPolicy.getRetries();
-            if(maxRetries > 0) {
+            if (maxRetries > 0) {
                 log.warn("Retrying... to subscribe to channel {}, remaining possible retries: {}",
                         channel.getId(), maxRetries - 1);
-                final SubscribingRetryPolicy usedOnePolicy = SubscribingRetryPolicy.xRetries(maxRetries - 1);
-                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, usedOnePolicy);
+                // This does not sound right when the subscribe operation has been failed, but the fact is the subscription
+                // is already there in the channel and nothing will be added if we subscribe again
+                channel.unsubscribe(listener);
+                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, retryPolicy.useOnce());
             } else {
-                log.error("Failed to subscribe channel: {} and retry policy is 0 or maximum number of retries reached", channel.getId());
+                if(AUTO.equals(retryPolicy.getMode())) {
+                    log.info("Subscribe operation failed for channel: {}, will retry automatically on reconnect!", channel.getId());
+                } else {
+                    log.error("Failed to subscribe channel: {} and retry policy is 0 or maximum number of retries reached", channel.getId());
+                }
             }
         }
     }
