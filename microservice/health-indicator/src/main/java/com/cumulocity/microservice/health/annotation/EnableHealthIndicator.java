@@ -6,6 +6,7 @@ import com.cumulocity.microservice.health.indicator.SubscriptionHealthIndicatorC
 import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
 import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 
 import java.lang.annotation.*;
 
@@ -19,6 +20,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @EnablePrometheusEndpoint
 @EnableSpringBootMetricsCollector
+@PropertySource(value = "classpath:microservice_health.properties", ignoreResourceNotFound = true)
 @Import({
         PlatformHealthIndicatorConfiguration.class,
         MemoryHealthIndicatorConfiguration.class,
