@@ -438,7 +438,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionListener<T, Message> listener;
 
-        private SubscribeOperationListener subscribeOperationListener;
+        private final SubscribeOperationListener subscribeOperationListener;
 
         public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener,
                                   SubscribeOperationListener subscribeOperationListener) {
