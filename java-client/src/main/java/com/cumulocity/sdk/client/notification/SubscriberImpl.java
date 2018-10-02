@@ -59,7 +59,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     public void start() throws SDKException {
         log.trace("starting new subscriber");
-        checkState(!isHandshaked(), "subscriber already started");
+        checkState(!isConnected(), "subscriber already started");
         session = bayeuxSessionProvider.get();
     }
 
@@ -99,14 +99,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private void ensureConnection() {
         synchronized (lock) {
-            if (!isHandshaked()) {
+            if (!isConnected()) {
                 start();
                 session.addExtension(new ReconnectOnSuccessfulHandshake());
             }
         }
     }
 
-    private boolean isHandshaked() {
+    private boolean isConnected() {
         return session != null;
     }
 
@@ -119,7 +119,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     @Override
     public void disconnect() {
         synchronized (lock) {
-            if (isHandshaked()) {
+            if (isConnected()) {
                 subscriptions.clear();
                 session.disconnect();
                 session = null;
