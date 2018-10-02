@@ -28,6 +28,6 @@ public interface Subscriber<T, R> {
 
     Subscription<T> subscribe(T object, final SubscribeOperationListener subscribeOperationListener,
                                         final SubscriptionListener<T, R> handler,
-                                        final SubscribingRetryPolicy retryPolicy) throws SDKException;
+                                        final SubscribeOperationRetryPolicy retryPolicy) throws SDKException;
     void disconnect();
 }
