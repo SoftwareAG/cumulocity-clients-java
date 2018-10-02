@@ -242,7 +242,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    public static class LoggingSubscribeOperationListener implements SubscribeOperationListener {
+    private static class LoggingSubscribeOperationListener implements SubscribeOperationListener {
 
         private static final Logger LOG = LoggerFactory.getLogger(LoggingSubscribeOperationListener.class);
 
