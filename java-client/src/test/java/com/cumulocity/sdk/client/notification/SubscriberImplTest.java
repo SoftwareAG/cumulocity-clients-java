@@ -162,7 +162,7 @@ public class SubscriberImplTest {
                 onError.set(true);
             }
         };
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribingRetryPolicy.NO_RETRY);
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribeOperationRetryPolicy.NO_RETRY);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
         listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
         //Then
@@ -267,7 +267,7 @@ public class SubscriberImplTest {
                 onError.incrementAndGet();
             }
         };
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribingRetryPolicy.ONE_RETRY);
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribeOperationRetryPolicy.ONE_RETRY);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
         listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
         //Then
@@ -300,7 +300,7 @@ public class SubscriberImplTest {
         verify(client).addExtension(listenerCaptor.capture());
         Extension reconnectListener = listenerCaptor.getValue();
         final Mutable message = Mockito.mock(Mutable.class);
-        when(message.getChannel()).thenReturn(ClientSessionChannel.META_CONNECT);
+        when(message.getChannel()).thenReturn(ClientSessionChannel.META_HANDSHAKE);
         when(message.isSuccessful()).thenReturn(true);
         reconnectListener.rcvMeta(client, message);
     }
