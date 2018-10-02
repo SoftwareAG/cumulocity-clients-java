@@ -62,8 +62,8 @@ public class InventoryRealtimeNotificationsSubscriber implements Subscriber<Stri
     @Override
     public Subscription<String> subscribe(String channelID, SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<String, ManagedObjectNotification> handler,
-                                       SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
-        return subscriber.subscribe(channelID, subscribeOperationListener, handler, retryPolicy);
+                                       boolean autoRetry) throws SDKException {
+        return subscriber.subscribe(channelID, subscribeOperationListener, handler, autoRetry);
     }
     
     public void disconnect() {

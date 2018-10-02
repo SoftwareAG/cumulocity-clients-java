@@ -3,6 +3,7 @@ package com.cumulocity.sdk.client.notification;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 import org.cometd.bayeux.Channel;
@@ -162,7 +163,7 @@ public class SubscriberImplTest {
                 onError.set(true);
             }
         };
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribeOperationRetryPolicy.NO_RETRY);
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, false);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
         listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
         //Then
@@ -255,7 +256,7 @@ public class SubscriberImplTest {
         //Given
         final String channelId = "/channel";
         final ClientSessionChannel channel = givenChannel(channelId);
-        final AtomicInteger onError = new AtomicInteger(1);
+        final AtomicInteger onError = new AtomicInteger(0);
         SubscribeOperationListener subscribeOperationListener = new SubscribeOperationListener() {
             @Override
             public void onSubscribingSuccess(String channelId) {
@@ -267,13 +268,14 @@ public class SubscriberImplTest {
                 onError.incrementAndGet();
             }
         };
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, SubscribeOperationRetryPolicy.ONE_RETRY);
+        subscriber.subscribe(channelId, subscribeOperationListener, listener, true);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
         listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
         //Then
         verifyConnected();
-        verifySubscribed(channel, 2);
-        assertEquals(onError.get(), 2);
+        verifySubscribed(channel);
+        assertEquals(1, onError.get());
+        assertEquals(((SubscriberImpl) subscriber).getPendingSubscriptions().size(), 1);
     }
 
     private Subscription<Object> givenSubscription(ClientSessionChannel channel) {

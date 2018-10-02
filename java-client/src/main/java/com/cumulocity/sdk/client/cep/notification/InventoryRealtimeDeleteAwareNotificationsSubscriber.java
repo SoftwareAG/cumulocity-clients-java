@@ -54,8 +54,8 @@ public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subs
     @Override
     public Subscription<String> subscribe(String agentId, SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<String, ManagedObjectDeleteAwareNotification> handler,
-                                       SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
-        return subscriber.subscribe(agentId, subscribeOperationListener, handler, retryPolicy);
+                                          boolean autoRetry) throws SDKException {
+        return subscriber.subscribe(agentId, subscribeOperationListener, handler, autoRetry);
     }
 
     public void disconnect() {
