@@ -67,6 +67,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         return ClientSessionChannel.META_HANDSHAKE.equals(message.getChannel()) && message.isSuccessful();
     }
 
+    private boolean isSuccessfulConnected(Mutable message) {
+        return ClientSessionChannel.META_CONNECT.equals(message.getChannel()) && message.isSuccessful();
+    }
+
+    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribeOperationRetryPolicy.semi(1));
+    }
+
     public Subscription<T> subscribe(T object,
                                      final SubscribeOperationListener subscribeOperationListener,
                                      final SubscriptionListener<T, Message> handler,
@@ -93,15 +101,11 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         return listener.getSubscription();
     }
 
-    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
-        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribeOperationRetryPolicy.semi(1));
-    }
-
     private void ensureConnection() {
         synchronized (lock) {
             if (!isConnected()) {
                 start();
-                session.addExtension(new ReconnectOnSuccessfulHandshake());
+                session.addExtension(new ReconnectOnSuccessfulConnected());
             }
         }
     }
@@ -144,7 +148,11 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         allSubscriptions.addAll(pendingSubscriptions);
         for (SubscriptionRecord subscribed : allSubscriptions) {
             Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
-            subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
+            try {
+                subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
+            } catch(Exception e) {
+                // Being handled by user, silent.
+            }
         }
     }
 
@@ -155,7 +163,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    public final class ReconnectOnSuccessfulHandshake implements Extension {
+    public final class ReconnectOnSuccessfulConnected implements Extension {
+
+        private boolean reHandshakeSuccessful = false;
+
+        private boolean reconnectedSuccessful = false;
+
         @Override
         public boolean sendMeta(ClientSession session, Mutable message) {
             return true;
@@ -169,6 +182,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         @Override
         public boolean rcvMeta(ClientSession session, Mutable message) {
             if (isSuccessfulHandshake(message)) {
+                reHandshakeSuccessful = true;
+            } else if(isSuccessfulConnected(message)) {
+                reconnectedSuccessful = true;
+            }
+            // Resubscribe only there is a successful handshake and successfully connected.
+            if(reHandshakeSuccessful && reconnectedSuccessful) {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
                 resubscribe();
             }
@@ -302,10 +321,10 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         private void handleRetryIfPossible() {
             int maxRetries = retryPolicy.getRetries();
             if (maxRetries > 0) {
-                log.warn("Retrying... to subscribe to channel {}, remaining possible retries: {}",
+                log.warn("Retrying to subscribe to channel {}, remaining possible retries: {}",
                         channel.getId(), maxRetries - 1);
                 // This does not sound right when the subscribe operation has been failed, but the fact is the subscription
-                // is already there in the channel and nothing will be added if we subscribe again
+                // is already there in the channel and nothing will be sent if we subscribe again
                 channel.unsubscribe(listener);
                 subscribe(subscription.getId(), subscribeOperationListener, listener.handler, retryPolicy.useOnce());
             } else {
