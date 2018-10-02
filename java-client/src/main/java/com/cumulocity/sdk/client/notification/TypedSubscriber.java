@@ -40,7 +40,7 @@ class TypedSubscriber<T, R> implements Subscriber<T, R> {
     @Override
     public Subscription<T> subscribe(T agentId, SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<T, R> handler,
-                                       SubscribingRetryPolicy retryPolicy) throws SDKException {
+                                       SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
         return subscriber.subscribe(agentId, subscribeOperationListener,
                 new MappingSubscriptionListener<T, R>(handler, dataType), retryPolicy);
     }
