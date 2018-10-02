@@ -179,11 +179,13 @@ public class SubscriberImplTest {
         final ClientSessionChannel channelSecond = givenChannelWithSubscription("/channelSecond");
         //When
         reconnect();
+
+        assertEquals(2, ((SubscriberImpl) subscriber).getPendingSubscriptions().size());
+
         //Then
         verifyConnected();
         verifySubscribed(channel, 2);
         verifySubscribed(channelSecond, 2);
-
     }
 
     @Test
