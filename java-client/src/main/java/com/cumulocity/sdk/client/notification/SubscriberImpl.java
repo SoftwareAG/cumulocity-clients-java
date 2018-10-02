@@ -33,11 +33,11 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import static com.cumulocity.sdk.client.notification.SubscribeOperationRetryPolicy.Mode.AUTO;
-
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberImpl.class);
+
+    private static final int RETRIES_ON_SHORT_NETWORK_FAILURES = 5;
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
@@ -51,7 +51,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private volatile ClientSession session;
 
-    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider, final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
+    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider,
+                          final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
         this.subscriptionNameResolver = channelNameResolver;
         this.bayeuxSessionProvider = bayeuxSessionProvider;
         unauthorizedConnectionWatcher.addListener(this);
@@ -72,13 +73,21 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
-        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, SubscribeOperationRetryPolicy.semi(1));
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, true);
     }
 
     public Subscription<T> subscribe(T object,
                                      final SubscribeOperationListener subscribeOperationListener,
                                      final SubscriptionListener<T, Message> handler,
-                                     final SubscribeOperationRetryPolicy retryPolicy) throws SDKException {
+                                     final boolean autoRetry) throws SDKException {
+        return subscribe(object, subscribeOperationListener, handler, autoRetry, 0);
+    }
+
+    Subscription<T> subscribe(T object,
+                              final SubscribeOperationListener subscribeOperationListener,
+                              final SubscriptionListener<T, Message> handler,
+                              final boolean autoRetry,
+                              final int retriesCount) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
         checkArgument(handler != null, "subscribeOperationListener can't be null");
@@ -89,16 +98,23 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         log.debug("subscribing to channel {}", channel.getId());
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
-        SubscriptionRecord subscriptionRecord = new SubscriptionRecord(object, handler);
+        SubscriptionRecord subscriptionRecord = new SubscriptionRecord(object, handler, subscribeOperationListener);
         SubscriptionResultListener subscriptionResultListener = new SubscriptionResultListener(
-                subscriptionRecord, listener, subscribeOperationListener, channel, retryPolicy);
+                subscriptionRecord, listener, subscribeOperationListener, channel, autoRetry, retriesCount);
         metaSubscribeChannel.addListener(subscriptionResultListener);
         channel.subscribe(listener);
-        if (AUTO.equals(retryPolicy.getMode())) {
+        if (autoRetry) {
             pendingSubscriptions.add(subscriptionRecord);
         }
-
         return listener.getSubscription();
+    }
+
+    public Collection<SubscriptionRecord> getPendingSubscriptions() {
+        return pendingSubscriptions;
+    }
+
+    public Collection<SubscriptionRecord> getActiveSubscriptions() {
+        return subscriptions;
     }
 
     private void ensureConnection() {
@@ -147,10 +163,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         Set<SubscriptionRecord> allSubscriptions = new HashSet<>(subscriptions);
         allSubscriptions.addAll(pendingSubscriptions);
         for (SubscriptionRecord subscribed : allSubscriptions) {
-            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
+            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.subscribeOperationListener,
+                    subscribed.getListener(), true);
             try {
-                subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
-            } catch(Exception e) {
+                subscribed.getListener().onError(subscription,
+                        new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
+            } catch (Exception e) {
                 // Being handled by user, silent.
             }
         }
@@ -159,7 +177,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     @Override
     public void onDisconnection(final int httpCode) {
         for (final SubscriptionRecord subscription : subscriptions) {
-            subscription.getListener().onError(new DummySubscription(subscription), new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
+            subscription.getListener().onError(new DummySubscription(subscription),
+                    new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
         }
     }
 
@@ -183,11 +202,11 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         public boolean rcvMeta(ClientSession session, Mutable message) {
             if (isSuccessfulHandshake(message)) {
                 reHandshakeSuccessful = true;
-            } else if(isSuccessfulConnected(message)) {
+            } else if (isSuccessfulConnected(message)) {
                 reconnectedSuccessful = true;
             }
             // Resubscribe only there is a successful handshake and successfully connected.
-            if(reHandshakeSuccessful && reconnectedSuccessful) {
+            if (reHandshakeSuccessful && reconnectedSuccessful) {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
                 resubscribe();
             }
@@ -248,17 +267,19 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionRecord subscription;
 
-        private final SubscribeOperationRetryPolicy retryPolicy;
+        private final boolean autoRetry;
+
+        private final int retriesCount;
 
         private SubscriptionResultListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
                                            SubscribeOperationListener subscribeOperationListener,
-                                           ClientSessionChannel channel,
-                                           SubscribeOperationRetryPolicy retryPolicy) {
+                                           ClientSessionChannel channel, boolean autoRetry, int retriesCount) {
             this.subscription = subscribed;
             this.listener = listener;
             this.subscribeOperationListener = subscribeOperationListener;
             this.channel = channel;
-            this.retryPolicy = retryPolicy;
+            this.autoRetry = autoRetry;
+            this.retriesCount = retriesCount;
         }
 
         @Override
@@ -274,7 +295,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             try {
                 if (message.isSuccessful()) {
                     log.debug("subscribed successfully to channel {}, {}", this.channel, message);
-                    pendingSubscriptions.remove(subscription);
+                    if (autoRetry) {
+                        pendingSubscriptions.remove(subscription);
+                    }
                     ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
                     unsubscribeChannel.addListener(new UnsubscribeListener(subscription, unsubscribeChannel));
                     subscriptions.add(subscription);
@@ -296,11 +319,28 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
 
         private void handleError(Message message) {
-            handleRetryIfPossible();
-            informSubscribingListener(message);
+            if (autoRetry && isShortNetworkFailure(message)) {
+                if (retriesCount > RETRIES_ON_SHORT_NETWORK_FAILURES) {
+                    log.error("Detected a short network failure, giving up after {} retries. " +
+                            "Another retry attempt only happen on another successfully handshake", retriesCount);
+                } else {
+                    log.debug("Detected a short network failure, retrying to subscribe channel: {}", channel.getId());
+                    channel.unsubscribe(listener, new MessageListener() {
+                        @Override
+                        public void onMessage(ClientSessionChannel channel, Message message) {
+                            subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry,
+                                    retriesCount + 1);
+                        }
+                    });
+                }
+            } else if (autoRetry) {
+                log.debug("Detected an error (either server or long network error), " +
+                        "another retry attempt only happen on another successfully handshake");
+            }
+            notifyListenerOnError(message);
         }
 
-        private void informSubscribingListener(Message message) {
+        private void notifyListenerOnError(Message message) {
             String errorMessage = "Unknow error (unspecified by server)";
             Throwable throwable = null;
             Object error = message.get(Message.ERROR_FIELD);
@@ -318,22 +358,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             subscribeOperationListener.onSubscribingError(channel.getId(), errorMessage, throwable);
         }
 
-        private void handleRetryIfPossible() {
-            int maxRetries = retryPolicy.getRetries();
-            if (maxRetries > 0) {
-                log.warn("Retrying to subscribe to channel {}, remaining possible retries: {}",
-                        channel.getId(), maxRetries - 1);
-                // This does not sound right when the subscribe operation has been failed, but the fact is the subscription
-                // is already there in the channel and nothing will be sent if we subscribe again
-                channel.unsubscribe(listener);
-                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, retryPolicy.useOnce());
-            } else {
-                if(AUTO.equals(retryPolicy.getMode())) {
-                    log.info("Subscribe operation failed for channel: {}, will retry automatically on reconnect!", channel.getId());
-                } else {
-                    log.error("Failed to subscribe channel: {} and retry policy is 0 or maximum number of retries reached", channel.getId());
-                }
-            }
+        private boolean isShortNetworkFailure(Message message) {
+            Object failure = message.get("failure");
+            return failure != null;
         }
     }
 
@@ -411,9 +438,13 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionListener<T, Message> listener;
 
-        public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener) {
+        private SubscribeOperationListener subscribeOperationListener;
+
+        public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener,
+                                  SubscribeOperationListener subscribeOperationListener) {
             this.id = id;
             this.listener = listener;
+            this.subscribeOperationListener = subscribeOperationListener;
         }
 
         public void remove() {
@@ -430,34 +461,25 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((id == null) ? 0 : id.hashCode());
-            result = prime * result + ((listener == null) ? 0 : listener.hashCode());
+            int result = id != null ? id.hashCode() : 0;
+            result = 31 * result + (listener != null ? listener.hashCode() : 0);
+            result = 31 * result + (subscribeOperationListener != null ? subscribeOperationListener.hashCode() : 0);
             return result;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            SubscriptionRecord other = (SubscriptionRecord) obj;
-            if (id == null) {
-                if (other.id != null)
-                    return false;
-            } else if (!id.equals(other.id))
-                return false;
-            if (listener == null) {
-                if (other.listener != null)
-                    return false;
-            } else if (!listener.equals(other.listener))
-                return false;
-            return true;
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SubscriptionRecord that = (SubscriptionRecord) o;
+
+            if (id != null ? !id.equals(that.id) : that.id != null) return false;
+            if (listener != null ? !listener.equals(that.listener) : that.listener != null) return false;
+            return subscribeOperationListener != null ? subscribeOperationListener
+                    .equals(that.subscribeOperationListener) : that.subscribeOperationListener == null;
         }
+
 
     }
 
