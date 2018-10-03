@@ -90,8 +90,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                               final int retriesCount) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
-        checkArgument(handler != null, "subscribeOperationListener can't be null");
-        checkArgument(handler != null, "retryPolicy can't be null");
+        checkArgument(subscribeOperationListener != null, "subscribeOperationListener can't be null");
 
         ensureConnection();
         final ClientSessionChannel channel = getChannel(object);
@@ -107,14 +106,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             pendingSubscriptions.add(subscriptionRecord);
         }
         return listener.getSubscription();
-    }
-
-    public Collection<SubscriptionRecord> getPendingSubscriptions() {
-        return Collections.unmodifiableCollection(pendingSubscriptions);
-    }
-
-    public Collection<SubscriptionRecord> getActiveSubscriptions() {
-        return subscriptions;
     }
 
     private void ensureConnection() {
@@ -184,9 +175,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     public final class ReconnectOnSuccessfulConnected implements Extension {
 
-        private boolean reHandshakeSuccessful = false;
+        private volatile boolean reHandshakeSuccessful = false;
 
-        private boolean reconnectedSuccessful = false;
+        private volatile boolean reconnectedSuccessful = false;
 
         @Override
         public boolean sendMeta(ClientSession session, Mutable message) {
