@@ -160,7 +160,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 subscribed.getListener().onError(subscription,
                         new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
             } catch (Exception e) {
-                // Being handled by user, silent.
+                log.warn("Error when executing onError of listner: {}, {}", subscribed.getListener(), e.getMessage());
             }
         }
     }
