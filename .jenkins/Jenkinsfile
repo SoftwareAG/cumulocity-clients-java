@@ -99,14 +99,24 @@ pipeline {
     }
     post {
         success{
-            build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
+            script {
+                if (env.BRANCH_NAME == 'develop') {
+                  build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
+                }
+            }
+
             withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
             }
 
         }
         failure {
-            chat 'AAAAvnc5o90'
+            script {
+                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
+                   chat 'AAAAvnc5o90'
+                }
+            }
+
             withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
