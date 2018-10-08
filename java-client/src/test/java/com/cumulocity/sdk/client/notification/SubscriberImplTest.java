@@ -1,13 +1,14 @@
 package com.cumulocity.sdk.client.notification;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
+import com.cumulocity.sdk.client.SDKException;
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.collections.MapUtils;
+import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
-import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSession.Extension;
+import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.cumulocity.sdk.client.SDKException;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriberImplTest {
@@ -34,6 +40,9 @@ public class SubscriberImplTest {
 
     @Mock
     ClientSessionChannel metaUnsubscribeChannel;
+
+    @Mock
+    ClientSessionChannel notificationChannel;
 
     @Mock
     SubscriptionNameResolver<Object> subscriptionNameResolver;
@@ -55,6 +64,7 @@ public class SubscriberImplTest {
     public void setup() throws SDKException {
         subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
         mockClientProvider();
+        when(metaSubscribeChannel.getId()).thenReturn(Channel.META_SUBSCRIBE);
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
         when(client.getChannel(ClientSessionChannel.META_HANDSHAKE)).thenReturn(metaHandshakeChannel);
         when(client.getChannel(ClientSessionChannel.META_UNSUBSCRIBE)).thenReturn(metaUnsubscribeChannel);
@@ -143,13 +153,25 @@ public class SubscriberImplTest {
         //Given
         final String channelId = "/channel";
         final ClientSessionChannel channel = givenChannel(channelId);
-        final Subscription<Object> subscription = subscriber.subscribe(channelId, listener);
+        final AtomicBoolean onError = new AtomicBoolean(false);
+        SubscribeOperationListener subscribeOperationListener = new SubscribeOperationListener() {
+            @Override
+            public void onSubscribingSuccess(String channelId) {
+
+            }
+
+            @Override
+            public void onSubscribingError(String channelId, String error, Throwable throwable) {
+                onError.set(true);
+            }
+        };
+        final Subscription<Object> subscription = subscriber.subscribe(channelId, subscribeOperationListener, listener, false);
         verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
-        listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, false));
+        listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessage(channelId, false));
         //Then
         verifyConnected();
         verifySubscribed(channel);
-        verify(listener).onError(Mockito.eq(subscription), Mockito.any(SDKException.class));
+        assertThat(onError.get()).isTrue();
     }
 
     @Test
@@ -157,13 +179,14 @@ public class SubscriberImplTest {
         //Given
         final ClientSessionChannel channel = givenChannelWithSubscription("/channel");
         final ClientSessionChannel channelSecond = givenChannelWithSubscription("/channelSecond");
+
         //When
         reconnect();
+
         //Then
         verifyConnected();
         verifySubscribed(channel, 2);
         verifySubscribed(channelSecond, 2);
-
     }
 
     @Test
@@ -199,7 +222,7 @@ public class SubscriberImplTest {
     private void sendUnsubscribeMessage(String channelId) {
         verify(metaUnsubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
-            listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessge(channelId, true));
+            listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessage(channelId, true));
         }
     }
 
@@ -231,6 +254,39 @@ public class SubscriberImplTest {
         verify(listenerMock).onNotification(subscription, message);
     }
 
+    @Test
+    public void shouldRetryOnSubscribeOperationFailed() {
+        //Given
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = givenChannel(channelId);
+        final AtomicInteger onError = new AtomicInteger(0);
+        SubscribeOperationListener subscribeOperationListener = new SubscribeOperationListener() {
+            @Override
+            public void onSubscribingSuccess(String channelId) {
+
+            }
+
+            @Override
+            public void onSubscribingError(String channelId, String error, Throwable throwable) {
+                onError.incrementAndGet();
+            }
+        };
+        final ArgumentCaptor<MessageListener> unsubscribeListenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
+        subscriber.subscribe(channelId, subscribeOperationListener, listener, true);
+        verify(metaSubscribeChannel).addListener(listenerCaptor.capture());
+        Message message = mockSubscribeMessage(false, ImmutableMap.of("failure", "Network unreachable!"));
+        listenerCaptor.getValue().onMessage(metaSubscribeChannel, message);
+        verify(channel).unsubscribe(any(MessageListener.class), unsubscribeListenerCaptor.capture());
+        unsubscribeListenerCaptor.getValue().onMessage(metaUnsubscribeChannel, message);
+        listenerCaptor.getValue().onMessage(metaSubscribeChannel, mockSubscribeMessage(true,
+                ImmutableMap.of(Message.SUBSCRIPTION_FIELD, channelId)));
+
+        //Then
+        verifyConnected();
+        verifySubscribed(channel, 2);
+        assertThat(onError.get()).isEqualTo(1);
+    }
+
     private Subscription<Object> givenSubscription(ClientSessionChannel channel) {
         final Subscription<Object> subscribe = subscriber.subscribe(channel.getId(), listener);
         return subscribe;
@@ -246,7 +302,7 @@ public class SubscriberImplTest {
     private void givenSubsciptionsSuccessfulySubscribed(final String channelId) {
         verify(metaSubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
-            listener.onMessage(metaSubscribeChannel, mockSubscribeMessge(channelId, true));
+            listener.onMessage(metaSubscribeChannel, mockSubscribeMessage(channelId, true));
         }
     }
 
@@ -257,13 +313,29 @@ public class SubscriberImplTest {
         final Mutable message = Mockito.mock(Mutable.class);
         when(message.getChannel()).thenReturn(ClientSessionChannel.META_HANDSHAKE);
         when(message.isSuccessful()).thenReturn(true);
+
+        final Mutable connectedMessage = Mockito.mock(Mutable.class);
+        when(connectedMessage.getChannel()).thenReturn(ClientSessionChannel.META_CONNECT);
+        when(connectedMessage.isSuccessful()).thenReturn(true);
         reconnectListener.rcvMeta(client, message);
+        reconnectListener.rcvMeta(client, connectedMessage);
     }
 
-    private Message mockSubscribeMessge(String channelID, boolean successful) {
+    private Message mockSubscribeMessage(String channelID, boolean successful) {
         Message message = mock(Message.class);
         when(message.get(Message.SUBSCRIPTION_FIELD)).thenReturn(channelID);
         when(message.isSuccessful()).thenReturn(successful);
+        return message;
+    }
+
+    private Message mockSubscribeMessage(boolean successful, Map<? extends Object, ? extends Object> additionalFields) {
+        Message message = mock(Message.class);
+        when(message.isSuccessful()).thenReturn(successful);
+        if(!MapUtils.isEmpty(additionalFields)) {
+            for(Map.Entry<? extends Object, ? extends Object> entry: additionalFields.entrySet()) {
+                when(message.get(entry.getKey())).thenReturn(entry.getValue());
+            }
+        }
         return message;
     }
 

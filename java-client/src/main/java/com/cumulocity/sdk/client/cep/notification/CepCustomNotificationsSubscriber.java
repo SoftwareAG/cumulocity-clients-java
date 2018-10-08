@@ -48,6 +48,13 @@ public class CepCustomNotificationsSubscriber implements Subscriber<String, Obje
         return subscriber.subscribe(channelID, handler);
     }
 
+    @Override
+    public Subscription<String> subscribe(String channelID, SubscribeOperationListener subscribeOperationListener,
+                                       SubscriptionListener<String, Object> handler,
+                                       boolean autoRetry) throws SDKException {
+        return subscriber.subscribe(channelID, subscribeOperationListener, handler, autoRetry);
+    }
+
     public void disconnect() {
         subscriber.disconnect();
     }

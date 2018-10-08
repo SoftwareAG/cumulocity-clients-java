@@ -19,9 +19,8 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import org.cometd.bayeux.Message;
-
 import com.cumulocity.sdk.client.SDKException;
+import org.cometd.bayeux.Message;
 
 class TypedSubscriber<T, R> implements Subscriber<T, R> {
 
@@ -36,6 +35,14 @@ class TypedSubscriber<T, R> implements Subscriber<T, R> {
 
     public Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException {
         return subscriber.subscribe(object, new MappingSubscriptionListener<T, R>(handler, dataType));
+    }
+
+    @Override
+    public Subscription<T> subscribe(T agentId, SubscribeOperationListener subscribeOperationListener,
+                                     SubscriptionListener<T, R> handler,
+                                     boolean autoRetry) throws SDKException {
+        return subscriber.subscribe(agentId, subscribeOperationListener,
+                new MappingSubscriptionListener<T, R>(handler, dataType), autoRetry);
     }
 
     public void disconnect() {
