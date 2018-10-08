@@ -86,11 +86,15 @@
 			<artifactId>rest-representation</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-apache-client</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+		</dependency>
+		<dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
         </dependency>
 		<dependency>
@@ -139,11 +143,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        	<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+        	<groupId>com.google.guava</groupId>
         	<artifactId>guava</artifactId>
         	<scope>test</scope>
         </dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

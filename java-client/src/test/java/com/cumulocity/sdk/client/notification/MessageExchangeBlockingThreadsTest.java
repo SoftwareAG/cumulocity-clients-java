@@ -29,6 +29,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -55,7 +57,7 @@ public class MessageExchangeBlockingThreadsTest {
         //given
         final Client client = mock(Client.class);
         final TransportListener listener = mock(TransportListener.class);
-        final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class));
+        final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class), Collections.<Message.Mutable>emptyList());
 
         givenUnfinishedClientResponse(client);
 
@@ -66,8 +68,7 @@ public class MessageExchangeBlockingThreadsTest {
 
         //then
         executorShouldHaveFreeThread();
-        verify(listener).onConnectException(any(Throwable.class), any(Message[].class));
-        verify(listener, never()).onException(any(Throwable.class), any(Message[].class));
+        verify(listener).onFailure(any(Throwable.class), any(List.class));
     }
 
     private void givenUnfinishedClientResponse(final Client client) throws Exception {
