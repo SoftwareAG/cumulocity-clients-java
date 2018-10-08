@@ -32,7 +32,6 @@
     </properties>
 
     <modules>
-        <module>actuator-configuration</module>
         <module>autoconfigure</module>
         <module>context</module>
         <module>api</module>
@@ -41,7 +40,7 @@
         <module>logging</module>
         <module>package</module>
         <module>properties</module>
-        <module>health-indicator</module>
+        <module>monitoring</module>
     </modules>
 
     <dependencyManagement>
@@ -118,19 +117,13 @@
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-actuator-configuration</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-autoconfigure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-health-indicator</artifactId>
+                <artifactId>microservice-monitoring</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
