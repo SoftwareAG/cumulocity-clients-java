@@ -48,7 +48,7 @@
 
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
-            <artifactId>microservice-health-indicator</artifactId>
+            <artifactId>microservice-monitoring</artifactId>
         </dependency>
     </dependencies>
 </project>

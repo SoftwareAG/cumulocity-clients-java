@@ -40,7 +40,7 @@
         <module>logging</module>
         <module>package</module>
         <module>properties</module>
-        <module>health-indicator</module>
+        <module>monitoring</module>
     </modules>
 
     <dependencyManagement>
@@ -123,7 +123,7 @@
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-health-indicator</artifactId>
+                <artifactId>microservice-monitoring</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
