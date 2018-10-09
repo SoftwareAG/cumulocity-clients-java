@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>9.16.0-SNAPSHOT</version>
+    <version>9.17.0-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -19,14 +19,13 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>9.16.0-SNAPSHOT</cumulocity.model.version>
-        <cumulocity.dependencies.version>9.16.0-SNAPSHOT</cumulocity.dependencies.version>
-        <cumulocity.clients.version>9.16.0-SNAPSHOT</cumulocity.clients.version>
+        <cumulocity.model.version>9.17.0-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.dependencies.version>9.17.0-SNAPSHOT</cumulocity.dependencies.version>
+        <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
-        <googleauth.version>1.1.1</googleauth.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
     </properties>
@@ -40,7 +39,7 @@
         <module>logging</module>
         <module>package</module>
         <module>properties</module>
-        <module>health-indicator</module>
+        <module>monitoring</module>
     </modules>
 
     <dependencyManagement>
@@ -123,7 +122,7 @@
 
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>microservice-health-indicator</artifactId>
+                <artifactId>microservice-monitoring</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -156,11 +155,6 @@
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
                     </exclusion>
-
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -172,10 +166,6 @@
                     <exclusion>
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -189,10 +179,6 @@
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -205,10 +191,6 @@
                     <exclusion>
                         <groupId>javax.validation</groupId>
                         <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
-                        <artifactId>guava</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.slf4j</groupId>

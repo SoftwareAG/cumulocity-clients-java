@@ -58,6 +58,13 @@ public class InventoryRealtimeNotificationsSubscriber implements Subscriber<Stri
     public Subscription<String> subscribe(final String channelID, final SubscriptionListener<String, ManagedObjectNotification> handler) throws SDKException {
         return subscriber.subscribe(channelPrefix + channelID, handler);
     }
+
+    @Override
+    public Subscription<String> subscribe(String channelID, SubscribeOperationListener subscribeOperationListener,
+                                       SubscriptionListener<String, ManagedObjectNotification> handler,
+                                       boolean autoRetry) throws SDKException {
+        return subscriber.subscribe(channelID, subscribeOperationListener, handler, autoRetry);
+    }
     
     public void disconnect() {
         subscriber.disconnect();
