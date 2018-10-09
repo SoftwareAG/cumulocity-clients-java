@@ -1,16 +1,16 @@
 package com.cumulocity.agent.server.config;
 
-import static java.lang.String.format;
-
-import java.io.IOException;
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static java.lang.String.format;
 
 public class PropertiesFactoryBean implements FactoryBean<Properties> {
 
@@ -84,7 +84,16 @@ public class PropertiesFactoryBean implements FactoryBean<Properties> {
         for (String location : locations) {
             loadFromLocation(properties, location, resourceLoader);
         }
+        appendStandardProperties(properties);
         return properties;
+    }
+
+    private void appendStandardProperties(Properties properties) {
+        properties.setProperty("endpoints.enabled", "false");
+        properties.setProperty("endpoints.health.enabled", "true");
+        properties.setProperty("endpoints.metrics.enabled", "true");
+        properties.setProperty("endpoints.prometheus.enabled", "true");
+        properties.setProperty("endpoints.loggers.enabled", "true");
     }
 
     private void loadFromLocation(Properties properties, String location, ResourceLoader resourceLoader) {
