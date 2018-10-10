@@ -9,7 +9,7 @@
 
 	<groupId>com.cumulocity.sms.client</groupId>
 	<artifactId>sms-client</artifactId>
-	<name>Cumulocity :: Sms Client Java :: Sms Client</name>
+	<name>Cumulocity :: Clients Java :: Sms Client</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<properties>

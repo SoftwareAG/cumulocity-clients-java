@@ -9,7 +9,7 @@
 
 	<groupId>com.cumulocity.email.client</groupId>
 	<artifactId>email-client</artifactId>
-	<name>Cumulocity :: Email Client Java :: Email Client</name>
+	<name>Cumulocity :: Clients Java :: Email Client</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
 	<properties>
