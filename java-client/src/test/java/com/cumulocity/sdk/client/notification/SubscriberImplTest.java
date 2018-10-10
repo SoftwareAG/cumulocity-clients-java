@@ -66,7 +66,6 @@ public class SubscriberImplTest {
         mockClientProvider();
         when(metaSubscribeChannel.getId()).thenReturn(Channel.META_SUBSCRIBE);
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
-        when(client.getChannel(ClientSessionChannel.META_HANDSHAKE)).thenReturn(metaHandshakeChannel);
         when(client.getChannel(ClientSessionChannel.META_UNSUBSCRIBE)).thenReturn(metaUnsubscribeChannel);
     }
 
@@ -379,16 +378,17 @@ public class SubscriberImplTest {
         return (T) argThat(new AnyInstanceOfClass(clazz));
     }
 
-    private static class AnyInstanceOfClass<T> extends ArgumentMatcher<Class<T>> {
+    private static class AnyInstanceOfClass<T> implements ArgumentMatcher<T> {
 
-        private final Class clazz;
+        private final Class<T> clazz;
 
-        public AnyInstanceOfClass(Class clazz) {
+        public AnyInstanceOfClass(Class<T> clazz) {
             this.clazz = clazz;
         }
 
+
         @Override
-        public boolean matches(Object o) {
+        public boolean matches(T o) {
             return clazz.isInstance(o);
         }
 

@@ -19,6 +19,20 @@
  */
 package com.cumulocity.sdk.client.devicecontrol.autopoll;
 
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.operation.OperationStatus;
+import com.cumulocity.rest.representation.operation.OperationRepresentation;
+import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.LinkedList;
+import java.util.List;
+
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Duration.TWO_SECONDS;
@@ -26,30 +40,8 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.internal.matchers.TypeSafeMatcher;
-import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import com.cumulocity.model.idtype.GId;
-import com.cumulocity.model.operation.OperationStatus;
-import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class OperationsQueueHandlerTest {
 
@@ -174,16 +166,16 @@ public class OperationsQueueHandlerTest {
         await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(0));
     }
 
-    private Matcher<OperationRepresentation> hasId(final GId id) {
-        return new TypeSafeMatcher<OperationRepresentation>() {
+    private ArgumentMatcher<OperationRepresentation> hasId(final GId id) {
+        return new ArgumentMatcher<OperationRepresentation>() {
             @Override
-            public void describeTo(Description description) {
-                description.appendText("Operation representation should match id " + id);
+            public boolean matches(OperationRepresentation argument) {
+                return argument.getId().equals(id);
             }
 
             @Override
-            public boolean matchesSafely(OperationRepresentation item) {
-                return item.getId().equals(id);
+            public String toString() {
+                return "Operation representation should match id " + id;
             }
         };
     }

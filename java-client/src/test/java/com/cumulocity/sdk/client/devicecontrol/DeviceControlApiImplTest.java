@@ -19,27 +19,6 @@
  */
 package com.cumulocity.sdk.client.devicecontrol;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.operation.DeviceControlMediaType;
@@ -49,6 +28,24 @@ import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 public class DeviceControlApiImplTest {
 
@@ -177,16 +174,16 @@ public class DeviceControlApiImplTest {
         assertThat(result, is(expected));
     }
 
-    private Matcher<OperationRepresentation> hasOnlyUpdateFields(final OperationRepresentation op) {
-        return new TypeSafeMatcher<OperationRepresentation>() {
+    private ArgumentMatcher<OperationRepresentation> hasOnlyUpdateFields(final OperationRepresentation op) {
+        return new ArgumentMatcher<OperationRepresentation>() {
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an operationRep representation having only updatable fields, as ").appendValue(op);
+            public String toString() {
+                return "an operationRep representation having only updatable fields, as " +op;
             }
 
             @Override
-            public boolean matchesSafely(OperationRepresentation item) {
+            public boolean matches(OperationRepresentation item) {
                 CoreMatchers.nullValue().matches(item.getDeviceExternalIDs());
                 return item.getDeviceExternalIDs() == null &&
                         item.getId() == null &&
@@ -195,6 +192,7 @@ public class DeviceControlApiImplTest {
                         (OperationStatus.FAILED.name().equals(item.getStatus()) ? item.getFailureReason().equals(op.getFailureReason()) : item.getFailureReason() == null) &&
                         item.getAttrs().equals(op.getAttrs());
             }
+
         };
     }
 

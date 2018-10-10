@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,35 +19,34 @@
  */
 package com.cumulocity.me.rest.convert;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
+import com.cumulocity.me.rest.json.JSONObject;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
-import com.cumulocity.me.rest.json.JSONObject;
+public class JSONMatcher implements ArgumentMatcher<JSONObject> {
 
-public class JSONMatcher extends TypeSafeMatcher<JSONObject> {
-    
     public static final JSONMatcher json(String jsonString) {
         return new JSONMatcher(jsonString);
     }
-    
+
     public static final JSONObject jsonObject(String jsonString) {
         return Mockito.argThat(json(jsonString));
     }
-    
+
     private final String jsonString;
 
     private JSONMatcher(String jsonString) {
         this.jsonString = jsonString;
     }
-    
+
     @Override
-    public void describeTo(Description description) {
-        description.appendText("a json ").appendText(jsonString);
+    public String toString() {
+        return "a json " + jsonString;
     }
-    
+
     @Override
-    public boolean matchesSafely(JSONObject json) {
-        return json.toString().equals(jsonString);
+    public boolean matches(JSONObject json) {
+        return json != null && json.toString().equals(jsonString);
     }
+
 }

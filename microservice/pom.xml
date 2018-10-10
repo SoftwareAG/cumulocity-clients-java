@@ -26,6 +26,7 @@
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
+        <googleauth.version>1.1.1</googleauth.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
     </properties>
@@ -35,10 +36,10 @@
         <module>context</module>
         <module>api</module>
         <module>security</module>
+        <module>properties</module>
         <module>subscription</module>
         <module>logging</module>
         <module>package</module>
-        <module>properties</module>
         <module>monitoring</module>
     </modules>
 

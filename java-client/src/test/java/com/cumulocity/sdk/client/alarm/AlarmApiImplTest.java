@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -28,11 +28,9 @@ import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -41,8 +39,8 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class AlarmApiImplTest {
@@ -57,7 +55,7 @@ public class AlarmApiImplTest {
 
     @Mock
     private RestConnector restConnector;
-    
+
     @Mock
     private UrlProcessor urlProcessor;
 
@@ -72,7 +70,7 @@ public class AlarmApiImplTest {
 
         alarmApi = new AlarmApiImpl(restConnector, urlProcessor, alarmsApiRepresentation, DEFAULT_PAGE_SIZE);
     }
-    
+
     @Test
     public void shouldRetrieveAlarmRep() throws SDKException {
         //Given 
@@ -105,11 +103,11 @@ public class AlarmApiImplTest {
         assertThat(updated, sameInstance(alarmRep));
     }
 
-    private Matcher<AlarmRepresentation> hasOnlyUpdatableFields(final AlarmRepresentation alarm) {
-        return new TypeSafeMatcher<AlarmRepresentation>() {
+    private ArgumentMatcher<AlarmRepresentation> hasOnlyUpdatableFields(final AlarmRepresentation alarm) {
+        return new ArgumentMatcher<AlarmRepresentation>() {
 
             @Override
-            public boolean matchesSafely(AlarmRepresentation item) {
+            public boolean matches(AlarmRepresentation item) {
                 if (item.getId() != null) {
                     return false;
                 }
@@ -117,13 +115,14 @@ public class AlarmApiImplTest {
                     return false;
                 }
                 return true;
-
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an alarm representation having only updatable fields, as ").appendValue(alarm);
+            public String toString() {
+                return "an alarm representation having only updatable fields, as " + alarm;
             }
+
+
         };
     }
 
@@ -173,7 +172,7 @@ public class AlarmApiImplTest {
     @Test
     public void shouldGetCollectionByEmptyFilter() throws Exception {
         // Given
-        when(urlProcessor.replaceOrAddQueryParam(ALARM_COLLECTION_URL, Collections.<String,String>emptyMap())).thenReturn(ALARM_COLLECTION_URL);
+        when(urlProcessor.replaceOrAddQueryParam(ALARM_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(ALARM_COLLECTION_URL);
         AlarmCollection expected = new AlarmCollectionImpl(restConnector, ALARM_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
@@ -215,7 +214,7 @@ public class AlarmApiImplTest {
         verify(restConnector, times(1)).delete(alarmsUrl);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testDeleteByNullFilter() {
         alarmApi.deleteAlarmsByFilter(null);
     }

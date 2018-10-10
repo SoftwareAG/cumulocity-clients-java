@@ -14,11 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.text.ParseException;
@@ -28,16 +25,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageExchangeTest {
 
-    private static final String URL = null;
+    private static final String URL = "";
 
-    private static final String MESSAGES = null;
+    private static final String MESSAGES = "";
 
     @Mock
     private CumulocityLongPollingTransport transport;
@@ -126,7 +122,7 @@ public class MessageExchangeTest {
         //When
         recivedResponse();
         //Then
-        verify(listener).onFailure(any(RuntimeException.class), eq(Arrays.asList(message)));
+        verify(listener).onFailure(any(ExecutionException.class), eq(Arrays.asList(message)));
         verify(watcher).stop();
     }
 
@@ -170,7 +166,7 @@ public class MessageExchangeTest {
         recivedResponse();
         responseConsumed();
         //Then
-        verify(listener, never()).onMessages(Mockito.anyList());
+        verify(listener, never()).onMessages(ArgumentMatchers.anyListOf(Mutable.class));
         verify(listener).onFailure(any(TransportException.class), eq(Arrays.asList(message)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
