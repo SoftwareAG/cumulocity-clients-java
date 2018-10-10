@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice</artifactId>
-        <version>8.18.12</version>
+        <version>8.18.13-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-security</artifactId>
