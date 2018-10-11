@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>9.8.10</version>
+		<version>9.8.11-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.cumulocity.email.client</groupId>
