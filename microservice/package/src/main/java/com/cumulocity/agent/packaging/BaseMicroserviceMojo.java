@@ -1,18 +1,15 @@
 package com.cumulocity.agent.packaging;
 
-import static com.google.common.base.Objects.firstNonNull;
-import static com.google.common.io.Files.asByteSink;
-import static com.google.common.io.Files.asByteSource;
-import static com.google.common.io.Resources.asByteSource;
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import com.google.common.reflect.ClassPath;
+import lombok.NonNull;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -23,14 +20,18 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import com.google.common.reflect.ClassPath;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
+
+import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.io.Files.asByteSink;
+import static com.google.common.io.Files.asByteSource;
+import static com.google.common.io.Resources.asByteSource;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
@@ -56,19 +57,19 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     protected File build;
 
     @Parameter(defaultValue = "${project.build.directory}/rpm-tmp")
-    protected File rpmTemporaryDirectory;
+    protected File rpmTmpDir;
 
     @Parameter(defaultValue = "${project.build.directory}/docker-work")
-    protected File dockerWorkarea;
+    protected File dockerWorkDir;
 
     @Parameter(defaultValue = "${project.build.directory}/rpm-base-build")
-    protected File workarea;
+    protected File rpmBaseBuildDir;
 
     @Parameter(defaultValue = "${basedir}/src/main/configuration")
-    protected File configurationDirectory;
+    protected File srcConfigurationDir;
 
     @Parameter(defaultValue = "${basedir}/src/main/docker")
-    protected File dockerDirectory;
+    protected File srcDockerDir;
 
     @Parameter(defaultValue = "false", property = "skip.agent.package")
     protected boolean skip;
@@ -106,11 +107,11 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "agent-package.perm")
     private Memory perm;
 
-    protected void filterResources(Resource resource, File destination, boolean override) throws Exception {
-        final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(resource), destination, project, encoding,
+    protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
+        final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
                                                                                  ImmutableList.<String>of(), ImmutableList.<String>of(),
                                                                                  mavenSession);
-        getLog().info("copy resources from " + resource + " to" + destination);
+        getLog().info("copy resources from " + src + " to" + destination);
         createDirectories(destination.toPath());
         execution.setOverwrite(override);
         execution.setFilterFilenames(true);
@@ -146,11 +147,17 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return jvmArgs;
     }
 
-    public void initializeTemplates(Predicate<? super ClassPath.ResourceInfo> filter, File dest) throws IOException {
+    public void copyFromPluginSubdirectory(String src, File dest) throws IOException {
+        copyTemplates(fromDirectory(src), dest);
+    }
+
+    private void copyTemplates(Predicate<? super ClassPath.ResourceInfo> filter, File dest) throws IOException {
         getLog().debug("initialize templates");
+
         for (ClassPath.ResourceInfo resource : loadTemplates(filter)) {
             final URL url = resource.url();
             getLog().debug("template found " + resource.getResourceName());
+
             final String path = new File(resource.getResourceName()).getPath();
             final File destination = new File(dest, path.substring(path.indexOf(File.separator)));
             Files.createParentDirs(destination);
@@ -161,13 +168,22 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
     }
 
-    protected void copyArtifact(File destination) throws IOException {
-        getLog().debug(project.getArtifact().getFile().toString());
+    protected void copyArtifact(@NonNull File destination) throws IOException {
+        getLog().debug("copyArtifactTo " + project.getArtifact().getFile().toString());
+
         final File to = new File(destination, String.format("%s.jar", name));
         Files.createParentDirs(to);
         getLog().debug(String.format("copy artifact %s to %s ", project.getArtifact().getFile().getAbsolutePath(), to.getAbsolutePath()));
         if(!to.exists() || !asByteSource(project.getArtifact().getFile()).contentEquals(asByteSource(to))) {
             java.nio.file.Files.copy(project.getArtifact().getFile().toPath(), to.toPath(), REPLACE_EXISTING);
+        }
+    }
+
+    protected void cleanDirectory(@NonNull File destination) throws IOException {
+        getLog().debug("cleanDirectory " + destination.getAbsolutePath());
+
+        if (destination.exists()) {
+            FileUtils.cleanDirectory(destination);
         }
     }
 
