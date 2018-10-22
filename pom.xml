@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>9.16.0</version>
+		<version>9.17.0</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
-	<version>9.16.1-SNAPSHOT</version>
+	<version>9.17.1-SNAPSHOT</version>
 	<name>Cumulocity :: Clients Java</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
@@ -33,9 +33,11 @@
 	</modules>
 
 	<properties>
-		<cumulocity.model.version>9.16.0</cumulocity.model.version>
-		<cumulocity.shared-components.version>9.16.0</cumulocity.shared-components.version>
+		<cumulocity.model.version>9.17.0</cumulocity.model.version>
+		<cumulocity.shared-components.version>9.17.0</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
+		<jersey1.version>1.8</jersey1.version>
+		<jaxrs.version>1.1.1</jaxrs.version>
 	</properties>
 
 	<licenses>
@@ -210,6 +212,21 @@
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
 			<!-- COMPILE DEPENDENCIES START -->
 			<dependency>
+				<groupId>com.sun.jersey.contribs</groupId>
+				<artifactId>jersey-apache-client</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.jersey</groupId>
+				<artifactId>jersey-client</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.jersey.contribs</groupId>
+				<artifactId>jersey-multipart</artifactId>
+				<version>${jersey1.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.nsn.cumulocity.clients-java</groupId>
 				<artifactId>java-client</artifactId>
 				<version>${project.version}</version>
@@ -228,6 +245,12 @@
 				<groupId>com.nsn.cumulocity.model</groupId>
 				<artifactId>rest-representation</artifactId>
 				<version>${cumulocity.model.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.ws.rs</groupId>
+						<artifactId>javax.ws.rs-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -254,6 +277,11 @@
 				<artifactId>notification-service</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>javax.ws.rs</groupId>
+				<artifactId>jsr311-api</artifactId>
+				<version>${jaxrs.version}</version>
+			</dependency>
 			<!-- COMPILE DEPENDENCIES END -->
 
 			<!-- PLEASE add new dependencies ALPHABETICALLY -->
@@ -278,6 +306,12 @@
 				<version>${cumulocity.model.version}</version>
 				<scope>test</scope>
 				<classifier>tests</classifier>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.ws.rs</groupId>
+						<artifactId>javax.ws.rs-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.nsn.cumulocity.shared-components</groupId>

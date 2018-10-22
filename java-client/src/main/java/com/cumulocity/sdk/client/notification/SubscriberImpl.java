@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,6 +20,7 @@
 package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.SDKException;
+import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.bayeux.client.ClientSession;
@@ -29,13 +30,14 @@ import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberImpl.class);
+
+    private static final int RETRIES_ON_SHORT_NETWORK_FAILURES = 5;
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
@@ -43,11 +45,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private final Collection<SubscriptionRecord> subscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
 
+    private final Collection<SubscriptionRecord> pendingSubscriptions = new CopyOnWriteArraySet<SubscriptionRecord>();
+
     private final Object lock = new Object();
 
     private volatile ClientSession session;
 
-    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider, final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
+    public SubscriberImpl(SubscriptionNameResolver<T> channelNameResolver, BayeuxSessionProvider bayeuxSessionProvider,
+                          final UnauthorizedConnectionWatcher unauthorizedConnectionWatcher) {
         this.subscriptionNameResolver = channelNameResolver;
         this.bayeuxSessionProvider = bayeuxSessionProvider;
         unauthorizedConnectionWatcher.addListener(this);
@@ -59,23 +64,47 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         session = bayeuxSessionProvider.get();
     }
 
-    private boolean isHandshake(Mutable message) {
-        return ClientSessionChannel.META_HANDSHAKE.equals(message.getChannel());
+    private boolean isSuccessfulHandshake(Mutable message) {
+        return ClientSessionChannel.META_HANDSHAKE.equals(message.getChannel()) && message.isSuccessful();
+    }
+
+    private boolean isSuccessfulConnected(Mutable message) {
+        return ClientSessionChannel.META_CONNECT.equals(message.getChannel()) && message.isSuccessful();
     }
 
     public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler) throws SDKException {
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, true);
+    }
 
+    public Subscription<T> subscribe(T object,
+                                     final SubscribeOperationListener subscribeOperationListener,
+                                     final SubscriptionListener<T, Message> handler,
+                                     final boolean autoRetry) throws SDKException {
+        return subscribe(object, subscribeOperationListener, handler, autoRetry, 0);
+    }
+
+    Subscription<T> subscribe(T object,
+                              final SubscribeOperationListener subscribeOperationListener,
+                              final SubscriptionListener<T, Message> handler,
+                              final boolean autoRetry,
+                              final int retriesCount) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
+        checkArgument(subscribeOperationListener != null, "subscribeOperationListener can't be null");
+
         ensureConnection();
         final ClientSessionChannel channel = getChannel(object);
         log.debug("subscribing to channel {}", channel.getId());
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object);
         final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
-        metaSubscribeChannel.addListener(new SubscriptionSuccessListener(new SubscriptionRecord(object, handler), listener,
-                metaSubscribeChannel, channel));
+        SubscriptionRecord subscriptionRecord = new SubscriptionRecord(object, handler, subscribeOperationListener);
+        SubscriptionResultListener subscriptionResultListener = new SubscriptionResultListener(
+                subscriptionRecord, listener, subscribeOperationListener, channel, autoRetry, retriesCount);
+        metaSubscribeChannel.addListener(subscriptionResultListener);
         channel.subscribe(listener);
-
+        if (autoRetry) {
+            pendingSubscriptions.add(subscriptionRecord);
+        }
         return listener.getSubscription();
     }
 
@@ -83,7 +112,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         synchronized (lock) {
             if (!isConnected()) {
                 start();
-                session.addExtension(new ReconnectOnSuccessfulHandshake());
+                session.addExtension(new ReconnectOnSuccessfulConnected());
             }
         }
     }
@@ -94,7 +123,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private ClientSessionChannel getChannel(final T object) {
         final String channelId = subscriptionNameResolver.apply(object);
-        checkState(channelId != null && channelId.length() > 0, "channalId is null or empty for object : " + object);
+        checkState(channelId != null && channelId.length() > 0, "channelId is null or empty for object : " + object);
         return session.getChannel(channelId);
     }
 
@@ -122,20 +151,34 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
     }
 
     private void resubscribe() {
-        for (SubscriptionRecord subscribed : subscriptions) {
-            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getListener());
-            subscribed.getListener().onError(subscription, new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
+        Set<SubscriptionRecord> allSubscriptions = new HashSet<>(subscriptions);
+        allSubscriptions.addAll(pendingSubscriptions);
+        for (SubscriptionRecord subscribed : allSubscriptions) {
+            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.subscribeOperationListener,
+                    subscribed.getListener(), true);
+            try {
+                subscribed.getListener().onError(subscription,
+                        new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
+            } catch (Exception e) {
+                log.warn("Error when executing onError of listener: {}, {}", subscribed.getListener(), e.getMessage());
+            }
         }
     }
 
     @Override
     public void onDisconnection(final int httpCode) {
         for (final SubscriptionRecord subscription : subscriptions) {
-            subscription.getListener().onError(new DummySubscription(subscription), new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
+            subscription.getListener().onError(new DummySubscription(subscription),
+                    new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
         }
     }
 
-    public final class ReconnectOnSuccessfulHandshake implements Extension {
+    public final class ReconnectOnSuccessfulConnected implements Extension {
+
+        private volatile boolean reHandshakeSuccessful = false;
+
+        private volatile boolean reconnectedSuccessful = false;
+
         @Override
         public boolean sendMeta(ClientSession session, Mutable message) {
             return true;
@@ -148,8 +191,18 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public boolean rcvMeta(ClientSession session, Mutable message) {
-            if (isHandshake(message) && message.isSuccessful()) {
+            if (isSuccessfulHandshake(message)) {
+                reHandshakeSuccessful = true;
+            } else if (isSuccessfulConnected(message)) {
+                reconnectedSuccessful = true;
+            } else {
+                return true;
+            }
+            // Resubscribe only there is a successful handshake and successfully connected.
+            if (reHandshakeSuccessful && reconnectedSuccessful) {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
+                reHandshakeSuccessful = false;
+                reconnectedSuccessful = false;
                 resubscribe();
             }
             return true;
@@ -175,7 +228,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             if (subscriptionNameResolver.apply(subscribed.getId()).equals(message.get(Message.SUBSCRIPTION_FIELD))
                     && message.isSuccessful()) {
                 try {
-                    log.debug("unsubscribed successfuly from channel {}", channel.getId());
+                    log.debug("unsubscribed successfully from channel {}", channel.getId());
                     subscribed.remove();
                 } finally {
                     unsubscribeChannel.removeListener(this);
@@ -184,42 +237,72 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    private final class SubscriptionSuccessListener implements MessageListener {
+    private static class LoggingSubscribeOperationListener implements SubscribeOperationListener {
+
+        private static final Logger LOG = LoggerFactory.getLogger(LoggingSubscribeOperationListener.class);
+
+        @Override
+        public void onSubscribingSuccess(String channelId) {
+            LOG.info("Successfully subscribed: {}", channelId);
+        }
+
+        @Override
+        public void onSubscribingError(String channelId, String message, Throwable throwable) {
+            LOG.error("Error when subscribing channel: {}, error: {}", channelId, message, throwable);
+        }
+    }
+
+    private final class SubscriptionResultListener implements MessageListener {
+
+        private final SubscribeOperationListener subscribeOperationListener;
 
         private final MessageListenerAdapter listener;
-
-        private final ClientSessionChannel metaSubscribeChannel;
 
         private final ClientSessionChannel channel;
 
         private final SubscriptionRecord subscription;
 
-        private SubscriptionSuccessListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
-                                            ClientSessionChannel subscribeChannel, ClientSessionChannel channel) {
+        private final boolean autoRetry;
+
+        private final int retriesCount;
+
+        private SubscriptionResultListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
+                                           SubscribeOperationListener subscribeOperationListener,
+                                           ClientSessionChannel channel, boolean autoRetry, int retriesCount) {
             this.subscription = subscribed;
             this.listener = listener;
-            this.metaSubscribeChannel = subscribeChannel;
+            this.subscribeOperationListener = subscribeOperationListener;
             this.channel = channel;
+            this.autoRetry = autoRetry;
+            this.retriesCount = retriesCount;
         }
 
         @Override
-        public void onMessage(ClientSessionChannel channel, Message message) {
+        public void onMessage(ClientSessionChannel metaSubscribeChannel, Message message) {
+            if (!Channel.META_SUBSCRIBE.equals(metaSubscribeChannel.getId())) {
+                // Should never be here
+                log.warn("Unexpected message to wrong channel, to SubscriptionSuccessListener: {}, {}", metaSubscribeChannel, message);
+                return;
+            }
+            if (message.isSuccessful() && !isSubscriptionToChannel(message)) {
+                return;
+            }
             try {
-                if (!isSubscriptionToChannel(message))
-                    return;
-                if (isSuccessfulySubscribed(message)) {
-                    log.debug("subscribed successfuly to channel {}", channel.getId());
+                if (message.isSuccessful()) {
+                    log.debug("subscribed successfully to channel {}, {}", this.channel, message);
+                    if (autoRetry) {
+                        pendingSubscriptions.remove(subscription);
+                    }
                     ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
                     unsubscribeChannel.addListener(new UnsubscribeListener(subscription, unsubscribeChannel));
                     subscriptions.add(subscription);
+                    subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
-                    subscription.getListener().onError(
-                            listener.getSubscription(),
-                            new SDKException("unable to subscribe Client: " + session.getId() + "  on Channel:" + channel.getChannelId() + " "
-                                    + message.get(Message.ERROR_FIELD)));
+                    log.debug("Error subscribing channel: {}, {}", this.channel.getId(), message);
+                    handleError(message);
                 }
             } catch (NullPointerException ex) {
-                log.warn("NPE on message {} - {}", message, this.channel);
+                log.warn("NPE on message {} - {}", message, Channel.META_SUBSCRIBE);
                 throw new RuntimeException(ex);
             } finally {
                 metaSubscribeChannel.removeListener(this);
@@ -230,8 +313,49 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             return Objects.equals(channel.getId(), message.get(Message.SUBSCRIPTION_FIELD));
         }
 
-        private boolean isSuccessfulySubscribed(Message message) {
-            return message.isSuccessful();
+        private void handleError(Message message) {
+            if (autoRetry && isShortNetworkFailure(message)) {
+                if (retriesCount > RETRIES_ON_SHORT_NETWORK_FAILURES) {
+                    log.error("Detected a short network failure, giving up after {} retries. " +
+                            "Another retry attempt only happen on another successfully handshake", retriesCount);
+                } else {
+                    log.debug("Detected a short network failure, retrying to subscribe channel: {}", channel.getId());
+                    channel.unsubscribe(listener, new MessageListener() {
+                        @Override
+                        public void onMessage(ClientSessionChannel channel, Message message) {
+                            subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry,
+                                    retriesCount + 1);
+                        }
+                    });
+                }
+            } else if (autoRetry) {
+                log.debug("Detected an error (either server or long network error), " +
+                        "another retry attempt only happen on another successfully handshake");
+            }
+            notifyListenerOnError(message);
+        }
+
+        private void notifyListenerOnError(Message message) {
+            String errorMessage = "Unknow error (unspecified by server)";
+            Throwable throwable = null;
+            Object error = message.get(Message.ERROR_FIELD);
+            if (error == null) {
+                error = message.get("failure");
+                if (error != null && error instanceof Map) {
+                    throwable = (Throwable) ((Map) error).get("exception");
+                    if (throwable != null) {
+                        errorMessage = throwable.getMessage();
+                    }
+                }
+            } else {
+                errorMessage = (String) error;
+            }
+            subscribeOperationListener.onSubscribingError(channel.getId(), errorMessage, throwable);
+        }
+
+        private boolean isShortNetworkFailure(Message message) {
+            Object failure = message.get("failure");
+            return failure != null;
         }
     }
 
@@ -309,9 +433,13 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionListener<T, Message> listener;
 
-        public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener) {
+        private final SubscribeOperationListener subscribeOperationListener;
+
+        public SubscriptionRecord(T id, SubscriptionListener<T, Message> listener,
+                                  SubscribeOperationListener subscribeOperationListener) {
             this.id = id;
             this.listener = listener;
+            this.subscribeOperationListener = subscribeOperationListener;
         }
 
         public void remove() {
@@ -328,34 +456,25 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((id == null) ? 0 : id.hashCode());
-            result = prime * result + ((listener == null) ? 0 : listener.hashCode());
+            int result = id != null ? id.hashCode() : 0;
+            result = 31 * result + (listener != null ? listener.hashCode() : 0);
+            result = 31 * result + (subscribeOperationListener != null ? subscribeOperationListener.hashCode() : 0);
             return result;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            SubscriptionRecord other = (SubscriptionRecord) obj;
-            if (id == null) {
-                if (other.id != null)
-                    return false;
-            } else if (!id.equals(other.id))
-                return false;
-            if (listener == null) {
-                if (other.listener != null)
-                    return false;
-            } else if (!listener.equals(other.listener))
-                return false;
-            return true;
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SubscriptionRecord that = (SubscriptionRecord) o;
+
+            if (id != null ? !id.equals(that.id) : that.id != null) return false;
+            if (listener != null ? !listener.equals(that.listener) : that.listener != null) return false;
+            return subscribeOperationListener != null ? subscribeOperationListener
+                    .equals(that.subscribeOperationListener) : that.subscribeOperationListener == null;
         }
+
 
     }
 

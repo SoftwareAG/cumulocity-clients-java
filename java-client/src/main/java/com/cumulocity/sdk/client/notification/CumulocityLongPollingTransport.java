@@ -26,12 +26,13 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.HttpClientTransport;
 import org.cometd.client.transport.TransportListener;
 
 import javax.ws.rs.core.NewCookie;
+import java.net.CookieStore;
+import java.net.HttpCookie;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -104,8 +105,8 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     @Override
-    public void send(final TransportListener listener, Message.Mutable... messages) {
-        debug("sending messages {} ", (Object) messages);
+    public void send(final TransportListener listener, List<Mutable> messages) {
+        logger.debug("sending messages {} ", (Object) messages);
         final String content = generateJSON(messages);
         try {
             synchronized (exchanges) {
@@ -114,7 +115,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
             }
 
         } catch (Exception x) {
-            listener.onException(x, messages);
+            listener.onFailure(x, messages);
         }
     }
 
@@ -123,7 +124,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
             throw new IllegalStateException("Aborted");
     }
 
-    private void createMessageExchange(final TransportListener listener, final String content, Message.Mutable... messages) {
+    private void createMessageExchange(final TransportListener listener, final String content, List<Mutable> messages) {
         final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService, resolveHeartbeatInterval());
         httpClient.setReadTimeout((int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval()+30));
         final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, unauthorizedConnectionWatcher, messages);
@@ -153,11 +154,22 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private ClientResponse copyCookies(final ClientResponse clientResponse) {
+        CookieStore cookieStore = getCookieStore();
         for (NewCookie cookie : clientResponse.getCookies()) {
-            setCookie(new Cookie(cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), cookie.getMaxAge(),
-                    cookie.isSecure(), cookie.getVersion(), cookie.getComment()));
+            cookieStore.add(null, toHttpCookie(cookie));
         }
         return clientResponse;
+    }
+
+    private HttpCookie toHttpCookie(NewCookie newCookie) {
+        HttpCookie httpCookie = new HttpCookie(newCookie.getName(), newCookie.getValue());
+        httpCookie.setDomain(newCookie.getDomain());
+        httpCookie.setPath(newCookie.getPath());
+        httpCookie.setVersion(newCookie.getVersion());
+        httpCookie.setSecure(newCookie.isSecure());
+        httpCookie.setMaxAge(newCookie.getMaxAge());
+        httpCookie.setComment(newCookie.getComment());
+        return httpCookie;
     }
 
     @Override
@@ -166,13 +178,13 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     protected void addCookieHeader(ClientRequest exchange) {
-        CookieProvider cookieProvider = getCookieProvider();
-        if (cookieProvider != null) {
+        CookieStore cookieStore = getCookieStore();
+        if (cookieStore != null) {
             StringBuilder builder = new StringBuilder();
-            for (Cookie cookie : cookieProvider.getCookies()) {
+            for (HttpCookie cookie : cookieStore.getCookies()) {
                 if (builder.length() > 0)
                     builder.append("; ");
-                builder.append(cookie.asString());
+                builder.append(cookie.toString());
             }
             if (builder.length() > 0) {
                 exchange.getHeaders().add(COOKIE, builder.toString());
