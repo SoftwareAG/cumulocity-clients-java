@@ -25,7 +25,6 @@ public class RoleServiceImpl implements RoleService {
     private final RestConnector userRestConnector;
 
     @Autowired
-    @ConstructorProperties("userRestConnector")
     public RoleServiceImpl(RestConnector userRestConnector) {
         this.userRestConnector = userRestConnector;
     }

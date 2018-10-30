@@ -9,16 +9,16 @@ import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.DefaultPropertySourceFactory;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.core.io.support.PropertySourceFactory;
 import org.springframework.core.io.support.ResourcePropertySource;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +49,10 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         final ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
-        Iterable<File> locations = provider.find(".properties", "-server.properties", "-agent-server.properties");
+        Iterable<Path> locations = provider.find(".properties", "-server.properties", "-agent-server.properties", "-default.properties");
+        for (Path location : locations) {
+            log.info("Configuration file loaded {}", location);
+        }
         processPropertySource(environment, locations);
     }
 
@@ -65,12 +68,12 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     public void finished(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
     }
 
-    private void processPropertySource(ConfigurableEnvironment environment, Iterable<File> locations) {
+    private void processPropertySource(ConfigurableEnvironment environment, Iterable<Path> locations) {
         final PropertySourceFactory factory = new DefaultPropertySourceFactory();
 
-        for (final File location : locations) {
+        for (final Path location : locations) {
             try {
-                final Resource resource = new FileSystemResource(location);
+                final Resource resource = new PathResource(location);
                 final PropertySource<?> propertySource = factory.createPropertySource(null, new EncodedResource(resource, "UTF8"));
                 final String name = propertySource.getName();
 

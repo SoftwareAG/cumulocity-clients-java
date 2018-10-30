@@ -33,8 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
@@ -44,9 +43,7 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(WebResource.Builder.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RestConnectorTest {
 
     private static final String PATH = "path";

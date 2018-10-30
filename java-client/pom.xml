@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>9.17.1-SNAPSHOT</version>
+		<version>9.18.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-client</artifactId>
@@ -147,7 +147,18 @@
         	<artifactId>guava</artifactId>
         	<scope>test</scope>
         </dependency>
-    </dependencies>
+
+		<dependency>
+			<groupId>info.cukes</groupId>
+			<artifactId>cucumber-junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>info.cukes</groupId>
+			<artifactId>cucumber-spring</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

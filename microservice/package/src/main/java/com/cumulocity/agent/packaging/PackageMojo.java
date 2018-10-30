@@ -1,14 +1,14 @@
 package com.cumulocity.agent.packaging;
 
-import static com.cumulocity.agent.packaging.DockerDsl.docker;
-import static com.cumulocity.agent.packaging.RpmDsl.*;
-import static com.google.common.base.Throwables.propagate;
-import static com.google.common.io.Files.asByteSource;
-import static java.nio.file.Files.createDirectories;
-import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
-import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
-import static org.apache.maven.shared.utils.io.FileUtils.cleanDirectory;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
+import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
+import com.google.common.collect.ImmutableList;
+import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,16 +16,16 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
-import com.google.common.collect.ImmutableList;
-import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.filtering.MavenFilteringException;
-import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import static com.cumulocity.agent.packaging.DockerDsl.docker;
+import static com.cumulocity.agent.packaging.RpmDsl.configuration;
+import static com.cumulocity.agent.packaging.RpmDsl.*;
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.io.Files.asByteSource;
+import static java.nio.file.Files.createDirectories;
+import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
+import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
+import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
+import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 @Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = true)
 public class PackageMojo extends BaseMicroserviceMojo {
@@ -69,10 +69,10 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     private void rpmPackage() throws MojoExecutionException {
         try {
-            copyArtifact(new File(workarea, "bin"));
-            initializeTemplates(fromDirectory("rpm"), rpmTemporaryDirectory);
-            filterResources(resource(rpmTemporaryDirectory.getAbsolutePath()), workarea,false);
-            filterResources(resource(configurationDirectory.getAbsolutePath()), new File(workarea, "etc"),true);
+            copyArtifact(new File(rpmBaseBuildDir, "bin"));
+            copyFromPluginSubdirectory("rpm", rpmTmpDir);
+            copyFromProjectSubdirectoryAndReplacePlaceholders(resource(rpmTmpDir.getAbsolutePath()), rpmBaseBuildDir,false);
+            copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcConfigurationDir.getAbsolutePath()), new File(rpmBaseBuildDir, "etc"),true);
         } catch (Exception e) {
             throw propagate(e);
         }
@@ -89,51 +89,64 @@ public class PackageMojo extends BaseMicroserviceMojo {
                         element("repackJars", String.valueOf(false)),
                         mappings(
                                 mapping(directory("/usr/lib/" + directory),
-                                        sources(source(location(new File(workarea, "bin").getAbsolutePath())))),
+                                        sources(source(location(new File(rpmBaseBuildDir, "bin").getAbsolutePath())))),
                                 mapping(directory("/usr/lib/systemd/system"),
                                         directoryIncluded(false),
                                         configuration(true),
-                                        sources(source(location(new File(workarea, "systemd").getAbsolutePath()),
+                                        sources(source(location(new File(rpmBaseBuildDir, "systemd").getAbsolutePath()),
                                                 includes(include(String.format("%s.service", name)))))),
                                 mapping(directory("/etc/init.d"),
                                         directoryIncluded(false),
                                         configuration(true),
-                                        sources(source(location(new File(workarea, "init.d").getAbsolutePath()),
+                                        sources(source(location(new File(rpmBaseBuildDir, "init.d").getAbsolutePath()),
                                                 includes(include(name))))),
                                 mapping(directory("/etc/" + directory), directoryIncluded(false), configuration("noreplace"),
-                                        sources(source(location(new File(workarea, "etc").getAbsolutePath())))))
+                                        sources(source(location(new File(rpmBaseBuildDir, "etc").getAbsolutePath())))))
 
                 ), executionEnvironment(this.project, this.mavenSession, this.pluginManager));
         //@formatter:on
     }
 
     private void dockerContainer() throws MojoExecutionException {
+
+        final File dockerWorkResources = new File(dockerWorkDir, "resources");
         try {
-            copyArtifact(new File(dockerWorkarea, "resources"));
-            final File tmp = new File(build, "tmp");
-            initializeTemplates(fromDirectory("docker"), tmp);
-            filterResources(resource(tmp.getAbsolutePath()), dockerWorkarea,false);
-            cleanDirectory(tmp);
-            filterResources(resource(configurationDirectory.getAbsolutePath()), new File(dockerWorkarea, "etc"),true);
-            filterResources(resource(dockerDirectory.getAbsolutePath()), dockerWorkarea,true);
+//            copy artifact to docker work directory
+            cleanDirectory(dockerWorkResources);
+            copyArtifact(dockerWorkResources);
+
+//            copy content of plugin src/main/resources/docker folder to docker work directory replacing placeholders
+            final File buildTmp = new File(build, "tmp");
+            copyFromPluginSubdirectory("docker", buildTmp);
+            copyFromProjectSubdirectoryAndReplacePlaceholders(resource(buildTmp.getAbsolutePath()), dockerWorkDir,false);
+            cleanDirectory(buildTmp);
+
+//            copy content of project src/main/configuration to docker work directory replacing placeholders
+            copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcConfigurationDir.getAbsolutePath()), new File(dockerWorkDir, "etc"),true);
+
+//            copy content of project src/main/docker to docker work directory replacing placeholders
+            copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcDockerDir.getAbsolutePath()), dockerWorkDir,true);
+
+            //@formatter:off
+            executeMojo(
+                    docker(),
+                    goal("build"),
+                    configuration(
+                            element(name("imageName"), image),
+                            element("imageTags",
+                                    element("imageTag",project.getVersion()),
+                                    element("imageTag","latest")
+                            ),
+                            element("dockerDirectory", dockerWorkDir.getAbsolutePath())
+                    ),
+                    executionEnvironment(this.project, this.mavenSession, this.pluginManager));
+            //@formatter:on
+
+//            cleaning up directory created by spotify docker plugin
+            cleanDirectory(new File(build, "docker"));
         } catch (Exception e) {
             throw propagate(e);
         }
-
-        //@formatter:off
-        executeMojo(
-            docker(),
-            goal("build"),
-            configuration(
-                element(name("imageName"), image),
-                element("imageTags",
-                    element("imageTag",project.getVersion()),
-                    element("imageTag","latest")
-                ),
-                element("dockerDirectory", dockerWorkarea.getAbsolutePath())
-            ),
-            executionEnvironment(this.project, this.mavenSession, this.pluginManager));
-        //@formatter:on
     }
 
     private void microserviceZip() {

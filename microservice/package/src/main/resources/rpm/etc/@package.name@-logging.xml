@@ -10,15 +10,12 @@
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<!-- rollover daily -->
-			<fileNamePattern>/var/log/@package.directory@/@package.name@-%d{yyyy-MM-dd}.%i.log
-			</fileNamePattern>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>50MB</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
-			<maxHistory>5</maxHistory>
+			<fileNamePattern>/var/log/@package.directory@/@package.name@-%d{yyyy-MM-dd}.%i.log.tar.gz</fileNamePattern>
+			<maxFileSize>100MB</maxFileSize>
+			<maxHistory>14</maxHistory>
+			<totalSizeCap>3GB</totalSizeCap>
 		</rollingPolicy>
 	</appender>
 

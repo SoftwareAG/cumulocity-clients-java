@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.annotation;
 
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
+import com.cumulocity.microservice.properties.ConfigurationFileProvider;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
@@ -10,14 +11,26 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceRepositor
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
+import com.cumulocity.model.JSONBase;
+import com.cumulocity.rest.representation.application.MicroserviceManifestRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Resources;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
 
@@ -57,7 +70,20 @@ public class EnableMicroserviceSubscriptionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MicroserviceMetadataRepresentation metadata() {
+    public MicroserviceMetadataRepresentation metadata(Environment environment) throws IOException {
+        ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
+
+        final Iterable<Path> manifests = provider.find(new String[]{"cumulocity"}, ".json");
+        if(!Iterables.isEmpty(manifests)){
+            try(final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)){
+                final MicroserviceManifestRepresentation manifest = JSONBase.fromJSON(reader, MicroserviceManifestRepresentation.class);
+                return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
+                        .requiredRoles(Objects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
+                        .roles(Objects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
+                        .build();
+            }
+        }
+
         return new MicroserviceMetadataRepresentation();
     }
 
