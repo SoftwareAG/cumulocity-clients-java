@@ -2,6 +2,10 @@ package com.cumulocity.microservice.security.annotation;
 
 import com.cumulocity.microservice.security.service.SecurityExpressionService;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Delegate;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +51,10 @@ public class EnableGlobalMethodSecurityConfiguration extends GlobalMethodSecurit
         }
     }
 
-    @Data
+    @Getter
+    @Setter
+    @EqualsAndHashCode
+    @ToString
     public static class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations {
 
         @Delegate
