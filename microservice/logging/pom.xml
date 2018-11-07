@@ -21,5 +21,9 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-properties</artifactId>
+        </dependency>
     </dependencies>
 </project>
