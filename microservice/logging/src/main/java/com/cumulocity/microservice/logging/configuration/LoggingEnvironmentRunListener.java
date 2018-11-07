@@ -19,14 +19,16 @@ import java.nio.file.Path;
 
 import static java.nio.file.Files.exists;
 
-@Order(5) public class LoggingEnvironmentRunListener implements SpringApplicationRunListener {
+@Order(5)
+public class LoggingEnvironmentRunListener implements SpringApplicationRunListener {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingEnvironmentRunListener.class);
 
     public LoggingEnvironmentRunListener(SpringApplication application, String[] args) {
     }
 
-    @Override public void starting() {
+    @Override
+    public void starting() {
 
     }
 
@@ -36,26 +38,30 @@ import static java.nio.file.Files.exists;
     public void started() {
     }
 
-    @Override public void environmentPrepared(ConfigurableEnvironment configurableEnvironment) {
+    @Override
+    public void environmentPrepared(ConfigurableEnvironment configurableEnvironment) {
         initLogging(new ConfigurationFileProvider(configurableEnvironment));
     }
 
-    @Override public void contextPrepared(ConfigurableApplicationContext configurableApplicationContext) {
+    @Override
+    public void contextPrepared(ConfigurableApplicationContext configurableApplicationContext) {
 
     }
 
-    @Override public void contextLoaded(ConfigurableApplicationContext configurableApplicationContext) {
+    @Override
+    public void contextLoaded(ConfigurableApplicationContext configurableApplicationContext) {
 
     }
 
-    @Override public void finished(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
+    @Override
+    public void finished(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
 
     }
 
     public void initLogging(ConfigurationFileProvider configurationFileProvider) {
         Iterable<Path> paths = Iterables
                 .concat(configurationFileProvider.find("-logging.xml", "-server-logging.xml", "-agent-server-logging.xml"),
-                        configurationFileProvider.find(new String[] { "logging" }, ".xml"));
+                        configurationFileProvider.find(new String[]{"logging"}, ".xml"));
         for (Path path : paths) {
             if (path != null && exists(path)) {
                 setupLoggingFile(path.toFile());
