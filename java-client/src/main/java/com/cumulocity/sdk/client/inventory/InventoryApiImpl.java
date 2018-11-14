@@ -72,11 +72,11 @@ public class InventoryApiImpl implements InventoryApi {
 	public ManagedObject getManagedObject(GId globalId) throws SDKException {
 		return getManagedObjectApi(globalId);
 	}
-	
-	@Override
+
+    @Override
     public ManagedObject getManagedObjectApi(GId globalId) throws SDKException {
-		validatePresent(globalId);
-		String url = getMOCollectionUrl() + "/" + globalId.getValue();
+        validatePresent(globalId);
+        String url = getMOCollectionUrl() + "/" + globalId.getValue();
         return new ManagedObjectImpl(restConnector, url, pageSize);
     }
 
@@ -95,31 +95,31 @@ public class InventoryApiImpl implements InventoryApi {
 		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getMOCollectionUrl(), params), pageSize);
 	}
 
-	@Override
-	public SupportedMeasurementsRepresentation getSupportedMeasurements(GId sourceId) throws SDKException {
-		validatePresent(sourceId);
-		String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedMeasurements";
-		return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedMeasurementsRepresentation.class);
-	}
+    @Override
+    public SupportedMeasurementsRepresentation getSupportedMeasurements(GId sourceId) throws SDKException {
+        validatePresent(sourceId);
+        String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedMeasurements";
+        return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedMeasurementsRepresentation.class);
+    }
 
-	@Override
-	public SupportedSeriesRepresentation getSupportedSeries(GId sourceId) throws SDKException {
-		validatePresent(sourceId);
-		String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedSeries";
-		return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedSeriesRepresentation.class);
-	}
+    @Override
+    public SupportedSeriesRepresentation getSupportedSeries(GId sourceId) throws SDKException {
+        validatePresent(sourceId);
+        String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedSeries";
+        return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedSeriesRepresentation.class);
+    }
 
-	@Override
-	@Deprecated
+    @Override
+    @Deprecated
     public ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
         return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
     }
 
-	private void validatePresent(GId id) {
-		if ((id == null) || (id.getValue() == null)) {
-			throw new SDKException("Cannot determine the Global ID Value");
-		}
-	}
+    private void validatePresent(GId id) {
+        if ((id == null) || (id.getValue() == null)) {
+            throw new SDKException("Cannot determine the Global ID Value");
+        }
+    }
 
 	protected String getMOCollectionUrl() throws SDKException {
 		return getInventoryRepresentation().getManagedObjects().getSelf();
