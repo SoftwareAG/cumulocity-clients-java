@@ -24,6 +24,8 @@ import java.util.List;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.SupportedMeasurementsRepresentation;
+import com.cumulocity.rest.representation.inventory.SupportedSeriesRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -93,6 +95,25 @@ public interface InventoryApi {
      * @throws IllegalArgumentException if both {@code type} and {@code fragmentType} are specified in the filter
      */
     ManagedObjectCollection getManagedObjectsByFilter(InventoryFilter filter) throws SDKException;
+
+    /**
+     * Returns supported measurements of the Managed Object specified by its id
+     *
+     * @param id id of the managed object to search for
+     * @return SupportedMeasurementsRepresentation
+     * @throws SDKException             if managed object does not exists
+     */
+    SupportedMeasurementsRepresentation getSupportedMeasurements(GId id) throws SDKException;
+
+    /**
+     * Returns supported series of the Managed Object specified by its id
+     *
+     * @param id id of the managed object to search for
+     * @return SupportedSeriesRepresentation
+     * @throws SDKException             if managed object does not exists
+     */
+    SupportedSeriesRepresentation getSupportedSeries(GId id) throws SDKException;
+
 
     /**
      * Gets the managed objects from the platform based on the given ids

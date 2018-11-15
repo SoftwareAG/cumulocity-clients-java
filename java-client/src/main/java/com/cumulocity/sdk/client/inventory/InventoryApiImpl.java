@@ -24,12 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.inventory.InventoryMediaType;
-import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+
+import javax.ws.rs.core.MediaType;
 
 public class InventoryApiImpl implements InventoryApi {
 
@@ -72,12 +72,10 @@ public class InventoryApiImpl implements InventoryApi {
 	public ManagedObject getManagedObject(GId globalId) throws SDKException {
 		return getManagedObjectApi(globalId);
 	}
-	
-	@Override
+
+    @Override
     public ManagedObject getManagedObjectApi(GId globalId) throws SDKException {
-        if ((globalId == null) || (globalId.getValue() == null)) {
-            throw new SDKException("Cannot determine the Global ID Value");
-        }
+        validatePresent(globalId);
         String url = getMOCollectionUrl() + "/" + globalId.getValue();
         return new ManagedObjectImpl(restConnector, url, pageSize);
     }
@@ -96,11 +94,31 @@ public class InventoryApiImpl implements InventoryApi {
 		Map<String, String> params = filter.getQueryParams();
 		return new ManagedObjectCollectionImpl(restConnector, urlProcessor.replaceOrAddQueryParam(getMOCollectionUrl(), params), pageSize);
 	}
-	
-	@Override
-	@Deprecated
+
+    @Override
+    public SupportedMeasurementsRepresentation getSupportedMeasurements(GId sourceId) throws SDKException {
+        validatePresent(sourceId);
+        String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedMeasurements";
+        return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedMeasurementsRepresentation.class);
+    }
+
+    @Override
+    public SupportedSeriesRepresentation getSupportedSeries(GId sourceId) throws SDKException {
+        validatePresent(sourceId);
+        String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedSeries";
+        return restConnector.get(path, MediaType.APPLICATION_JSON_TYPE, SupportedSeriesRepresentation.class);
+    }
+
+    @Override
+    @Deprecated
     public ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException {
         return getManagedObjectsByFilter(new InventoryFilter().byIds(ids));
+    }
+
+    private void validatePresent(GId id) {
+        if ((id == null) || (id.getValue() == null)) {
+            throw new SDKException("Cannot determine the Global ID Value");
+        }
     }
 
 	protected String getMOCollectionUrl() throws SDKException {

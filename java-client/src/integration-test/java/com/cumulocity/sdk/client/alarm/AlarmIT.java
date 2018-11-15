@@ -356,7 +356,8 @@ public class AlarmIT extends JavaSdkITBase {
         alarmApi.deleteAlarmsByFilter(alarmFilter);
 
         // Then
-        List<AlarmRepresentation> allAlarms = alarmApi.getAlarms().get().getAlarms();
+        List<AlarmRepresentation> allAlarms = alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(mo1)).get().getAlarms();
+        allAlarms.addAll(alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(mo2)).get().getAlarms());
 
         assertThat(allAlarms.size(), is(equalTo(2)));
 
