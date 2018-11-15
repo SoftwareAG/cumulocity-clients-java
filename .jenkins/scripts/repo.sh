@@ -2,5 +2,5 @@
 set -e
 source ${BASH_SOURCE%/*}/common.sh
 cd cumulocity-sdk
-../mvnw install
+../mvnw clean install
 cd -

@@ -59,7 +59,7 @@ pipeline {
            steps {
                checkout([
                     $class: 'MercurialSCM',
-                    clear: true,   
+                    clear: true,
                     credentialsId: 'jenkins-hg-key',
                     installation: 'Mercurial',
                     disableChangeLog: true,
@@ -69,7 +69,7 @@ pipeline {
                ])
                sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
            }
-       }      
+       }
        stage('Deploy to Nexus') {
            when {
                 not {
@@ -88,14 +88,14 @@ pipeline {
                 expression { params.release }
                 branch 'release/**'
               }
-              steps {                  
+              steps {
                   sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
                   }
               }
         }
 
-       
+
     }
     post {
         success{
