@@ -64,8 +64,8 @@ public class InventoryApiImpl implements InventoryApi {
 	 }
 	 
 	 @Override
-	 public void delete(GId id, boolean cascade) throws SDKException {
-	     restConnector.delete(getMOCollectionUrl() + "/" + id.getValue() + "?cascade=" + String.valueOf(cascade));
+	 public void deleteCascade(GId id) throws SDKException {
+	     restConnector.delete(getMOCollectionUrl() + "/" + id.getValue() + "?cascade=true");
 	 }
 
 	 @Override

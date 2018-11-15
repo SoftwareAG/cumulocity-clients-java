@@ -48,12 +48,11 @@ public interface InventoryApi {
     void delete(GId id) throws SDKException;
     
     /**
-     * Deletes the Managed Object from the Cumulocity Server.
-     * Provides "cascade" option, to delete all child devices and child assets recursively.
+     * Deletes the Managed Object and all child devices and child assets recursively from the Cumulocity Server.
      *
      * @throws SDKException
      */
-    void delete(GId id, boolean cascade) throws SDKException;
+    void deleteCascade(GId id) throws SDKException;
 
     /**
      * This update the ManagedObject for the operationCollection. Cannot update the ID.
