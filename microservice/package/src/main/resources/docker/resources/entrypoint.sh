@@ -34,8 +34,8 @@ if [ -n "$MEMORY_LIMIT" ];
 fi
 jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
 jvm_mem=${JAVA_MEM:-"@package.jvm-mem@"}
-jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/log/@package.directory@/heap-dump-%p.hprof"}
-arguments=${ARGUMENTS:-"@package.arguments@"}
+jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.directory@/heap-dump-%p.hprof"}
+arguments=${ARGUMENTS:-"@package.arguments@ --package.name=@package.name@ --package.directory=@package.directory@"}
 
 proxy_params=""
 if [ -n "$PROXY_HTTP_HOST" ]; then proxy_params="-Dhttp.proxyHost=${PROXY_HTTP_HOST} -DproxyHost=${PROXY_HTTP_HOST}"; fi
