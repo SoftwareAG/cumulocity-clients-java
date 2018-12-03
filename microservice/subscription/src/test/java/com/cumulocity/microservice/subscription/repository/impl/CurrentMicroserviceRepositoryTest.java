@@ -44,7 +44,9 @@ public class CurrentMicroserviceRepositoryTest {
         MicroserviceRepositoryBuilder builder = microserviceRepositoryBuilder()
                 .baseUrl(Suppliers.ofInstance(BASE_URL))
                 .connector(platform)
-                .environment(environment);
+                .environment(environment)
+                .username("test")
+                .password("test");
         repository = (CurrentMicroserviceRepository) builder.build();
     }
 
@@ -93,9 +95,11 @@ public class CurrentMicroserviceRepositoryTest {
     }
 
     private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return new CumulocityCredentials.Builder(user.getName(), user.getPassword())
-                .withTenantId(user.getTenant())
-                .build();
+        return CumulocityCredentials.builder()
+                .username(user.getName())
+                .password(user.getPassword())
+                .tenantId(user.getTenant())
+                .buildBasic();
     }
 
 }

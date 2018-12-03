@@ -129,9 +129,11 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     }
 
     private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return new CumulocityCredentials.Builder(user.getName(), user.getPassword())
-                .withTenantId(user.getTenant())
-                .build();
+        return CumulocityCredentials.builder()
+                .username(user.getName())
+                .password(user.getPassword())
+                .tenantId(user.getTenant())
+                .buildBasic();
     }
 
     private ApplicationApi applicationApi() {

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -81,7 +81,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public PlatformImpl(String host, CumulocityCredentials credentials) {
         super(host, credentials, new ClientConfiguration());
     }
-    
+
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration) {
         super(host, credentials, clientConfiguration);
     }
@@ -93,7 +93,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public PlatformImpl(String host, CumulocityCredentials credentials, int pageSize) {
         super(host, credentials, new ClientConfiguration(), pageSize);
     }
-    
+
     public PlatformImpl(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
         super(host, credentials, clientConfiguration, pageSize);
     }
@@ -101,15 +101,29 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public PlatformImpl(String host, int port, CumulocityCredentials credentials, int pageSize) {
         super(getHostUrl(host, port), credentials, new ClientConfiguration(), pageSize);
     }
-    
+
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), new ClientConfiguration());
+        super(host,
+                CumulocityCredentials.builder()
+                        .tenantId(tenantId)
+                        .username(user)
+                        .password(password)
+                        .applicationKey(applicationKey)
+                        .buildBasic(),
+                new ClientConfiguration());
     }
 
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
-        super(host, new CumulocityCredentials(tenantId, user, password,applicationKey), new ClientConfiguration(), pageSize);
+        super(host,
+                CumulocityCredentials.builder()
+                        .tenantId(tenantId)
+                        .username(user)
+                        .password(password)
+                        .applicationKey(applicationKey)
+                        .buildBasic(),
+                new ClientConfiguration(), pageSize);
     }
 
     public PlatformImpl() {
@@ -119,7 +133,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     private static String getHostUrl(String host, int port) {
         return "http://" + host + ":" + port;
     }
-    
+
     /**
      * This static method creates the Platform from the system parameters.
      * <p/>
@@ -154,9 +168,9 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
             }
             if (System.getProperty(CUMULOCITY_PAGE_SIZE) != null) {
                 int pageSize = Integer.parseInt(System.getProperty(CUMULOCITY_PAGE_SIZE));
-                platform = new PlatformImpl(host, port, new CumulocityCredentials(tenantId, user, password,applicationKey), pageSize);
+                platform = new PlatformImpl(host, port, CumulocityCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).buildBasic(), pageSize);
             } else {
-                platform = new PlatformImpl(host, port, new CumulocityCredentials(tenantId, user, password,applicationKey));
+                platform = new PlatformImpl(host, port, CumulocityCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).buildBasic());
             }
             String proxyHost = System.getProperty(CUMOLOCITY_PROXY_HOST);
             int proxyPort = -1;
@@ -198,7 +212,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public MeasurementApi getMeasurementApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new MeasurementApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getMeasurement(), getPageSize());
-      }
+    }
 
     @Override
     public DeviceControlApi getDeviceControlApi() throws SDKException {
@@ -223,19 +237,19 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
         RestConnector restConnector = createRestConnector();
         return new AuditRecordApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAudit(), getPageSize());
     }
-    
+
     @Override
-    public CepApi getCepApi() throws SDKException{
+    public CepApi getCepApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new CepApiImpl(this, restConnector, getPageSize());
     }
-    
+
     @Override
     public DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException {
-    	RestConnector restConnector = createRestConnector();
-	    return new DeviceCredentialsApiImpl(this, restConnector);
+        RestConnector restConnector = createRestConnector();
+        return new DeviceCredentialsApiImpl(this, restConnector);
     }
-    
+
     @Override
     public BinariesApi getBinariesApi() throws SDKException {
         RestConnector restConnector = createRestConnector();

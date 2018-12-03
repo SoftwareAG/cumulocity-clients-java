@@ -41,14 +41,19 @@ public class PlatformBuilder {
     }
 
     private CumulocityCredentials buildCredentials() {
-        CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
         if (tenant != null && !tenant.isEmpty()) {
-            credentials = credentials.withTenantId(tenant);
+            return CumulocityCredentials.builder()
+                    .username(username)
+                    .password(password)
+                    .tenantId(tenant)
+                    .buildBasic();
         }
         if (oAuthAccessToken != null && !oAuthAccessToken.isEmpty()) {
-            credentials = credentials.withOAuthAccessToken(oAuthAccessToken).withXsrfToken(xsrfToken);
-
+            return CumulocityCredentials.builder()
+                    .oAuthAccessToken(oAuthAccessToken)
+                    .xsrfToken(xsrfToken)
+                    .buildOAuth();
         }
-        return credentials.build();
+        throw new IllegalStateException("Missing configuration to create credentials");
     }
 }

@@ -18,7 +18,9 @@ public class MicroserviceRepositoryBuilderTest {
 
     @Before
     public void setup() {
-        builder = MicroserviceRepositoryBuilder.microserviceRepositoryBuilder();
+        builder = MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
+        .username("test")
+        .password("test");
     }
 
     @Test

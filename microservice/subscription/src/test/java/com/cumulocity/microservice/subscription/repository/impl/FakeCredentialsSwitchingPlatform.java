@@ -49,7 +49,11 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
         private final Object body;
     }
     
-    private CumulocityCredentials credentials = new CumulocityCredentials.Builder("servicebootstrap", "").withTenantId("management").build();
+    private CumulocityCredentials credentials = CumulocityCredentials.builder()
+            .username("servicebootstrap")
+            .password("")
+            .tenantId("management")
+            .buildWithoutCheck();
     private final Queue<Request> requests = Queues.newArrayDeque();
 
     private final Map<String, ApplicationRepresentation> applications = Maps.newHashMap();

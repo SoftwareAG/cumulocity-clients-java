@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,15 +19,14 @@
  */
 package com.cumulocity.sdk.client.common;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
+import java.io.IOException;
+import java.util.Properties;
 
 public class JavaSdkITBase {
     private static TenantCreator tenantCreator;
@@ -41,7 +40,7 @@ public class JavaSdkITBase {
 
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
-        
+
     }
 
     @AfterClass
@@ -53,15 +52,16 @@ public class JavaSdkITBase {
     private static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
         Properties cumulocityProps = new Properties();
         cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-        
-        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user"; 
-        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password"; 
+
+        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user";
+        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password";
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                new CumulocityCredentials(p.get("cumulocity.tenant"),
-                        p.get(userKey),
-                        p.get(userPassword),
-                        null));
+                CumulocityCredentials.builder()
+                        .tenantId(p.get("cumulocity.tenant"))
+                        .username(p.get(userKey))
+                        .password(p.get(userPassword))
+                        .buildBasic());
     }
 }

@@ -40,7 +40,9 @@ public class LegacyMicroserviceRepositoryTest {
         MicroserviceRepositoryBuilder builder = microserviceRepositoryBuilder()
                 .baseUrl(Suppliers.ofInstance(BASE_URL))
                 .connector(platform)
-                .environment(environment);
+                .environment(environment)
+                .username("test")
+                .password("test");
         repository = (LegacyMicroserviceRepository) builder.build();
     }
 

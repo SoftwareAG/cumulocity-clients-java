@@ -9,8 +9,6 @@ import com.google.common.base.Supplier;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 
-import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
-
 public class MicroserviceRepositoryBuilder {
 
     public static final String MICROSERVICE_ISOLATION_ENV_NAME = "C8Y.microservice.isolation";
@@ -30,7 +28,8 @@ public class MicroserviceRepositoryBuilder {
      */
     public MicroserviceRepository build() {
         final ObjectMapper nonNullObjectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
-        final CumulocityCredentials credentials = cumulocityCredentials(username, password).withTenantId(tenant).build();
+        final CumulocityCredentials credentials = CumulocityCredentials.builder()
+                .username(username).password(password).tenantId(tenant).buildBasic();
         final CredentialsSwitchingPlatform nonNullConnector = connector != null ? connector : new DefaultCredentialsSwitchingPlatform(baseUrl).switchTo(credentials);
         final ApplicationApiRepresentation api = ApplicationApiRepresentation.of(baseUrl);
 

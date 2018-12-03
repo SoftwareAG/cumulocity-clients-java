@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,27 +19,6 @@
  */
 package com.cumulocity.sdk.client.audit;
 
-import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
-import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.notNullValue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
@@ -51,10 +30,21 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
-
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.*;
+
+import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
+import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 //TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
 public class AuditRecordIT {
@@ -77,10 +67,11 @@ public class AuditRecordIT {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-               new CumulocityCredentials(p.get("cumulocity.tenant"),
-                p.get("cumulocity.user"),
-                p.get("cumulocity.password"),
-                null),
+                CumulocityCredentials.builder()
+                        .tenantId(p.get("cumulocity.tenant"))
+                        .username(p.get("cumulocity.user"))
+                        .password(p.get("cumulocity.password"))
+                        .buildBasic(),
                 5);
     }
 
