@@ -21,11 +21,11 @@
 package com.cumulocity.sdk.client;
 
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.model.authentication.CumulocityLogin;
 import com.cumulocity.sdk.client.base.Supplier;
 import com.cumulocity.sdk.client.base.Suppliers;
 import com.cumulocity.sdk.client.buffering.*;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
+import lombok.Getter;
 
 import java.util.Collections;
 import java.util.Set;
@@ -43,23 +43,10 @@ public class PlatformParameters {
 
     private String host;
 
-    private String tenantId;
-
-    private String user;
-
-    private String password;
-
-    private String oAuthAccessToken;
-
-    private String xsrfToken;
-
-    private CumulocityLogin cumulocityLogin;
-
     private String proxyHost;
 
-    private String applicationKey;
-    
-    private String requestOrigin;
+    @Getter
+    private CumulocityCredentials cumulocityCredentials;
 
     private int proxyPort = -1;
 
@@ -102,14 +89,7 @@ public class PlatformParameters {
             host = host + "/";
         }
         this.host = host;
-        this.tenantId = credentials.getTenantId();
-        this.user = credentials.getUsername();
-        this.password = credentials.getPassword();
-        this.oAuthAccessToken = credentials.getOAuthAccessToken();
-        this.xsrfToken = credentials.getXsrfToken();
-        this.applicationKey = credentials.getApplicationKey();
-        this.cumulocityLogin = credentials.getLogin();
-        this.requestOrigin = credentials.getRequestOrigin();
+        this.cumulocityCredentials = credentials;
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
@@ -146,23 +126,11 @@ public class PlatformParameters {
     }
 
     public String getTenantId() {
-        return tenantId;
+        return cumulocityCredentials.getTenantId();
     }
 
     public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getOAuthAccessToken() {
-        return oAuthAccessToken;
-    }
-
-    public String getXsrfToken() {
-        return xsrfToken;
+        return cumulocityCredentials.getUsername();
     }
 
     public String getProxyHost() {
@@ -198,11 +166,7 @@ public class PlatformParameters {
     }
 
     public String getApplicationKey() {
-        return applicationKey;
-    }
-
-    public void setApplicationKey(String applicationKey) {
-        this.applicationKey = applicationKey;
+        return cumulocityCredentials.getApplicationKey();
     }
 
     public void setRequireResponseBody(boolean requireResponseBody) {
@@ -249,40 +213,12 @@ public class PlatformParameters {
         this.tfaToken = tfaToken;
     }
 
-    public String getPrincipal() {
-        return cumulocityLogin.toLoginString();
-    }
-
     public void setHost(String host) {
         this.host = host;
     }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setOAuthAccessToken(String oAuthAccessToken) {
-        this.oAuthAccessToken = oAuthAccessToken;
-    }
-
-    public void setXsrfToken(String xsrfToken) {
-        this.xsrfToken = xsrfToken;
-    }
-
     public String getRequestOrigin() {
-        return requestOrigin;
-    }
-
-    public void setRequestOrigin(String requestOrigin) {
-        this.requestOrigin = requestOrigin;
+        return cumulocityCredentials.getRequestOrigin();
     }
 
     BufferRequestService getBufferRequestService() {

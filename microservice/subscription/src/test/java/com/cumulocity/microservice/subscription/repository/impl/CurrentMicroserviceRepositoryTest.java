@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.repository.impl;
 
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
@@ -44,9 +45,7 @@ public class CurrentMicroserviceRepositoryTest {
         MicroserviceRepositoryBuilder builder = microserviceRepositoryBuilder()
                 .baseUrl(Suppliers.ofInstance(BASE_URL))
                 .connector(platform)
-                .environment(environment)
-                .username("test")
-                .password("test");
+                .environment(environment);
         repository = (CurrentMicroserviceRepository) builder.build();
     }
 
@@ -95,11 +94,11 @@ public class CurrentMicroserviceRepositoryTest {
     }
 
     private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return CumulocityCredentials.builder()
+        return CumulocityBasicCredentials.builder()
                 .username(user.getName())
                 .password(user.getPassword())
                 .tenantId(user.getTenant())
-                .buildBasic();
+                .build();
     }
 
 }

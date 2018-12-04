@@ -5,13 +5,13 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
 import com.cumulocity.sdk.client.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.ClientResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
@@ -70,27 +70,19 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
 
     private PlatformParameters platformParameters() {
         final Credentials context = getCredentials();
-        final PlatformParameters params = new PlatformParameters(properties.getUrl().get(), getCumulocityCredentials(context), new ClientConfiguration());
+
+        final CumulocityCredentials credentials = new CumulocityCredentialsFactory()
+                .withUsername(context.getUsername())
+                .withTenant(context.getTenant())
+                .withPassword(context.getPassword())
+                .withOAuthAccessToken(context.getOAuthAccessToken())
+                .withXsrfToken(context.getXsrfToken())
+                .withApplicationKey(context.getAppKey())
+                .getCredentials();
+        final PlatformParameters params = new PlatformParameters(properties.getUrl().get(), credentials, new ClientConfiguration());
         params.setForceInitialHost(properties.getForceInitialHost());
         params.setTfaToken(context.getTfaToken());
         return params;
-    }
-
-    private CumulocityCredentials getCumulocityCredentials(Credentials context) {
-        if (StringUtils.isNotBlank(context.getOAuthAccessToken()) && StringUtils.isNotBlank(context.getXsrfToken())) {
-            return CumulocityCredentials.builder()
-                    .oAuthAccessToken(context.getOAuthAccessToken())
-                    .xsrfToken(context.getXsrfToken())
-                    .applicationKey(context.getAppKey())
-                    .buildOAuth();
-        } else {
-            return CumulocityCredentials.builder()
-                    .tenantId(context.getTenant())
-                    .username(context.getUsername())
-                    .password(context.getPassword())
-                    .applicationKey(context.getAppKey())
-                    .buildBasic();
-        }
     }
 
     private Credentials getCredentials() {

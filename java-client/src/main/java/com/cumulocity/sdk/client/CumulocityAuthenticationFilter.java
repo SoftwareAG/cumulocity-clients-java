@@ -1,52 +1,43 @@
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.core.util.Base64;
+import lombok.RequiredArgsConstructor;
 
 import javax.ws.rs.core.HttpHeaders;
-import java.io.UnsupportedEncodingException;
 
+@RequiredArgsConstructor
 class CumulocityAuthenticationFilter extends ClientFilter {
 
-    private final String authentication;
-    private final String oAuthAccessToken;
-    private final String xsrfToken;
-
-    /**
-     * Creates a new Authentication filter
-     *
-     * @param username
-     * @param password
-     * @param oAuthAccessToken
-     * @param xsrfToken
-     */
-    public CumulocityAuthenticationFilter(final String username, final String password, final String oAuthAccessToken, final String xsrfToken) {
-        try {
-            authentication = "Basic " + new String(Base64.encode(username + ":" + password), "ASCII");
-            this.oAuthAccessToken = oAuthAccessToken;
-            this.xsrfToken = xsrfToken;
-        } catch (UnsupportedEncodingException ex) {
-            // This should never occur
-            throw new RuntimeException(ex);
-        }
-    }
+    private final CumulocityCredentials credentials;
 
     @Override
     public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
 
-        if (oAuthAccessToken == null) {
-            if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION)) {
-                cr.getMetadata().add(HttpHeaders.AUTHORIZATION, authentication);
+        CumulocityCredentials.CumulocityCredentialsVisitor<Void> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<Void>() {
+            @Override
+            public Void visit(CumulocityBasicCredentials credentials) {
+                if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    cr.getMetadata().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
+                }
+                return null;
             }
-        } else {
-            cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-            cr.getHeaders().putSingle("Cookie", "authorization=" + oAuthAccessToken);
-            cr.getHeaders().putSingle("X-XSRF-TOKEN", xsrfToken);
-        }
-        
+
+            @Override
+            public Void visit(CumulocityOAuthCredentials credentials) {
+                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
+                cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
+                return null;
+            }
+        };
+        credentials.accept(visitor);
+
         return getNext().handle(cr);
     }
 

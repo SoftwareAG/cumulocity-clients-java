@@ -3,6 +3,7 @@ package com.cumulocity.microservice.subscription.repository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
 import com.cumulocity.microservice.subscription.repository.impl.CurrentMicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.impl.LegacyMicroserviceRepository;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
@@ -28,8 +29,11 @@ public class MicroserviceRepositoryBuilder {
      */
     public MicroserviceRepository build() {
         final ObjectMapper nonNullObjectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
-        final CumulocityCredentials credentials = CumulocityCredentials.builder()
-                .username(username).password(password).tenantId(tenant).buildBasic();
+        final CumulocityCredentials credentials = CumulocityBasicCredentials.builder()
+                .username(username)
+                .password(password)
+                .tenantId(tenant)
+                .build();
         final CredentialsSwitchingPlatform nonNullConnector = connector != null ? connector : new DefaultCredentialsSwitchingPlatform(baseUrl).switchTo(credentials);
         final ApplicationApiRepresentation api = ApplicationApiRepresentation.of(baseUrl);
 

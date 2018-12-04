@@ -10,11 +10,7 @@ import lombok.experimental.Wither;
 @AllArgsConstructor
 public class PlatformBuilder {
     private String baseUrl;
-    private String tenant;
-    private String username;
-    private String password;
-    private String oAuthAccessToken;
-    private String xsrfToken;
+    private CumulocityCredentials credentials;
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
@@ -41,19 +37,6 @@ public class PlatformBuilder {
     }
 
     private CumulocityCredentials buildCredentials() {
-        if (tenant != null && !tenant.isEmpty()) {
-            return CumulocityCredentials.builder()
-                    .username(username)
-                    .password(password)
-                    .tenantId(tenant)
-                    .buildBasic();
-        }
-        if (oAuthAccessToken != null && !oAuthAccessToken.isEmpty()) {
-            return CumulocityCredentials.builder()
-                    .oAuthAccessToken(oAuthAccessToken)
-                    .xsrfToken(xsrfToken)
-                    .buildOAuth();
-        }
-        throw new IllegalStateException("Missing configuration to create credentials");
+        return credentials;
     }
 }

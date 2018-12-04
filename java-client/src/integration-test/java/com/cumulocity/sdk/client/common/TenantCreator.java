@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -22,6 +22,9 @@ package com.cumulocity.sdk.client.common;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
@@ -71,16 +74,26 @@ public class TenantCreator {
 
     private ClientResponse postNewTenant(Client httpClient) {
         String host = platform.getHost();
-        String tenantId = platform.getTenantId();
-        WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE);
-        String tenantJson = "{ " +
-                "\"id\": \"" + tenantId + "\", " +
-                "\"domain\": \"sample-tenant.cumulocity.com\", " +
-                "\"company\": \"sample-tenant\", " +
-                "\"adminName\": \"" + platform.getUser() + "\", " +
-                "\"adminPass\": \"" + platform.getPassword() + "\" " +
-                "}";
-        return resource.post(ClientResponse.class, tenantJson);
+        final WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE);
+        CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse>() {
+            @Override
+            public ClientResponse visit(CumulocityBasicCredentials credentials) {
+                String tenantJson = "{ " +
+                        "\"id\": \"" + platform.getTenantId() + "\", " +
+                        "\"domain\": \"sample-tenant.cumulocity.com\", " +
+                        "\"company\": \"sample-tenant\", " +
+                        "\"adminName\": \"" + credentials.getUsername() + "\", " +
+                        "\"adminPass\": \"" + credentials.getPassword() + "\" " +
+                        "}";
+                return resource.post(ClientResponse.class, tenantJson);
+            }
+
+            @Override
+            public ClientResponse visit(CumulocityOAuthCredentials credentials) {
+                throw new IllegalStateException("Cannot use credentials other than oauth yet");
+            }
+        };
+        return platform.getCumulocityCredentials().accept(visitor);
     }
 
     private ClientResponse deleteTenant(Client httpClient) {

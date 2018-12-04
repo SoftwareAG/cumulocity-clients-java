@@ -400,14 +400,9 @@ public class RestConnector implements RestOperations {
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
         client.addFilter(
-                new CumulocityAuthenticationFilter(
-                        platformParameters.getPrincipal(),
-                        platformParameters.getPassword(),
-                        platformParameters.getOAuthAccessToken(),
-                        platformParameters.getXsrfToken()
-                )
+                new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials())
         );
-        if(platformParameters.isAlwaysCloseConnection()) {
+        if (platformParameters.isAlwaysCloseConnection()) {
             client.addFilter(new ClientFilter() {
                 @Override
                 public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
@@ -424,7 +419,7 @@ public class RestConnector implements RestOperations {
         httpConnectionManager.getParams().setDefaultMaxConnectionsPerHost(20);
         final HttpClient client = new HttpClient(httpConnectionManager);
         client.getParams().setConnectionManagerTimeout(10000);
-        if(alwaysCloseConnection) {
+        if (alwaysCloseConnection) {
             httpConnectionManager.getParams().setStaleCheckingEnabled(false);
         }
         return new ApacheHttpClientHandler(client, cc);
@@ -448,12 +443,7 @@ public class RestConnector implements RestOperations {
         client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
         client.setFollowRedirects(true);
         client.addFilter(
-                new CumulocityAuthenticationFilter(
-                        platformParameters.getPrincipal(),
-                        platformParameters.getPassword(),
-                        platformParameters.getOAuthAccessToken(),
-                        platformParameters.getXsrfToken()
-                )
+                new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials())
         );
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
             client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters

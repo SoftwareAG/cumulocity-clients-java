@@ -19,7 +19,7 @@
  */
 package com.cumulocity.sdk.client.audit;
 
-import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
@@ -30,6 +30,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
+
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -67,11 +68,11 @@ public class AuditRecordIT {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                CumulocityCredentials.builder()
+                CumulocityBasicCredentials.builder()
                         .tenantId(p.get("cumulocity.tenant"))
                         .username(p.get("cumulocity.user"))
                         .password(p.get("cumulocity.password"))
-                        .buildBasic(),
+                        .build(),
                 5);
     }
 

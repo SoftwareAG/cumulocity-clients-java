@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.platform.PlatformApiRepresentation;
 import com.cumulocity.rest.representation.platform.PlatformMediaType;
@@ -105,24 +106,24 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey) {
         super(host,
-                CumulocityCredentials.builder()
+                CumulocityBasicCredentials.builder()
                         .tenantId(tenantId)
                         .username(user)
                         .password(password)
                         .applicationKey(applicationKey)
-                        .buildBasic(),
+                        .build(),
                 new ClientConfiguration());
     }
 
     @Deprecated
     public PlatformImpl(String host, String tenantId, String user, String password, String applicationKey, int pageSize) {
         super(host,
-                CumulocityCredentials.builder()
+                CumulocityBasicCredentials.builder()
                         .tenantId(tenantId)
                         .username(user)
                         .password(password)
                         .applicationKey(applicationKey)
-                        .buildBasic(),
+                        .build(),
                 new ClientConfiguration(), pageSize);
     }
 
@@ -168,9 +169,9 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
             }
             if (System.getProperty(CUMULOCITY_PAGE_SIZE) != null) {
                 int pageSize = Integer.parseInt(System.getProperty(CUMULOCITY_PAGE_SIZE));
-                platform = new PlatformImpl(host, port, CumulocityCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).buildBasic(), pageSize);
+                platform = new PlatformImpl(host, port, CumulocityBasicCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).build(), pageSize);
             } else {
-                platform = new PlatformImpl(host, port, CumulocityCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).buildBasic());
+                platform = new PlatformImpl(host, port, CumulocityBasicCredentials.builder().tenantId(tenantId).username(user).password(password).applicationKey(applicationKey).build());
             }
             String proxyHost = System.getProperty(CUMOLOCITY_PROXY_HOST);
             int proxyPort = -1;
