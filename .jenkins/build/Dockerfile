@@ -7,4 +7,4 @@ RUN apt-get update \
       && rm -rf /var/lib/apt/lists/* \
       && apt-get clean
 ENV MAVEN_OPTS="-Xms1024m -Xmx4096m -XX:PermSize=1024m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dhttps.protocols=TLSv1.2"
-ENV JAVA_HOME="/root/.sdkman/candidates/java/current"
+#ENV JAVA_HOME="/root/.sdkman/candidates/java/current"
