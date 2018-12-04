@@ -1,6 +1,6 @@
 #!/bin/bash
 source ${BASH_SOURCE%/*}/semver.sh
-set +e
+set +eu
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 set -e
 
