@@ -259,6 +259,11 @@
 				<version>${cumulocity.shared-components.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.nsn.cumulocity.shared-components</groupId>
+				<artifactId>common-utils</artifactId>
+				<version>${cumulocity.shared-components.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.nsn.cumulocity.platform-services.notification</groupId>
 				<artifactId>notification-service</artifactId>
 				<version>${cumulocity.shared-components.version}</version>
