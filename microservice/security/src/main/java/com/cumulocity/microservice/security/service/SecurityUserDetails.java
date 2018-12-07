@@ -1,5 +1,10 @@
 package com.cumulocity.microservice.security.service;
 
+import com.cumulocity.common.auth.CumulocityCredentialsTransformer;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
+import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,12 +17,23 @@ import static com.google.common.collect.Lists.newArrayList;
 public class SecurityUserDetails implements UserDetails {
     @java.beans.ConstructorProperties({"authorities", "tenant", "password", "username", "oAuthAccessToken", "xsrfToken", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
     SecurityUserDetails(Collection<? extends GrantedAuthority> authorities, String tenant, String password, String username, String oAuthAccessToken, String xsrfToken, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
+        this.credentials = new CumulocityCredentialsFactory()
+                .withOAuthAccessToken(oAuthAccessToken)
+                .withXsrfToken(xsrfToken)
+                .withTenant(tenant)
+                .withUsername(username)
+                .withPassword(password)
+                .getCredentials();
         this.authorities = authorities;
-        this.tenant = tenant;
-        this.password = password;
-        this.username = username;
-        this.oAuthAccessToken = oAuthAccessToken;
-        this.xsrfToken = xsrfToken;
+        this.accountNonExpired = accountNonExpired;
+        this.accountNonLocked = accountNonLocked;
+        this.credentialsNonExpired = credentialsNonExpired;
+        this.enabled = enabled;
+    }
+
+    private SecurityUserDetails(Collection<? extends GrantedAuthority> authorities, CumulocityCredentials credentials, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
+        this.credentials = credentials;
+        this.authorities = authorities;
         this.accountNonExpired = accountNonExpired;
         this.accountNonLocked = accountNonLocked;
         this.credentialsNonExpired = credentialsNonExpired;
@@ -30,9 +46,11 @@ public class SecurityUserDetails implements UserDetails {
 
     public static SecurityUserDetails activeUser(String tenant, String username, String password, Iterable<String> userRoles) {
         return activeUser(userRoles)
-                .tenant(tenant)
-                .username(tenant + "/" + username)
-                .password(password)
+                .credentials(CumulocityBasicCredentials.builder()
+                        .tenantId(tenant)
+                        .username(username)
+                        .password(password)
+                        .build())
                 .build();
     }
 
@@ -49,11 +67,7 @@ public class SecurityUserDetails implements UserDetails {
     }
 
     private Collection<? extends GrantedAuthority> authorities;
-    private String tenant;
-    private String password;
-    private String username;
-    private String oAuthAccessToken;
-    private String xsrfToken;
+    private CumulocityCredentials credentials;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
@@ -68,23 +82,32 @@ public class SecurityUserDetails implements UserDetails {
     }
 
     public String getTenant() {
-        return this.tenant;
+        return this.credentials.getTenantId();
     }
 
     public String getPassword() {
-        return this.password;
+        if (credentials instanceof CumulocityBasicCredentials) {
+            return ((CumulocityBasicCredentials) credentials).getPassword();
+        }
+        throw new IllegalStateException();
     }
 
     public String getUsername() {
-        return this.username;
+        return this.credentials.getUsername();
     }
 
     public String getOAuthAccessToken() {
-        return this.oAuthAccessToken;
+        if (credentials instanceof CumulocityOAuthCredentials) {
+            return CumulocityCredentialsTransformer.toAuthorization(credentials);
+        }
+        throw new IllegalStateException();
     }
 
     public String getXsrfToken() {
-        return this.xsrfToken;
+        if (credentials instanceof CumulocityOAuthCredentials) {
+            return ((CumulocityOAuthCredentials) credentials).getXsrfToken();
+        }
+        throw new IllegalStateException();
     }
 
     public boolean isAccountNonExpired() {
@@ -119,7 +142,8 @@ public class SecurityUserDetails implements UserDetails {
         if (this$password == null ? other$password != null : !this$password.equals(other$password)) return false;
         final Object this$oAuthAccessToken = this.getOAuthAccessToken();
         final Object other$oAuthAccessToken = other.getOAuthAccessToken();
-        if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(other$oAuthAccessToken)) return false;
+        if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(other$oAuthAccessToken))
+            return false;
         final Object this$xsrfToken = this.getXsrfToken();
         final Object other$xsrfToken = other.getXsrfToken();
         if (this$xsrfToken == null ? other$xsrfToken != null : !this$xsrfToken.equals(other$xsrfToken)) return false;
@@ -161,11 +185,7 @@ public class SecurityUserDetails implements UserDetails {
 
     public static class SecurityUserDetailsBuilder {
         private ArrayList<GrantedAuthority> authorities;
-        private String tenant;
-        private String password;
-        private String username;
-        private String oAuthAccessToken;
-        private String xsrfToken;
+        private CumulocityCredentials credentials;
         private boolean accountNonExpired;
         private boolean accountNonLocked;
         private boolean credentialsNonExpired;
@@ -193,28 +213,8 @@ public class SecurityUserDetails implements UserDetails {
             return this;
         }
 
-        public SecurityUserDetails.SecurityUserDetailsBuilder tenant(String tenant) {
-            this.tenant = tenant;
-            return this;
-        }
-
-        public SecurityUserDetails.SecurityUserDetailsBuilder password(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public SecurityUserDetails.SecurityUserDetailsBuilder username(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public SecurityUserDetails.SecurityUserDetailsBuilder oAuthAccessToken(String oAuthAccessToken) {
-            this.oAuthAccessToken = oAuthAccessToken;
-            return this;
-        }
-
-        public SecurityUserDetails.SecurityUserDetailsBuilder xsrfToken(String xsrfToken) {
-            this.xsrfToken = xsrfToken;
+        public SecurityUserDetails.SecurityUserDetailsBuilder credentials(CumulocityCredentials credentials) {
+            this.credentials = credentials;
             return this;
         }
 
@@ -251,11 +251,11 @@ public class SecurityUserDetails implements UserDetails {
                     authorities = java.util.Collections.unmodifiableList(new ArrayList<GrantedAuthority>(this.authorities));
             }
 
-            return new SecurityUserDetails(authorities, tenant, password, username, oAuthAccessToken, xsrfToken, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
+            return new SecurityUserDetails(authorities, credentials, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
         }
 
         public String toString() {
-            return "SecurityUserDetails.SecurityUserDetailsBuilder(authorities=" + this.authorities + ", tenant=" + this.tenant + ", password=" + this.password + ", username=" + this.username + ", oAuthAccessToken=" + this.oAuthAccessToken + ", xsrfToken=" + this.xsrfToken + ", accountNonExpired=" + this.accountNonExpired + ", accountNonLocked=" + this.accountNonLocked + ", credentialsNonExpired=" + this.credentialsNonExpired + ", enabled=" + this.enabled + ")";
+            return "SecurityUserDetails.SecurityUserDetailsBuilder(authorities=" + this.authorities + ", tenant=" + this.credentials.getTenantId() + ", credentials=" + this.credentials + ", accountNonExpired=" + this.accountNonExpired + ", accountNonLocked=" + this.accountNonLocked + ", credentialsNonExpired=" + this.credentialsNonExpired + ", enabled=" + this.enabled + ")";
         }
     }
 }

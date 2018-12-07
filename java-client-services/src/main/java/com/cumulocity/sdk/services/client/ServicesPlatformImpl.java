@@ -2,6 +2,7 @@ package com.cumulocity.sdk.services.client;
 
 import com.cumulocity.email.client.EmailApi;
 import com.cumulocity.email.client.EmailApiImpl;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sms.client.SmsMessagingApi;
 import com.cumulocity.sms.client.SmsMessagingApiImpl;
@@ -31,7 +32,7 @@ public class ServicesPlatformImpl implements ServicesPlatform {
     private final String host;
     private final Executor executor;
 
-    public ServicesPlatformImpl(String host, final CumulocityCredentials credentials) {
+    public ServicesPlatformImpl(String host, final CumulocityBasicCredentials credentials) {
         this(host, new CredentialsProvider() {
             public String getTenant() {
                 return credentials.getTenantId();

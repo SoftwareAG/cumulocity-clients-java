@@ -82,6 +82,10 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>com.nsn.cumulocity.shared-components</groupId>
+			<artifactId>common-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>rest-representation</artifactId>
 		</dependency>
@@ -158,7 +162,7 @@
 			<artifactId>cucumber-spring</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
