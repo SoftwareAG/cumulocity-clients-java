@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -55,7 +55,7 @@ public class PlatformParameters {
     private String proxyPassword;
 
     private boolean requireResponseBody = true;
-    
+
     private boolean forceInitialHost = false;
 
     private boolean alwaysCloseConnection = false;
@@ -65,7 +65,7 @@ public class PlatformParameters {
     private BufferRequestService bufferRequestService;
 
     private BufferProcessor bufferProcessor;
-    
+
     private RestConnector restConnector;
 
     private ClientConfiguration clientConfiguration;
@@ -75,7 +75,7 @@ public class PlatformParameters {
     private ResponseMapper responseMapper;
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
-    
+
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -166,7 +166,7 @@ public class PlatformParameters {
     }
 
     public String getApplicationKey() {
-        return cumulocityCredentials.getApplicationKey();
+        return cumulocityCredentials == null ? null : cumulocityCredentials.getApplicationKey();
     }
 
     public void setRequireResponseBody(boolean requireResponseBody) {
@@ -218,7 +218,7 @@ public class PlatformParameters {
     }
 
     public String getRequestOrigin() {
-        return cumulocityCredentials.getRequestOrigin();
+        return cumulocityCredentials == null ? null : cumulocityCredentials.getRequestOrigin();
     }
 
     BufferRequestService getBufferRequestService() {
@@ -234,7 +234,7 @@ public class PlatformParameters {
     public boolean registerInterceptor(HttpClientInterceptor interceptor) {
         return interceptorSet.add(interceptor);
     }
-    
+
     public boolean unregisterInterceptor(HttpClientInterceptor interceptor) {
         return interceptorSet.remove(interceptor);
     }

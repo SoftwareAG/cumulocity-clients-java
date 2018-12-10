@@ -61,7 +61,7 @@ public class RestConnectorTest {
     @Mock
     private Builder typeBuilder;
 
-    private PlatformParameters clientParameters = new PlatformParameters("http://host", CumulocityBasicCredentials.builder().build(), null);
+    private PlatformParameters clientParameters = new PlatformParameters();
 
     @Mock
     private Client client;

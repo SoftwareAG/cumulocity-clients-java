@@ -28,11 +28,9 @@ import com.cumulocity.rest.representation.inventory.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.MediaType;
 
-@Slf4j
 public class InventoryApiImpl implements InventoryApi {
 
 	private final RestConnector restConnector;
@@ -72,7 +70,6 @@ public class InventoryApiImpl implements InventoryApi {
 
 	 @Override
 	 public ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException {
-		log.error(restConnector.getPlatformParameters().getUser());
 	     return restConnector.put(getMOCollectionUrl() + "/" + managedObjectRepresentation.getId().getValue(), InventoryMediaType.MANAGED_OBJECT, managedObjectRepresentation);
 	 }
 
