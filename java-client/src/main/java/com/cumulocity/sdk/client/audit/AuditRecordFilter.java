@@ -39,6 +39,9 @@ public class AuditRecordFilter extends Filter {
     @ParamSource
     private String application;
 
+    @ParamSource
+    private String source;
+
     /**
      * Specifies the {@code user} query parameter.
      *
@@ -58,6 +61,16 @@ public class AuditRecordFilter extends Filter {
      */
     public AuditRecordFilter byType(String type) {
         this.type = type;
+        return this;
+    }
+    /**
+     * Specifies the {@code source} query parameter.
+     *
+     * @param source the source of the audit record(s)
+     * @return the audit record filter with {@code source} set
+     */
+    public AuditRecordFilter bySource(String source) {
+        this.source = source;
         return this;
     }
 
@@ -93,4 +106,10 @@ public class AuditRecordFilter extends Filter {
         return application;
     }
 
+    /**
+     * @return the {@code source} parameter of the query
+     */
+    public String getSource() {
+        return source;
+    }
 }
