@@ -5,4 +5,6 @@ public interface SecurityExpressionService {
     boolean isFeatureEnabled(String featureName);
 
     boolean isServiceUser(String service);
+
+    boolean isCurrentTenantManagement();
 }

@@ -15,7 +15,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +38,8 @@ public class EnableGlobalMethodSecurityConfigurationTest {
         boolean doSomethingWhatRequiresFeatureEnabled();
 
         boolean doSomethingWhatRequiresServiceUser();
+
+        boolean doSomethingWhatRequiresToBeTenantManagement();
     }
 
     @Configuration
@@ -50,12 +56,26 @@ public class EnableGlobalMethodSecurityConfigurationTest {
                 public boolean doSomethingWhatRequiresServiceUser() {
                     return true;
                 }
+
+                @PreAuthorize("isCurrentTenantManagement()")
+                public boolean doSomethingWhatRequiresToBeTenantManagement() {
+                    return true;
+                }
             };
         }
 
         @Bean
         public SecurityExpressionService securityExpressionService(ApplicationApi applications) {
             return new SecurityExpressionServiceImpl(applications);
+        }
+
+        @Bean
+        public UserDetailsService userDetailsService() {
+            return new UserDetailsService() {
+                public UserDetails loadUserByUsername(String tenantAndUser) throws UsernameNotFoundException {
+                    return SecurityTestUtil.fromCumuloUsername(tenantAndUser);
+                }
+            };
         }
     }
 
@@ -96,4 +116,17 @@ public class EnableGlobalMethodSecurityConfigurationTest {
     public void shouldFailValidationOfServiceUser() {
         testService.doSomethingWhatRequiresServiceUser();
     }
+
+    @Test(expected = AccessDeniedException.class)
+    @WithUserDetails(value = "t500+/adrian")
+    public void shouldFailForOtherTenantNotBeingManagement() {
+        testService.doSomethingWhatRequiresToBeTenantManagement();
+    }
+
+    @Test
+    @WithUserDetails(value = "management/admin")
+    public void shouldPassValidationOfTenantManagement() {
+        testService.doSomethingWhatRequiresToBeTenantManagement();
+    }
+
 }
