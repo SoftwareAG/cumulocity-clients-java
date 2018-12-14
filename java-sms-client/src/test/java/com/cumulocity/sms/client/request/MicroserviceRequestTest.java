@@ -99,10 +99,14 @@ public class MicroserviceRequestTest {
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
 
         final HttpEntityEnclosingRequest actualRequest = getFieldValue(captor.getValue());
-        assertThat(EntityUtils.toString(actualRequest.getEntity())).isEqualTo("{\"outboundSMSMessageRequest\":{\"address\":[{\"number\":\"245\"," +
-                "\"protocol\":\"MSISDN\"}],\"clientCorrelator\":null,\"deviceId\":null,\"outboundSMSTextMessage\":{\"message\":\"test text\"}," +
-                "\"receiptRequest\":{\"callbackData\":null,\"notifyURL\":null},\"senderAddress\":{" +
-                "\"number\":\"123\",\"protocol\":\"MSISDN\"},\"senderName\":null}}");
+        assertThat(EntityUtils.toString(actualRequest.getEntity())).isEqualTo("{\"outboundSMSMessageRequest\":{" +
+                "\"senderAddress\":{\"number\":\"123\",\"protocol\":\"MSISDN\"}," +
+                "\"clientCorrelator\":null," +
+                "\"senderName\":null," +
+                "\"outboundSMSTextMessage\":{\"message\":\"test text\"}," +
+                "\"address\":[{\"number\":\"245\",\"protocol\":\"MSISDN\"}]," +
+                "\"receiptRequest\":{\"notifyURL\":null,\"callbackData\":null}," +
+                "\"deviceId\":null}}");
     }
 
     @Test
