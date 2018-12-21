@@ -13,11 +13,9 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,7 +26,6 @@ import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 public class MicroserviceRequestTest {
 
@@ -91,7 +88,7 @@ public class MicroserviceRequestTest {
     }
 
     @Test
-    public void shouldSerializeBodyCorrectly() throws IOException, NoSuchFieldException, IllegalAccessException, JSONException {
+    public void shouldSerializeBodyCorrectly() throws IOException, NoSuchFieldException, IllegalAccessException {
         SendMessageRequest message = SendMessageRequest.builder()
                 .withSender(Address.phoneNumber("123"))
                 .withReceiver(Address.phoneNumber("245"))
@@ -102,17 +99,14 @@ public class MicroserviceRequestTest {
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
 
         final HttpEntityEnclosingRequest actualRequest = getFieldValue(captor.getValue());
-
-        String expected = "{\"outboundSMSMessageRequest\":{" +
+        assertThat(EntityUtils.toString(actualRequest.getEntity())).isEqualTo("{\"outboundSMSMessageRequest\":{" +
                 "\"senderAddress\":{\"number\":\"123\",\"protocol\":\"MSISDN\"}," +
                 "\"clientCorrelator\":null," +
                 "\"senderName\":null," +
                 "\"outboundSMSTextMessage\":{\"message\":\"test text\"}," +
                 "\"address\":[{\"number\":\"245\",\"protocol\":\"MSISDN\"}]," +
                 "\"receiptRequest\":{\"notifyURL\":null,\"callbackData\":null}," +
-                "\"deviceId\":null}}";
-
-        assertEquals(expected, EntityUtils.toString(actualRequest.getEntity()), JSONCompareMode.NON_EXTENSIBLE);
+                "\"deviceId\":null}}");
     }
 
     @Test
