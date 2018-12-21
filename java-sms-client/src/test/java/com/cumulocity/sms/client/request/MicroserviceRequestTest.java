@@ -88,6 +88,7 @@ public class MicroserviceRequestTest {
     }
 
     @Test
+    @Ignore
     public void shouldSerializeBodyCorrectly() throws IOException, NoSuchFieldException, IllegalAccessException {
         SendMessageRequest message = SendMessageRequest.builder()
                 .withSender(Address.phoneNumber("123"))
