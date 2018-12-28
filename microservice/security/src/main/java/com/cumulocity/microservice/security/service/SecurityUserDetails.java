@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.security.service;
 
-import com.cumulocity.common.auth.CumulocityCredentialsTransformer;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
@@ -98,7 +97,7 @@ public class SecurityUserDetails implements UserDetails {
 
     public String getOAuthAccessToken() {
         if (credentials instanceof CumulocityOAuthCredentials) {
-            return CumulocityCredentialsTransformer.toAuthorization(credentials);
+            return credentials.getAuthenticationString();
         }
         throw new IllegalStateException();
     }
