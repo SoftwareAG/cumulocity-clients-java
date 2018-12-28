@@ -1,6 +1,5 @@
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.common.auth.CumulocityCredentialsTransformer;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
@@ -24,7 +23,7 @@ class CumulocityAuthenticationFilter extends ClientFilter {
             @Override
             public Void visit(CumulocityBasicCredentials credentials) {
                 if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    cr.getMetadata().add(HttpHeaders.AUTHORIZATION, CumulocityCredentialsTransformer.toAuthorization(credentials));
+                    cr.getMetadata().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
                 }
                 return null;
             }
@@ -32,7 +31,7 @@ class CumulocityAuthenticationFilter extends ClientFilter {
             @Override
             public Void visit(CumulocityOAuthCredentials credentials) {
                 cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-                cr.getHeaders().putSingle("Cookie", "authorization=" + CumulocityCredentialsTransformer.toAuthorization(credentials));
+                cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
                 cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
                 return null;
             }
