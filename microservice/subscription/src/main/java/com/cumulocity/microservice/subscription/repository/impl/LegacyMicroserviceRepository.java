@@ -5,6 +5,7 @@ import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingP
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
@@ -129,8 +130,10 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     }
 
     private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return new CumulocityCredentials.Builder(user.getName(), user.getPassword())
-                .withTenantId(user.getTenant())
+        return CumulocityBasicCredentials.builder()
+                .username(user.getName())
+                .password(user.getPassword())
+                .tenantId(user.getTenant())
                 .build();
     }
 

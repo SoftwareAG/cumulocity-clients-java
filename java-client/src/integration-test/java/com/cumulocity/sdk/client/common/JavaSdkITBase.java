@@ -19,15 +19,14 @@
  */
 package com.cumulocity.sdk.client.common;
 
-import java.io.IOException;
-import java.util.Properties;
-
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
+import com.cumulocity.sdk.client.PlatformImpl;
+import com.cumulocity.sdk.client.inventory.InventoryIT;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.sdk.client.PlatformImpl;
-import com.cumulocity.sdk.client.inventory.InventoryIT;
+import java.io.IOException;
+import java.util.Properties;
 
 public class JavaSdkITBase {
     private static TenantCreator tenantCreator;
@@ -59,9 +58,10 @@ public class JavaSdkITBase {
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         return new PlatformImpl(
                 p.get("cumulocity.host"),
-                new CumulocityCredentials(p.get("cumulocity.tenant"),
-                        p.get(userKey),
-                        p.get(userPassword),
-                        null));
+                CumulocityBasicCredentials.builder()
+                        .tenantId(p.get("cumulocity.tenant"))
+                        .username(                        p.get(userKey))
+                        .password(p.get(userPassword))
+                        .build());
     }
 }

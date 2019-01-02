@@ -35,4 +35,12 @@ public class AuditRecordFilterTest {
         assertThat(filter.getApplication(), is("application"));
     }
 
+    @Test
+    public void shouldHoldUserAndTypeAndApplicationAndSource() {
+        AuditRecordFilter filter = new AuditRecordFilter().byUser("user").bySource("source");
+
+        assertThat(filter.getUser(), is("user"));
+        assertThat(filter.getSource(), is("source"));
+    }
+
 }

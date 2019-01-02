@@ -25,11 +25,7 @@ public class SecurityUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         return SecurityUserDetails.activeUser(roleService.getUserRoles())
-                .username(platformParameters.getUser())
-                .password(platformParameters.getPassword())
-                .oAuthAccessToken(platformParameters.getOAuthAccessToken())
-                .xsrfToken(platformParameters.getXsrfToken())
-                .tenant(platformParameters.getTenantId())
+                .credentials(platformParameters.getCumulocityCredentials())
                 .build();
     }
 }

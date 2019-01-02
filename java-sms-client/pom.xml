@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>9.21.1-SNAPSHOT</version>
+		<version>9.22.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.cumulocity.sms.client</groupId>
@@ -106,6 +106,12 @@
 		<dependency>
 			<groupId>eu.codearte.catch-exception</groupId>
 			<artifactId>catch-exception</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

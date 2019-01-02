@@ -12,6 +12,7 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceSubscript
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.JSONBase;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.rest.representation.application.MicroserviceManifestRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +20,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Resources;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -31,8 +31,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static com.cumulocity.model.authentication.CumulocityCredentials.Builder.cumulocityCredentials;
 
 @Configuration
 @ComponentScan(basePackageClasses = {
@@ -61,8 +59,10 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 .baseUrl(properties.getUrl())
                 .environment(environment)
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
-                        .switchTo(cumulocityCredentials(boostrapUser.getUsername(), boostrapUser.getPassword())
-                                .withTenantId(boostrapUser.getTenant())
+                        .switchTo(CumulocityBasicCredentials.builder()
+                                .username(boostrapUser.getUsername())
+                                .password(boostrapUser.getPassword())
+                                .tenantId(boostrapUser.getTenant())
                                 .build()))
                 .objectMapper(objectMapper)
                 .build();
@@ -74,8 +74,8 @@ public class EnableMicroserviceSubscriptionConfiguration {
         ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
 
         final Iterable<Path> manifests = provider.find(new String[]{"cumulocity"}, ".json");
-        if(!Iterables.isEmpty(manifests)){
-            try(final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)){
+        if (!Iterables.isEmpty(manifests)) {
+            try (final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)) {
                 final MicroserviceManifestRepresentation manifest = JSONBase.fromJSON(reader, MicroserviceManifestRepresentation.class);
                 return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
                         .requiredRoles(Objects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))

@@ -6,6 +6,8 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.context.inject.UserScope;
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
@@ -45,16 +47,19 @@ public class CumulocityClientFeature {
     @UserScope
     public PlatformImpl userPlatform(ContextService<UserCredentials> contextService) {
         final Credentials login = contextService.getContext();
-
+        CumulocityCredentials credentials = new CumulocityCredentialsFactory()
+                .withTenant(login.getTenant())
+                .withUsername(login.getUsername())
+                .withPassword(login.getPassword())
+                .withOAuthAccessToken(login.getOAuthAccessToken())
+                .withXsrfToken(login.getXsrfToken())
+                .withApplicationKey(login.getAppKey())
+                .getCredentials();
         return (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
-                .withTenant(login.getTenant())
-                .withPassword(login.getPassword())
-                .withUsername(login.getUsername())
-                .withOAuthAccessToken(login.getOAuthAccessToken())
-                .withXsrfToken(login.getXsrfToken())
+                .withCredentials(credentials)
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
@@ -66,16 +71,20 @@ public class CumulocityClientFeature {
     @TenantScope
     public PlatformImpl tenantPlatform(ContextService<MicroserviceCredentials> contextService) {
         final Credentials login = contextService.getContext();
+        CumulocityCredentials credentials = new CumulocityCredentialsFactory()
+                .withTenant(login.getTenant())
+                .withUsername(login.getUsername())
+                .withPassword(login.getPassword())
+                .withOAuthAccessToken(login.getOAuthAccessToken())
+                .withXsrfToken(login.getXsrfToken())
+                .withApplicationKey(login.getAppKey())
+                .getCredentials();
 
         return (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
-                .withTenant(login.getTenant())
-                .withPassword(login.getPassword())
-                .withUsername(login.getUsername())
-                .withOAuthAccessToken(login.getOAuthAccessToken())
-                .withXsrfToken(login.getXsrfToken())
+                .withCredentials(credentials)
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
@@ -155,7 +164,7 @@ public class CumulocityClientFeature {
     public CepApi cepApi(Platform platform) throws SDKException {
         return platform.getCepApi();
     }
-    
+
     @Bean
     @TenantScope
     public BinariesApi binariesApi(Platform platform) throws SDKException {

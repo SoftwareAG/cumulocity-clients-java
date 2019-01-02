@@ -5,7 +5,7 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.model.authentication.CumulocityLogin;
+import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
 import com.cumulocity.sdk.client.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.ClientResponse;
@@ -71,14 +71,14 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
     private PlatformParameters platformParameters() {
         final Credentials context = getCredentials();
 
-        final CumulocityCredentials credentials = new CumulocityCredentials(
-                CumulocityLogin.fromLoginString(context.getTenant() + "/" + context.getUsername()),
-                context.getPassword(),
-                context.getOAuthAccessToken(),
-                context.getXsrfToken(),
-                context.getAppKey(),
-                null
-        );
+        final CumulocityCredentials credentials = new CumulocityCredentialsFactory()
+                .withUsername(context.getUsername())
+                .withTenant(context.getTenant())
+                .withPassword(context.getPassword())
+                .withOAuthAccessToken(context.getOAuthAccessToken())
+                .withXsrfToken(context.getXsrfToken())
+                .withApplicationKey(context.getAppKey())
+                .getCredentials();
         final PlatformParameters params = new PlatformParameters(properties.getUrl().get(), credentials, new ClientConfiguration());
         params.setForceInitialHost(properties.getForceInitialHost());
         params.setTfaToken(context.getTfaToken());

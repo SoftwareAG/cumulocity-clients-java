@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.repository.impl;
 
 import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingPlatform;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
@@ -48,8 +49,12 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
         private final MediaType mediaType;
         private final Object body;
     }
-    
-    private CumulocityCredentials credentials = new CumulocityCredentials.Builder("servicebootstrap", "").withTenantId("management").build();
+
+    private CumulocityCredentials credentials = CumulocityBasicCredentials.builder()
+            .username("servicebootstrap")
+            .password("")
+            .tenantId("management")
+            .build();
     private final Queue<Request> requests = Queues.newArrayDeque();
 
     private final Map<String, ApplicationRepresentation> applications = Maps.newHashMap();

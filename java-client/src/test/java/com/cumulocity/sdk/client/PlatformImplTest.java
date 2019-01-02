@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import org.junit.Test;
 
 public class PlatformImplTest {
@@ -43,7 +44,7 @@ public class PlatformImplTest {
         assertEquals("http://abdc:123/", platformImpl.getHost());
         assertEquals("tenant", platformImpl.getTenantId());
         assertEquals("user", platformImpl.getUser());
-        assertEquals("password", platformImpl.getPassword());
+        assertEquals("password", ((CumulocityBasicCredentials)platformImpl.getCumulocityCredentials()).getPassword());
 
     }
 
@@ -65,7 +66,7 @@ public class PlatformImplTest {
         assertEquals("http://abdc:123/", platformImpl.getHost());
         assertEquals("tenant", platformImpl.getTenantId());
         assertEquals("user", platformImpl.getUser());
-        assertEquals("password", platformImpl.getPassword());
+        assertEquals("password", ((CumulocityBasicCredentials)platformImpl.getCumulocityCredentials()).getPassword());
         assertEquals(9, platformImpl.getPageSize());
 
     }

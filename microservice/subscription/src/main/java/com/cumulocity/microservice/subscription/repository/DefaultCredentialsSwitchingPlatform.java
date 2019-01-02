@@ -25,11 +25,7 @@ public class DefaultCredentialsSwitchingPlatform implements CredentialsSwitching
             public RestOperations get() {
                 try (Platform platform = PlatformBuilder.platform()
                         .withBaseUrl(baseUrl.get())
-                        .withUsername(credentials.getUsername())
-                        .withPassword(credentials.getPassword())
-                        .withOAuthAccessToken(credentials.getOAuthAccessToken())
-                        .withXsrfToken(credentials.getXsrfToken())
-                        .withTenant(credentials.getTenantId())
+                        .withCredentials(credentials)
                         .withForceInitialHost(true)
                         .build()) {
                     return platform.rest();

@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.repository.impl;
 
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
+import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
@@ -93,8 +94,10 @@ public class CurrentMicroserviceRepositoryTest {
     }
 
     private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return new CumulocityCredentials.Builder(user.getName(), user.getPassword())
-                .withTenantId(user.getTenant())
+        return CumulocityBasicCredentials.builder()
+                .username(user.getName())
+                .password(user.getPassword())
+                .tenantId(user.getTenant())
                 .build();
     }
 

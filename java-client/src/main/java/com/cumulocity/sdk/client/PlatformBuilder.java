@@ -10,11 +10,7 @@ import lombok.experimental.Wither;
 @AllArgsConstructor
 public class PlatformBuilder {
     private String baseUrl;
-    private String tenant;
-    private String username;
-    private String password;
-    private String oAuthAccessToken;
-    private String xsrfToken;
+    private CumulocityCredentials credentials;
     private String proxyHost;
     private Integer proxyPort;
     private String tfaToken;
@@ -41,14 +37,6 @@ public class PlatformBuilder {
     }
 
     private CumulocityCredentials buildCredentials() {
-        CumulocityCredentials.Builder credentials = CumulocityCredentials.Builder.cumulocityCredentials(username, password);
-        if (tenant != null && !tenant.isEmpty()) {
-            credentials = credentials.withTenantId(tenant);
-        }
-        if (oAuthAccessToken != null && !oAuthAccessToken.isEmpty()) {
-            credentials = credentials.withOAuthAccessToken(oAuthAccessToken).withXsrfToken(xsrfToken);
-
-        }
-        return credentials.build();
+        return credentials;
     }
 }

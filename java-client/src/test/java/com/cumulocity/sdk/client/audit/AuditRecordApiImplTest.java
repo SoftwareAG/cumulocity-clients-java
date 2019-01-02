@@ -145,4 +145,22 @@ public class AuditRecordApiImplTest {
         // Then
         assertThat(result, is(expected));
     }
+
+    @Test
+    public void shouldReturnAuditRecordsBySourceFilter() throws Exception {
+        // Given
+        String mySource = "mySource";
+        AuditRecordFilter filter = new AuditRecordFilter().bySource(mySource);
+        auditRecordsApiRepresentation.setAuditRecordsForType(TEMPLATE_URL);
+        String auditsByTypeUrl = AUDIT_RECORDS_URL + "?source=" + mySource;
+        when(urlProcessor.replaceOrAddQueryParam(AUDIT_RECORDS_URL, filter.getQueryParams())).thenReturn(auditsByTypeUrl);
+        AuditRecordCollection expected = new AuditRecordCollectionImpl(restConnector, auditsByTypeUrl,
+                DEFAULT_PAGE_SIZE);
+
+        // When
+        AuditRecordCollection result = auditRecordApi.getAuditRecordsByFilter(filter);
+
+        // Then
+        assertThat(result, is(expected));
+    }
 }
