@@ -19,19 +19,21 @@
  */
 package com.cumulocity.sdk.client.common;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import gherkin.deps.com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public class TenantCreator {
 
@@ -74,7 +76,7 @@ public class TenantCreator {
 
     private ClientResponse postNewTenant(Client httpClient) {
         String host = platform.getHost();
-        final WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE);
+        final WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE).accept(TenantMediaType.TENANT_TYPE);
         CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse>() {
             @Override
             public ClientResponse visit(CumulocityBasicCredentials credentials) {
@@ -85,7 +87,13 @@ public class TenantCreator {
                         "\"adminName\": \"" + credentials.getUsername() + "\", " +
                         "\"adminPass\": \"" + credentials.getPassword() + "\" " +
                         "}";
-                return resource.post(ClientResponse.class, tenantJson);
+                ClientResponse result = resource.post(ClientResponse.class, tenantJson);
+                String newTenant = result.getEntity(String.class);
+                Gson gson = new Gson();
+                HashMap map = gson.fromJson(newTenant, HashMap.class);
+                String newTenantId = (String)map.get("id");
+                ((CumulocityBasicCredentials)platform.getCumulocityCredentials()).setTenantId(newTenantId);
+                return result;
             }
 
             @Override

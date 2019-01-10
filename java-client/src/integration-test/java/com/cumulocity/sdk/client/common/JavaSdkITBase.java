@@ -40,6 +40,8 @@ public class JavaSdkITBase {
 
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
+
+        ((CumulocityBasicCredentials)bootstrapPlatform.getCumulocityCredentials()).setTenantId(platform.getTenantId());
         
     }
 
@@ -56,12 +58,14 @@ public class JavaSdkITBase {
         String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user"; 
         String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password"; 
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        return new PlatformImpl(
+        PlatformImpl platform = new PlatformImpl(
                 p.get("cumulocity.host"),
                 CumulocityBasicCredentials.builder()
                         .tenantId(p.get("cumulocity.tenant"))
-                        .username(                        p.get(userKey))
+                        .username(p.get(userKey))
                         .password(p.get(userPassword))
                         .build());
+        platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
+        return platform;
     }
 }

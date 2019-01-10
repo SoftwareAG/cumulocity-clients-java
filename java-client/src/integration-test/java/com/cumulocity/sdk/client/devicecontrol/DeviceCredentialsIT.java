@@ -59,7 +59,7 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
             public void run() {
                 acceptNewDeviceRequest(deviceId);
             }
-        }, pollIntervalInSeconds * 2 * 1000);
+        }, pollIntervalInSeconds * 4 * 1000);
 
         DeviceCredentialsRepresentation credentials = deviceCredentialsResource.pollCredentials(deviceId, pollIntervalInSeconds, 100);
         assertThat(credentials).isNotNull();
