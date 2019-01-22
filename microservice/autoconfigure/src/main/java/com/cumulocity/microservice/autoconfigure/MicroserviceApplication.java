@@ -5,6 +5,7 @@ import com.cumulocity.microservice.api.EnableMicroservicePlatformApi;
 import com.cumulocity.microservice.context.annotation.EnableContextSupport;
 import com.cumulocity.microservice.monitoring.health.annotation.EnableHealthIndicator;
 import com.cumulocity.microservice.security.annotation.EnableMicroserviceSecurity;
+import com.cumulocity.microservice.settings.annotation.EnableTenantOptionSettings;
 import com.cumulocity.microservice.subscription.annotation.EnableMicroserviceSubscription;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -26,6 +27,7 @@ import java.lang.annotation.Target;
 @EnableHealthIndicator
 @EnableMicroserviceSecurity
 @EnableMicroserviceSubscription
+@EnableTenantOptionSettings
 @EnableMicroservicePlatformApi
 public @interface MicroserviceApplication {
 }

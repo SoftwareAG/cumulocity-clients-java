@@ -23,7 +23,7 @@
         <cumulocity.dependencies.version>9.24.0-SNAPSHOT</cumulocity.dependencies.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
-        <spring-boot-dependencies.version>1.5.17.RELEASE</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>1.5.19.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
         <guava.version>20.0</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
@@ -42,6 +42,7 @@
         <module>logging</module>
         <module>package</module>
         <module>monitoring</module>
+        <module>settings</module>
     </modules>
 
     <dependencyManagement>
@@ -134,6 +135,12 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>microservice-monitoring</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>microservice-settings</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
