@@ -29,6 +29,7 @@ public class EnableTenantOptionSettingsConfiguration {
     }
 
     @Bean
+    @ConditionalOnBean(MicroserviceSettingsService.class)
     public TenantOptionPropertySource tenantOptionPropertySource(MicroserviceSettingsService microserviceSettingsService) {
         return new TenantOptionPropertySource(microserviceSettingsService);
     }
