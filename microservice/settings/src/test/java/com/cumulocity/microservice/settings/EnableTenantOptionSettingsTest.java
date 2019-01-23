@@ -9,6 +9,7 @@ import com.cumulocity.sdk.client.RestOperations;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
@@ -16,13 +17,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.core.MediaType;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 @Slf4j
@@ -60,7 +62,7 @@ public class EnableTenantOptionSettingsTest {
     }
 
     @Test
-    public void mustTenantOptionsBeAvailableByEnvironment() {
+    public void mustTenantOptionsBeAvailableByEnvironment() throws URISyntaxException {
         // given
         OptionsRepresentation options = OptionsRepresentation.builder()
                 .property("option3", "value31")
@@ -78,7 +80,7 @@ public class EnableTenantOptionSettingsTest {
     }
 
     private MicroserviceCredentials context(String tenant) {
-        return MicroserviceCredentials.builder().tenant(tenant).build();
+        return MicroserviceCredentials.builder().tenant(tenant).username("service_app").build();
     }
 
 }

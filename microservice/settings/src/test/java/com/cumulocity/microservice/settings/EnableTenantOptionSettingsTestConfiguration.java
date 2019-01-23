@@ -48,6 +48,7 @@ public class EnableTenantOptionSettingsTestConfiguration extends EnableTenantOpt
                 .url(Suppliers.ofInstance("http://fake_platform:8111"))
                 .microserviceBoostrapUser(MicroserviceCredentials.builder()
                     .tenant("t666")
+                    .username("servicebootstrap_app")
                     .build())
                 .build();
     }
