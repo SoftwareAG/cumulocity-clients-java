@@ -66,7 +66,7 @@ public class AuditRecordIT {
         cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
 
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        return new PlatformImpl(
+        PlatformImpl platform = new PlatformImpl(
                 p.get("cumulocity.host"),
                 CumulocityBasicCredentials.builder()
                         .tenantId(p.get("cumulocity.tenant"))
@@ -74,6 +74,8 @@ public class AuditRecordIT {
                         .password(p.get("cumulocity.password"))
                         .build(),
                 5);
+        platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
+        return platform;
     }
 
     @Before

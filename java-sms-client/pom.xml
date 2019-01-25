@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-		<version>9.23.1-SNAPSHOT</version>
+		<version>9.24.2-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.cumulocity.sms.client</groupId>
