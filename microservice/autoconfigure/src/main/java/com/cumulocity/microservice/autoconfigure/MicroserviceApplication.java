@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @EnableHealthIndicator
 @EnableMicroserviceSecurity
 @EnableMicroserviceSubscription
-@EnableTenantOptionSettings
 @EnableMicroservicePlatformApi
+@EnableTenantOptionSettings
 public @interface MicroserviceApplication {
 }

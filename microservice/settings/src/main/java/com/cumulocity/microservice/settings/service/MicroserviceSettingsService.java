@@ -8,4 +8,5 @@ public interface MicroserviceSettingsService {
 
     <T> T getAs(Class<T> clazz);
 
+    String decryptAndGet(String key);
 }

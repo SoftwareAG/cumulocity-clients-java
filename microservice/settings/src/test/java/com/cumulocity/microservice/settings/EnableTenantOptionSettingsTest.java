@@ -2,6 +2,7 @@ package com.cumulocity.microservice.settings;
 
 
 import com.cumulocity.microservice.context.ContextService;
+import com.cumulocity.microservice.context.annotation.EnableContextSupportConfiguration;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.settings.service.MicroserviceSettingsService;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
@@ -9,15 +10,14 @@ import com.cumulocity.sdk.client.RestOperations;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.core.MediaType;
 
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -30,8 +30,10 @@ import static org.mockito.Mockito.doReturn;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
+        EnableContextSupportConfiguration.class,
         EnableTenantOptionSettingsTestConfiguration.class
 })
+@TestPropertySource(properties = {"C8Y.encryptor.password=efuhMsAEAdP2wgHw", "C8Y.encryptor.salt=9D5B38224EF610C7"})
 public class EnableTenantOptionSettingsTest {
 
     @Autowired
@@ -62,7 +64,7 @@ public class EnableTenantOptionSettingsTest {
     }
 
     @Test
-    public void mustTenantOptionsBeAvailableByEnvironment() throws URISyntaxException {
+    public void mustTenantOptionsBeAvailableByEnvironment() {
         // given
         OptionsRepresentation options = OptionsRepresentation.builder()
                 .property("option3", "value31")
@@ -77,6 +79,23 @@ public class EnableTenantOptionSettingsTest {
         });
         // then
         assertThat(result).isEqualTo("value31");
+    }
+
+    @Test
+    public void mustDecryptConfidentialTenantOptionWhenDecryptAndGet() {
+        // given
+        OptionsRepresentation options = OptionsRepresentation.builder()
+                .property("credentials.password1", "3e501290913206c2d23147b37141f9db8181b6a635cf189b64740dac99b6f0fd")
+                .build();
+        doReturn(options).when(restOperations).get(anyString(), any(MediaType.class), eq(OptionsRepresentation.class));
+        // when
+        String password1 = contextService.callWithinContext(context("t1000"), new Callable<String>() {
+            public String call() {
+                return microserviceSettingsService.decryptAndGet("password1");
+            }
+        });
+        // then
+        assertThat(password1).isEqualTo("pa$$w0rd");
     }
 
     private MicroserviceCredentials context(String tenant) {

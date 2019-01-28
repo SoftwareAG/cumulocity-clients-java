@@ -3,16 +3,16 @@ package com.cumulocity.microservice.settings.service.impl;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.settings.repository.CurrentApplicationSettingsApi;
+import com.cumulocity.microservice.settings.service.EncryptionService;
 import com.cumulocity.microservice.settings.service.MicroserviceSettingsService;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
-import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingPlatform;
 
-import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +30,8 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
 
     private final PlatformProperties platformProperties;
     private final ContextService<MicroserviceCredentials> contextService;
-    private final CredentialsSwitchingPlatform credentialsSwitchingPlatform;
+    private final EncryptionService encryptionService;
+    private final CurrentApplicationSettingsApi settingsApi;
 
     private final Cache<String, Map<String, String>> cachedSettings = CacheBuilder.newBuilder().expireAfterWrite(10, MINUTES).build();
 
@@ -43,7 +45,11 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
                     if (isBootstrapUser(credentials.getUsername())) {
                         log.warn("Loading tenant options using bootstrap credentials!");
                     }
-                    return toMap(settingsApi(credentials).findAll());
+                    return toMap(contextService.callWithinContext(credentials, new Callable<OptionsRepresentation>() {
+                        public OptionsRepresentation call() {
+                            return settingsApi.findAll();
+                        }
+                    }));
                 }
             });
         } catch (ExecutionException e) {
@@ -67,18 +73,21 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
         return settingsMap;
     }
 
+    @Override
+    public String decryptAndGet(@NonNull String key) {
+        if (!key.startsWith("credentials")) {
+            key = "credentials." + key;
+        }
+        String encryptedValue = getAll().get(key);
+        return isEmpty(encryptedValue) ? encryptedValue :  encryptionService.decrypt(encryptedValue);
+    }
+
     private MicroserviceCredentials getCurrentCredentials() {
         if (contextService.isInContext()) {
             return contextService.getContext();
         } else {
             return (MicroserviceCredentials) platformProperties.getMicroserviceBoostrapUser();
         }
-    }
-
-    private CurrentApplicationSettingsApi settingsApi(MicroserviceCredentials credentials) {
-        CumulocityCredentials cumulocityCredentials = credentials.toCumulocityCredentials();
-        credentialsSwitchingPlatform.switchTo(cumulocityCredentials);
-        return new CurrentApplicationSettingsApi(credentialsSwitchingPlatform.get(), platformProperties.getUrl().get());
     }
 
     private boolean isBootstrapUser(String username) {

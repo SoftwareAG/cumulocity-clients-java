@@ -4,9 +4,10 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.ContextServiceImpl;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.settings.annotation.EnableTenantOptionSettingsConfiguration;
+import com.cumulocity.microservice.settings.repository.CurrentApplicationSettingsApi;
+import com.cumulocity.microservice.settings.service.EncryptionService;
 import com.cumulocity.microservice.settings.service.impl.MicroserviceSettingsServiceImpl;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
-import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingPlatform;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.google.common.base.Suppliers;
@@ -31,13 +32,6 @@ public class EnableTenantOptionSettingsTestConfiguration extends EnableTenantOpt
     }
 
     @Bean
-    public CredentialsSwitchingPlatform credentialsSwitchingPlatform(RestOperations restOperations) {
-        CredentialsSwitchingPlatform platform = mock(CredentialsSwitchingPlatform.class);
-        doReturn(restOperations).when(platform).get();
-        return platform;
-    }
-
-    @Bean
     public ContextService<MicroserviceCredentials> contextService () {
         return new ContextServiceImpl<>(MicroserviceCredentials.class);
     }
@@ -51,14 +45,6 @@ public class EnableTenantOptionSettingsTestConfiguration extends EnableTenantOpt
                     .username("servicebootstrap_app")
                     .build())
                 .build();
-    }
-
-    @Bean
-    @Primary
-    public MicroserviceSettingsServiceImpl microserviceSettingsService(ContextService<MicroserviceCredentials> contextService,
-                                                                       CredentialsSwitchingPlatform credentialsSwitchingPlatform,
-                                                                       PlatformProperties platformProperties) {
-        return new MicroserviceSettingsServiceImpl(platformProperties, contextService, credentialsSwitchingPlatform);
     }
 }
 
