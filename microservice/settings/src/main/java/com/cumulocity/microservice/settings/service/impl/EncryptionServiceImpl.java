@@ -6,14 +6,9 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 public class EncryptionServiceImpl implements EncryptionService {
 
-    private final String encryptorPassword;
-    private final String encryptorSalt;
-
     private final TextEncryptor textEncryptor;
 
     public EncryptionServiceImpl(String encryptorPassword, String encryptorSalt) {
-        this.encryptorPassword = encryptorPassword;
-        this.encryptorSalt = encryptorSalt;
         this.textEncryptor = Encryptors.text(encryptorPassword, encryptorSalt);
     }
 
