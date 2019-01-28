@@ -50,5 +50,10 @@
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>microservice-monitoring</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>microservice-settings</artifactId>
+        </dependency>
     </dependencies>
 </project>

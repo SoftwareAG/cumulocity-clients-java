@@ -1,5 +1,8 @@
 package com.cumulocity.microservice.context.credentials;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
+import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
+
 public class MicroserviceCredentials implements Credentials {
     private String tenant;
     private String username;
@@ -77,6 +80,17 @@ public class MicroserviceCredentials implements Credentials {
 
     public String getAppKey() {
         return this.appKey;
+    }
+
+    public CumulocityCredentials toCumulocityCredentials() {
+        return new CumulocityCredentialsFactory()
+                .withUsername(getUsername())
+                .withTenant(getTenant())
+                .withPassword(getPassword())
+                .withOAuthAccessToken(getOAuthAccessToken())
+                .withXsrfToken(getXsrfToken())
+                .withApplicationKey(getAppKey())
+                .getCredentials();
     }
 
     public void setTenant(String tenant) {
