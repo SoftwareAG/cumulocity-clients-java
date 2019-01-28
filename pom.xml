@@ -30,7 +30,8 @@
 		<module>java-email-client</module>
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
-	</modules>
+        <module>java-paho-client</module>
+    </modules>
 
 	<properties>
 		<cumulocity.model.version>9.25.0-SNAPSHOT</cumulocity.model.version>
@@ -246,6 +247,11 @@
 			<dependency>
 				<groupId>com.nsn.cumulocity.sdk.me</groupId>
 				<artifactId>java-me-smartrest-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.nsn.cumulocity.sdk.paho</groupId>
+				<artifactId>java-paho-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
