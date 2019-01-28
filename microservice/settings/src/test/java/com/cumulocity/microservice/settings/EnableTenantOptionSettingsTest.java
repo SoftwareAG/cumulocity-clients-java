@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.core.MediaType;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.doReturn;
         EnableContextSupportConfiguration.class,
         EnableTenantOptionSettingsTestConfiguration.class
 })
-@TestPropertySource(properties = {"C8Y.encryptor.password=efuhMsAEAdP2wgHw", "C8Y.encryptor.salt=9D5B38224EF610C7"})
 public class EnableTenantOptionSettingsTest {
 
     @Autowired
@@ -82,16 +80,16 @@ public class EnableTenantOptionSettingsTest {
     }
 
     @Test
-    public void mustDecryptConfidentialTenantOptionWhenDecryptAndGet() {
+    public void mustGetTenantOptionWhenGetCredential() {
         // given
         OptionsRepresentation options = OptionsRepresentation.builder()
-                .property("credentials.password1", "3e501290913206c2d23147b37141f9db8181b6a635cf189b64740dac99b6f0fd")
+                .property("credentials.password1", "pa$$w0rd")
                 .build();
         doReturn(options).when(restOperations).get(anyString(), any(MediaType.class), eq(OptionsRepresentation.class));
         // when
         String password1 = contextService.callWithinContext(context("t1000"), new Callable<String>() {
             public String call() {
-                return microserviceSettingsService.decryptAndGet("password1");
+                return microserviceSettingsService.getCredential("password1");
             }
         });
         // then

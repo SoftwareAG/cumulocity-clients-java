@@ -26,8 +26,6 @@ public class MicroserviceSettingsServiceTest {
     @Mock
     private PlatformProperties platformProperties;
     @Mock
-    private EncryptionService encryptionService;
-    @Mock
     private CurrentApplicationSettingsApi currentApplicationSettingsApi;
     @Mock
     private ContextService<MicroserviceCredentials> contextService;
@@ -39,7 +37,7 @@ public class MicroserviceSettingsServiceTest {
         doReturn(bootstrapUser()).when(platformProperties).getMicroserviceBoostrapUser();
         doReturn(Suppliers.ofInstance("http://c8y:80")).when(platformProperties).getUrl();
         doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));
-        microserviceSettingsService = new MicroserviceSettingsServiceImpl(platformProperties, contextService, encryptionService, currentApplicationSettingsApi);
+        microserviceSettingsService = new MicroserviceSettingsServiceImpl(platformProperties, contextService, currentApplicationSettingsApi);
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.cumulocity.microservice.settings.service;
 
+import lombok.NonNull;
+
 import java.util.Map;
 
 public interface MicroserviceSettingsService {
@@ -8,5 +10,7 @@ public interface MicroserviceSettingsService {
 
     <T> T getAs(Class<T> clazz);
 
-    String decryptAndGet(String key);
+    String getCredential(String key);
+
+    String get(@NonNull String key);
 }

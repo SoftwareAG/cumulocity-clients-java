@@ -3,7 +3,6 @@ package com.cumulocity.microservice.settings.service.impl;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.settings.repository.CurrentApplicationSettingsApi;
-import com.cumulocity.microservice.settings.service.EncryptionService;
 import com.cumulocity.microservice.settings.service.MicroserviceSettingsService;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 
@@ -22,7 +21,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.springframework.util.StringUtils.isEmpty;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +28,6 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
 
     private final PlatformProperties platformProperties;
     private final ContextService<MicroserviceCredentials> contextService;
-    private final EncryptionService encryptionService;
     private final CurrentApplicationSettingsApi settingsApi;
 
     private final Cache<String, Map<String, String>> cachedSettings = CacheBuilder.newBuilder().expireAfterWrite(10, MINUTES).build();
@@ -74,12 +71,16 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
     }
 
     @Override
-    public String decryptAndGet(@NonNull String key) {
+    public String getCredential(@NonNull String key) {
         if (!key.startsWith("credentials")) {
             key = "credentials." + key;
         }
-        String encryptedValue = getAll().get(key);
-        return isEmpty(encryptedValue) ? encryptedValue :  encryptionService.decrypt(encryptedValue);
+        return get(key);
+    }
+
+    @Override
+    public String get(@NonNull String key) {
+        return getAll().get(key);
     }
 
     private MicroserviceCredentials getCurrentCredentials() {
