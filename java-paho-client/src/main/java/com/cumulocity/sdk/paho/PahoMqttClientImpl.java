@@ -1,7 +1,6 @@
 package com.cumulocity.sdk.paho;
 
 import com.cumulocity.sdk.paho.exception.PahoDeviceSDKException;
-import com.cumulocity.sdk.paho.connector.PahoMqttConnector;
 import com.cumulocity.sdk.paho.model.ConnectionDetails;
 import com.cumulocity.sdk.paho.operations.PahoMqttOperationsProvider;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
@@ -20,7 +19,6 @@ public class PahoMqttClientImpl implements PahoMqttClient {
     private String password;
     private boolean cleanSession;
 
-    private PahoMqttConnector connector;
     private PahoMqttOperationsProvider operationsProvider;
 
     public PahoMqttClientImpl() {}
@@ -56,8 +54,8 @@ public class PahoMqttClientImpl implements PahoMqttClient {
                                                                     .cleanSession(cleanSession)
                                                                         .build();
         try {
-            connector = new PahoMqttConnector(connectionDetails);
-            operationsProvider = new PahoMqttOperationsProvider(connector);
+            operationsProvider = new PahoMqttOperationsProvider();
+            operationsProvider.createConnection(connectionDetails);
         } catch (MqttException ex) {
             throw new PahoDeviceSDKException((format("Unable to construct client for clientId '%s' and connect to server" +
                     " '%s' : ", clientId, host)), ex);

@@ -1,23 +1,44 @@
 package com.cumulocity.sdk.paho.operations;
 
-import com.cumulocity.sdk.paho.connector.PahoMqttConnector;
-import lombok.AllArgsConstructor;
+import com.cumulocity.sdk.paho.model.ConnectionDetails;
+import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
-@AllArgsConstructor
+@NoArgsConstructor
 public class PahoMqttOperationsProvider implements OperationsProvider {
 
-    private PahoMqttConnector connector;
+    private static final String TCP = "tcp://";
+    private static final String TCP_MQTT_PORT = "1883";
+
+    private MqttAsyncClient client;
+
+    private ConnectionDetails connectionDetails;
+
+    @Override
+    public void createConnection(ConnectionDetails connectionDetails) throws MqttException {
+
+        MemoryPersistence persistence = new MemoryPersistence();
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setUserName(connectionDetails.getUserName());
+        options.setPassword(connectionDetails.getPassword().toCharArray());
+        options.setAutomaticReconnect(true);
+        options.setCleanSession(connectionDetails.isCleanSession());
+
+        client = new MqttAsyncClient(getServerURI(connectionDetails),
+                connectionDetails.getClientId(), persistence);
+        final IMqttToken conToken = client.connect(options);
+        conToken.waitForCompletion();
+    }
 
     @Override
     public void publish(String topicName, int qos, String payload) throws MqttException {
-
-        final MqttAsyncClient client = connector.getClient();
 
         // Connect to the MQTT server
         if (! client.isConnected()) {
@@ -38,8 +59,6 @@ public class PahoMqttOperationsProvider implements OperationsProvider {
     @Override
     public void subscribe(String topicName, int qos, IMqttMessageListener messageListener) throws MqttException {
 
-        final MqttAsyncClient client = connector.getClient();
-
         // Connect to the MQTT server
         if (! client.isConnected()) {
             IMqttToken conToken = client.connect();
@@ -55,13 +74,18 @@ public class PahoMqttOperationsProvider implements OperationsProvider {
     @Override
     public void disconnect() throws MqttException {
 
-        if (connector.getClient().isConnected()) {
-            connector.disconnectClient();
+        if (client.isConnected()) {
+             final IMqttToken discToken = client.disconnect();
+             discToken.waitForCompletion();
         }
     }
 
     @Override
     public boolean isConnectionEstablished() {
-        return connector.getClient().isConnected();
+        return client.isConnected();
+    }
+
+    private String getServerURI(ConnectionDetails connectionDetails) {
+        return TCP + connectionDetails.getHost() + ":" + TCP_MQTT_PORT;
     }
 }

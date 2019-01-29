@@ -1,6 +1,5 @@
 package com.cumulocity.sdk.paho;
 
-import com.cumulocity.sdk.paho.connector.PahoMqttConnector;
 import com.cumulocity.sdk.paho.exception.PahoDeviceSDKException;
 import com.cumulocity.sdk.paho.operations.PahoMqttOperationsProvider;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -18,9 +17,6 @@ import static org.mockito.Mockito.*;
 public class PahoMqttClientImplTest {
 
     @Mock
-    private PahoMqttConnector clientConnector;
-
-    @Mock
     private PahoMqttOperationsProvider clientOperations;
 
     @Mock
@@ -32,7 +28,6 @@ public class PahoMqttClientImplTest {
     @Before
     public void setup() throws Exception {
 
-        when(clientConnector.getClient()).thenReturn(mqttAsyncClient);
         when(clientOperations.isConnectionEstablished()).thenReturn(true);
         when(mqttAsyncClient.isConnected()).thenReturn(true);
     }
