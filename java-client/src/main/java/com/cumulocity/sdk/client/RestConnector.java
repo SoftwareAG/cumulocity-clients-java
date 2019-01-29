@@ -294,7 +294,7 @@ public class RestConnector implements RestOperations {
             final Param representation,
             final Class<Result> clazz) {
         ClientResponse response = httpPost(path, contentType, accept, representation);
-        return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode());
+        return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode(), Response.Status.CREATED.getStatusCode());
     }
 
     @Override
