@@ -30,7 +30,7 @@
 		<module>java-email-client</module>
 		<module>java-sms-client</module>
 		<module>java-client-services</module>
-        <module>java-paho-client</module>
+        <module>java-mqtt-client</module>
     </modules>
 
 	<properties>
@@ -250,8 +250,8 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nsn.cumulocity.sdk.paho</groupId>
-				<artifactId>java-paho-client</artifactId>
+				<groupId>com.nsn.cumulocity.sdk.mqtt</groupId>
+				<artifactId>java-mqtt-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

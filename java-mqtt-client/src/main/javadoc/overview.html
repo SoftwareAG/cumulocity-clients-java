@@ -1,0 +1,70 @@
+<HTML>
+<BODY>
+Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to interact with the Cumulocity MQTT Broker.
+
+<p>The Cumulocity SDK Java Paho MQTT Client library provides means
+    to the following operations:
+<ul>
+    <li>Running device bootstrap.</li>
+    <li>Publish some device information using MQTT static templates.</li>
+    <li>Publish own custom templates and send publish some message using a custom template.</li>
+    <li>Receive a command through MQTT.</li>
+</ul>
+<p>
+    Example Usage:
+    <pre>
+        /**
+         * Create the MqttClient instance providing the host of the platform, the user-name and password,
+         * unique device id/clientId with optional cleanSession flag.
+         */
+
+        MqttClient client = new MqttClientImpl(host, clientId, "tenant/username", "password", cleanSession);
+
+        /**
+         * Call the establishConnection() method on the client instance created above, which
+         * connects the client to the Cumulocity broker server.
+         */
+
+         client.establishConnection();
+
+        /**
+         * Running device bootstrap/Create device
+         */
+
+        client.publishToTopic("s/us", 2, "100, My MQTT device, c8y_MQTTDevice");
+
+        /**
+         * Set hardware information on device using MQTT static templates
+         */
+
+        client.publishToTopic("s/us", 2, "110,S123456789,MQTT test model,Rev0.1");
+
+        /**
+         * Publish own custom templates and send publish some message using a custom template.
+         */
+
+        client.publishToTopic("s/ut/myCommon_10", 2, "10,999,POST,MEASUREMENT,,c8y_MyMeasurment,,c8y_MyMeasurement.M.value,NUMBER,");
+        client.publishToTopic("s/uc/myCommon_10", 2, "901,,25.35,50");
+
+        /**
+         * Receive/Listen a command/operation through MQTT
+         */
+
+         client.subscribeToTopic("s/ds", 2, new MqttMessageListener() {
+                    @Override
+                    public void messageArrived(MessageResponse messageResponse) {
+                        System.out.println("Received Response : " + messageResponse.getTopicName() + " "
+                            + messageResponse.getClientId() + " " + messageResponse.getQos() + " "
+                                + messageResponse.getMessageContent());
+                    }
+                });
+
+        /**
+         * Disconnecting the client
+         */
+
+         client.disconnect();
+
+    </pre>
+</BODY>
+</HTML>
