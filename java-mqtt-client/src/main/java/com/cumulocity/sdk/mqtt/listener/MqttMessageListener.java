@@ -1,10 +1,9 @@
 package com.cumulocity.sdk.mqtt.listener;
 
 import com.cumulocity.sdk.mqtt.model.MqttMessageResponse;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public abstract class MqttMessageListener implements IMqttMessageListener {
+public abstract class MqttMessageListener implements BaseMqttMessageListener {
 
     private static final String MSG_DELIMITER = ",";
 
@@ -20,5 +19,5 @@ public abstract class MqttMessageListener implements IMqttMessageListener {
         messageArrived(messageResponse);
     }
 
-    public abstract void messageArrived(MqttMessageResponse messageResponse);
+    public abstract void messageArrived(final MqttMessageResponse messageResponse);
 }

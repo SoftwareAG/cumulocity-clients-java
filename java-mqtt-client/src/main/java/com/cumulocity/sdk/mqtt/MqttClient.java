@@ -1,7 +1,8 @@
 package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
-import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
+import com.cumulocity.sdk.mqtt.listener.BaseMqttMessageListener;
+import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 
 public interface MqttClient {
 
@@ -16,24 +17,21 @@ public interface MqttClient {
      * Publishes a given message/payload with qos level 0 / 1 / 2
      * to a particular topic
      *
-     * @param topicName
-     * @param qos
-     * @param payload
+     * @param message
      *
      * @throws MqttDeviceSDKException
      */
-    void publishToTopic(String topicName, int qos, String payload) throws MqttDeviceSDKException;
+    void publish(MqttMessageRequest message) throws MqttDeviceSDKException;
 
     /**
      * Subscribe to a particular topic
      *
-     * @param topicName
-     * @param qos
+     * @param message
      * @param messageListener
      *
      * @throws MqttDeviceSDKException
      */
-    void subscribeToTopic(String topicName, int qos, MqttMessageListener messageListener) throws MqttDeviceSDKException;
+    void subscribe(MqttMessageRequest message, BaseMqttMessageListener messageListener) throws MqttDeviceSDKException;
 
     /**
      * Disconnects the client from the broker

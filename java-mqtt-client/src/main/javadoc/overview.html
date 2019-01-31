@@ -14,11 +14,19 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
     Example Usage:
     <pre>
         /**
-         * Create the MqttClient instance providing the host of the platform, the user-name and password,
+         * Create the MqttClient instance providing the ConnectionDetails comprising host of the platform, the user-name and password,
          * unique device id/clientId with optional cleanSession flag.
          */
 
-        MqttClient client = new MqttClientImpl(host, clientId, "tenant/username", "password", cleanSession);
+        final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
+                                                                        .clientId("XNPP-EMEA-1234")
+                                                                            .userName("tenant/username")
+                                                                                .password("password")
+                                                                                    .cleanSession(true)
+                                                                                      .build();
+
+        MqttClient client = new MqttClientImpl(connectionDetails);
+
 
         /**
          * Call the establishConnection() method on the client instance created above, which
@@ -27,30 +35,47 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
 
          client.establishConnection();
 
+
         /**
          * Running device bootstrap/Create device
          */
 
-        client.publishToTopic("s/us", 2, "100, My MQTT device, c8y_MQTTDevice");
+        MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")
+                                        .qoS(QOS.EXACTLY_ONCE).messageContent("100, My MQTT device, c8y_MQTTDevice").build();
+        client.publish(message);
+
 
         /**
          * Set hardware information on device using MQTT static templates
          */
 
-        client.publishToTopic("s/us", 2, "110,S123456789,MQTT test model,Rev0.1");
+        MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")
+                                        .qoS(QOS.EXACTLY_ONCE).messageContent("110,S123456789,MQTT test model,Rev0.1"").build();
+        client.publish(message);
+
 
         /**
          * Publish own custom templates and send publish some message using a custom template.
          */
 
-        client.publishToTopic("s/ut/myCommon_10", 2, "10,999,POST,MEASUREMENT,,c8y_MyMeasurment,,c8y_MyMeasurement.M.value,NUMBER,");
-        client.publishToTopic("s/uc/myCommon_10", 2, "901,,25.35,50");
+        MqttMessageRequest messageTemplate = MqttMessageRequest.builder().topicName("s/ut/myCommon_10")
+                                        .qoS(QOS.EXACTLY_ONCE).messageContent("10,999,POST,MEASUREMENT,,c8y_MyMeasurment,,c8y_MyMeasurement.M.value,NUMBER,").build();
+
+        client.publish(messageTemplate);
+
+        MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/ut/myCommon_10")
+                                        .qoS(QOS.EXACTLY_ONCE).messageContent("901,,25.35,50").build();
+        client.publish(message);
+
 
         /**
          * Receive/Listen a command/operation through MQTT
          */
 
-         client.subscribeToTopic("s/ds", 2, new MqttMessageListener() {
+         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/ds")
+                                        .qoS(QOS.EXACTLY_ONCE).build();
+
+         client.subscribe(message new MqttMessageListener() {
                     @Override
                     public void messageArrived(MessageResponse messageResponse) {
                         System.out.println("Received Response : " + messageResponse.getTopicName() + " "
@@ -58,6 +83,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
                                 + messageResponse.getMessageContent());
                     }
                 });
+
 
         /**
          * Disconnecting the client

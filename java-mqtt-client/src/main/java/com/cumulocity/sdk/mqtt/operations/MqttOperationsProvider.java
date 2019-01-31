@@ -1,13 +1,14 @@
 package com.cumulocity.sdk.mqtt.operations;
 
+import com.cumulocity.sdk.mqtt.listener.BaseMqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
+import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
@@ -36,7 +37,7 @@ public class MqttOperationsProvider implements OperationsProvider {
     }
 
     @Override
-    public void publish(String topicName, int qos, String payload) throws MqttException {
+    public void publish(MqttMessageRequest message) throws MqttException {
 
         // Connect to the MQTT server
         if (! client.isConnected()) {
@@ -45,17 +46,17 @@ public class MqttOperationsProvider implements OperationsProvider {
         }
 
         // Construct the message to send
-        MqttMessage message = new MqttMessage(payload.getBytes());
-        message.setQos(qos);
+        MqttMessage pubMessage = new MqttMessage(message.getMessageContent().getBytes());
+        pubMessage.setQos(message.getQoS().getValue());
 
         // Send the message to the server, control is returned as soon
         // as the MQTT client has accepted to deliver the message.
-        final IMqttDeliveryToken pubToken = client.publish(topicName, message);
+        final IMqttDeliveryToken pubToken = client.publish(message.getTopicName(), pubMessage);
         pubToken.waitForCompletion();
     }
 
     @Override
-    public void subscribe(String topicName, int qos, IMqttMessageListener messageListener) throws MqttException {
+    public void subscribe(MqttMessageRequest message, BaseMqttMessageListener messageListener) throws MqttException {
 
         // Connect to the MQTT server
         if (! client.isConnected()) {
@@ -64,7 +65,7 @@ public class MqttOperationsProvider implements OperationsProvider {
         }
 
         // Subscribe to the requested topic.
-        final IMqttToken subToken = client.subscribe(topicName, qos, null,
+        final IMqttToken subToken = client.subscribe(message.getTopicName(), message.getQoS().getValue(), null,
                 null, messageListener);
         subToken.waitForCompletion();
     }
