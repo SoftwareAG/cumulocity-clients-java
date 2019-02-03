@@ -75,7 +75,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
          MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/ds")
                                         .qoS(QoS.EXACTLY_ONCE).build();
 
-         client.subscribe(message new MqttMessageListener() {
+         client.subscribe(message, new MqttMessageListener() {
                     public void messageArrived(MessageResponse messageResponse) {
                         System.out.println("Received Response : " + messageResponse.getTopicName() + " "
                             + messageResponse.getClientId() + " " + messageResponse.getQos() + " "
