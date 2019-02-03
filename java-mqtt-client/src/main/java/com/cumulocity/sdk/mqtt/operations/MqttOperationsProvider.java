@@ -1,6 +1,7 @@
 package com.cumulocity.sdk.mqtt.operations;
 
-import com.cumulocity.sdk.mqtt.listener.BaseMqttMessageListener;
+import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
+import com.cumulocity.sdk.mqtt.listener.MqttMessageAdapter;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import lombok.NoArgsConstructor;
@@ -56,7 +57,7 @@ public class MqttOperationsProvider implements OperationsProvider {
     }
 
     @Override
-    public void subscribe(MqttMessageRequest message, BaseMqttMessageListener messageListener) throws MqttException {
+    public void subscribe(MqttMessageRequest message, MqttMessageListener messageListener) throws MqttException {
 
         // Connect to the MQTT server
         if (! client.isConnected()) {
@@ -65,8 +66,9 @@ public class MqttOperationsProvider implements OperationsProvider {
         }
 
         // Subscribe to the requested topic.
+        final MqttMessageAdapter messageAdapter = new MqttMessageAdapter(messageListener);
         final IMqttToken subToken = client.subscribe(message.getTopicName(), message.getQoS().getValue(), null,
-                null, messageListener);
+                null, messageAdapter);
         subToken.waitForCompletion();
     }
 

@@ -35,10 +35,10 @@ public class MqttClientImplTest {
 
         final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
                                                                         .clientId("XNPP-EMEA-1234")
-                                                                            .userName("tenant/user")
-                                                                                .password("password")
-                                                                                    .cleanSession(true)
-                                                                                      .build();
+                                                                        .userName("tenant/user")
+                                                                        .password("password")
+                                                                        .cleanSession(true)
+                                                                        .build();
         pahoMqttClient = new MqttClientImpl(connectionDetails);
         MockitoAnnotations.initMocks(this);
 

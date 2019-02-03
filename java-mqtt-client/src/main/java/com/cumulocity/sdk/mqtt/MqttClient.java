@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
-import com.cumulocity.sdk.mqtt.listener.BaseMqttMessageListener;
+import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 
 public interface MqttClient {
@@ -31,7 +31,7 @@ public interface MqttClient {
      *
      * @throws MqttDeviceSDKException
      */
-    void subscribe(MqttMessageRequest message, BaseMqttMessageListener messageListener) throws MqttDeviceSDKException;
+    void subscribe(MqttMessageRequest message, MqttMessageListener messageListener) throws MqttDeviceSDKException;
 
     /**
      * Disconnects the client from the broker

@@ -20,10 +20,10 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
 
         final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
                                                                         .clientId("XNPP-EMEA-1234")
-                                                                            .userName("tenant/username")
-                                                                                .password("password")
-                                                                                    .cleanSession(true)
-                                                                                      .build();
+                                                                        .userName("tenant/username")
+                                                                        .password("password")
+                                                                        .cleanSession(true)
+                                                                        .build();
 
         MqttClient client = new MqttClientImpl(connectionDetails);
 
@@ -41,7 +41,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
          */
 
         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")
-                                        .qoS(QOS.EXACTLY_ONCE).messageContent("100, My MQTT device, c8y_MQTTDevice").build();
+                                        .qoS(QoS.EXACTLY_ONCE).messageContent("100, My MQTT device, c8y_MQTTDevice").build();
         client.publish(message);
 
 
@@ -50,7 +50,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
          */
 
         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")
-                                        .qoS(QOS.EXACTLY_ONCE).messageContent("110,S123456789,MQTT test model,Rev0.1"").build();
+                                        .qoS(QoS.EXACTLY_ONCE).messageContent("110,S123456789,MQTT test model,Rev0.1"").build();
         client.publish(message);
 
 
@@ -59,12 +59,12 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
          */
 
         MqttMessageRequest messageTemplate = MqttMessageRequest.builder().topicName("s/ut/myCommon_10")
-                                        .qoS(QOS.EXACTLY_ONCE).messageContent("10,999,POST,MEASUREMENT,,c8y_MyMeasurment,,c8y_MyMeasurement.M.value,NUMBER,").build();
+                                        .qoS(QoS.EXACTLY_ONCE).messageContent("10,999,POST,MEASUREMENT,,c8y_MyMeasurment,,c8y_MyMeasurement.M.value,NUMBER,").build();
 
         client.publish(messageTemplate);
 
         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/ut/myCommon_10")
-                                        .qoS(QOS.EXACTLY_ONCE).messageContent("901,,25.35,50").build();
+                                        .qoS(QoS.EXACTLY_ONCE).messageContent("901,,25.35,50").build();
         client.publish(message);
 
 
@@ -73,10 +73,9 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
          */
 
          MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/ds")
-                                        .qoS(QOS.EXACTLY_ONCE).build();
+                                        .qoS(QoS.EXACTLY_ONCE).build();
 
          client.subscribe(message new MqttMessageListener() {
-                    @Override
                     public void messageArrived(MessageResponse messageResponse) {
                         System.out.println("Received Response : " + messageResponse.getTopicName() + " "
                             + messageResponse.getClientId() + " " + messageResponse.getQos() + " "

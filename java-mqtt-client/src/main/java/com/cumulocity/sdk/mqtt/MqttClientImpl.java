@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
-import com.cumulocity.sdk.mqtt.listener.BaseMqttMessageListener;
+import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import com.cumulocity.sdk.mqtt.operations.MqttOperationsProvider;
@@ -56,7 +56,7 @@ public class MqttClientImpl implements MqttClient {
     }
 
     @Override
-    public void subscribe(MqttMessageRequest message, BaseMqttMessageListener messageListener) throws MqttDeviceSDKException {
+    public void subscribe(MqttMessageRequest message, MqttMessageListener messageListener) throws MqttDeviceSDKException {
 
         if (! operationsProvider.isConnectionEstablished()) {
             throw new MqttDeviceSDKException("Subscribe can happen only when client is initialized and " +
