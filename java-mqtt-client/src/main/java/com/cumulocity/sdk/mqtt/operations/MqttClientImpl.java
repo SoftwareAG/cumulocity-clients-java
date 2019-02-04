@@ -1,19 +1,18 @@
-package com.cumulocity.sdk.mqtt;
+package com.cumulocity.sdk.mqtt.operations;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
 import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
+import com.cumulocity.sdk.mqtt.MqttClient;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
-import com.cumulocity.sdk.mqtt.operations.MqttOperationsProvider;
-import com.cumulocity.sdk.mqtt.operations.OperationsProvider;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-import static com.cumulocity.sdk.mqtt.util.MqttTopicValidator.isTopicValidForPublish;
-import static com.cumulocity.sdk.mqtt.util.MqttTopicValidator.isTopicValidForSubscribe;
+import static com.cumulocity.sdk.mqtt.operations.MqttTopicValidator.isTopicValidForPublish;
+import static com.cumulocity.sdk.mqtt.operations.MqttTopicValidator.isTopicValidForSubscribe;
 
 import static java.lang.String.format;
 
-public class MqttClientImpl implements MqttClient {
+class MqttClientImpl implements MqttClient {
 
     private final ConnectionDetails connectionDetails;
 

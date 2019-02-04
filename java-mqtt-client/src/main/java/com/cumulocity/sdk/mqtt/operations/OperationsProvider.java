@@ -5,7 +5,7 @@ import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-public interface OperationsProvider {
+interface OperationsProvider {
 
     void createConnection(ConnectionDetails connectionDetails) throws MqttException;
 

@@ -1,12 +1,13 @@
-package com.cumulocity.sdk.mqtt.listener;
+package com.cumulocity.sdk.mqtt.operations;
 
+import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.MqttMessageResponse;
 import lombok.AllArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 @AllArgsConstructor
-public class MqttMessageAdapter implements IMqttMessageListener {
+class MqttMessageAdapter implements IMqttMessageListener {
 
     private MqttMessageListener listener;
 

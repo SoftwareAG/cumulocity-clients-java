@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.mqtt;
+package com.cumulocity.sdk.mqtt.operations;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;

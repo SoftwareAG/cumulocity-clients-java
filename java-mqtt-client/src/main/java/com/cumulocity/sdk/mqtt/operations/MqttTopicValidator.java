@@ -1,11 +1,11 @@
-package com.cumulocity.sdk.mqtt.util;
+package com.cumulocity.sdk.mqtt.operations;
 
 import lombok.experimental.UtilityClass;
 
 import static com.cumulocity.sdk.mqtt.model.MqttTopics.*;
 
 @UtilityClass
-public class MqttTopicValidator {
+class MqttTopicValidator {
 
     public static boolean isTopicValidForPublish(String topic) {
         if (topic == null || topic.isEmpty()) {

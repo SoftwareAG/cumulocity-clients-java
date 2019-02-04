@@ -15,7 +15,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
     <pre>
         /**
          * Create the MqttClient instance providing the ConnectionDetails comprising host of the platform, the user-name and password,
-         * unique device id/clientId with optional cleanSession flag.
+         * unique device id/clientId with optional cleanSession flag via MqttClientBuilder.
          */
 
         final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
@@ -25,7 +25,7 @@ Cumulocity SDK - Java Paho MQTT Client library provides the classes necessary to
                                                                         .cleanSession(true)
                                                                         .build();
 
-        MqttClient client = new MqttClientImpl(connectionDetails);
+        MqttClient client = MqttClientBuilder.generateClient(connectionDetails);
 
 
         /**

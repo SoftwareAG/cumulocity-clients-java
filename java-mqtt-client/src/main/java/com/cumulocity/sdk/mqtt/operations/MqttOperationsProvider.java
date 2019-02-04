@@ -1,7 +1,6 @@
 package com.cumulocity.sdk.mqtt.operations;
 
 import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
-import com.cumulocity.sdk.mqtt.listener.MqttMessageAdapter;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 @NoArgsConstructor
-public class MqttOperationsProvider implements OperationsProvider {
+class MqttOperationsProvider implements OperationsProvider {
 
     private static final String TCP = "tcp://";
     private static final String TCP_MQTT_PORT = "1883";
