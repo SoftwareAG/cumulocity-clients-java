@@ -93,6 +93,19 @@ public class MqttClientImplTest {
         verify(operationsProvider, times(1)).subscribe(message, null);
     }
 
+    @Test
+    public void unsubscribeFromTopic() throws Exception {
+
+        // Given
+        String topic = "s/ds";
+
+        // When
+        pahoMqttClient.unsubscribe(topic);
+
+        // Then
+        verify(operationsProvider, times(1)).unsubscribe(topic);
+    }
+
     @Test(expected = MqttDeviceSDKException.class)
     public void testSubscribeToWrongTopic() throws Exception {
 
@@ -103,6 +116,19 @@ public class MqttClientImplTest {
 
         // When
         pahoMqttClient.subscribe(message, null);
+
+        // Then
+        fail();
+    }
+
+    @Test(expected = MqttDeviceSDKException.class)
+    public void testUnsubscribeFromWrongTopic() throws Exception {
+
+        // Given
+        String topic = "s/xyz";
+
+        // When
+        pahoMqttClient.unsubscribe(topic);
 
         // Then
         fail();

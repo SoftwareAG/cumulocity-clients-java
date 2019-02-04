@@ -76,6 +76,26 @@ public class MqttClientImpl implements MqttClient {
     }
 
     @Override
+    public void unsubscribe(String topic) throws MqttDeviceSDKException {
+
+        if (! operationsProvider.isConnectionEstablished()) {
+            throw new MqttDeviceSDKException("Unsubscribe can happen only when client is initialized, " +
+                    "connection to server established and any topic is subscribed.");
+        }
+
+        if (! isTopicValidForSubscribe(topic)) {
+            throw new MqttDeviceSDKException("Invalid topic.");
+        }
+
+        try {
+            operationsProvider.unsubscribe(topic);
+        } catch (MqttException ex) {
+            throw new MqttDeviceSDKException((format("Unable to subscribe from topic '%s' for client '%s' : ",
+                    topic, connectionDetails.getClientId())), ex);
+        }
+    }
+
+    @Override
     public void disconnect() throws MqttDeviceSDKException {
 
         try {

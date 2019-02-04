@@ -73,6 +73,20 @@ public class MqttOperationsProvider implements OperationsProvider {
     }
 
     @Override
+    public void unsubscribe(String topic) throws MqttException {
+
+        // Connect to the MQTT server
+        if (! client.isConnected()) {
+            IMqttToken conToken = client.connect();
+            conToken.waitForCompletion();
+        }
+
+        // Unsubscribe from the requested topic
+        final IMqttToken unSubToken = client.unsubscribe(topic);
+        unSubToken.waitForCompletion();
+    }
+
+    @Override
     public void disconnect() throws MqttException {
 
         if (client.isConnected()) {

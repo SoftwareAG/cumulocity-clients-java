@@ -34,6 +34,15 @@ public interface MqttClient {
     void subscribe(MqttMessageRequest message, MqttMessageListener messageListener) throws MqttDeviceSDKException;
 
     /**
+     * Unsubscribe from a particular topic
+     *
+     * @param topic
+     *
+     * @throws MqttDeviceSDKException
+     */
+    void unsubscribe(String topic) throws MqttDeviceSDKException;
+
+    /**
      * Disconnects the client from the broker
      *
      * @throws MqttDeviceSDKException

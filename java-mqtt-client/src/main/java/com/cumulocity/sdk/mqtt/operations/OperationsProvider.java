@@ -13,6 +13,8 @@ public interface OperationsProvider {
 
     void subscribe(MqttMessageRequest message, MqttMessageListener messageListener) throws MqttException;
 
+    void unsubscribe(String topic) throws MqttException;
+
     void disconnect() throws MqttException;
 
     boolean isConnectionEstablished();
