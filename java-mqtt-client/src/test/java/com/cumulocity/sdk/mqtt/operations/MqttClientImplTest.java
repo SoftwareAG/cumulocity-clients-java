@@ -94,7 +94,7 @@ public class MqttClientImplTest {
     }
 
     @Test
-    public void unsubscribeFromTopic() throws Exception {
+    public void testUnsubscribeFromTopic() throws Exception {
 
         // Given
         String topic = "s/ds";
