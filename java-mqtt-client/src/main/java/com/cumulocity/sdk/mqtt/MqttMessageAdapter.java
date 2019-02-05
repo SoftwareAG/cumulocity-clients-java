@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.mqtt.operations;
+package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.MqttMessageResponse;

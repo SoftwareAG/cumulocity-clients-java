@@ -1,6 +1,5 @@
-package com.cumulocity.sdk.mqtt.operations;
+package com.cumulocity.sdk.mqtt;
 
-import com.cumulocity.sdk.mqtt.MqttClient;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 
 public class MqttClientBuilder {

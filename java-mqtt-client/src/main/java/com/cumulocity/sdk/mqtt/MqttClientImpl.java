@@ -1,14 +1,13 @@
-package com.cumulocity.sdk.mqtt.operations;
+package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
 import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
-import com.cumulocity.sdk.mqtt.MqttClient;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-import static com.cumulocity.sdk.mqtt.operations.MqttTopicValidator.isTopicValidForPublish;
-import static com.cumulocity.sdk.mqtt.operations.MqttTopicValidator.isTopicValidForSubscribe;
+import static com.cumulocity.sdk.mqtt.MqttTopicValidator.isTopicValidForPublish;
+import static com.cumulocity.sdk.mqtt.MqttTopicValidator.isTopicValidForSubscribe;
 
 import static java.lang.String.format;
 

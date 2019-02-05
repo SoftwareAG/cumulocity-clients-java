@@ -1,9 +1,8 @@
-package com.cumulocity.sdk.mqtt.operations;
+package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
-import com.cumulocity.sdk.mqtt.operations.MqttOperationsProvider;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,11 +11,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 
 import static com.cumulocity.sdk.mqtt.model.QoS.AT_LEAST_ONCE;
 import static com.cumulocity.sdk.mqtt.model.QoS.EXACTLY_ONCE;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttClientImplTest {

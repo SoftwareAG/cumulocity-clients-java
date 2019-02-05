@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.mqtt.operations;
+package com.cumulocity.sdk.mqtt;
 
 import lombok.experimental.UtilityClass;
 
