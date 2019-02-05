@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice-dependencies</artifactId>
-        <version>9.24.2-SNAPSHOT</version>
+        <version>9.25.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-context</artifactId>
@@ -14,6 +14,11 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nsn.cumulocity.model</groupId>
+            <artifactId>core-model</artifactId>
         </dependency>
 
         <dependency>

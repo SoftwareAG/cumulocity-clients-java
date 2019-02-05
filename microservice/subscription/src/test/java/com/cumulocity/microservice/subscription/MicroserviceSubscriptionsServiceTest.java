@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.subscription;
 
-import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.ContextServiceImpl;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;

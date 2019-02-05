@@ -17,7 +17,7 @@ import com.cumulocity.rest.representation.application.MicroserviceManifestRepres
 import com.cumulocity.sdk.client.RestOperations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -78,8 +78,8 @@ public class EnableMicroserviceSubscriptionConfiguration {
             try (final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)) {
                 final MicroserviceManifestRepresentation manifest = JSONBase.fromJSON(reader, MicroserviceManifestRepresentation.class);
                 return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
-                        .requiredRoles(Objects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
-                        .roles(Objects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
+                        .requiredRoles(MoreObjects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
+                        .roles(MoreObjects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
                         .build();
             }
         }
