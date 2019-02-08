@@ -43,6 +43,7 @@
         <module>package</module>
         <module>monitoring</module>
         <module>settings</module>
+        <module>custom-decoders</module>
     </modules>
 
     <dependencyManagement>
