@@ -1,32 +1,30 @@
 package c8y;
 
-import org.svenson.AbstractDynamicProperties;
-import org.svenson.JSONProperty;
-
 import com.cumulocity.model.measurement.MeasurementValue;
+
+import com.jsoniter.annotation.JsonProperty;
 
 /**
  * Provides a representation for a motion measurement, as reported by {@link MotionSensor}.
  * See <a>https://code.telcoassetmarketplace.com/devcommunity/index.php/c8ydocumentation/114/320#Motion</a> for details.
  * @author ricardomarques
  */
-public class SpeedMeasurement extends AbstractDynamicProperties {
+public class SpeedMeasurement {
 
     public static final String SPEED_UNITS = "m/s";
 
     public static final String BEARING_UNITS = "degrees";
 
-    private MeasurementValue motion;
+    private MeasurementValue motionDetected;
 
     private MeasurementValue speed;
 
     private MeasurementValue bearing;
 
-    public SpeedMeasurement() {
-    }
+    public SpeedMeasurement() {}
 
-    public SpeedMeasurement(MeasurementValue motion, MeasurementValue speed, MeasurementValue bearing) {
-        this.motion = motion;
+    public SpeedMeasurement(MeasurementValue motionDetected, MeasurementValue speed,  MeasurementValue bearing) {
+        this.motionDetected = motionDetected;
         this.speed = speed;
         this.bearing = bearing;
     }
@@ -35,33 +33,31 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
      * Motion will be true if motionDetected value is not 0
      * @return
      */
-    @JSONProperty(ignore = true)
     public Boolean isMotionDetected() {
-        if (motion == null || motion.getValue() == null) {
+        if (motionDetected == null || motionDetected.getValue() == null) {
             return false;
         }
-        return (motion.getValue().doubleValue() > 0);
+        return (motionDetected.getValue().doubleValue() > 0);
     }
 
     /**
      * @return the motion, or null if no motion is set
      */
-    @JSONProperty(value = "motionDetected", ignoreIfNull = true)
     public MeasurementValue getMotion() {
-        return motion;
+        return motionDetected;
     }
 
     /**
-     * @param motion the motion to set
+     * @param motionDetected the motion to set
      */
-    public void setMotion(MeasurementValue motion) {
-        this.motion = motion;
+    @JsonProperty("motionDetected")
+    public void setMotion(MeasurementValue motionDetected) {
+        this.motionDetected = motionDetected;
     }
 
     /**
      * @return the speed, or null if speed is not set
      */
-    @JSONProperty(value = "speed", ignoreIfNull = true)
     public MeasurementValue getSpeed() {
         return speed;
     }
@@ -69,6 +65,7 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
     /**
      * @param speed the speed to set
      */
+    @JsonProperty("speed")
     public void setSpeed(MeasurementValue speed) {
         this.speed = speed;
     }
@@ -76,7 +73,6 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
     /**
      * @return the bearing, or null if the bearing is not set
      */
-    @JSONProperty(value = "bearing", ignoreIfNull = true)
     public MeasurementValue getBearing() {
         return bearing;
     }
@@ -84,13 +80,14 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
     /**
      * @param bearing the bearing to set
      */
+    @JsonProperty("bearing")
     public void setBearing(MeasurementValue bearing) {
         this.bearing = bearing;
     }
 
     @Override
     public int hashCode() {
-        int result = motion != null ? motion.hashCode() : 0;
+        int result = motionDetected != null ? motionDetected.hashCode() : 0;
         result = 31 * result + (speed != null ? speed.hashCode() : 0);
         result = 31 * result + (bearing != null ? bearing.hashCode() : 0);
         return result;
@@ -110,7 +107,7 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
         if (bearing != null ? !bearing.equals(that.bearing) : that.bearing != null) {
             return false;
         }
-        if (motion != null ? !motion.equals(that.motion) : that.motion != null) {
+        if (motionDetected != null ? !motionDetected.equals(that.motionDetected) : that.motionDetected != null) {
             return false;
         }
         if (speed != null ? !speed.equals(that.speed) : that.speed != null) {
@@ -123,7 +120,7 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
     @Override
     public String toString() {
         return "SpeedMeasurement{" +
-                "motion=" + motion +
+                "motionDetected=" + motionDetected +
                 ", speed=" + speed +
                 ", bearing=" + bearing +
                 '}';

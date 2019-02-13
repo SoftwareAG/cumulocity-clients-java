@@ -5,10 +5,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 
+import com.jsoniter.JsonIterator;
+import com.jsoniter.output.JsonStream;
 import org.junit.Before;
 import org.junit.Test;
-import org.svenson.JSON;
-import org.svenson.JSONParser;
 
 import c8y.SpeedMeasurement;
 
@@ -39,8 +39,9 @@ public class MotionMeasurementTest {
     @Test
     public final void shouldSerializeAndDeserializeCorrectly() {
 
-        String serialized = JSON.defaultJSON().forValue(measurement);
-        SpeedMeasurement newMeasurement = JSONParser.defaultJSONParser().parse(SpeedMeasurement.class, serialized);
+        String serialized = JsonStream.serialize(measurement);
+
+        SpeedMeasurement newMeasurement = JsonIterator.deserialize(serialized, SpeedMeasurement.class);
         assertTrue(serialized.contains("\"motionDetected\":"));    // According to wiki page
         assertTrue(serialized.contains("\"speed\":"));    // According to wiki page
         assertEquals(measurement.getSpeed().getValue(), newMeasurement.getSpeed().getValue());
