@@ -21,7 +21,7 @@
 
         <cumulocity.model.version>9.0.12</cumulocity.model.version>
         <cumulocity.dependencies.version>9.0.1</cumulocity.dependencies.version>
-        <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
+        <cumulocity.clients.version>9.0.24</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>1.5.7.RELEASE</spring-boot-dependencies.version>
         <jetty.version>8.1.7.v20120910</jetty.version>
