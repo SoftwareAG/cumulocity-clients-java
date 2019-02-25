@@ -20,6 +20,7 @@ public abstract class BaseScope implements Scope {
             .removalListener(new RemovalListener<String, ScopeContainer>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, ScopeContainer> removalNotification) {
+                    removalNotification.getValue().clear();
                     log.debug("bean was removed, key: {}", removalNotification.getKey());
                 }
             })
