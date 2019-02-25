@@ -2,6 +2,9 @@ package com.cumulocity.microservice.context.scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +31,9 @@ public class DefaultScopeContainer implements ScopeContainer {
     private volatile boolean containerInDestruction;
 
     public DefaultScopeContainer() {
-        this.objectsMap = new ConcurrentHashMap<String, Object>();
-        this.callbacksMap = new ConcurrentHashMap<String, List<Runnable>>();
-        this.objectsInDestruction = new ConcurrentHashMap<String, Object>();
+        this.objectsMap = new ConcurrentHashMap<>();
+        this.callbacksMap = new ConcurrentHashMap<>();
+        this.objectsInDestruction = new ConcurrentHashMap<>();
         this.containerInDestruction = false;
     }
 
@@ -74,7 +77,7 @@ public class DefaultScopeContainer implements ScopeContainer {
         ensureObjectNotInDestruction(name);
         List<Runnable> list = callbacksMap.get(name);
         if (list == null) {
-            list = new ArrayList<Runnable>();
+            list = new ArrayList<>();
             callbacksMap.put(name, list);
         }
         list.add(callback);
@@ -97,14 +100,25 @@ public class DefaultScopeContainer implements ScopeContainer {
 
     private Object doRemoveObject(String name) {
         if (objectsInDestruction.putIfAbsent(name, name) != null) {
-            throw new IllegalStateException("The object is currenlty in destruction!");
+            throw new IllegalStateException("The object is currently in destruction!");
         }
         try {
             Object removed = objectsMap.remove(name);
+            doReleaseResource(removed);
             runDestructionCallbacks(name);
             return removed;
         } finally {
             objectsInDestruction.remove(name);
+        }
+    }
+
+    private void doReleaseResource(Object object) {
+        if (ClassUtils.isAssignableValue(AutoCloseable.class, object)) {
+            try {
+                ((AutoCloseable) object).close();
+            } catch (Exception e) {
+                log.debug("Could not release resources of: {}", object.getClass().getSimpleName());
+            }
         }
     }
 
@@ -120,14 +134,14 @@ public class DefaultScopeContainer implements ScopeContainer {
 
     private void ensureContainerNotInDestruction() {
         if (containerInDestruction) {
-            throw new IllegalStateException("The scope container is currenlty in destruction!");
+            throw new IllegalStateException("The scope container is currently in destruction!");
         }
     }
 
     private void ensureObjectNotInDestruction(String name) {
         ensureContainerNotInDestruction();
         if (objectsInDestruction.containsKey(name)) {
-            throw new IllegalStateException("The object is currenlty in destruction!");
+            throw new IllegalStateException("The object is currently in destruction!");
         }
     }
 }
