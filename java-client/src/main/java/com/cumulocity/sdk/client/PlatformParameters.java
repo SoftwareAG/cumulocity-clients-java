@@ -112,7 +112,6 @@ public class PlatformParameters {
     public synchronized RestConnector createRestConnector() {
         if (restConnector == null) {
             restConnector = new RestConnector(this, new ResponseParser(responseMapper));
-            startBufferProcessing();
         }
         return restConnector;
     }
@@ -221,7 +220,10 @@ public class PlatformParameters {
         return cumulocityCredentials == null ? null : cumulocityCredentials.getRequestOrigin();
     }
 
-    BufferRequestService getBufferRequestService() {
+    BufferRequestService createBufferRequestService() {
+        if (bufferRequestService == null) {
+            startBufferProcessing();
+        }
         return bufferRequestService;
     }
 
