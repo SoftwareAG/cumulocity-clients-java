@@ -2,6 +2,9 @@ package com.cumulocity.microservice.context.scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +113,7 @@ public class DefaultScopeContainer implements ScopeContainer {
     }
 
     private void doReleaseResource(Object object) {
-        if (AutoCloseable.class.isAssignableFrom(object.getClass())) {
+        if (ClassUtils.isAssignableValue(AutoCloseable.class, object)) {
             try {
                 ((AutoCloseable) object).close();
             } catch (Exception e) {
