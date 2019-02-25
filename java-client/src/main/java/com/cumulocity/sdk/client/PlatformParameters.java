@@ -131,7 +131,6 @@ public class PlatformParameters {
     public synchronized RestConnector createRestConnector() {
         if (restConnector == null) {
             restConnector = new RestConnector(this, new ResponseParser(responseMapper));
-            startBufferProcessing();
         }
         return restConnector;
     }
@@ -306,7 +305,10 @@ public class PlatformParameters {
         this.requestOrigin = requestOrigin;
     }
 
-    BufferRequestService getBufferRequestService() {
+    BufferRequestService createBufferRequestService() {
+        if (bufferRequestService == null) {
+            startBufferProcessing();
+        }
         return bufferRequestService;
     }
 
