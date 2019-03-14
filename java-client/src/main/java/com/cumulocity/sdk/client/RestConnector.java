@@ -258,7 +258,7 @@ public class RestConnector implements RestOperations {
 
     private <T extends ResourceRepresentation> Future sendAsyncRequest(String method, String path, CumulocityMediaType mediaType,
                                                                        T representation) {
-        BufferRequestService bufferRequestService = platformParameters.getBufferRequestService();
+        BufferRequestService bufferRequestService = platformParameters.createBufferRequestService();
         return bufferRequestService.create(BufferedRequest.create(method, path, mediaType, representation));
     }
 
