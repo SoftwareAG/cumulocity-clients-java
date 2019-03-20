@@ -43,6 +43,7 @@ import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -58,6 +59,7 @@ import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 public class RestConnector implements RestOperations {
+
 
     public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
 
@@ -92,6 +94,7 @@ public class RestConnector implements RestOperations {
     public RestConnector(PlatformParameters platformParameters, ResponseParser responseParser) {
         this(platformParameters, responseParser, createClient(platformParameters));
     }
+
 
     protected RestConnector(PlatformParameters platformParameters, ResponseParser responseParser, Client client) {
         this.platformParameters = platformParameters;
@@ -396,12 +399,13 @@ public class RestConnector implements RestOperations {
         config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
 
         CumulocityHttpClient client = new CumulocityHttpClient(
-                createDefaultClientHander(config, platformParameters.isAlwaysCloseConnection()), null);
+                createDefaultClientHander(config, platformParameters), null);
         client.setPlatformParameters(platformParameters);
         client.setFollowRedirects(true);
         client.addFilter(
                 new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials())
         );
+
         if (platformParameters.isAlwaysCloseConnection()) {
             client.addFilter(new ClientFilter() {
                 @Override
@@ -414,13 +418,17 @@ public class RestConnector implements RestOperations {
         return client;
     }
 
-    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc, boolean alwaysCloseConnection) {
+    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc, PlatformParameters platformParameters) {
         MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        httpConnectionManager.getParams().setDefaultMaxConnectionsPerHost(20);
+        HttpConnectionManagerParams params = httpConnectionManager.getParams();
+        ConnectionPoolConfig pool = platformParameters.getHttpClientConfig().getPool();
         final HttpClient client = new HttpClient(httpConnectionManager);
-        client.getParams().setConnectionManagerTimeout(10000);
-        if (alwaysCloseConnection) {
-            httpConnectionManager.getParams().setStaleCheckingEnabled(false);
+        if (pool.isEnabled()) {
+            params.setDefaultMaxConnectionsPerHost(pool.getPerHost());
+            params.setMaxTotalConnections(pool.getPerHost());
+            client.getParams().setConnectionManagerTimeout(pool.getAwaitTimeout());
+        } else {
+            params.setStaleCheckingEnabled(false);
         }
         return new ApacheHttpClientHandler(client, cc);
     }

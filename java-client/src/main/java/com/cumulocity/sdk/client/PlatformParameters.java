@@ -32,10 +32,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *  Keeps credentials and client configuration.
- *  Creates processor responsible for handling buffered requests.
- *  Important to call close() method on shutdown to finish processing.
- *
+ * Keeps credentials and client configuration.
+ * Creates processor responsible for handling buffered requests.
+ * Important to call close() method on shutdown to finish processing.
  */
 public class PlatformParameters {
 
@@ -58,8 +57,6 @@ public class PlatformParameters {
 
     private boolean forceInitialHost = false;
 
-    private boolean alwaysCloseConnection = false;
-
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private BufferRequestService bufferRequestService;
@@ -73,6 +70,8 @@ public class PlatformParameters {
     private Supplier<String> tfaToken;
 
     private ResponseMapper responseMapper;
+
+    private HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().build();
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
 
@@ -186,7 +185,29 @@ public class PlatformParameters {
     }
 
     public boolean isAlwaysCloseConnection() {
-        return alwaysCloseConnection;
+        return !httpClientConfig.getPool().isEnabled();
+    }
+
+    public HttpClientConfig getHttpClientConfig() {
+        return httpClientConfig;
+    }
+
+    /**
+     * Pass the configuration for underlying http client
+     * Example:
+     * platform.setHttpClientConfig(
+     * HttpClientConfig.httpConfig()
+     * .pool(ConnectionPoolConfig.connectionPool()
+     *      .perHost(100)
+     *      .max(200)
+     *      .awaitTimeout(60000)
+     *      .build())
+     *  .build()
+     * );
+     * @param httpClientConfig
+     */
+    public void setHttpClientConfig(HttpClientConfig httpClientConfig) {
+        this.httpClientConfig = httpClientConfig;
     }
 
     /**
@@ -195,7 +216,7 @@ public class PlatformParameters {
      * @param alwaysCloseConnection
      */
     public void setAlwaysCloseConnection(boolean alwaysCloseConnection) {
-        this.alwaysCloseConnection = alwaysCloseConnection;
+        httpClientConfig = httpClientConfig.toBuilder().pool(httpClientConfig.getPool().toBuilder().enabled(!alwaysCloseConnection).build()).build();
     }
 
     public String getTfaToken() {
