@@ -24,10 +24,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import com.cumulocity.common.notification.ReaderInputStream;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.google.common.io.CharSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,6 +46,8 @@ import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
 import com.sun.jersey.api.client.ClientResponse;
+import org.springframework.util.StreamUtils;
+import sun.misc.IOUtils;
 
 public class ResponseParserTest {
 
@@ -90,6 +98,39 @@ public class ResponseParserTest {
         // Then
         assertThat(result, sameInstance(representation));
     }
+
+    @Test
+    public void shouldParseDifferentSpecificType2() throws Exception {
+        // Given
+        when(response.getStatus()).thenReturn(EXPECTED_STATUS);
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+
+        Map<String, Object> parameters = new HashMap<>();
+        Object[] array =  {"alt", 1600};
+        parameters.put("c8y_Position",array);
+
+        representation.setAttrs(parameters);
+        System.out.println(representation);
+
+
+
+        InputStream targetStream =
+                new ReaderInputStream(CharSource.wrap("{\n" +
+                        "  \"c8y_Position\":[\n" +
+                        "    \"alt\",\n" +
+                        "    1600\n" +
+                        "  ]\n" +
+                        "}").openStream());
+        when(response.getEntityInputStream()).thenReturn(targetStream);
+
+        // When
+        ManagedObjectRepresentation result = parser.parse(response, ManagedObjectRepresentation.class, EXPECTED_STATUS);
+
+        // Then
+        assertThat(result, sameInstance(representation));
+    }
+
+
 
     @Test
     public void shouldIncludeExistingErrorMessageInExceptionWhenStatusIsNotAsExpected() throws Exception {
