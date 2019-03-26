@@ -96,10 +96,9 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         ensureConnection();
         final ClientSessionChannel channel = getChannel(object);
         log.debug("subscribing to channel {}", channel.getId());
-        boolean firstSubscriber = CollectionUtils.isEmpty(channel.getSubscribers());
-
         SubscriptionRecord subscriptionRecord = new SubscriptionRecord(object, handler, subscribeOperationListener);
         final MessageListenerAdapter listener = new MessageListenerAdapter(handler, channel, object, subscriptionRecord);
+        boolean firstSubscriber = CollectionUtils.isEmpty(channel.getSubscribers());
 
         // Only listen on subscribe operation result for the first subscription as from the 2nd one on, there is no interaction with server
         if (firstSubscriber) {
