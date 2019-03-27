@@ -222,7 +222,6 @@ public class SubscriberImplTest {
     }
 
     private void sendUnsubscribeMessage(String channelId) {
-        verify(metaUnsubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
             listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessage(channelId, true));
         }
