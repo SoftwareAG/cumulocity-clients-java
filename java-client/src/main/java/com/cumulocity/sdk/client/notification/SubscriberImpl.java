@@ -277,29 +277,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    private final class UnsubscribeListener implements MessageListener {
-        private final SubscriptionRecord subscribed;
-        private final ClientSessionChannel unsubscribeChannel;
-
-        public UnsubscribeListener(SubscriptionRecord subscribed, ClientSessionChannel unsubscribeChannel) {
-            this.subscribed = subscribed;
-            this.unsubscribeChannel = unsubscribeChannel;
-        }
-
-        @Override
-        public void onMessage(ClientSessionChannel channel, Message message) {
-            if (subscriptionNameResolver.apply(subscribed.getId()).equals(message.get(Message.SUBSCRIPTION_FIELD))
-                    && message.isSuccessful()) {
-                try {
-                    log.debug("unsubscribed successfully from channel {}", channel.getId());
-                    subscribed.remove();
-                } finally {
-                    unsubscribeChannel.removeListener(this);
-                }
-            }
-        }
-    }
-
     private static class LoggingSubscribeOperationListener implements SubscribeOperationListener {
 
         private static final Logger LOG = LoggerFactory.getLogger(LoggingSubscribeOperationListener.class);
@@ -356,8 +333,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                     if (autoRetry) {
                         pendingSubscriptions.remove(subscription);
                     }
-                    ClientSessionChannel unsubscribeChannel = session.getChannel(ClientSessionChannel.META_UNSUBSCRIBE);
-                    unsubscribeChannel.addListener(new UnsubscribeListener(subscription, unsubscribeChannel));
                     subscriptions.add(subscription);
                     subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
