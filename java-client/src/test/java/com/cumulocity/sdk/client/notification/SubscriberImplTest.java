@@ -2,6 +2,7 @@ package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.SDKException;
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
@@ -17,8 +18,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,9 +64,10 @@ public class SubscriberImplTest {
 
     @Before
     public void setup() throws SDKException {
-        subscriber = new SubscriberImpl<Object>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
+        subscriber = new SubscriberImpl<>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
         mockClientProvider();
         when(metaSubscribeChannel.getId()).thenReturn(Channel.META_SUBSCRIBE);
+        when(metaUnsubscribeChannel.getId()).thenReturn(Channel.META_UNSUBSCRIBE);
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
         when(client.getChannel(ClientSessionChannel.META_UNSUBSCRIBE)).thenReturn(metaUnsubscribeChannel);
     }
@@ -219,7 +222,6 @@ public class SubscriberImplTest {
     }
 
     private void sendUnsubscribeMessage(String channelId) {
-        verify(metaUnsubscribeChannel, Mockito.atLeastOnce()).addListener(listenerCaptor.capture());
         for (MessageListener listener : listenerCaptor.getAllValues()) {
             listener.onMessage(metaUnsubscribeChannel, mockSubscribeMessage(channelId, true));
         }
@@ -284,6 +286,59 @@ public class SubscriberImplTest {
         verifyConnected();
         verifySubscribed(channel, 2);
         assertThat(onError.get()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldRemoveSubscriberOnUnsubscribe() {
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = givenChannel(channelId);
+        final Subscription subscription = subscriber.subscribe(channelId, listener);
+        subscription.unsubscribe();
+
+        assertThat(CollectionUtils.isEmpty(channel.getListeners())).isTrue();
+        verifyUnsubscribe(channel);
+    }
+
+    @Test
+    public void shouldCleanupSubscriberOnReconnect() {
+        final ClientSessionChannel channel = givenChannelWithSubscription("/channel");
+        ClientSessionChannel.ClientSessionChannelListener mockUnsubscribeListener = mock(ClientSessionChannel.ClientSessionChannelListener.class);
+
+        when(metaUnsubscribeChannel.getListeners()).thenReturn(Arrays.asList(mockUnsubscribeListener));
+
+        reconnect();
+
+        verify(metaUnsubscribeChannel).removeListener(mockUnsubscribeListener);
+        verifySubscribed(channel, 2);
+    }
+
+    @Test
+    public void shouldNotAddSubscribeListenerWhenChannelHasSubscriber() {
+        final String channelId = "/channel";
+        final ClientSessionChannel channel = givenChannel(channelId);
+        SubscriptionListener<Object, Message> listener1 = mock(SubscriptionListener.class);
+        SubscriptionListener<Object, Message> listener2 = mock(SubscriptionListener.class);
+
+        subscriber.subscribe(channelId, listener1);
+
+        verify(metaSubscribeChannel).addListener(any(MessageListener.class));
+
+        final AtomicBoolean notified = new AtomicBoolean(false);
+        when(channel.getSubscribers()).thenReturn(Arrays.asList(mock(ClientSessionChannel.MessageListener.class)));
+        subscriber.subscribe(channelId, new SubscribeOperationListener() {
+            @Override
+            public void onSubscribingSuccess(String channelId) {
+                notified.set(true);
+            }
+
+            @Override
+            public void onSubscribingError(String channelId, String error, Throwable throwable) {
+
+            }
+        }, listener2, true);
+
+        verifyNoMoreInteractions(metaSubscribeChannel);
+        assertThat(notified.get()).isTrue();
     }
 
     private Subscription<Object> givenSubscription(ClientSessionChannel channel) {
