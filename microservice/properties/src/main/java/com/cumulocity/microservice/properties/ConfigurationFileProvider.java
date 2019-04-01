@@ -64,14 +64,15 @@ public class ConfigurationFileProvider {
     }
 
     private Iterable<Path> directories() {
+        String packageDirectory = resolveDirectory();
         return FluentIterable.from(new String[]{
-                "${ " + PACKAGE_DIRECTORY + ".config.dir}/." + PACKAGE_DIRECTORY,
-                "${ " + PACKAGE_DIRECTORY + ".config.dir}/" + PACKAGE_DIRECTORY,
-                "${user.home}/." + PACKAGE_DIRECTORY,
-                "${user.home}/" + PACKAGE_DIRECTORY,
-                "${conf.dir}/." + PACKAGE_DIRECTORY,
-                "${conf.dir}/" + PACKAGE_DIRECTORY,
-                "/etc/" + PACKAGE_DIRECTORY
+                "${" + packageDirectory + ".config.dir}/." + packageDirectory,
+                "${" + packageDirectory + ".config.dir}/" + packageDirectory,
+                "${user.home}/." + packageDirectory,
+                "${user.home}/" + packageDirectory,
+                "${conf.dir}/." + packageDirectory,
+                "${conf.dir}/" + packageDirectory,
+                "/etc/" + packageDirectory
         }).transform(new Function<String, String>() {
             @Override
             public String apply(String s) {
