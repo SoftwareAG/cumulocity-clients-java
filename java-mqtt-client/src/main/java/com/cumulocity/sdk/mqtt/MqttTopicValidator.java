@@ -13,7 +13,8 @@ class MqttTopicValidator {
         }
 
         return isSmartRestStaticPublishTopic(topic) || isSmartRestLegacyPublishTopic(topic)
-                || isSmartRestPublishTopic(topic) || isSmartRestTemplateCreationPublishTopic(topic);
+                || isSmartRestPublishTopic(topic) || isSmartRestTemplateCreationPublishTopic(topic)
+                || isDeviceCredentialsPublishTopic(topic);
     }
 
 
@@ -24,7 +25,8 @@ class MqttTopicValidator {
 
         return isSmartRestExceptionsTopic(topic) || isSmartRestStaticSubscribeTopic(topic)
                 || isSmartRestLegacySubscribeTopic(topic) || isSmartRestSubscribeTopic(topic)
-                || isSmartRestTemplateCreationSubscribeTopic(topic) || isSmartRestLegacyOperationsTopic(topic);
+                || isSmartRestTemplateCreationSubscribeTopic(topic) || isSmartRestLegacyOperationsTopic(topic)
+                || isDeviceCredentialsSubscribeTopic(topic);
     }
 
 
@@ -68,5 +70,13 @@ class MqttTopicValidator {
 
     private static boolean isSmartRestTemplateCreationSubscribeTopic(String topic) {
         return topic.contains(BASE_SMARTREST_TEMPLATE_CREATION_SUBSCRIBE);
+    }
+
+    private static boolean isDeviceCredentialsPublishTopic(String topic) {
+        return topic.contains(BASE_DEVICE_CREDENTIALS_PUBLISH);
+    }
+
+    private static boolean isDeviceCredentialsSubscribeTopic(String topic) {
+        return topic.contains(BASE_DEVICE_CREDENTIALS_SUBSCRIBE);
     }
 }

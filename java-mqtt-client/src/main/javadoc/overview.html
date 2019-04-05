@@ -37,7 +37,32 @@ Cumulocity SDK - Java MQTT Client library provides the classes necessary to inte
 
 
         /**
-         * Running device bootstrap/Create device
+         * Running device bootstrap
+         */
+
+        boolean receiveDeviceCreds;
+        MqttMessageRequest subMessage = MqttMessageRequest.builder().topicName("s/dcr")
+                .qoS(QoS.EXACTLY_ONCE).build();
+
+        client.subscribe(subMessage, new MqttMessageListener() {
+            public void messageArrived(MqttMessageResponse messageResponse) {
+                System.out.println("Received Response : " + messageResponse.getTopicName() + " "
+                        + messageResponse.getClientId() + " " + messageResponse.getQos() + " "
+                        + messageResponse.getMessageContent());
+                receiveDeviceCreds = true;
+            }
+        });
+
+        MqttMessageRequest pubMessage = MqttMessageRequest.builder().topicName("s/ucr")
+                .qoS(QoS.EXACTLY_ONCE).messageContent("").build();
+
+        while(!receiveDeviceCreds) {
+            client.publish(pubMessage);
+        }
+
+
+        /**
+         * Create device via MQTT Static Templates
          */
 
         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")
