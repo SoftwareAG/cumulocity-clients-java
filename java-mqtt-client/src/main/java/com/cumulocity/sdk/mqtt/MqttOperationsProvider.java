@@ -2,6 +2,7 @@ package com.cumulocity.sdk.mqtt;
 
 import com.cumulocity.sdk.mqtt.listener.MqttMessageListener;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
+import com.cumulocity.sdk.mqtt.model.LastWillDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -30,8 +31,17 @@ class MqttOperationsProvider implements OperationsProvider {
         options.setAutomaticReconnect(true);
         options.setCleanSession(connectionDetails.isCleanSession());
 
+        // set last will details
+        if (connectionDetails.getLastWill() != null) {
+            LastWillDetails lastWillDetails = connectionDetails.getLastWill();
+            byte[] payload = lastWillDetails.getMessage().getBytes();
+            options.setWill(lastWillDetails.getTopic(), payload,
+                    lastWillDetails.getQoS().getValue(), lastWillDetails.isRetained());
+        }
+
         client = new MqttAsyncClient(getServerURI(connectionDetails),
                 connectionDetails.getClientId(), persistence);
+
         final IMqttToken conToken = client.connect(options);
         conToken.waitForCompletion();
     }
