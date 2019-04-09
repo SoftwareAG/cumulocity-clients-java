@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>1004.0.0</version>
+		<version>1004.0.4</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
@@ -34,6 +34,7 @@
     </modules>
 
 	<properties>
+		<cumulocity.dependencies.version>1004.0.4</cumulocity.dependencies.version>
 		<cumulocity.model.version>1004.0.4</cumulocity.model.version>
 		<cumulocity.shared-components.version>1004.0.4</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
