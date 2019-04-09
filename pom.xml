@@ -34,6 +34,7 @@
     </modules>
 
 	<properties>
+		<cumulocity.dependencies.version>1004.4.0</cumulocity.dependencies.version>
 		<cumulocity.model.version>1004.4.0</cumulocity.model.version>
 		<cumulocity.shared-components.version>1004.4.0</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
