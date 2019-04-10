@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>9.20.5-SNAPSHOT</version>
+    <version>9.20.11-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -19,8 +19,8 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>9.20.6</cumulocity.model.version>
-        <cumulocity.dependencies.version>9.20.2</cumulocity.dependencies.version>
+        <cumulocity.model.version>9.20.11</cumulocity.model.version>
+        <cumulocity.dependencies.version>9.20.11</cumulocity.dependencies.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>1.5.17.RELEASE</spring-boot-dependencies.version>
