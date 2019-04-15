@@ -2,6 +2,18 @@
 set -e
 source ${BASH_SOURCE%/*}/common.sh
 
+while [ "$1" != "" ]; do
+    case $1 in
+        -r | --release )        shift
+                                version=$1
+                                ;;
+        -d | --development )    shift
+                                next_version=$1
+                                ;;
+        *)                      ;;
+    esac
+    shift
+done
 
 call-mvn clean -T 4
 
@@ -11,10 +23,6 @@ cd cumulocity-sdk
 hg pull -u 
 hg up -C ${BRANCH_NAME}
 cd -
-
-current_version=$(resolve-version)
-version=$(next-release ${current_version})
-next_version=$(next-snapshot ${version})
 
 echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version} 
