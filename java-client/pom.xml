@@ -225,7 +225,7 @@
 						<artifactItem>
 							<groupId>com.nsn.cumulocity.model</groupId>
 							<artifactId>core-model</artifactId>
-							<version>${cumulocity.model.version}</version>
+							<version>${cumulocity.core.version}</version>
 							<type>jar</type>
 							<classifier>sources</classifier>
 							<overWrite>true</overWrite>
@@ -234,7 +234,7 @@
 						<artifactItem>
 							<groupId>com.nsn.cumulocity.model</groupId>
 							<artifactId>rest-representation</artifactId>
-							<version>${cumulocity.model.version}</version>
+							<version>${cumulocity.core.version}</version>
 							<type>jar</type>
 							<classifier>sources</classifier>
 							<overWrite>true</overWrite>
