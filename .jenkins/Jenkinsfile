@@ -42,7 +42,7 @@ pipeline {
         }
         stage('Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                     sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
                 }
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
@@ -95,7 +95,14 @@ pipeline {
         }
         stage('Deploy to Nexus') {
             when {
-                equals expected: 'DEFAULT', actual: params.build_type
+                allOf {
+                    equals expected: 'DEFAULT', actual: params.build_type
+                    anyOf{
+                        branch 'release/**';
+                        branch 'develop'
+                    }
+                }
+
             }
             steps {
                 sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
@@ -163,7 +170,7 @@ pipeline {
             sh "mvn release:clean -q"
         }
         success {
-            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
             }
         }
@@ -174,7 +181,7 @@ pipeline {
                 }
             }
 
-            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
         }
