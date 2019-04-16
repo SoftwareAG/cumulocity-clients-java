@@ -166,8 +166,7 @@ pipeline {
     }
     post {
         always {
-            sh "mvn clean -q"
-            sh "mvn release:clean -q"
+            sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
         }
         success {
             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
