@@ -43,6 +43,10 @@
 		<name>(C) Cumulocity GmbH</name>
 	</organization>
 
+    <properties>
+        <jetty.version>9.2.21.v20170120</jetty.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.nsn.cumulocity.sdk.me</groupId>
@@ -94,11 +98,18 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
             <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
