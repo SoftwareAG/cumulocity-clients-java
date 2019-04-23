@@ -55,7 +55,7 @@ hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd cumulocity-sdk
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd -
-hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java
+hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java --new-branch
 cd cumulocity-sdk
-hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-sdk
+hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-sdk --new-branch
 
