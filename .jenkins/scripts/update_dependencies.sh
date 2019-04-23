@@ -10,14 +10,25 @@ function update-dependencies {
     do
         update-property $property ${1}
     done
+    if [ -n "$(hg status)" ]; then
         hg commit -m "Update dependencies to new version"
+    fi
+    if [ -z "$(hg status)" ]; then
+        echo "no changes found no commit"
+    fi
+
 
     cd cumulocity-sdk
     for property in "${PROPERTIES[@]}"
     do
         update-property $property ${1}
     done
-    hg commit -m "Update dependencies to new version"
+    if [ -n "$(hg status)" ]; then
+        hg commit -m "Update dependencies to new version"
+    fi
+    if [ -z "$(hg status)" ]; then
+        echo "no changes found no commit"
+    fi
 
 }
 
