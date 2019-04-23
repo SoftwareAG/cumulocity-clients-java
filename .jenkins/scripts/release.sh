@@ -19,6 +19,10 @@ call-mvn clean -T 4
 #if it is a release on develop branch, hg branch will return release/rX.X.X as it is the branch created in previous step.
 # If it is a release/hotfix on release branch it should just push the branch it was on
 branch_name=$(hg branch)
+if [ "!develop" == "!branch_name" ]; then
+    branch_name="release/r${version}"
+fi
+echo "branch name: $branch_name"
 
 hg pull -u 
 hg up -C ${branch_name}
