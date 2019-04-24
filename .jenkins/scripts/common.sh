@@ -5,7 +5,7 @@ set +eu
 set -e
 
 export resources=hudson@yum.cumulocity.com
-export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
+export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -s $MVN_SETTINGS -U"
 function call-mvn {
     ./mvnw ${@}
     if [ -f microservice/pom.xml ] ;
