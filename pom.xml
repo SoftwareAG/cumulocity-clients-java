@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.root</groupId>
 		<artifactId>root</artifactId>
-		<version>1004.0.4</version>
+		<version>1004.0.5</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
@@ -34,9 +34,9 @@
     </modules>
 
 	<properties>
-		<cumulocity.dependencies.version>1004.0.4</cumulocity.dependencies.version>
-		<cumulocity.model.version>1004.0.4</cumulocity.model.version>
-		<cumulocity.shared-components.version>1004.0.4</cumulocity.shared-components.version>
+		<cumulocity.dependencies.version>1004.0.5</cumulocity.dependencies.version>
+		<cumulocity.model.version>1004.0.5</cumulocity.model.version>
+		<cumulocity.shared-components.version>1004.0.5</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
 		<jersey1.version>1.8</jersey1.version>
 		<jaxrs.version>1.1.1</jaxrs.version>
