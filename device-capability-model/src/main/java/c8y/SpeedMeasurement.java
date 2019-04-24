@@ -35,7 +35,11 @@ public class SpeedMeasurement extends AbstractDynamicProperties {
      * Motion will be true if motionDetected value is not 0
      * @return
      */
+    @JSONProperty(ignore = true)
     public Boolean isMotionDetected() {
+        if (motion == null || motion.getValue() == null) {
+            return false;
+        }
         return (motion.getValue().doubleValue() > 0);
     }
 
