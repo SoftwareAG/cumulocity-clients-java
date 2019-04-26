@@ -19,7 +19,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.model.version>9.16.7-SNAPSHOT</cumulocity.model.version>
+        <cumulocity.model.version>9.16.7</cumulocity.model.version>
         <cumulocity.dependencies.version>9.16.0</cumulocity.dependencies.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
