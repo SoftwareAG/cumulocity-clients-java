@@ -40,4 +40,10 @@ public class ConnectionDetails {
      * by default value being false.
      */
     private boolean cleanSession;
+
+    /**
+     * The "last will" message that is specified at connection time and that
+     * is executed when the client loses the connection.
+     */
+    private LastWillDetails lastWill;
 }

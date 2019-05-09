@@ -33,4 +33,10 @@ public class MqttTopics {
 
     // smartrest downlink template creation
     public static final String BASE_SMARTREST_TEMPLATE_CREATION_SUBSCRIBE = "s/dt";
+
+    // uplink device credentials
+    public static final String BASE_DEVICE_CREDENTIALS_PUBLISH = "s/ucr";
+
+    // downlink device credentials
+    public static final String BASE_DEVICE_CREDENTIALS_SUBSCRIBE = "s/dcr";
 }

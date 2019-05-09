@@ -18,13 +18,25 @@ Cumulocity SDK - Java MQTT Client library provides the classes necessary to inte
          * unique device id/clientId with optional cleanSession flag via MqttClientBuilder.
          */
 
+        // Without last will testament
         final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
                                                                         .clientId("XNPP-EMEA-1234")
                                                                         .userName("tenant/username")
                                                                         .password("password")
                                                                         .cleanSession(true)
                                                                         .build();
+        // With last will testament
+        final LastWillDetails lastWillDetails = LastWillDetails.builder().topic("s/us")
+                .qoS(QoS.EXACTLY_ONCE).message("400,c8y_ConnectionEvent,\"Device connection was lost.\"").build();
 
+        final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
+                                                                        .clientId("XNPP-EMEA-1234")
+                                                                        .userName("tenant/username")
+                                                                        .password("password")
+                                                                        .lastWill(lastWillDetails)
+                                                                        .build();
+
+        // Generate/create client
         MqttClient client = MqttClientBuilder.generateClient(connectionDetails);
 
 
@@ -37,7 +49,32 @@ Cumulocity SDK - Java MQTT Client library provides the classes necessary to inte
 
 
         /**
-         * Running device bootstrap/Create device
+         * Running device bootstrap
+         */
+
+        boolean receiveDeviceCreds;
+        MqttMessageRequest subMessage = MqttMessageRequest.builder().topicName("s/dcr")
+                .qoS(QoS.EXACTLY_ONCE).build();
+
+        client.subscribe(subMessage, new MqttMessageListener() {
+            public void messageArrived(MqttMessageResponse messageResponse) {
+                System.out.println("Received Response : " + messageResponse.getTopicName() + " "
+                        + messageResponse.getClientId() + " " + messageResponse.getQos() + " "
+                        + messageResponse.getMessageContent());
+                receiveDeviceCreds = true;
+            }
+        });
+
+        MqttMessageRequest pubMessage = MqttMessageRequest.builder().topicName("s/ucr")
+                .qoS(QoS.EXACTLY_ONCE).messageContent("").build();
+
+        while(!receiveDeviceCreds) {
+            client.publish(pubMessage);
+        }
+
+
+        /**
+         * Create device via MQTT Static Templates
          */
 
         MqttMessageRequest message = MqttMessageRequest.builder().topicName("s/us")

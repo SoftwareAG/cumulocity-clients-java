@@ -2,19 +2,34 @@
 set -e
 source ${BASH_SOURCE%/*}/common.sh
 
+while [ "$1" != "" ]; do
+    case $1 in
+        -r | --release )        shift
+                                version=$1
+                                ;;
+        -d | --development )    shift
+                                next_version=$1
+                                ;;
+        *)                      ;;
+    esac
+    shift
+done
 
 call-mvn clean -T 4
+#if it is a release on develop branch, hg branch will return release/rX.X.X as it is the branch created in previous step.
+# If it is a release/hotfix on release branch it should just push the branch it was on
+branch_name=$(hg branch)
+if [ "!develop" == "!branch_name" ]; then
+    branch_name="release/r${version}"
+fi
+echo "branch name: $branch_name"
 
 hg pull -u 
-hg up -C ${BRANCH_NAME}
+hg up -C ${branch_name}
 cd cumulocity-sdk
 hg pull -u 
-hg up -C ${BRANCH_NAME}
+hg up -C ${branch_name}
 cd -
-
-current_version=$(resolve-version)
-version=$(next-release ${current_version})
-next_version=$(next-snapshot ${version})
 
 echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version} 
@@ -40,7 +55,7 @@ hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd cumulocity-sdk
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd -
-hg push -r${BRANCH_NAME} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java
+hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java --new-branch
 cd cumulocity-sdk
-hg push -r${BRANCH_NAME} ssh://hg@bitbucket.org/m2m/cumulocity-sdk
+hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-sdk --new-branch
 
