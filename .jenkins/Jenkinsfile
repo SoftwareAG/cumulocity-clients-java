@@ -50,7 +50,9 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                }
             }
         }
         stage('Build') {
@@ -90,7 +92,9 @@ pipeline {
                         subdir          : 'cumulocity-sdk',
                         source          : 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
                 ])
-                sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                }
             }
         }
         stage('Deploy to Nexus') {
@@ -105,7 +109,9 @@ pipeline {
 
             }
             steps {
-                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                }
             }
         }
         stage('Release') {
