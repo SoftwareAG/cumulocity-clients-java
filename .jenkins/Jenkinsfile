@@ -12,13 +12,37 @@ pipeline {
         disableConcurrentBuilds()
     }
     parameters {
-        booleanParam(name: 'release', defaultValue: false, description: 'Defines if this should be a release build')
+        choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
+        string(name: 'release_version', defaultValue: '9.91.0', description: "version you want to release");
+        string(name: 'hotfix_version', defaultValue: '9.91.1-SNAPSHOT', description: "version with micro part bump, available in release branch");
+        string(name: 'development_version', defaultValue: '9.92.0-SNAPSHOT', description: "version that will be in develop branch after process")
+
     }
 
     stages {
+        stage('Fail in case of incorrect input parameters') {
+            when {
+                not {
+                    anyOf {
+                        allOf {
+                            equals expected: 'RELEASE', actual: params.build_type;
+                            branch 'develop'
+                        };
+                        allOf {
+                            equals expected: 'HOTFIX', actual: params.build_type;
+                            branch 'release/*'
+                        }
+                        equals expected: 'DEFAULT', actual: params.build_type
+                    }
+                }
+            }
+            steps {
+                error("Incorrect input parameters")
+            }
+        }
         stage('Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                     sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
                 }
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
@@ -26,9 +50,7 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
-                }
+                sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
             }
         }
         stage('Build') {
@@ -41,9 +63,7 @@ pipeline {
                 retry(3)
             }
             steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
-                }
+                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
             }
             post {
                 always {
@@ -70,52 +90,92 @@ pipeline {
                         subdir          : 'cumulocity-sdk',
                         source          : 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
                 ])
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
-                }
+                sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
             }
         }
         stage('Deploy to Nexus') {
             when {
-                not {
-                    allOf {
-                        expression { params.release }
-                        branch 'release/**'
+                allOf {
+                    equals expected: 'DEFAULT', actual: params.build_type
+                    anyOf {
+                        branch 'release/**';
+                        branch 'develop'
                     }
                 }
+
             }
             steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
-                }
+                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
             }
         }
         stage('Release') {
             when {
-                expression { params.release }
-                branch 'release/**'
+                anyOf {
+                    allOf {
+                        equals expected: 'RELEASE', actual: params.build_type;
+                        branch 'develop'
+                    };
+                    allOf {
+                        equals expected: 'HOTFIX', actual: params.build_type;
+                        branch 'release/*'
+                    }
+                }
             }
-            steps {
-                sshagent(['jenkins-hg-key']) {
-                    withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                        sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+            stages {
+                stage('Prepare release') {
+                    when {
+                        equals expected: 'RELEASE', actual: params.build_type
+                    }
+                    steps {
+                        sh "chmod +x .jenkins/scripts/prepare_release.sh && .jenkins/scripts/prepare_release.sh ${params.release_version}"
+                    }
+                }
+                stage('Release') {
+                    when {
+                        anyOf {
+                            equals expected: 'RELEASE', actual: params.build_type;
+                            equals expected: 'HOTFIX', actual: params.build_type
+                        }
+                    }
+                    steps {
+                        sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                        sshagent(['jenkins-hg-key']) {
+                            sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
+                        }
+                    }
+                }
+                stage('Finish release') {
+                    when {
+                        equals expected: 'RELEASE', actual: params.build_type
+                    }
+                    stages {
+                        stage('Close and merge release branch') {
+                            steps {
+                                sshagent(['jenkins-hg-key']) {
+                                    sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                }
+                            }
+                        }
+                        stage('Bump develop branch') {
+                            steps {
+                                sshagent(['jenkins-hg-key']) {
+                                    sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
     post {
+        always {
+            sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+        }
         success {
-            script {
-                if (env.BRANCH_NAME == 'develop') {
-                    build(job: 'Cumulocity-Platform-Services-BUILD2', wait: false)
-                }
-            }
-
-            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
             }
-
         }
         failure {
             script {
@@ -124,7 +184,7 @@ pipeline {
                 }
             }
 
-            withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
         }

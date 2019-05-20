@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 source ${BASH_SOURCE%/*}/common.sh
-./mvnw install -Pci -s $MVN_SETTINGS -U
+./mvnw install -Pci
 cd microservice
-../mvnw install -Pci -s $MVN_SETTINGS -U
+../mvnw install -Pci 
 cd -
