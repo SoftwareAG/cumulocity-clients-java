@@ -97,7 +97,7 @@ pipeline {
             when {
                 allOf {
                     equals expected: 'DEFAULT', actual: params.build_type
-                    anyOf{
+                    anyOf {
                         branch 'release/**';
                         branch 'develop'
                     }
@@ -151,12 +151,16 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                sshagent(['jenkins-hg-key']) {
+                                    sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                }
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                sshagent(['jenkins-hg-key']) {
+                                    sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                }
                             }
                         }
                     }
