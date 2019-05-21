@@ -33,7 +33,7 @@ cd -
 
 echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version} 
-call-mvn clean deploy ${release_args} 
+call-mvn clean install deploy -Dmaven.javadoc.skip=true -s $MVN_SETTINGS
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
