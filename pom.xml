@@ -46,7 +46,7 @@
 
         <nexus.url>http://localhost:8080</nexus.url>
 
-        <cumulocity.core.version>1004.6.2</cumulocity.core.version>
+        <cumulocity.core.version>${project.version}</cumulocity.core.version>
 
         <assertj.version>2.9.1</assertj.version>
         <awaitability.version>1.7.0</awaitability.version>
