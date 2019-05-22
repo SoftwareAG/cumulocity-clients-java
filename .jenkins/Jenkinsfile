@@ -56,16 +56,13 @@ pipeline {
             }
         }
         stage('Build') {
-            agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                }
-            }
             options {
                 retry(3)
             }
             steps {
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                 sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+            }
             }
             post {
                 always {
