@@ -13,12 +13,12 @@ cd -
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
 update-dependencies ${development_version}
 
-hg commit -m 'Update dependencies to next SNAPSHOT version'"
-# hg push -b develop"
+hg commit -m 'Update dependencies to next SNAPSHOT version'
+hg push -b develop
 
 cd cumulocity-sdk
 
-hg commit -m 'Update to dependencies next SNAPSHOT version'"
-# hg push -b develop"
+hg commit -m 'Update to dependencies next SNAPSHOT version'
+hg push -b develop
 
 cd -

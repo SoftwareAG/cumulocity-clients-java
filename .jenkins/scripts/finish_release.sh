@@ -3,6 +3,7 @@
 release_version=$1
 
 echo "equivalent of hg flow release finish r${release_version}"
+hg pull -r develop
 hg commit --message "flow: Closed <release> ${release_version}" --close-branch
 hg update develop
 hg merge --tool internal:other release/r${release_version}
@@ -11,6 +12,7 @@ hg push --new-branch -b release/r${release_version}
 hg push -b develop
 
 cd cumulocity-sdk
+hg pull -r develop
 hg commit --message "flow: Closed <release> ${release_version}" --close-branch
 hg update develop
 hg merge --tool internal:other release/r${release_version}
