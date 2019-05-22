@@ -19,7 +19,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
 
-        <cumulocity.core.version>1004.6.0</cumulocity.core.version>
+        <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>1.5.19.RELEASE</spring-boot-dependencies.version>
