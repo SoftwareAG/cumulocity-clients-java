@@ -6,101 +6,106 @@ pipeline {
         }
     }
     triggers { pollSCM('H/5 * * * *') }
-    options{
-     buildDiscarder(logRotator(numToKeepStr: '10'))
-     timeout(time: 1, unit: 'HOURS')
-     disableConcurrentBuilds()
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 1, unit: 'HOURS')
+        disableConcurrentBuilds()
     }
     parameters {
         booleanParam(name: 'release', defaultValue: false, description: 'Defines if this should be a release build')
     }
 
     stages {
-       stage('Checkout') {
-           steps {
-               withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
-               }
-               sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
-           }
-       }
+        stage('Checkout') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-confraria', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                    sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
+                }
+                sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
+            }
+        }
         stage('Compile') {
-           steps {
-               sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
-           }
-       }
-       stage('Build') {
-           agent {
+            steps {
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+
+                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                }
+            }
+        }
+        stage('Build') {
+            agent {
                 dockerfile {
                     dir '.jenkins/build'
                 }
             }
-           options {
-             retry(3)
-           }
-           steps {
-               sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
-           }
-           post {
-               always {
-                   junit (testResults: '**/TEST-*.xml', keepLongStdio: true)
-                   jacoco()
-               }
-           }
-       }
-       stage('Verify maven repo') {
-           when {
-                anyOf{
+            options {
+                retry(3)
+            }
+            steps {
+                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+            }
+            post {
+                always {
+                    junit(testResults: '**/TEST-*.xml', keepLongStdio: true)
+                    jacoco()
+                }
+            }
+        }
+        stage('Verify maven repo') {
+            when {
+                anyOf {
                     branch 'develop'
                     branch 'release/**'
                 }
-           }
-           steps {
-               checkout([
-                    $class: 'MercurialSCM',
-                    clear: true,
-                    credentialsId: 'jenkins-hg-key',
-                    installation: 'Mercurial',
-                    disableChangeLog: true,
-                    revision: "${env.BRANCH_NAME}",
-                    subdir: 'cumulocity-sdk',
-                    source: 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
-               ])
-               sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
-           }
-       }
-       stage('Deploy to Nexus') {
-           when {
+            }
+            steps {
+                checkout([
+                        $class          : 'MercurialSCM',
+                        clear           : true,
+                        credentialsId   : 'jenkins-hg-key',
+                        installation    : 'Mercurial',
+                        disableChangeLog: true,
+                        revision        : "${env.BRANCH_NAME}",
+                        subdir          : 'cumulocity-sdk',
+                        source          : 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
+                ])
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                }
+            }
+        }
+        stage('Deploy to Nexus') {
+            when {
                 not {
-                    allOf{
+                    allOf {
                         expression { params.release }
                         branch 'release/**'
                     }
                 }
-           }
-           steps {
-               sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
-           }
-       }
-       stage('Release') {
-              when {
+            }
+            steps {
+                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+            }
+        }
+        stage('Release') {
+            when {
                 expression { params.release }
                 branch 'release/**'
-              }
-              steps {
-                  sshagent(['jenkins-hg-key']) {
+            }
+            steps {
+                sshagent(['jenkins-hg-key']) {
                     sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
-                  }
-              }
+                }
+            }
         }
 
 
     }
     post {
-        success{
+        success {
             script {
                 if (env.BRANCH_NAME == 'develop') {
-                  build(job:'Cumulocity-Platform-Services-BUILD2', wait: false)
+                    build(job: 'Cumulocity-Platform-Services-BUILD2', wait: false)
                 }
             }
 
@@ -112,7 +117,7 @@ pipeline {
         failure {
             script {
                 if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                   chat 'AAAAvnc5o90'
+                    chat 'AAAAvnc5o90'
                 }
             }
 
