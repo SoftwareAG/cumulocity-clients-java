@@ -27,22 +27,24 @@ pipeline {
         stage('Compile') {
             steps {
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-
                     sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
                 }
             }
         }
         stage('Build') {
-            agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                }
-            }
+// on the release branch we cannot pull correctly dependencies at compile time. This is why this is commented out
+//            agent {
+//                dockerfile {
+//                    dir '.jenkins/build'
+//                }
+//            }
             options {
                 retry(3)
             }
             steps {
-                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+                }
             }
             post {
                 always {
@@ -94,12 +96,12 @@ pipeline {
             }
             steps {
                 sshagent(['jenkins-hg-key']) {
-                    sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                    withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                        sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh"
+                    }
                 }
             }
         }
-
-
     }
     post {
         success {

@@ -17,8 +17,8 @@ version=$(next-release ${current_version})
 next_version=$(next-snapshot ${version})
 
 echo "Update version to ${version}"
-call-mvn versions:set -DnewVersion=${version} 
-call-mvn clean deploy ${release_args} 
+call-mvn versions:set -DnewVersion=${version} -s $MVN_SETTINGS
+call-mvn clean deploy ${release_args} -s $MVN_SETTINGS
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
@@ -35,7 +35,7 @@ tag-version "sdk-${version}"
 cd -
 
 echo "Update version to ${next_version}"
-call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
+call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false -s $MVN_SETTINGS
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
 cd cumulocity-sdk
 hg commit -m "[maven-release-plugin] prepare for next development iteration"
@@ -43,4 +43,4 @@ cd -
 hg push -r${BRANCH_NAME} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java
 cd cumulocity-sdk
 hg push -r${BRANCH_NAME} ssh://hg@bitbucket.org/m2m/cumulocity-sdk
-
+cd -
