@@ -141,7 +141,7 @@ pipeline {
                         }
                     }
                     steps {
-                        //sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                        sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
                         sshagent(['jenkins-hg-key']) {
                             withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                                 sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
