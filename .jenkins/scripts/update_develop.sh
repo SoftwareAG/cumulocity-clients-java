@@ -11,7 +11,7 @@ hg update develop
 cd -
 
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
-update-dependencies ${development_version}
+# update-dependencies ${development_version}
 
 hg commit -m 'Update dependencies to next SNAPSHOT version'
 hg push -b develop
