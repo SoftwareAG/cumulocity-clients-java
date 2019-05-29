@@ -7,5 +7,9 @@ public interface ServicesPlatform {
 
     public SmsMessagingApi getSmsMessagingApi();
 
+    /**
+     * Email API is going to be removed completely in the future
+     */
+    @Deprecated
     public EmailApi getEmailApi();
 }
