@@ -67,7 +67,7 @@ public class PlatformParameters {
     
     private boolean forceInitialHost = false;
 
-    private boolean alwaysCloseConnection = false;
+    private boolean alwaysCloseConnection = true;
 
     private int pageSize = DEFAULT_PAGE_SIZE;
 
