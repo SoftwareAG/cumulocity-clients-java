@@ -4,7 +4,7 @@
   	<parent>
 		<groupId>com.nsn.cumulocity.sdk.me</groupId>
 	<artifactId>java-me-smartrest</artifactId>
-		<version>9.1234.3</version>
+		<version>9.1234.4-SNAPSHOT</version>
 	</parent>
 	
   	<groupId>com.nsn.cumulocity.sdk.me</groupId>
