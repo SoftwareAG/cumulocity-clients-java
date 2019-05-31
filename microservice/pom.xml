@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>1004.8.0-SNAPSHOT</version>
+    <version>9.1234.3</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
