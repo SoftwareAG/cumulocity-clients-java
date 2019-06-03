@@ -157,14 +157,14 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                                sshagent(['jenkins-hg-key']) {
+                                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                                     sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
                                 }
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                sshagent(['jenkins-hg-key']) {
+                                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                                     sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
                                 }
                             }
