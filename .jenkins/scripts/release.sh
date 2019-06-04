@@ -59,3 +59,5 @@ hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java --ne
 cd cumulocity-sdk
 hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-sdk --new-branch
 cd -
+
+.jenkins/scripts/deploy.sh

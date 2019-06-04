@@ -22,3 +22,5 @@ hg commit -m 'Update to dependencies next SNAPSHOT version'
 hg push -b develop https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/cumulocity-sdk
 
 cd -
+
+.jenkins/scripts/deploy.sh
