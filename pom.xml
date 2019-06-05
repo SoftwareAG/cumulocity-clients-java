@@ -34,9 +34,9 @@
     </modules>
 
 	<properties>
-		<cumulocity.dependencies.version>1004.0.7</cumulocity.dependencies.version>
-		<cumulocity.model.version>1004.0.7</cumulocity.model.version>
-		<cumulocity.shared-components.version>1004.0.7</cumulocity.shared-components.version>
+		<cumulocity.dependencies.version>1004.0.8</cumulocity.dependencies.version>
+		<cumulocity.model.version>1004.0.8</cumulocity.model.version>
+		<cumulocity.shared-components.version>1004.0.8</cumulocity.shared-components.version>
 		<lombok.version>1.16.20</lombok.version>
 		<jersey1.version>1.8</jersey1.version>
 		<jaxrs.version>1.1.1</jaxrs.version>
