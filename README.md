@@ -1,4 +1,4 @@
-Cumulocity Clients Java
+Cumulocity Clients Java 
 ---------------
 
 This repository contains [Cumulocity] [1] client libraries for Java. For more information on [Cumulocity] [1] visit [http://www.cumulocity.com] [1].
