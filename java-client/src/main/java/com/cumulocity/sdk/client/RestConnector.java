@@ -83,8 +83,6 @@ public class RestConnector implements RestOperations {
     private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
             ErrorMessageRepresentationReader.class};
 
-    private static final int READ_TIMEOUT_IN_MILLIS = 180000;
-
     private final PlatformParameters platformParameters;
 
     private final Client client;
@@ -396,7 +394,7 @@ public class RestConnector implements RestOperations {
         }
 
         registerClasses(config);
-        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
+        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, platformParameters.getHttpClientConfig().getHttpReadTimeout());
 
         CumulocityHttpClient client = new CumulocityHttpClient(
                 createDefaultClientHander(config, platformParameters), null);
@@ -453,7 +451,7 @@ public class RestConnector implements RestOperations {
         registerClasses(config);
 
         Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
-        client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
+        client.setReadTimeout(platformParameters.getHttpClientConfig().getHttpReadTimeout());
         client.setFollowRedirects(true);
         client.addFilter(
                 new CumulocityAuthenticationFilter(

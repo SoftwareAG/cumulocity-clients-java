@@ -28,6 +28,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
+import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -321,6 +322,29 @@ public class RestConnectorTest {
 
         // then
         verify(typeBuilder, never()).header(eq("fake"), eq("fake"));
+    }
+
+    @Test
+    public void shouldUseDefaultReadTimeoutWhenNotSet() {
+
+        //when
+        Client client = RestConnector.createURLConnectionClient(clientParameters);
+
+        //then
+        assertThat("Should be default 180000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 180000);
+    }
+
+    @Test
+    public void shouldUseCustomHttpReadTimeoutWhenSpecified() {
+        // given
+        HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().httpReadTimeout(360000).build();
+        clientParameters.setHttpClientConfig(httpClientConfig);
+
+        // when
+        Client client = RestConnector.createURLConnectionClient(clientParameters);
+
+        //then
+        assertThat("Should be default 360000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 360000);
     }
 
 }
