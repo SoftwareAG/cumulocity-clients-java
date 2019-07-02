@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
 import com.cumulocity.microservice.customdecoders.api.util.ObjectUtils;
+import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import lombok.Getter;
@@ -12,10 +13,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Setter
-public class DecoderResult implements Serializable {
+public class DecoderResult implements Serializable, ResourceRepresentation {
 
     private List<AlarmRepresentation> internalServiceAlarms;
 
@@ -144,5 +146,25 @@ public class DecoderResult implements Serializable {
     @JSONTypeHint(DataFragmentUpdate.class)
     public List<DataFragmentUpdate> getDataFragments() {
         return dataFragments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DecoderResult that = (DecoderResult) o;
+        return success == that.success &&
+                Objects.equals(internalServiceAlarms, that.internalServiceAlarms) &&
+                Objects.equals(internalServiceEvents, that.internalServiceEvents) &&
+                Objects.equals(alarms, that.alarms) &&
+                Objects.equals(events, that.events) &&
+                Objects.equals(measurements, that.measurements) &&
+                Objects.equals(dataFragments, that.dataFragments) &&
+                Objects.equals(message, that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(internalServiceAlarms, internalServiceEvents, alarms, events, measurements, dataFragments, message, success);
     }
 }
