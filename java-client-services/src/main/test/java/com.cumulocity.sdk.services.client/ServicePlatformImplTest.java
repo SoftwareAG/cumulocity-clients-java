@@ -3,6 +3,8 @@ package com.cumulocity.sdk.services.client;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+
 public class ServicePlatformImplTest {
 
     @Test
@@ -17,5 +19,9 @@ public class ServicePlatformImplTest {
                         .password("password")
                         .build()
         );
+
+        assertNotNull(platform);
+        assertNotNull(platform.getSmsMessagingApi());
+        assertNotNull(platform.getEmailApi());
     }
 }
