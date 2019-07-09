@@ -82,7 +82,7 @@ public class ServicesPlatformImpl implements ServicesPlatform {
             url = new URL(host);
         } catch (MalformedURLException e) {
             log.error("Invalid url string", e);
-            throw new IllegalArgumentException("Missing or invalid protocol information, or else wrong format/encoding in provided address: " + host);
+            throw new IllegalArgumentException("Missing or invalid protocol information, or else wrong format/encoding of provided address: " + host);
         }
         return new HttpHost(url.getHost(), url.getPort());
     }
