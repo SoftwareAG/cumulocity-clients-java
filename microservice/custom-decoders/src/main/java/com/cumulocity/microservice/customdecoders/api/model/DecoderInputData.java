@@ -1,16 +1,18 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
+import com.cumulocity.rest.representation.ResourceRepresentation;
 import lombok.*;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
-public class DecoderInputData implements Serializable {
+public class DecoderInputData implements Serializable, ResourceRepresentation {
     private String serviceKey;
 
     private String value;
@@ -31,5 +33,22 @@ public class DecoderInputData implements Serializable {
             data.setStatus(ExecutionEventStatus.valueOf(status));
         }
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DecoderInputData that = (DecoderInputData) o;
+        return Objects.equals(serviceKey, that.serviceKey) &&
+                Objects.equals(value, that.value) &&
+                Objects.equals(args, that.args) &&
+                Objects.equals(sourceDeviceId, that.sourceDeviceId) &&
+                status == that.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceKey, value, args, sourceDeviceId, status);
     }
 }

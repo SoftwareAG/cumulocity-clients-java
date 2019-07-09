@@ -1,5 +1,4 @@
 #!/bin/bash
-source ${BASH_SOURCE%/*}/semver.sh
 set +eu
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 set -e
@@ -27,20 +26,13 @@ function call-mvn {
 
 }
 
-function resolve-version {
-    ./mvnw org.apache.maven.plugins:maven-help-plugin:evaluate -Dexpression=project.version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }'
-}
-
-function next-release {
-     version-bump release $1
-}
-
-function next-snapshot {
-     echo $(version-bump patch $1)-SNAPSHOT
-}
-
 function tag-version {
     tag=$1
     hg commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
     hg tag -f -m "copy for tag ${tag}" "${tag}"
+}
+
+function update-property {
+    echo "update property ${1} to value ${2}"
+    find . -name 'pom.xml' | xargs sed -i "s/<${1}>.*<\/${1}>/<${1}>${2}<\/${1}>/g"
 }

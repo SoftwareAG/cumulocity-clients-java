@@ -2,6 +2,10 @@ package com.cumulocity.email.client;
 
 import com.cumulocity.model.email.Email;
 
+/**
+ * Email API is going to be removed completely in the future
+ */
+@Deprecated
 public interface EmailApi {
 
     /**
