@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -125,61 +126,34 @@ public class SecurityUserDetails implements UserDetails {
         return this.enabled;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
+        if (this == o) return true;
         if (!(o instanceof SecurityUserDetails)) return false;
-        final SecurityUserDetails other = (SecurityUserDetails) o;
-        final Object this$authorities = this.getAuthorities();
-        final Object other$authorities = other.getAuthorities();
-        if (this$authorities == null ? other$authorities != null : !this$authorities.equals(other$authorities))
-            return false;
-        final Object this$tenant = this.getTenant();
-        final Object other$tenant = other.getTenant();
-        if (this$tenant == null ? other$tenant != null : !this$tenant.equals(other$tenant)) return false;
-        final Object this$password = this.getPassword();
-        final Object other$password = other.getPassword();
-        if (this$password == null ? other$password != null : !this$password.equals(other$password)) return false;
-        final Object this$oAuthAccessToken = this.getOAuthAccessToken();
-        final Object other$oAuthAccessToken = other.getOAuthAccessToken();
-        if (this$oAuthAccessToken == null ? other$oAuthAccessToken != null : !this$oAuthAccessToken.equals(other$oAuthAccessToken))
-            return false;
-        final Object this$xsrfToken = this.getXsrfToken();
-        final Object other$xsrfToken = other.getXsrfToken();
-        if (this$xsrfToken == null ? other$xsrfToken != null : !this$xsrfToken.equals(other$xsrfToken)) return false;
-        final Object this$username = this.getUsername();
-        final Object other$username = other.getUsername();
-        if (this$username == null ? other$username != null : !this$username.equals(other$username)) return false;
-        if (this.isAccountNonExpired() != other.isAccountNonExpired()) return false;
-        if (this.isAccountNonLocked() != other.isAccountNonLocked()) return false;
-        if (this.isCredentialsNonExpired() != other.isCredentialsNonExpired()) return false;
-        if (this.isEnabled() != other.isEnabled()) return false;
-        return true;
+        SecurityUserDetails that = (SecurityUserDetails) o;
+        return accountNonExpired == that.accountNonExpired &&
+                accountNonLocked == that.accountNonLocked &&
+                credentialsNonExpired == that.credentialsNonExpired &&
+                enabled == that.enabled &&
+                Objects.equals(authorities, that.authorities) &&
+                Objects.equals(credentials, that.credentials);
     }
 
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $authorities = this.getAuthorities();
-        result = result * PRIME + ($authorities == null ? 43 : $authorities.hashCode());
-        final Object $tenant = this.getTenant();
-        result = result * PRIME + ($tenant == null ? 43 : $tenant.hashCode());
-        final Object $password = this.getPassword();
-        result = result * PRIME + ($password == null ? 43 : $password.hashCode());
-        final Object $oAuthAccessToken = this.getOAuthAccessToken();
-        result = result * PRIME + ($oAuthAccessToken == null ? 43 : $oAuthAccessToken.hashCode());
-        final Object $xsrfToken = this.getXsrfToken();
-        result = result * PRIME + ($xsrfToken == null ? 43 : $xsrfToken.hashCode());
-        final Object $username = this.getUsername();
-        result = result * PRIME + ($username == null ? 43 : $username.hashCode());
-        result = result * PRIME + (this.isAccountNonExpired() ? 79 : 97);
-        result = result * PRIME + (this.isAccountNonLocked() ? 79 : 97);
-        result = result * PRIME + (this.isCredentialsNonExpired() ? 79 : 97);
-        result = result * PRIME + (this.isEnabled() ? 79 : 97);
-        return result;
+        return Objects.hash(authorities, credentials, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
     }
 
+    @Override
     public String toString() {
-        return "SecurityUserDetails(authorities=" + this.getAuthorities() + ", tenant=" + this.getTenant() + ", password=" + this.getPassword() + ", username=" + this.getUsername() + ", accountNonExpired=" + this.isAccountNonExpired() + ", accountNonLocked=" + this.isAccountNonLocked() + ", credentialsNonExpired=" + this.isCredentialsNonExpired() + ", enabled=" + this.isEnabled() + ")";
+        return "SecurityUserDetails{" +
+                "authorities=" + authorities +
+                ", credentials=" + credentials +
+                ", accountNonExpired=" + accountNonExpired +
+                ", accountNonLocked=" + accountNonLocked +
+                ", credentialsNonExpired=" + credentialsNonExpired +
+                ", enabled=" + enabled +
+                '}';
     }
 
     public static class SecurityUserDetailsBuilder {
