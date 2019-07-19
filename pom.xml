@@ -8,7 +8,7 @@
     <version>1004.11.1-SNAPSHOT</version>
     <name>Cumulocity :: Clients Java</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
-
+ 
     <scm>
         <connection>scm:hg:ssh://hg@bitbucket.org/m2m/cumulocity-clients-java</connection>
         <tag>HEAD</tag>
