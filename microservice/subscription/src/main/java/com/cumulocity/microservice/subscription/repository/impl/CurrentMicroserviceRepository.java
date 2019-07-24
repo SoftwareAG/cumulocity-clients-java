@@ -21,6 +21,7 @@ import static com.cumulocity.rest.representation.application.ApplicationMediaTyp
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.httpclient.HttpStatus.*;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * works with platform API >= 8.18
@@ -32,18 +33,35 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
     private final CredentialsSwitchingPlatform platform;
     private final ObjectMapper objectMapper;
     private final ApplicationApiRepresentation api;
+    private final String applicationName;
 
-    public CurrentMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+    public CurrentMicroserviceRepository(String applicationName, CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+        if(isBlank(applicationName)){
+            log.debug("Current application name was not provided to CurrentMicroserviceRepository. Please correct CurrentMicroserviceRepository usage in your code.");
+        }
+        this.applicationName = applicationName;
         this.platform = platform;
         this.objectMapper = objectMapper;
         this.api = api;
     }
 
+    @Deprecated
+    public CurrentMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api){
+        this(null, platform, objectMapper, api);
+    }
+
     // no registration needed, this is done now during deployment on kubernetes
     @Override
+    public ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata) {
+        return register(applicationName, metadata);
+    }
+
+    // no registration needed, this is done now during deployment on kubernetes
+    @Override
+    @Deprecated//this method should be private
     public ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata) {
         log.debug("Self registration procedure not activated for application {} with {}", applicationName, metadata);
-        final ApplicationRepresentation application = getApplication();
+        final ApplicationRepresentation application = getCurrentApplication();
         if (application == null) {
             throw new SDKException("Failed to load current microservice. Microservice \"" + applicationName + "\" must be configured before running the SDK, please contact administrator");
         } else {
@@ -54,7 +72,8 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         }
     }
 
-    private ApplicationRepresentation getApplication() {
+    @Override
+    public ApplicationRepresentation getCurrentApplication() {
         try {
             return applicationApi().currentApplication().get();
         } catch (final Exception ex) {
