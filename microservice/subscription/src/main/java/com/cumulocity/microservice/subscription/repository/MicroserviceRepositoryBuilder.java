@@ -21,6 +21,7 @@ public class MicroserviceRepositoryBuilder {
     private ObjectMapper objectMapper;
     private CredentialsSwitchingPlatform connector;
     private Environment environment;
+    private String applicationName;
 
     /**
      * creates MicroserviceRepository implementation according to microservice isolation env variable:
@@ -40,9 +41,9 @@ public class MicroserviceRepositoryBuilder {
         final Environment notNullEnvironment = environment == null ? new StandardEnvironment() : environment;
 
         if (notNullEnvironment.containsProperty(MICROSERVICE_ISOLATION_ENV_NAME)) {
-            return new CurrentMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
+            return new CurrentMicroserviceRepository(applicationName, nonNullConnector, nonNullObjectMapper, api);
         } else {
-            return new LegacyMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
+            return new LegacyMicroserviceRepository(applicationName, nonNullConnector, nonNullObjectMapper, api);
         }
     }
 
@@ -65,6 +66,11 @@ public class MicroserviceRepositoryBuilder {
 
     public MicroserviceRepositoryBuilder username(String username) {
         this.username = username;
+        return this;
+    }
+
+    public MicroserviceRepositoryBuilder applicationName(String applicationName){
+        this.applicationName = applicationName;
         return this;
     }
 
