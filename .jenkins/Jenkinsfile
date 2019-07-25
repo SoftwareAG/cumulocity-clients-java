@@ -69,7 +69,7 @@ pipeline {
             }
               post {
                 always {
-                    junit(testResults: '**//*  *//* TEST-*.xml', keepLongStdio: true)
+                    junit(testResults: '**/TEST-*.xml', keepLongStdio: true)
                     jacoco()
                 }
             }
