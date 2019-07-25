@@ -76,6 +76,7 @@
         <junit4.version>2.12.4</junit4.version>
         <resources.version>1.1</resources.version>
         <wagon.version>1.0-beta-6</wagon.version>
+        <javax.version>1.0.0.GA</javax.version>
 
         <exclude.test.groups>com.cumulocity.test.category.IntegrationTest</exclude.test.groups>
     </properties>
@@ -176,12 +177,24 @@
                 <version>1.2.1</version>
                 <configuration>
                     <dynamicDependencies>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <version>${surefire.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                         <dynamicDependency>
                             <groupId>org.apache.maven.surefire</groupId>
                             <artifactId>surefire-junit47</artifactId>
                             <version>${surefire.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit4</artifactId>
+                            <version>${surefire.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                         <dynamicDependency>
                             <groupId>org.jacoco</groupId>
                             <artifactId>jacoco-maven-plugin</artifactId>
@@ -195,11 +208,23 @@
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
                         <dynamicDependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit4</artifactId>
+                            <version>${surefire.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </dynamicDependency>
+                        <dynamicDependency>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-remote-resources-plugin</artifactId>
                             <version>${resources.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
+                        <DynamicDependency>
+                            <groupId>javax.validation</groupId>
+                            <artifactId>com.springsource.javax.validation</artifactId>
+                            <version>${javax.version}</version>
+                            <repositoryType>MAIN</repositoryType>
+                        </DynamicDependency>
                         <dynamicDependency>
                             <groupId>com.nsn.cumulocity.dependencies</groupId>
                             <artifactId>cumulocity-sdk-resource-bundles</artifactId>
@@ -212,6 +237,7 @@
                             <version>${wagon.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
+
                         <dynamicDependency>
                             <groupId>org.codehaus.plexus</groupId>
                             <artifactId>plexus-utils</artifactId>
