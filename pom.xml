@@ -200,6 +200,12 @@
                             <version>1.0-beta-6</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.felix</groupId>
+                            <artifactId>maven-bundle-plugin</artifactId>
+                            <version>3.5.1</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                     </dynamicDependencies>
                 </configuration>
             </plugin>
