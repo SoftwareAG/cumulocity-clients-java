@@ -55,23 +55,23 @@ pipeline {
             }
         }
         stage('Build') {
-            agent {
+/*            agent {
                 dockerfile {
                     dir '.jenkins/build'
                 }
-            }
-/*            options {
+            }*/
+            options {
                 retry(3)
-            } */
+            }
             steps {
                 sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
             }
-/*             post {
+             post {
                 always {
                     junit(testResults: '**//* TEST-*.xml', keepLongStdio: true)
                     jacoco()
                 }
-            } */
+            }
         }
         stage('Verify maven repo') {
             when {
