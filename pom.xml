@@ -75,6 +75,7 @@
         <jacoco.version>0.8.1</jacoco.version>
         <junit4.version>2.12.4</junit4.version>
         <resources.version>1.1</resources.version>
+        <wagon.version>1.0-beta-6</wagon.version>
 
         <exclude.test.groups>com.cumulocity.test.category.IntegrationTest</exclude.test.groups>
     </properties>
@@ -115,7 +116,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>1.0-beta-6</version>
+                <version>${wagon.version}</version>
             </extension>
         </extensions>
         <plugins>
@@ -203,6 +204,12 @@
                             <groupId>com.nsn.cumulocity.dependencies</groupId>
                             <artifactId>cumulocity-sdk-resource-bundles</artifactId>
                             <version>${cumulocity.core.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </dynamicDependency>
+                        <dynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh-external</artifactId>
+                            <version>${wagon.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
                     </dynamicDependencies>
