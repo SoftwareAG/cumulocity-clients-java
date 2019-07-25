@@ -199,6 +199,12 @@
                             <version>${resources.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </dynamicDependency>
+                        <dynamicDependency>
+                            <groupId>com.nsn.cumulocity.dependencies</groupId>
+                            <artifactId>cumulocity-sdk-resource-bundles</artifactId>
+                            <version>${cumulocity.core.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </dynamicDependency>
                     </dynamicDependencies>
                 </configuration>
             </plugin>
