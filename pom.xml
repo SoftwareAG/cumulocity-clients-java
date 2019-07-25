@@ -269,6 +269,30 @@
                         	<version>${docker.version}</version>
                         	<repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-provider-api</artifactId>
+                            <version>1.0-beta-6</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-maven-plugin</artifactId>
+                            <version>1.3.8</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-http-lightweight</artifactId>
+                            <version>1.0-beta-6</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>1.0-beta-6</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                     </dynamicDependencies>
                 </configuration>
             </plugin>
