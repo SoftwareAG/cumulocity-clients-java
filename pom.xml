@@ -222,12 +222,6 @@
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
-                            <groupId>javax.validation</groupId>
-                            <artifactId>com.springsource.javax.validation</artifactId>
-                            <version>${javax.version}</version>
-                            <repositoryType>MAIN</repositoryType>
-                        </DynamicDependency>
-                        <DynamicDependency>
                             <groupId>com.nsn.cumulocity.dependencies</groupId>
                             <artifactId>cumulocity-sdk-resource-bundles</artifactId>
                             <version>${cumulocity.core.version}</version>
@@ -258,33 +252,15 @@
                             <repositoryType>MAIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
-                        	<groupId>org.codehaus.mojo</groupId>
-                        	<artifactId>rpm-maven-plugin</artifactId>
-                        	<version>${rpm.version}</version>
-                        	<repositoryType>PLUGIN</repositoryType>
-                        </DynamicDependency>
-                        <DynamicDependency>
                         	<groupId>com.spotify</groupId>
                         	<artifactId>docker-maven-plugin</artifactId>
                         	<version>${docker.version}</version>
                         	<repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
-                            <groupId>org.apache.maven.wagon</groupId>
-                            <artifactId>wagon-provider-api</artifactId>
-                            <version>1.0-beta-6</version>
-                            <repositoryType>PLUGIN</repositoryType>
-                        </DynamicDependency>
-                        <DynamicDependency>
                             <groupId>org.codehaus.plexus</groupId>
                             <artifactId>plexus-maven-plugin</artifactId>
-                            <version>1.3.8</version>
-                            <repositoryType>PLUGIN</repositoryType>
-                        </DynamicDependency>
-                        <DynamicDependency>
-                            <groupId>org.apache.maven.wagon</groupId>
-                            <artifactId>wagon-http-lightweight</artifactId>
-                            <version>1.0-beta-6</version>
+                            <version>1.1</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
