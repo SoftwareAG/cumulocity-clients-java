@@ -1,7 +1,3 @@
 #!/bin/bash
 set -e
-source ${BASH_SOURCE%/*}/common.sh
-./mvnw -o install
-cd microservice
-../mvnw -o install -Pci
-cd -
+./mvnw -o clean install -Dskip.microservice.package=false -Dskip.agent.package.container=false -Pci
