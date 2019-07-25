@@ -111,14 +111,6 @@
     </organization>
 
     <build>
-        <extensions>
-            <!-- Enabling the use of sftp -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh-external</artifactId>
-                <version>1.0-beta-6</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -500,11 +492,6 @@
             <groupId>com.jayway.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-ssh-external</artifactId>
-            <version>${wagon.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
