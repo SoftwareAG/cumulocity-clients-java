@@ -58,7 +58,6 @@ pipeline {
               agent {
                 dockerfile {
                     dir '.jenkins/build'
-                    args '--network centos_default'
                 }
             }
 /*             options {
