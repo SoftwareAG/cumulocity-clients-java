@@ -48,12 +48,6 @@ pipeline {
             }
         }
         stage('Compile') {
-            agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                    args '--network centos_default -v $HOME/.m2/repository'
-                }
-            }
             steps {
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
@@ -64,7 +58,6 @@ pipeline {
              agent {
                 dockerfile {
                     dir '.jenkins/build'
-                    args '-v $HOME/.m2/repository'
                 }
             }
 /*             options {
