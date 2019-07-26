@@ -9,6 +9,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
+        disableConcurrentBuilds()
     }
     parameters {
         choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
