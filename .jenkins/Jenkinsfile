@@ -19,7 +19,7 @@ pipeline {
     }
 
     stages {
-        /* stage('Fail in case of incorrect input parameters') {
+         stage('Fail in case of incorrect input parameters') {
             when {
                 not {
                     anyOf {
@@ -39,7 +39,7 @@ pipeline {
                 error("Incorrect input parameters")
             }
         }
-        stage('Checkout') {
+/*        stage('Checkout') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                     sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
