@@ -25,7 +25,7 @@
         </repository>
     </distributionManagement>
 
-    <modules>
+<!--    <modules>
         <module>device-capability-model</module>
         <module>java-client</module>
         <module>java-me-client</module>
@@ -36,7 +36,7 @@
         <module>java-sms-client</module>
         <module>java-client-services</module>
         <module>java-mqtt-client</module>
-    </modules>
+    </modules>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
