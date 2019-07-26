@@ -26,15 +26,6 @@
     </distributionManagement>
 
     <modules>
-        <module>device-capability-model</module>
-        <module>java-client</module>
-        <module>java-me-client</module>
-        <module>java-me-client-test</module>
-        <module>java-me-maven-plugin</module>
-        <module>java-me-smartrest</module>
-        <module>java-email-client</module>
-        <module>java-sms-client</module>
-        <module>java-client-services</module>
         <module>java-mqtt-client</module>
     </modules>
 
@@ -111,14 +102,6 @@
     </organization>
 
     <build>
-        <extensions>
-            <!-- Enabling the use of sftp -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh-external</artifactId>
-                <version>${wagon.version}</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -154,6 +137,18 @@
                             <groupId>org.jacoco</groupId>
                             <artifactId>jacoco-maven-plugin</artifactId>
                             <version>${jacoco.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>1.1</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh-external</artifactId>
+                            <version>${wagon.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                     </dynamicDependencies>
@@ -460,12 +455,6 @@
 
     <dependencies>
         <!--COMMON TEST DEPENDENCIES -->
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>1.1</version>
-            <type>jar</type>
-        </dependency>
         <dependency>
             <groupId>com.jayway.awaitility</groupId>
             <artifactId>awaitility</artifactId>
