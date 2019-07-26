@@ -41,7 +41,7 @@ public class MicroserviceRepositoryBuilder {
         final Environment notNullEnvironment = environment == null ? new StandardEnvironment() : environment;
 
         if (notNullEnvironment.containsProperty(MICROSERVICE_ISOLATION_ENV_NAME)) {
-            return new CurrentMicroserviceRepository(applicationName, nonNullConnector, nonNullObjectMapper, api);
+            return new CurrentMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
         } else {
             return new LegacyMicroserviceRepository(applicationName, nonNullConnector, nonNullObjectMapper, api);
         }
