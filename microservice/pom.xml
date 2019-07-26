@@ -266,14 +266,12 @@
                             <groupId>com.fasterxml.jackson</groupId>
                             <artifactId>jackson-bom</artifactId>
                             <version>${jackson.version}</version>
-                            <scope>import</scope>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-dependencies</artifactId>
                             <version>${spring-boot-dependencies.version}</version>
-                            <scope>import</scope>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
 
