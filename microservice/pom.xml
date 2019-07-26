@@ -268,7 +268,12 @@
                             <version>${jackson.version}</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
-
+                        <DynamicDependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-dependencies</artifactId>
+                            <version>${spring-boot-dependencies.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
 
 
 
