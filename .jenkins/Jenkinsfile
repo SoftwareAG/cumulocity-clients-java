@@ -19,7 +19,7 @@ pipeline {
     }
 
     stages {
-        stage('Fail in case of incorrect input parameters') {
+/*         stage('Fail in case of incorrect input parameters') {
             when {
                 not {
                     anyOf {
@@ -29,7 +29,7 @@ pipeline {
                         };
                         allOf {
                             equals expected: 'HOTFIX', actual: params.build_type;
-                            branch 'release/*'
+                            branch 'release *//*'
                         }
                         equals expected: 'DEFAULT', actual: params.build_type
                     }
@@ -46,7 +46,7 @@ pipeline {
                 }
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
             }
-        }
+        } */
         stage('Compile') {
             steps {
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
