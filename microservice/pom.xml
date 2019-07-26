@@ -57,6 +57,7 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
             </dependency>
 
             <!-- spring boot -->
@@ -64,6 +65,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot-dependencies.version}</version>
+                <type>pom</type>
 
                 <!-- fixing clients java - jetty version -->
                 <exclusions>
@@ -262,12 +264,14 @@
                             <groupId>com.fasterxml.jackson</groupId>
                             <artifactId>jackson-bom</artifactId>
                             <version>${jackson.version}</version>
+                            <type>pom</type>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
                         <DynamicDependency>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-dependencies</artifactId>
                             <version>${spring-boot-dependencies.version}</version>
+                            <type>pom</type>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
 
