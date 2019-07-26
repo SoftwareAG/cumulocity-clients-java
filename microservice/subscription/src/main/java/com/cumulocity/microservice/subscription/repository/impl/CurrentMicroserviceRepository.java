@@ -42,7 +42,6 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
     // no registration needed, this is done now during deployment on kubernetes
     @Override
     public ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata) {
-        //return register(null, metadata);
         log.debug("Self registration procedure not activated for current application with {}", metadata);
         final ApplicationRepresentation application = getCurrentApplication();
         if (application == null) {
