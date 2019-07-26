@@ -75,7 +75,7 @@
         <jacoco.version>0.8.1</jacoco.version>
         <junit4.version>2.12.4</junit4.version>
         <resources.version>1.1</resources.version>
-        <wagon.version>3.3.3</wagon.version>
+        <wagon.version>1.0-beta-6</wagon.version>
 
         <exclude.test.groups>com.cumulocity.test.category.IntegrationTest</exclude.test.groups>
     </properties>
@@ -111,6 +111,14 @@
     </organization>
 
     <build>
+        <extensions>
+            <!-- Enabling the use of sftp -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>${wagon.version}</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -150,6 +158,62 @@
                         </DynamicDependency>
 
 
+
+
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-remote-resources-plugin</artifactId>
+                            <version>${resources.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>com.nsn.cumulocity.dependencies</groupId>
+                            <artifactId>cumulocity-sdk-resource-bundles</artifactId>
+                            <version>${cumulocity.core.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh-external</artifactId>
+                            <version>${wagon.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>1.1</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh-external</artifactId>
+                            <version>${wagon.version}</version>
+                            <repositoryType>MAIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>1.1</version>
+                            <repositoryType>MAIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-maven-plugin</artifactId>
+                            <version>1.1</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>1.0-beta-6</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-provider-api</artifactId>
+                            <version>${wagon.version}</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                     </dynamicDependencies>
                 </configuration>
             </plugin>
@@ -180,9 +244,55 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <resourceBundles>
+                                <resourceBundle>
+                                    com.nsn.cumulocity.dependencies:cumulocity-sdk-resource-bundles:${cumulocity.core.version}
+                                </resourceBundle>
+                            </resourceBundles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <executions>
+                        <execution>
+                            <id>generate-manifest</id>
+                            <goals>
+                                <goal>manifest</goal>
+                            </goals>
+                            <configuration>
+                                <instructions>
+                                    <_nouses>true</_nouses>
+                                </instructions>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <instructions>
+                            <_nouses>true</_nouses>
+                        </instructions>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
@@ -212,6 +322,28 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <archive>
+                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        </archive>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>test-jar</id>
+                            <goals>
+                                <goal>test-jar</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${skip.test.jar}</skip>
+                                <skipIfEmpty>true</skipIfEmpty>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
