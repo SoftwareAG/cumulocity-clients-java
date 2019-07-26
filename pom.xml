@@ -208,6 +208,12 @@
                             <version>1.0-beta-6</version>
                             <repositoryType>PLUGIN</repositoryType>
                         </DynamicDependency>
+                        <DynamicDependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-provider-api</artifactId>
+                            <version>1.0-beta-6</version>
+                            <repositoryType>PLUGIN</repositoryType>
+                        </DynamicDependency>
                     </dynamicDependencies>
                 </configuration>
             </plugin>
