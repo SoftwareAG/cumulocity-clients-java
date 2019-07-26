@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
 import com.cumulocity.microservice.customdecoders.api.util.ObjectUtils;
-import com.cumulocity.rest.representation.ResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.Objects;
 
 @NoArgsConstructor
 @Setter
-public class DecoderResult implements Serializable, ResourceRepresentation {
+public class DecoderResult extends BaseResourceRepresentation implements Serializable {
 
     private List<AlarmRepresentation> internalServiceAlarms;
 
