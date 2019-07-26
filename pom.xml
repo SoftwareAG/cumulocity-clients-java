@@ -25,8 +25,8 @@
         </repository>
     </distributionManagement>
 
-<!--    <modules>
-        <module>device-capability-model</module>
+    <modules>
+<!--        <module>device-capability-model</module>
         <module>java-client</module>
         <module>java-me-client</module>
         <module>java-me-client-test</module>
@@ -34,9 +34,9 @@
         <module>java-me-smartrest</module>
         <module>java-email-client</module>
         <module>java-sms-client</module>
-        <module>java-client-services</module>
-        <module>java-mqtt-client</module>&ndash;&gt;
-    </modules>-->
+        <module>java-client-services</module>-->
+        <module>java-mqtt-client</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
