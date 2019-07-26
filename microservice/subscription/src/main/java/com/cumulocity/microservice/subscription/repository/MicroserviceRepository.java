@@ -10,7 +10,7 @@ public interface MicroserviceRepository {
 
     /**
      * Method is Deprecated. Method {@link this#register(MicroserviceMetadataRepresentation)} should be used instead.
-     * Method {@link this#register(String, MicroserviceMetadataRepresentation)} will be marked as private in the future.
+     * Method {@link this#register(String, MicroserviceMetadataRepresentation)} will be removed in the future.
      */
     @Deprecated
     ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation metadata);
