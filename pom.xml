@@ -111,14 +111,6 @@
     </organization>
 
     <build>
-        <extensions>
-            <!-- Enabling the use of sftp -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh-external</artifactId>
-                <version>${wagon.version}</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
