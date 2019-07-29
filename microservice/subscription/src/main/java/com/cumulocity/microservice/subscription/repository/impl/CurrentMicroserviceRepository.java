@@ -56,7 +56,7 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
 
     // no registration needed, this is done now during deployment on kubernetes
     @Override
-    @Deprecated//this method should be private
+    @Deprecated//this method will be removed
     public ApplicationRepresentation register(final String applicationNameNotUsed, final MicroserviceMetadataRepresentation metadata) {
         return register(metadata);
     }
@@ -70,13 +70,19 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         }
     }
 
-    public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
+    @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions() {
         final String url = api.getCurrentApplicationSubscriptions();
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
+    }
+
+    @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions(String notUsedApplicationId) {
+        return getSubscriptions();
     }
 
     private RestOperations rest() {
