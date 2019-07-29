@@ -9,6 +9,7 @@ import com.cumulocity.rest.representation.application.ApplicationUserRepresentat
 import com.cumulocity.sdk.client.SDKException;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.FluentIterable;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,6 +172,62 @@ public class CurrentMicroserviceRepositoryTest {
         assertThat(application)
                 .isNotNull()
                 .isSameAs(existing);
+    }
+
+    @Test
+    public void shouldGetSubscriptions(){
+        //given
+        ApplicationRepresentation existing = applicationRepresentation()
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        platform.switchTo(asCredentials(platform.bootstrapUserFor(existing)));
+        ApplicationUserRepresentation applicationUserRepresentation = new ApplicationUserRepresentation();
+        platform.addApplicationUserRepresentation(applicationUserRepresentation);
+
+
+        //when
+        Iterable<ApplicationUserRepresentation> subscriptions = repository.getSubscriptions();
+
+        //when
+        assertThat(subscriptions)
+                .isNotNull()
+                .hasSize(1);
+        ApplicationUserRepresentation firstSubscription = FluentIterable
+                .from(subscriptions)
+                .first()
+                .get();
+        assertThat(firstSubscription)
+                .isNotNull()
+                .isSameAs(applicationUserRepresentation);
+    }
+
+    @Test
+    public void shouldGetSubscriptionsByNameWhichIsIgnored(){
+        //given
+        ApplicationRepresentation existing = applicationRepresentation()
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        platform.switchTo(asCredentials(platform.bootstrapUserFor(existing)));
+        ApplicationUserRepresentation applicationUserRepresentation = new ApplicationUserRepresentation();
+        platform.addApplicationUserRepresentation(applicationUserRepresentation);
+
+
+        //when
+        Iterable<ApplicationUserRepresentation> subscriptions = repository.getSubscriptions("not-used-application-id");
+
+        //when
+        assertThat(subscriptions)
+                .isNotNull()
+                .hasSize(1);
+        ApplicationUserRepresentation firstSubscription = FluentIterable
+                .from(subscriptions)
+                .first()
+                .get();
+        assertThat(firstSubscription)
+                .isNotNull()
+                .isSameAs(applicationUserRepresentation);
     }
 
     private Predicate<FakeCredentialsSwitchingPlatform.Request> byMethod(final HttpMethod method) {
