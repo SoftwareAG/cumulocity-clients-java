@@ -82,6 +82,13 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     }
 
     @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions() {
+        ApplicationRepresentation currentApplication = getCurrentApplication();
+        Preconditions.checkState(currentApplication != null,"Cannot get subscriptions. Current application not found.");
+        return getSubscriptions(currentApplication.getId());
+    }
+
+    @Override
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
         String url = api.getApplicationSubscriptions(applicationId);
         try {

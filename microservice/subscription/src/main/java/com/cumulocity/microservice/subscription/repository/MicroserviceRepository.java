@@ -17,6 +17,13 @@ public interface MicroserviceRepository {
 
     ApplicationRepresentation getCurrentApplication();
 
+    Iterable<ApplicationUserRepresentation> getSubscriptions();
+
+    /**
+     * Method is Deprecated. Method {@link this#getSubscriptions()} should be used instead.
+     * Method {@link this#getSubscriptions(String)} will be removed in the future.
+     */
+    @Deprecated
     Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId);
 
 }

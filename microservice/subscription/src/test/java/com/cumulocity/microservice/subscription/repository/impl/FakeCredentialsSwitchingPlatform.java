@@ -8,6 +8,7 @@ import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
 import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
+import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
@@ -27,9 +28,7 @@ import org.springframework.http.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
 import static lombok.AccessLevel.NONE;
@@ -61,6 +60,7 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
     @Getter(NONE)
     private long generateId = 0;
 
+    private List<ApplicationUserRepresentation> listOfCurrentApplicationUsers = new ArrayList<>();
 
     public Request takeRequest() {
         return requests.poll();
@@ -103,8 +103,12 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
                         return (T) bootstrapUserFor(app);
                     }
 
+                } else if(responseType.equals(ApplicationUserCollectionRepresentation.class)){
+                    ApplicationUserCollectionRepresentation applicationUserRepresentations = new ApplicationUserCollectionRepresentation();
+                    applicationUserRepresentations.setUsers(listOfCurrentApplicationUsers);
+                    return (T) applicationUserRepresentations;
                 }
-                throw new SDKException(404, "Not found");
+                throw new SDKException(404, path + " not found");
             }
 
             private <T extends ResourceRepresentation> T getById(String id) {
@@ -340,5 +344,9 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
 
     public void addApplication(ApplicationRepresentation app) {
         applications.put(app.getId(), app);
+    }
+
+    public void addApplicationUserRepresentation(ApplicationUserRepresentation applicationUserRepresentation){
+        this.listOfCurrentApplicationUsers.add(applicationUserRepresentation);
     }
 }

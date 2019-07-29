@@ -4,8 +4,10 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceRepositor
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
+import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ThrowableAssert;
@@ -285,6 +287,35 @@ public class LegacyMicroserviceRepositoryTest {
             assertThat(repository.register("existingApp", microserviceMetadataRepresentation().build())).isNotNull();
             assertThat(platform.take(byMethod(POST))).isEmpty();
         }
+    }
+
+    @Test
+    public void shouldGetSubscriptions(){
+        //given
+        //given
+        ApplicationRepresentation existing = applicationRepresentation()
+                .id("3")
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        givenApplications(existing);
+        ApplicationUserRepresentation applicationUserRepresentation = new ApplicationUserRepresentation();
+        platform.addApplicationUserRepresentation(applicationUserRepresentation);
+
+        //when
+        Iterable<ApplicationUserRepresentation> subscriptions = repository.getSubscriptions();
+
+        //then
+        assertThat(subscriptions)
+                .isNotNull()
+                .hasSize(1);
+        ApplicationUserRepresentation firstSubscription = FluentIterable
+                .from(subscriptions)
+                .first()
+                .get();
+        assertThat(firstSubscription)
+                .isNotNull()
+                .isSameAs(applicationUserRepresentation);
     }
 
     private Predicate<FakeCredentialsSwitchingPlatform.Request> byMethod(final HttpMethod method) {
