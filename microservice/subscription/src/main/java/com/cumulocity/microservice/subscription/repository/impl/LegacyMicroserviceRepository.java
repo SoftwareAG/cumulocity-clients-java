@@ -14,6 +14,7 @@ import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -21,7 +22,10 @@ import java.util.List;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
+import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.httpclient.HttpStatus.*;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * works OK with platform API older than 8.18
@@ -32,14 +36,32 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     private final CredentialsSwitchingPlatform platform;
     private final ObjectMapper objectMapper;
     private final ApplicationApiRepresentation api;
+    private final String applicationName;
 
-    public LegacyMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+    public LegacyMicroserviceRepository(String applicationName, CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+        if(isBlank(applicationName)){
+            log.warn("Current application name was not provided to LegacyMicroserviceRepository. Please correct LegacyMicroserviceRepository usage in your code.");
+        }
+        this.applicationName = applicationName;
         this.platform = platform;
         this.objectMapper = objectMapper;
         this.api = api;
     }
 
+    @Deprecated
+    public LegacyMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+        this(null, platform, objectMapper, api);
+    }
+
     @Override
+    public ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata) {
+        checkState(isNotBlank(applicationName),
+                "Application name must be provided at construction time to use one argument register method.");
+        return register(applicationName, metadata);
+    }
+
+    @Override
+    @Deprecated
     public ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata) {
         log.debug("registering {} with {}", applicationName, metadata);
         final ApplicationRepresentation application = getByName(applicationName);
@@ -51,6 +73,19 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
             }
             return update(application, metadata);
         }
+    }
+
+    @Override
+    public ApplicationRepresentation getCurrentApplication() {
+        Preconditions.checkState(isNotBlank(applicationName), "You need to provide current application name at construction time to use method getCurrentApplication.");
+        return getByName(applicationName);
+    }
+
+    @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions() {
+        ApplicationRepresentation currentApplication = getCurrentApplication();
+        Preconditions.checkState(currentApplication != null,"Cannot get subscriptions. Current application not found.");
+        return getSubscriptions(currentApplication.getId());
     }
 
     @Override
