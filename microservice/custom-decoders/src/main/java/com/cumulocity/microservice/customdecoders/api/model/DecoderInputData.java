@@ -1,6 +1,6 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
-import com.cumulocity.rest.representation.ResourceRepresentation;
+import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import lombok.*;
 
 import java.io.Serializable;
@@ -12,7 +12,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
-public class DecoderInputData implements Serializable, ResourceRepresentation {
+public class DecoderInputData extends BaseResourceRepresentation implements Serializable {
     private String serviceKey;
 
     private String value;
