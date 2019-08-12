@@ -98,7 +98,7 @@ public class SecurityUserDetails implements UserDetails {
 
     public String getOAuthAccessToken() {
         if (credentials instanceof CumulocityOAuthCredentials) {
-            return credentials.getAuthenticationString();
+            return ((CumulocityOAuthCredentials) credentials).getAccessToken();
         }
         throw new IllegalStateException();
     }

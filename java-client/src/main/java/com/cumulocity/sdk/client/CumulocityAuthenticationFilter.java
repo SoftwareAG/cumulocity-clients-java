@@ -30,9 +30,15 @@ class CumulocityAuthenticationFilter extends ClientFilter {
 
             @Override
             public Void visit(CumulocityOAuthCredentials credentials) {
-                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-                cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
-                cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
+                switch (credentials.getAuthenticationMethod()) {
+                    case COOKIE:
+                        cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                        cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
+                        cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
+                        return null;
+                    case HEADER:
+                        cr.getMetadata().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
+                }
                 return null;
             }
         };
