@@ -8,6 +8,7 @@
 		<version>8.18.1</version>
 	</parent>
 
+	
 	<groupId>com.nsn.cumulocity.clients-java</groupId>
 	<artifactId>clients-java</artifactId>
 	<packaging>pom</packaging>
