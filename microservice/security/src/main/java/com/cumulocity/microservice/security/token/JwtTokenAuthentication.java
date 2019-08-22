@@ -47,7 +47,7 @@ public class JwtTokenAuthentication implements Authentication {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if(currentUserRepresentation != null) {
+        if (currentUserRepresentation != null) {
             return memoizedAuthorities.get();
         }
         return Collections.emptyList();

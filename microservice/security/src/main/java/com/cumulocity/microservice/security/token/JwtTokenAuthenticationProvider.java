@@ -1,14 +1,8 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.agent.server.context.DeviceCredentials;
-import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
-import com.cumulocity.rest.representation.user.UserMediaType;
-import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.sun.jersey.client.apache.ApacheHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -20,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -32,19 +27,10 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     @Value("${C8Y.baseURL}")
     private String baseUrl;
 
-    private final LoadingCache<JwtTokenAuthentication, Authentication> userCache = CacheBuilder.newBuilder()
+    private final Cache<JwtTokenAuthentication, Authentication> userCache = CacheBuilder.newBuilder()
             .maximumSize(10000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
-            .build(new CacheLoader<JwtTokenAuthentication, Authentication>() {
-                @Override
-                public Authentication load(JwtTokenAuthentication jwtTokenAuthentication) {
-                    LocalClient client = LocalClient.from(baseUrl, jwtTokenAuthentication);
-                    jwtTokenAuthentication.setCurrentUserRepresentation(client.getCurrentUser());
-                    String tenantName = client.getTenantName();
-                    jwtTokenAuthentication.setDeviceCredentials(buildDeviceCredentials(tenantName, jwtTokenAuthentication));
-                    return jwtTokenAuthentication;
-                }
-            });
+            .build();
 
     @Override
     public boolean supports(Class<?> authentication) {
@@ -55,7 +41,16 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         final JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) authentication;
         try {
-            return userCache.get(jwtTokenAuthentication);
+            return userCache.get(jwtTokenAuthentication, new Callable<Authentication>() {
+                @Override
+                public Authentication call() throws Exception {
+                    CumulocityOAuthUserDetails cumulocityOAuthUserDetails = CumulocityOAuthUserDetails.from(baseUrl, jwtTokenAuthentication);
+                    jwtTokenAuthentication.setCurrentUserRepresentation(cumulocityOAuthUserDetails.getCurrentUser());
+                    String tenantName = cumulocityOAuthUserDetails.getTenantName();
+                    jwtTokenAuthentication.setDeviceCredentials(buildDeviceCredentials(tenantName, jwtTokenAuthentication));
+                    return jwtTokenAuthentication;
+                }
+            });
         } catch (ExecutionException e) {
             log.info("Error while authenticating", e);
             return null;
@@ -86,60 +81,5 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
         this.messages = new MessageSourceAccessor(messageSource);
     }
 
-    private static class LocalClient {
-
-        ApacheHttpClient client;
-        String baseUrl;
-
-        static final LocalClient from(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
-            ApacheHttpClient client = new ApacheHttpClient();
-            if (jwtTokenAuthentication != null) {
-                if (jwtTokenAuthentication.getCredentials() instanceof JwtAndXsrfTokenCredentials) {
-                    JwtAndXsrfTokenCredentials credentials = (JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials();
-                    client.addFilter(new CumulocityAuthenticationFilter(
-                            credentials.getJwt().getEncoded()
-                            , credentials.getXsrfToken()
-                    ));
-                } else {
-                    client.addFilter(new CumulocityAuthenticationFilter(
-                            ((JwtCredentials) jwtTokenAuthentication.getCredentials()).getJwt().getEncoded(),
-                            null
-                    ));
-                }
-            }
-            return new LocalClient(baseUrl, client);
-        }
-
-        public LocalClient(String baseUrl, ApacheHttpClient client) {
-            this.client = client;
-            this.baseUrl = baseUrl;
-        }
-
-        CurrentUserRepresentation getCurrentUser() {
-            return client.resource(baseUrl + "/user/currentUser")
-                    .accept(UserMediaType.CURRENT_USER)
-                    .get(CurrentUserRepresentation.class);
-        }
-
-        String getTenantName() {
-            SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.resource(baseUrl + "/tenant/currentTenant")
-                    .accept(UserMediaType.CURRENT_TENANT)
-                    .get(SimplifiedCurrentTenantRepresentation.class);
-            return currentTenantRepresentation.name;
-        }
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        protected static class SimplifiedCurrentTenantRepresentation {
-            private String name;
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-        }
-    }
 }
 
