@@ -60,6 +60,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                         logger.debug("Authentication success: " + authResult);
                     }
                     // it is important to enter context at this point, so in later processing correct credentials are in place
+                    authResult.setAuthenticated(true);
                     SecurityContextHolder.getContext().setAuthentication(authResult);
                     deviceContextService.enterContext(new DeviceContext(((JwtTokenAuthentication) authResult).getDeviceCredentials()));
 
@@ -70,8 +71,6 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                     if (debug) {
                         logger.debug("Authentication request for failed: " + failed);
                     }
-//                  rememberMeServices.loginFail(request, response);
-//                  onUnsuccessfulAuthentication(request, response, failed);
                     authenticationEntryPoint.commence(request, response, failed);
                     return;
                 }

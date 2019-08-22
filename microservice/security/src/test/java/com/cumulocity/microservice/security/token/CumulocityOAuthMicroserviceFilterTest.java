@@ -1,5 +1,7 @@
 package com.cumulocity.microservice.security.token;
 
+import com.cumulocity.agent.server.context.DeviceContext;
+import com.cumulocity.agent.server.context.DeviceContextService;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +43,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
     CumulocityOAuthMicroserviceFilter filter;
     AuthenticationEntryPoint authenticationEntryPoint;
+    DeviceContextService deviceContextService;
 
     AuthenticationManager authenticationManager;
 
@@ -57,9 +60,11 @@ public class CumulocityOAuthMicroserviceFilterTest {
         authenticationEntryPoint = mock(AuthenticationEntryPoint.class);
 
         authenticationManager = mock(AuthenticationManager.class);
+        deviceContextService = mock(DeviceContextService.class);
         filter = new CumulocityOAuthMicroserviceFilter();
         filter.setAuthenticationManager(authenticationManager);
         filter.setAuthenticationEntryPoint(authenticationEntryPoint);
+        filter.setDeviceContextService(deviceContextService);
     }
 
     @Test
@@ -79,6 +84,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
         verify(chain).doFilter(request, response);
         verify(context).setAuthentication(actualAuthentication);
+        verify(deviceContextService).enterContext(any(DeviceContext.class));
     }
 
     @Test
@@ -102,6 +108,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
         verify(chain).doFilter(request, response);
         verify(context).setAuthentication(actualAuthentication);
+        verify(deviceContextService).enterContext(any(DeviceContext.class));
     }
 
     @Test
@@ -161,7 +168,4 @@ public class CumulocityOAuthMicroserviceFilterTest {
             }
         });
     }
-
-    // caching? rememberMeService?
-
 }

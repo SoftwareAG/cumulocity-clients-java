@@ -5,9 +5,11 @@ import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
@@ -18,35 +20,46 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 @Component
 @Slf4j
-public class JwtTokenAuthenticationProvider implements AuthenticationProvider, InitializingBean,
-        MessageSourceAware {
+public class JwtTokenAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
 
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
     @Value("${C8Y.baseURL}")
-    String baseUrl;
+    private String baseUrl;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-    }
+    private final LoadingCache<JwtTokenAuthentication, Authentication> userCache = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<JwtTokenAuthentication, Authentication>() {
+                @Override
+                public Authentication load(JwtTokenAuthentication jwtTokenAuthentication) {
+                    LocalClient client = LocalClient.from(baseUrl, jwtTokenAuthentication);
+                    jwtTokenAuthentication.setCurrentUserRepresentation(client.getCurrentUser());
+                    String tenantName = client.getTenantName();
+                    jwtTokenAuthentication.setDeviceCredentials(buildDeviceCredentials(tenantName, jwtTokenAuthentication));
+                    return jwtTokenAuthentication;
+                }
+            });
 
     @Override
     public boolean supports(Class<?> authentication) {
         return (JwtTokenAuthentication.class.isAssignableFrom(authentication));
     }
 
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         final JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) authentication;
-        LocalClient client = LocalClient.from(baseUrl, jwtTokenAuthentication);
-        jwtTokenAuthentication.setCurrentUserRepresentation(client.getCurrentUser());
-        String tenantName = client.getTenantName();
-        jwtTokenAuthentication.setDeviceCredentials(buildDeviceCredentials(tenantName, jwtTokenAuthentication));
-        return jwtTokenAuthentication;
+        try {
+            return userCache.get(jwtTokenAuthentication);
+        } catch (ExecutionException e) {
+            log.info("Error while authenticating", e);
+            return null;
+        }
     }
 
     private DeviceCredentials buildDeviceCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
