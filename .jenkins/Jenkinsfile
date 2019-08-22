@@ -31,11 +31,11 @@ pipeline {
            }
        }
        stage('Build') {
-           agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                }
-            }
+//           agent {
+//                dockerfile {
+//                    dir '.jenkins/build'
+//                }
+//            }
            options {
              retry(3)
            }
