@@ -69,6 +69,13 @@ public class DeviceCredentials {
         return deviceCredentials;
     }
 
+    public static DeviceCredentials from(String tenant, String username, String oAuthAccessToken, String xsrfToken) {
+        DeviceCredentials deviceCredentials = new DeviceCredentials(tenant, username, null, null, null);
+        deviceCredentials.setoAuthAccessToken(oAuthAccessToken);
+        deviceCredentials.setXsrfToken(xsrfToken);
+        return deviceCredentials;
+    }
+
     public static DeviceCredentials from(String authorization, String appKey, int pageSize) {
         if (authorization == null || !authorization.toUpperCase().startsWith(AUTH_PREFIX)) {
             return new DeviceCredentials(null, "", "", appKey, null, pageSize);

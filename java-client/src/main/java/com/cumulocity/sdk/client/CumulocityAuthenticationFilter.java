@@ -1,6 +1,7 @@
 package com.cumulocity.sdk.client;
 
 import com.cumulocity.sdk.client.base.Supplier;
+import com.cumulocity.sdk.client.base.Suppliers;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
@@ -12,7 +13,7 @@ import javax.ws.rs.core.HttpHeaders;
 import java.io.UnsupportedEncodingException;
 
 @Slf4j
-class CumulocityAuthenticationFilter extends ClientFilter {
+public class CumulocityAuthenticationFilter extends ClientFilter {
 
     private final String authentication;
     private final Supplier<String> oAuthAccessToken;
@@ -37,6 +38,12 @@ class CumulocityAuthenticationFilter extends ClientFilter {
         }
     }
 
+    public CumulocityAuthenticationFilter(final String oAuthAccessToken, final String xsrfToken) {
+        this.oAuthAccessToken = Suppliers.ofInstance(oAuthAccessToken);
+        this.xsrfToken = Suppliers.ofInstance(xsrfToken);
+        this.authentication = null;
+    }
+
     @Override
     public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
 
@@ -45,9 +52,18 @@ class CumulocityAuthenticationFilter extends ClientFilter {
                 cr.getMetadata().add(HttpHeaders.AUTHORIZATION, authentication);
             }
         } else {
-            cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-            cr.getHeaders().putSingle("Cookie", "authorization=" + unwrapSupplier(oAuthAccessToken));
-            cr.getHeaders().putSingle("X-XSRF-TOKEN", unwrapSupplier(xsrfToken));
+            /** There is an implicit assumption at this point, that if we reach this point and there is access token
+             without xsrf token, then it was authorized with Bearer token, but if there was X-XSRF-TOKEN, the request was
+             authorized with cookies and cookie authorization must be in place for to server request
+             */
+            if (unwrapSupplier(xsrfToken) == null) {
+                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                cr.getMetadata().add(HttpHeaders.AUTHORIZATION, "Bearer " + unwrapSupplier(oAuthAccessToken));
+            } else {
+                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                cr.getHeaders().putSingle("Cookie", "authorization=" + unwrapSupplier(oAuthAccessToken));
+                cr.getHeaders().putSingle("X-XSRF-TOKEN", unwrapSupplier(xsrfToken));
+            }
         }
 
         return getNext().handle(cr);

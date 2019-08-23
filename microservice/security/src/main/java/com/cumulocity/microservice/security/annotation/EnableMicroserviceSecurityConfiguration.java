@@ -2,8 +2,11 @@ package com.cumulocity.microservice.security.annotation;
 
 
 import com.cumulocity.agent.server.context.ServletDeviceContextFilter;
+import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
+import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -18,6 +21,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Order(99)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true, securedEnabled = true)
+@ComponentScan("com.cumulocity.microservice.security.token")
 public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -26,12 +30,19 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
     @Autowired(required = false)
     private ServletDeviceContextFilter deviceContextFilter;
 
+    @Autowired
+    private CumulocityOAuthMicroserviceFilter cumulocityOAuthMicroserviceFilter;
+
+    @Autowired
+    private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
+
     public void configure(WebSecurity webSecurity) throws Exception {
         webSecurity.ignoring().antMatchers("/metadata", "/health");
     }
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(jwtTokenAuthenticationProvider);
     }
 
     protected void configure(HttpSecurity http) throws Exception {
@@ -45,7 +56,7 @@ public class EnableMicroserviceSecurityConfiguration extends WebSecurityConfigur
                 securityContext().disable().
                 sessionManagement().disable().
                 requestCache().disable();
-
+        http.addFilterBefore(cumulocityOAuthMicroserviceFilter, BasicAuthenticationFilter.class);
 //        in microservice sdk we won't have device-context-filter (we will have microservice equivalent)
         if (deviceContextFilter != null) {
             disable.addFilterBefore(deviceContextFilter, BasicAuthenticationFilter.class);
