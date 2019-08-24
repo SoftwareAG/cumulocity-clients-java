@@ -63,7 +63,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                     authResult.setAuthenticated(true);
                     SecurityContextHolder.getContext().setAuthentication(authResult);
                     userContextService.runWithinContext(
-                            ((JwtTokenAuthentication)authResult).getUserCredentials(),
+                            ((JwtTokenAuthentication) authResult).getUserCredentials(),
                             new Runnable() {
                                 @Override
                                 public void run() {
@@ -101,23 +101,41 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
     private Optional<JwtCredentials> readCredentials(HttpServletRequest req) {
         Enumeration<String> headers = req.getHeaders("Authorization");
         if (headers != null) {
-            while (headers.hasMoreElements()) {
-                String header = headers.nextElement();
-                if (header.toLowerCase().startsWith("bearer")) {
-                    return Optional.of((JwtCredentials) new JwtOnlyCredentials(JwtHelper.decode(header.substring(7))));
-                }
+            Optional<JwtCredentials> credentials = findBearerCredentials(headers);
+            if (credentials.isPresent()) {
+                return credentials;
             }
         }
         Optional<Cookie> accessToken = CookieReader.readAuthorizationCookie(req);
         if (accessToken.isPresent()) {
-            String xsrfToken = req.getHeader("X-XSRF-TOKEN");
-            if (!StringUtils.isEmpty(xsrfToken)) {
-                return Optional.of((JwtCredentials) new JwtAndXsrfTokenCredentials(
-                        JwtHelper.decode(accessToken.get().getValue()),
-                        xsrfToken));
+            Optional<JwtCredentials> credentials = buildCookieCredentialsWithXSRFToken(accessToken, req);
+            if (credentials.isPresent()) {
+                return credentials;
             }
         }
         return Optional.absent();
     }
+
+    private Optional<JwtCredentials> findBearerCredentials(Enumeration<String> headers) {
+        while (headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            if (header.toLowerCase().startsWith("bearer")) {
+                return Optional.of((JwtCredentials) new JwtOnlyCredentials(JwtHelper.decode(header.substring(7))));
+            }
+        }
+        return Optional.absent();
+    }
+
+
+    private Optional<JwtCredentials> buildCookieCredentialsWithXSRFToken(Optional<Cookie> accessToken, HttpServletRequest req) {
+        String xsrfToken = req.getHeader("X-XSRF-TOKEN");
+        if (!StringUtils.isEmpty(xsrfToken)) {
+            return Optional.of((JwtCredentials) new JwtAndXsrfTokenCredentials(
+                    JwtHelper.decode(accessToken.get().getValue()),
+                    xsrfToken));
+        }
+        return Optional.absent();
+    }
+
 }
 

@@ -31,6 +31,7 @@ import java.util.Collections;
 
 import static com.cumulocity.microservice.security.token.CookieReader.AUTHORIZATION_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -162,13 +163,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
     }
 
     private void mockAuthenticationMangerReturnArgument() {
-        when(authenticationManager.authenticate(any(Authentication.class))).thenAnswer(new Answer<Authentication>() {
-            @Override
-            public Authentication answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                return (Authentication) args[0];
-            }
-        });
+        when(authenticationManager.authenticate(any(Authentication.class))).thenAnswer(returnsFirstArg());
     }
 
     private void mockContextServiceInvokeRunnable() {
