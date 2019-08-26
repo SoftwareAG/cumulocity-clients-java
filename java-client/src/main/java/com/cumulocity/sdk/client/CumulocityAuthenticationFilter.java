@@ -8,11 +8,12 @@ import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ws.rs.core.HttpHeaders;
 
 @RequiredArgsConstructor
-class CumulocityAuthenticationFilter extends ClientFilter {
+public class CumulocityAuthenticationFilter extends ClientFilter {
 
     private final CumulocityCredentials credentials;
 
@@ -30,10 +31,20 @@ class CumulocityAuthenticationFilter extends ClientFilter {
 
             @Override
             public Void visit(CumulocityOAuthCredentials credentials) {
-                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-                cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
-                cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
-                return null;
+                /** There is an implicit assumption at this point, that if we reach this point and there is access token
+                 without xsrf token, then it was authorized with Bearer token, but if there was X-XSRF-TOKEN, the request was
+                 authorized with cookies and cookie authorization must be in place for to server request
+                 */
+                if (StringUtils.isBlank(credentials.getXsrfToken())) {
+                    cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                    cr.getMetadata().add(HttpHeaders.AUTHORIZATION, "Bearer " + credentials.getAuthenticationString());
+                    return null;
+                } else {
+                    cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                    cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
+                    cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
+                    return null;
+                }
             }
         };
         credentials.accept(visitor);
