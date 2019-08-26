@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import javax.ws.rs.core.HttpHeaders;
 
 @RequiredArgsConstructor
-class CumulocityAuthenticationFilter extends ClientFilter {
+public class CumulocityAuthenticationFilter extends ClientFilter {
 
     private final CumulocityCredentials credentials;
 
