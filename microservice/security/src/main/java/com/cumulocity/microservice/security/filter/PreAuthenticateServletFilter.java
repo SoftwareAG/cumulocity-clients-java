@@ -45,7 +45,10 @@ public class PreAuthenticateServletFilter extends OncePerRequestFilter {
                 }
             }
         };
-        if (contextService != null && credentialsResolvers != null) {
+        if (contextService != null
+                && credentialsResolvers != null
+                && !contextService.isInContext()
+        ) {
             final ImmutableList<Credentials> credentials = from(credentialsResolvers)
                     .filter(new Predicate<PreAuthorizationContextProvider<HttpServletRequest>>() {
                         public boolean apply(PreAuthorizationContextProvider<HttpServletRequest> provider) {
