@@ -9,7 +9,7 @@ import com.sun.jersey.core.util.Base64;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.UnsupportedEncodingException;
 
-class CumulocityAuthenticationFilter extends ClientFilter {
+public class CumulocityAuthenticationFilter extends ClientFilter {
 
     private final String authentication;
     private final String oAuthAccessToken;
@@ -34,6 +34,12 @@ class CumulocityAuthenticationFilter extends ClientFilter {
         }
     }
 
+    public CumulocityAuthenticationFilter(final String oAuthAccessToken, final String xsrfToken) {
+        this.oAuthAccessToken = oAuthAccessToken;
+        this.xsrfToken = xsrfToken;
+        this.authentication = null;
+    }
+
     @Override
     public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
 
@@ -42,9 +48,18 @@ class CumulocityAuthenticationFilter extends ClientFilter {
                 cr.getMetadata().add(HttpHeaders.AUTHORIZATION, authentication);
             }
         } else {
+            /** There is an implicit assumption at this point, that if we reach this point and there is access token
+             without xsrf token, then it was authorized with Bearer token, but if there was X-XSRF-TOKEN, the request was
+             authorized with cookies and cookie authorization must be in place for to server request
+             */
+            if (xsrfToken == null) {
             cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-            cr.getHeaders().putSingle("Cookie", "authorization=" + oAuthAccessToken);
-            cr.getHeaders().putSingle("X-XSRF-TOKEN", xsrfToken);
+                cr.getMetadata().add(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthAccessToken);
+            } else {
+                cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
+                cr.getHeaders().putSingle("Cookie", "authorization=" + oAuthAccessToken);
+                cr.getHeaders().putSingle("X-XSRF-TOKEN", xsrfToken);
+            }
         }
         
         return getNext().handle(cr);
