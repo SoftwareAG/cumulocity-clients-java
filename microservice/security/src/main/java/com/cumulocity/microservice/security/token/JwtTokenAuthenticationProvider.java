@@ -5,6 +5,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -27,6 +28,8 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
 
     @Autowired
     private StandardEnvironment environment;
+    @Value("${C8Y.baseURL:${platform.url:http://localhost:8181}}")
+    private String host;
 
     private final Cache<JwtTokenAuthentication, Authentication> userCache = CacheBuilder.newBuilder()
             .maximumSize(10000)
@@ -45,7 +48,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
             return userCache.get(jwtTokenAuthentication, new Callable<Authentication>() {
                 @Override
                 public Authentication call() throws Exception {
-                    CumulocityOAuthUserDetails cumulocityOAuthUserDetails = CumulocityOAuthUserDetails.from("" + environment.getSystemEnvironment().get("C8Y_BASEURL"), jwtTokenAuthentication);
+                    CumulocityOAuthUserDetails cumulocityOAuthUserDetails = CumulocityOAuthUserDetails.from(host, jwtTokenAuthentication);
                     jwtTokenAuthentication.setCurrentUserRepresentation(cumulocityOAuthUserDetails.getCurrentUser());
                     String tenantName = cumulocityOAuthUserDetails.getTenantName();
                     jwtTokenAuthentication.setUserCredentials(buildUserCredentials(tenantName, jwtTokenAuthentication));
