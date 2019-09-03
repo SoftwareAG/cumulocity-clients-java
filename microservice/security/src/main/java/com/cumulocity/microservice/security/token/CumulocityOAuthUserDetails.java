@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.security.token;
 
+import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
@@ -8,16 +9,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 
 public class CumulocityOAuthUserDetails {
-    ApacheHttpClient client;
-    String baseUrl;
+    private ApacheHttpClient client;
+    private String baseUrl;
 
-    public static final CumulocityOAuthUserDetails from(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
-        ApacheHttpClient client = new ApacheHttpClient();
+    public CumulocityOAuthUserDetails(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
+        this.client = new ApacheHttpClient();
         if (jwtTokenAuthentication != null) {
             if (jwtTokenAuthentication.getCredentials() instanceof JwtAndXsrfTokenCredentials) {
                 JwtAndXsrfTokenCredentials credentials = (JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials();
                 client.addFilter(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
+                                .authenticationMethod(AuthenticationMethod.COOKIE)
                                 .oAuthAccessToken(credentials.getJwt().getEncoded())
                                 .xsrfToken(credentials.getXsrfToken())
                                 .build()
@@ -25,16 +27,12 @@ public class CumulocityOAuthUserDetails {
             } else {
                 client.addFilter(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
-                                .oAuthAccessToken(((JwtCredentials) jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
+                                .authenticationMethod(AuthenticationMethod.HEADER)
+                                .oAuthAccessToken((jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
                                 .build()
                 ));
             }
         }
-        return new CumulocityOAuthUserDetails(baseUrl, client);
-    }
-
-    public CumulocityOAuthUserDetails(String baseUrl, ApacheHttpClient client) {
-        this.client = client;
         this.baseUrl = baseUrl;
     }
 
