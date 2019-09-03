@@ -54,7 +54,7 @@ public class JwtTokenAuthentication implements Authentication {
     }
 
     @Override
-    public Object getCredentials() {
+    public JwtCredentials getCredentials() {
         return jwtCredentials;
     }
 

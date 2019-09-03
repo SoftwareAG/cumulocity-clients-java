@@ -5,6 +5,8 @@ import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.config.FilterRegistrationConfiguration;
 import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
+import com.cumulocity.microservice.security.token.JwtAuthenticatedTokenCache;
+import com.cumulocity.microservice.security.token.JwtTokenAuthenticationGuavaCache;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,9 +24,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @ComponentScan(
         value = "com.cumulocity.microservice.security.token",
         basePackageClasses = {
-        FilterRegistrationConfiguration.class,
-        PreAuthenticateServletFilter.class
-})
+                FilterRegistrationConfiguration.class,
+                PreAuthenticateServletFilter.class
+        })
 public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -42,13 +44,25 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Autowired
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
 
+    @Autowired
+    private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
+
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        setCustomJwtAuthenticatedCacheIfExists();
         auth.userDetailsService(userDetailsService);
         auth.authenticationProvider(jwtTokenAuthenticationProvider);
     }
 
+    private void setCustomJwtAuthenticatedCacheIfExists() {
+        if (jwtAuthenticatedTokenCache != null) {
+            jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
+        } else {
+            jwtTokenAuthenticationProvider.setTokenCache(new JwtTokenAuthenticationGuavaCache());
+        }
+    }
+
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/metadata", "/health", "/prometheus", "/metrics");
     }
 
