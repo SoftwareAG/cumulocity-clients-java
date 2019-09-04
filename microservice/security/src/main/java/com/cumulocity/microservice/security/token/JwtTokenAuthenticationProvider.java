@@ -23,10 +23,8 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     private StandardEnvironment environment;
     private JwtAuthenticatedTokenCache tokenCache;
 
-    @Autowired
-    public JwtTokenAuthenticationProvider(StandardEnvironment environment,JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache) {
+    public JwtTokenAuthenticationProvider(StandardEnvironment environment) {
         this.environment = environment;
-        this.tokenCache = jwtAuthenticatedTokenCache;
         this.messages = SpringSecurityMessageSource.getAccessor();
     }
 

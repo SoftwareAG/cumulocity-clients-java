@@ -8,6 +8,7 @@ import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFil
 import com.cumulocity.microservice.security.token.JwtAuthenticatedTokenCache;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationGuavaCache;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+@Slf4j
 @Order(99)
 @EnableWebSecurity
 @ComponentScan(
@@ -44,7 +46,7 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Autowired
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
 
-    @Autowired
+    @Autowired(required = false)
     private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -55,8 +57,10 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
 
     private void setCustomJwtAuthenticatedCacheIfExists() {
         if (jwtAuthenticatedTokenCache != null) {
+            log.info("Custom implementation for token cache is used");
             jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
         } else {
+            log.info("Default Guava implementation for token cache is used");
             jwtTokenAuthenticationProvider.setTokenCache(new JwtTokenAuthenticationGuavaCache());
         }
     }

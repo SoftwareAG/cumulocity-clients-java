@@ -33,7 +33,8 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
 
     @Before
     public void setup() {
-        jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment,jwtAuthenticatedTokenCache);
+        jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment);
+        jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
     }
 
     @Test
