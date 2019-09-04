@@ -12,11 +12,15 @@ import org.springframework.security.core.Authentication;
 public class JwtTokenAuthenticationGuavaCache implements JwtAuthenticatedTokenCache {
 
     private final Cache<JwtCredentials, Authentication> userTokenCache;
+    private final int maximumSize;
+    private final int expireAfterAccessInMinutes;
 
-    public JwtTokenAuthenticationGuavaCache() {
+    public JwtTokenAuthenticationGuavaCache(int maximumSize, int expireAfterAccessInMinutes) {
+        this.maximumSize = maximumSize;
+        this.expireAfterAccessInMinutes = expireAfterAccessInMinutes;
         this.userTokenCache = CacheBuilder.newBuilder()
-                .maximumSize(10000)
-                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .maximumSize(maximumSize)
+                .expireAfterAccess(expireAfterAccessInMinutes, TimeUnit.MINUTES)
                 .build();
     }
 

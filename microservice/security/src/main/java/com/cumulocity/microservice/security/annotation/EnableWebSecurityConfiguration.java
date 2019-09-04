@@ -10,7 +10,9 @@ import com.cumulocity.microservice.security.token.JwtTokenAuthenticationGuavaCac
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,6 +31,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
                 FilterRegistrationConfiguration.class,
                 PreAuthenticateServletFilter.class
         })
+@PropertySource("classpath:guava-cache.properties")
 public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -49,6 +52,11 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Autowired(required = false)
     private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
 
+    @Value("${cache.guava.maxSize}")
+    private int jwtGuavaCacheMaxSize;
+    @Value("#{environment['cache.guava.expireAfterAccessInMinutes']}")
+    private int jwtGuavaCacheExpireAfterAccessInMinutes;
+
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         setCustomJwtAuthenticatedCacheIfExists();
         auth.userDetailsService(userDetailsService);
@@ -57,11 +65,12 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
 
     private void setCustomJwtAuthenticatedCacheIfExists() {
         if (jwtAuthenticatedTokenCache != null) {
-            log.info("Custom implementation for token cache is used");
+            log.info("Custom implementation for token cache is used.");
             jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
         } else {
-            log.info("Default Guava implementation for token cache is used");
-            jwtTokenAuthenticationProvider.setTokenCache(new JwtTokenAuthenticationGuavaCache());
+            log.info("Default Guava implementation for token cache is used.\nParameters:\n- max cache size: " + jwtGuavaCacheMaxSize + "\n-expire after access: " + jwtGuavaCacheExpireAfterAccessInMinutes + " minutes");
+            JwtAuthenticatedTokenCache guavaCache = new JwtTokenAuthenticationGuavaCache(jwtGuavaCacheMaxSize, jwtGuavaCacheExpireAfterAccessInMinutes);
+            jwtTokenAuthenticationProvider.setTokenCache(guavaCache);
         }
     }
 
