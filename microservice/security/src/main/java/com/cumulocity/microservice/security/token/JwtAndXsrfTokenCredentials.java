@@ -20,7 +20,7 @@ public class JwtAndXsrfTokenCredentials implements JwtCredentials{
     }
 
     @Override
-    public UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
+    public UserCredentials toUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
         JwtAndXsrfTokenCredentials credentials = ((JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials());
         return UserCredentials.builder()
                 .tenant(tenantName)

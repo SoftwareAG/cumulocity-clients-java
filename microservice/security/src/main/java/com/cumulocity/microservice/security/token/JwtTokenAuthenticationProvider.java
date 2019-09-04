@@ -4,14 +4,12 @@ import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.google.common.base.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.stereotype.Component;
 
@@ -65,7 +63,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
 
     private UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
         JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
-        return jwtCredentials.buildUserCredentials(tenantName, jwtTokenAuthentication);
+        return jwtCredentials.toUserCredentials(tenantName, jwtTokenAuthentication);
     }
 
     @Override

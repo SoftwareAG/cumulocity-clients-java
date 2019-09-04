@@ -18,7 +18,7 @@ public class JwtOnlyCredentials implements JwtCredentials{
     }
 
     @Override
-    public UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
+    public UserCredentials toUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
         return UserCredentials.builder()
                 .tenant(tenantName)
                 .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())

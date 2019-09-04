@@ -4,8 +4,6 @@ import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
-import org.springframework.security.jwt.Jwt;
-import org.springframework.security.jwt.crypto.sign.SignatureVerifier;
 
 public class JwtAndXsrfTokenCredentialsTest extends JwtTokenTestsHelper{
     @Test
@@ -16,7 +14,7 @@ public class JwtAndXsrfTokenCredentialsTest extends JwtTokenTestsHelper{
         currentUserRepresentation.setUserName(SAMPLE_USERNAME);
         jwtTokenAuthentication.setCurrentUserRepresentation(currentUserRepresentation);
 
-        UserCredentials userCredentials = jwtAndXsrfTokenCredentials.buildUserCredentials(SAMPLE_TENANT_NAME, jwtTokenAuthentication);
+        UserCredentials userCredentials = jwtAndXsrfTokenCredentials.toUserCredentials(SAMPLE_TENANT_NAME, jwtTokenAuthentication);
 
         assertThat(userCredentials.getUsername()).isEqualTo(SAMPLE_USERNAME);
         assertThat(userCredentials.getOAuthAccessToken()).isEqualTo(SAMPLE_ENCODED_TOKEN);

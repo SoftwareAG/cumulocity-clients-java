@@ -14,7 +14,7 @@ public class JwtOnlyCredentialsTest extends JwtTokenTestsHelper {
         currentUserRepresentation.setUserName(SAMPLE_USERNAME);
         jwtTokenAuthentication.setCurrentUserRepresentation(currentUserRepresentation);
 
-        UserCredentials userCredentials = jwtOnlyCredentials.buildUserCredentials(SAMPLE_TENANT_NAME, jwtTokenAuthentication);
+        UserCredentials userCredentials = jwtOnlyCredentials.toUserCredentials(SAMPLE_TENANT_NAME, jwtTokenAuthentication);
 
         assertThat(userCredentials.getUsername()).isEqualTo(SAMPLE_USERNAME);
         assertThat(userCredentials.getOAuthAccessToken()).isEqualTo(SAMPLE_ENCODED_TOKEN);

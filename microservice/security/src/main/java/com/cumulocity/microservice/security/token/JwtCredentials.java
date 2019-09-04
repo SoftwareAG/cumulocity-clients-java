@@ -5,5 +5,5 @@ import org.springframework.security.jwt.Jwt;
 
 public interface JwtCredentials {
     Jwt getJwt();
-    UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication);
+    UserCredentials toUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication);
 }
