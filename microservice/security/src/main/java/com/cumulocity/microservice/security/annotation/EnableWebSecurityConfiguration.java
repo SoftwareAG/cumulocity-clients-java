@@ -11,6 +11,8 @@ import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
@@ -52,26 +54,17 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Autowired(required = false)
     private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
 
-    @Value("${cache.guava.maxSize}")
-    private int jwtGuavaCacheMaxSize;
-    @Value("#{environment['cache.guava.expireAfterAccessInMinutes']}")
-    private int jwtGuavaCacheExpireAfterAccessInMinutes;
-
+    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        setCustomJwtAuthenticatedCacheIfExists();
         auth.userDetailsService(userDetailsService);
         auth.authenticationProvider(jwtTokenAuthenticationProvider);
     }
 
-    private void setCustomJwtAuthenticatedCacheIfExists() {
-        if (jwtAuthenticatedTokenCache != null) {
-            log.info("Custom implementation for token cache is used.");
-            jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
-        } else {
-            log.info("Default Guava implementation for token cache is used.\nParameters:\n- max cache size: " + jwtGuavaCacheMaxSize + "\n-expire after access: " + jwtGuavaCacheExpireAfterAccessInMinutes + " minutes");
-            JwtAuthenticatedTokenCache guavaCache = new JwtTokenAuthenticationGuavaCache(jwtGuavaCacheMaxSize, jwtGuavaCacheExpireAfterAccessInMinutes);
-            jwtTokenAuthenticationProvider.setTokenCache(guavaCache);
-        }
+    @Bean
+    @ConditionalOnMissingBean
+    public JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache(@Value("${cache.guava.maxSize}") int jwtGuavaCacheMaxSize, @Value("${cache.guava.expireAfterAccessInMinutes}") int jwtGuavaCacheExpireAfterAccessInMinutes) {
+        log.info("Default Guava implementation for token cache is used.\nParameters:\n- max cache size: " + jwtGuavaCacheMaxSize + "\n-expire after access: " + jwtGuavaCacheExpireAfterAccessInMinutes + " minutes");
+        return new JwtTokenAuthenticationGuavaCache(jwtGuavaCacheMaxSize, jwtGuavaCacheExpireAfterAccessInMinutes);
     }
 
     @Override

@@ -28,13 +28,17 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
     @Mock
     private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
     @Mock
-    private JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials;
+    CumulocityOAuthUserDetails cumulocityOAuthUserDetailsMock;
+
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
+    private JwtTokenAuthentication jwtTokenAuthentication;
+    private JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials;
 
     @Before
     public void setup() {
-        jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment);
-        jwtTokenAuthenticationProvider.setTokenCache(jwtAuthenticatedTokenCache);
+        jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment, jwtAuthenticatedTokenCache);
+        jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(mockedJwtImpl(), SAMPLE_XSRF_TOKEN);
+        jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
     }
 
     @Test
@@ -49,45 +53,26 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
 
     @Test
     public void shouldUpdateAndAddTokenCredentials() throws Exception {
-        String baseUrl = "sampleUrl.com";
-        CurrentUserRepresentation currUserRepresentation = mockCurrentUser();
-
-        JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(mockedJwtImpl(), SAMPLE_XSRF_TOKEN);
-        JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
-        CumulocityOAuthUserDetails cumulocityOAuthUserDetailsMock = mock(CumulocityOAuthUserDetails.class);
-
-        when(cumulocityOAuthUserDetailsMock.getCurrentUser()).thenReturn(currUserRepresentation);
-        when(jwtAuthenticatedTokenCache.get(jwtAndXsrfTokenCredentials)).thenReturn(Optional.<Authentication>absent());
-
-        String key = "C8Y_BASEURL";
-        mockStandardEnvironment(key, baseUrl);
-        String tenant = "tenant1234";
-        when(cumulocityOAuthUserDetailsMock.getTenantName()).thenReturn(tenant);
-
+        CurrentUserRepresentation currUserRepresentation = mockCurrUserRepresentationResponseFromCoreAndAddToCache();
+        String tenant = mockResponseFromCoreToGetTenantName(cumulocityOAuthUserDetailsMock);
         PowerMockito.whenNew(CumulocityOAuthUserDetails.class).withAnyArguments().thenReturn(cumulocityOAuthUserDetailsMock);
 
         JwtTokenAuthentication updatedToken = (JwtTokenAuthentication) jwtTokenAuthenticationProvider.authenticate(jwtTokenAuthentication);
 
         verify(cumulocityOAuthUserDetailsMock).getCurrentUser();
         verify(jwtAuthenticatedTokenCache).get(jwtAndXsrfTokenCredentials);
-
         verify(standardEnvironment).getSystemEnvironment();
         verify(cumulocityOAuthUserDetailsMock).getTenantName();
         verify(jwtAuthenticatedTokenCache).put(jwtAndXsrfTokenCredentials, updatedToken);
 
-        UserCredentials updatedUserCredentials = updatedToken.getUserCredentials();
-        assertThat(updatedUserCredentials.getTenant()).isEqualTo(tenant);
-        String username = currUserRepresentation.getUserName();
-        assertThat(updatedUserCredentials.getUsername()).isEqualTo(username);
-        assertThat(updatedUserCredentials.getOAuthAccessToken()).isEqualTo(SAMPLE_ENCODED_TOKEN);
-        assertThat(updatedUserCredentials.getXsrfToken()).isEqualTo(SAMPLE_XSRF_TOKEN);
-
+        tokenShouldBeUpdated(updatedToken, tenant, currUserRepresentation);
     }
 
-    private void mockStandardEnvironment(String key, String value) {
-        Map<String,Object> sysEnv = new HashMap<String,Object>();
-        sysEnv.put(key, value);
-        when(standardEnvironment.getSystemEnvironment()).thenReturn(sysEnv);
+    private CurrentUserRepresentation mockCurrUserRepresentationResponseFromCoreAndAddToCache() {
+        CurrentUserRepresentation currUserRepresentation = mockCurrentUser();
+        when(cumulocityOAuthUserDetailsMock.getCurrentUser()).thenReturn(currUserRepresentation);
+        when(jwtAuthenticatedTokenCache.get(jwtAndXsrfTokenCredentials)).thenReturn(Optional.<Authentication>absent());
+        return currUserRepresentation;
     }
 
     private CurrentUserRepresentation mockCurrentUser() {
@@ -96,4 +81,29 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
         currUserRepresentation.setUserName(username);
         return currUserRepresentation;
     }
+
+    private String mockResponseFromCoreToGetTenantName(CumulocityOAuthUserDetails cumulocityOAuthUserDetailsMock) {
+        String baseUrl = "sampleUrl.com";
+        String key = "C8Y_BASEURL";
+        mockStandardEnvironment(key, baseUrl);
+        String tenant = "tenant1234";
+        when(cumulocityOAuthUserDetailsMock.getTenantName()).thenReturn(tenant);
+        return tenant;
+    }
+
+    private void mockStandardEnvironment(String key, String value) {
+        Map<String, Object> sysEnv = new HashMap<String, Object>();
+        sysEnv.put(key, value);
+        when(standardEnvironment.getSystemEnvironment()).thenReturn(sysEnv);
+    }
+
+    private void tokenShouldBeUpdated(JwtTokenAuthentication updatedToken, String tenant, CurrentUserRepresentation currUserRepresentation) {
+        UserCredentials updatedUserCredentials = updatedToken.getUserCredentials();
+        assertThat(updatedUserCredentials.getTenant()).isEqualTo(tenant);
+        String username = currUserRepresentation.getUserName();
+        assertThat(updatedUserCredentials.getUsername()).isEqualTo(username);
+        assertThat(updatedUserCredentials.getOAuthAccessToken()).isEqualTo(SAMPLE_ENCODED_TOKEN);
+        assertThat(updatedUserCredentials.getXsrfToken()).isEqualTo(SAMPLE_XSRF_TOKEN);
+    }
+
 }
