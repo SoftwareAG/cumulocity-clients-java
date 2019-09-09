@@ -1,10 +1,11 @@
 package com.cumulocity.microservice.security.token;
 
-import com.google.common.base.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.springframework.security.core.Authentication;
 
+/**During implementation please take care of race condition when reading and writing to cache.*/
 public interface JwtAuthenticatedTokenCache {
-    Optional<Authentication> get(JwtCredentials key);
-    void put(JwtCredentials key,JwtTokenAuthentication value);
+    Authentication get(JwtCredentials key, Callable<JwtTokenAuthentication> valueLoader) throws ExecutionException;
 }
 

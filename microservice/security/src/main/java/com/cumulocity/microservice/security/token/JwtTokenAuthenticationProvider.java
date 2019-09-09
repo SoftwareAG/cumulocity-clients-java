@@ -1,8 +1,7 @@
 package com.cumulocity.microservice.security.token;
 
-import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
-import com.google.common.base.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
@@ -21,7 +20,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     private StandardEnvironment environment;
     private JwtAuthenticatedTokenCache tokenCache;
 
-    public JwtTokenAuthenticationProvider(StandardEnvironment environment,JwtAuthenticatedTokenCache tokenCache) {
+    public JwtTokenAuthenticationProvider(StandardEnvironment environment, JwtAuthenticatedTokenCache tokenCache) {
         this.environment = environment;
         this.tokenCache = tokenCache;
         this.messages = SpringSecurityMessageSource.getAccessor();
@@ -36,35 +35,17 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     public Authentication authenticate(Authentication authentication) {
         final JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) authentication;
         JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
-        Optional<Authentication> tokenFromCache = tokenCache.get(jwtCredentials);
-        if (tokenFromCache.isPresent()) {
-            return tokenFromCache.get();
-        } else {
-            JwtTokenAuthentication updatedToken = updateTokenWithTenantAndUserDetails(jwtTokenAuthentication);
-            tokenCache.put(jwtCredentials, updatedToken);
-            return updatedToken;
+        try {
+            return tokenCache.get(jwtCredentials, new Callable<JwtTokenAuthentication>() {
+                @Override
+                public JwtTokenAuthentication call() {
+                    String baseUrl = "" + environment.getSystemEnvironment().get("C8Y_BASEURL");
+                    return new CumulocityOAuthUserDetails(baseUrl, jwtTokenAuthentication).updateTokenWithTenantAndUserDetailsUsingRequestsToCore();
+                }
+            });
+        } catch (ExecutionException e) {
+            throw new TokenCacheException("Problem with token cache.", e);
         }
-    }
-
-    private JwtTokenAuthentication updateTokenWithTenantAndUserDetails(JwtTokenAuthentication jwtTokenAuthentication) {
-        String baseUrl = "" + environment.getSystemEnvironment().get("C8Y_BASEURL");
-        CumulocityOAuthUserDetails cumulocityOAuthUserDetails = new CumulocityOAuthUserDetails(baseUrl, jwtTokenAuthentication);
-        CurrentUserRepresentation currUserRepresentation = cumulocityOAuthUserDetails.getCurrentUser();
-        String tenantName = cumulocityOAuthUserDetails.getTenantName();
-
-        jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
-        updateUserCredentials(tenantName, jwtTokenAuthentication);
-        return jwtTokenAuthentication;
-    }
-
-    private void updateUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
-        UserCredentials userCredentials = buildUserCredentials(tenantName, jwtTokenAuthentication);
-        jwtTokenAuthentication.setUserCredentials(userCredentials);
-    }
-
-    private UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
-        JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
-        return jwtCredentials.toUserCredentials(tenantName, jwtTokenAuthentication);
     }
 
     @Override

@@ -9,7 +9,7 @@ public class JwtTokenTestsHelper {
     protected static final String SAMPLE_TENANT_NAME = "tenant1234";
     protected static final String SAMPLE_USERNAME = "user1234";
 
-    protected Jwt mockedJwtImpl() {
+    public static Jwt mockedJwtImpl() {
         return new Jwt() {
             @Override
             public String getClaims() {
