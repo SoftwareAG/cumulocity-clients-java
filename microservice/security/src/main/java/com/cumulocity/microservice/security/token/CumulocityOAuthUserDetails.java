@@ -14,9 +14,6 @@ public class CumulocityOAuthUserDetails {
     private String baseUrl;
     private JwtTokenAuthentication jwtTokenAuthentication;
 
-    public CumulocityOAuthUserDetails() {
-    }
-
     public CumulocityOAuthUserDetails(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
         this.jwtTokenAuthentication = jwtTokenAuthentication;
         this.client = new ApacheHttpClient();

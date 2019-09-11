@@ -6,12 +6,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CumulocityOAuthUserDetailsTest extends CumulocityOAuthUserDetails {
+public class CumulocityOAuthUserDetailsTest {
 
     private static final String BASE_URL = "someUrl";
     private static final String TENANT_NAME = "test1234";
@@ -19,8 +18,8 @@ public class CumulocityOAuthUserDetailsTest extends CumulocityOAuthUserDetails {
 
     @Mock
     private JwtCredentials jwtCredentials;
-    private JwtTokenAuthentication jwtTokenAuthentication;
     private CumulocityOAuthUserDetails cumulocityOAuthUserDetails;
+    private JwtTokenAuthentication jwtTokenAuthentication;
 
     @Before
     public void setup() {

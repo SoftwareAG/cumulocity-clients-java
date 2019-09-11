@@ -50,6 +50,4 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
         verify(jwtAuthenticatedTokenCache).get(any(JwtCredentials.class), any(Callable.class));
         assertThat(tokenFromCache).isSameAs(updatedJwtTokenAuthenticationFromCache);
     }
-
-
 }
