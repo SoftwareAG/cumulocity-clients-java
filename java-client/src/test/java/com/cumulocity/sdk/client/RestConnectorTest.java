@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,6 +19,7 @@
  */
 package com.cumulocity.sdk.client;
 
+import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class RestConnectorTest {
 
@@ -326,25 +328,35 @@ public class RestConnectorTest {
 
     @Test
     public void shouldUseDefaultReadTimeoutWhenNotSet() {
-
+        //given
+        PlatformParameters clientParameters = createClientParametersWithDefaultTimeout();
         //when
         Client client = RestConnector.createURLConnectionClient(clientParameters);
 
         //then
-        assertThat("Should be default 180000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 180000);
+        assertThat("Should be default 180000", (Integer) client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 180000);
+    }
+
+    public PlatformParameters createClientParametersWithDefaultTimeout() {
+        CumulocityCredentials cumulocityCredentials = new CumulocityCredentials("anyUser", "anyPassword");
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        return new PlatformParameters("host", cumulocityCredentials, clientConfiguration);
     }
 
     @Test
     public void shouldUseCustomHttpReadTimeoutWhenSpecified() {
         // given
-        HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().httpReadTimeout(360000).build();
-        clientParameters.setHttpClientConfig(httpClientConfig);
-
+        PlatformParameters clientParameters = createCLientParametersWithSpecifiedTimeout();
         // when
         Client client = RestConnector.createURLConnectionClient(clientParameters);
-
         //then
-        assertThat("Should be default 360000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 360000);
+        assertThat("Should be default 360000", (Integer) client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 360000);
     }
 
+    private PlatformParameters createCLientParametersWithSpecifiedTimeout() {
+        PlatformParameters clientParameters = createClientParametersWithDefaultTimeout();
+        HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().httpReadTimeout(360000).build();
+        clientParameters.setHttpClientConfig(httpClientConfig);
+        return clientParameters;
+    }
 }
