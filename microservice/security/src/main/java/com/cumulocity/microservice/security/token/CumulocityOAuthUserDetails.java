@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.security.token;
 
+import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
@@ -20,12 +21,14 @@ public class CumulocityOAuthUserDetails {
                         CumulocityOAuthCredentials.builder()
                                 .oAuthAccessToken(credentials.getJwt().getEncoded())
                                 .xsrfToken(credentials.getXsrfToken())
+                                .authenticationMethod(AuthenticationMethod.COOKIE)
                                 .build()
                 ));
             } else {
                 client.addFilter(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .oAuthAccessToken(((JwtCredentials) jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
+                                .authenticationMethod(AuthenticationMethod.HEADER)
                                 .build()
                 ));
             }
