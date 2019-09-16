@@ -18,21 +18,19 @@ public class CumulocityOAuthUserDetailsTest {
 
     @Mock
     private JwtCredentials jwtCredentials;
-    private CumulocityOAuthUserDetails cumulocityOAuthUserDetails;
     private JwtTokenAuthentication jwtTokenAuthentication;
 
     @Before
     public void setup() {
         jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials);
         when(jwtCredentials.getJwt()).thenReturn(JwtTokenTestsHelper.mockedJwtImpl());
-        cumulocityOAuthUserDetails = new CumulocityOAuthUserDetails(BASE_URL, jwtTokenAuthentication);
     }
 
     @Test
     public void shouldUpdateAndAddTokenCredentials() {
         when(jwtCredentials.toUserCredentials(TENANT_NAME, jwtTokenAuthentication)).thenReturn(UserCredentials.builder().tenant(TENANT_NAME).username(USERNAME).build());
 
-        JwtTokenAuthentication updatedToken = cumulocityOAuthUserDetails.updateUserCredentials(TENANT_NAME, jwtTokenAuthentication);
+        JwtTokenAuthentication updatedToken = CumulocityOAuthUserDetails.updateUserCredentials(TENANT_NAME, jwtTokenAuthentication);
 
         assertThat(updatedToken.getUserCredentials().getTenant()).isEqualTo(TENANT_NAME);
         assertThat(updatedToken.getUserCredentials().getUsername()).isEqualTo(USERNAME);

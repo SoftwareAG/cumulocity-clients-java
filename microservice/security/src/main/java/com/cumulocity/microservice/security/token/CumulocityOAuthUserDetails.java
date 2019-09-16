@@ -10,13 +10,22 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 
 public class CumulocityOAuthUserDetails {
-    private ApacheHttpClient client;
-    private String baseUrl;
-    private JwtTokenAuthentication jwtTokenAuthentication;
 
-    public CumulocityOAuthUserDetails(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
-        this.jwtTokenAuthentication = jwtTokenAuthentication;
-        this.client = new ApacheHttpClient();
+    private CumulocityOAuthUserDetails() {
+    }
+
+    public static JwtTokenAuthentication updateTokenWithTenantAndUserDetailsUsingRequestsToCore(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
+        ApacheHttpClient client = createClient(jwtTokenAuthentication);
+        CurrentUserRepresentation currUserRepresentation = getCurrentUser(client, baseUrl);
+        String tenantName = getTenantName(client, baseUrl);
+        jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
+        JwtTokenAuthentication updatedToken = updateUserCredentials(tenantName, jwtTokenAuthentication);
+        client.destroy();
+        return updatedToken;
+    }
+
+    private static ApacheHttpClient createClient(JwtTokenAuthentication jwtTokenAuthentication) {
+        ApacheHttpClient client = new ApacheHttpClient();
         if (jwtTokenAuthentication != null) {
             if (jwtTokenAuthentication.getCredentials() instanceof JwtAndXsrfTokenCredentials) {
                 JwtAndXsrfTokenCredentials credentials = (JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials();
@@ -36,37 +45,30 @@ public class CumulocityOAuthUserDetails {
                 ));
             }
         }
-        this.baseUrl = baseUrl;
+        return client;
     }
 
-    public JwtTokenAuthentication updateTokenWithTenantAndUserDetailsUsingRequestsToCore() {
-        CurrentUserRepresentation currUserRepresentation = getCurrentUser();
-        String tenantName = getTenantName();
-
-        jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
-        return updateUserCredentials(tenantName, jwtTokenAuthentication);
-    }
-
-    private CurrentUserRepresentation getCurrentUser() {
+    private static CurrentUserRepresentation getCurrentUser(ApacheHttpClient client, String baseUrl) {
         return client.resource(baseUrl + "/user/currentUser")
                 .accept(UserMediaType.CURRENT_USER)
                 .get(CurrentUserRepresentation.class);
     }
 
-    private String getTenantName() {
+    private static String getTenantName(ApacheHttpClient client, String baseUrl) {
         SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.resource(baseUrl + "/tenant/currentTenant")
                 .accept(UserMediaType.CURRENT_TENANT)
                 .get(SimplifiedCurrentTenantRepresentation.class);
         return currentTenantRepresentation.name;
     }
 
-    protected JwtTokenAuthentication updateUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
+    protected static JwtTokenAuthentication updateUserCredentials(String tenantName, JwtTokenAuthentication
+            jwtTokenAuthentication) {
         UserCredentials userCredentials = buildUserCredentials(tenantName, jwtTokenAuthentication);
         jwtTokenAuthentication.setUserCredentials(userCredentials);
         return jwtTokenAuthentication;
     }
 
-    private UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
+    private static UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
         JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
         return jwtCredentials.toUserCredentials(tenantName, jwtTokenAuthentication);
     }
