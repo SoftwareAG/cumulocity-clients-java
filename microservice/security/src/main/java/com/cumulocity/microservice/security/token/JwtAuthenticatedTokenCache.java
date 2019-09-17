@@ -4,7 +4,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.springframework.security.core.Authentication;
 
-/**During implementation please take care of race condition when reading and writing to cache.*/
+/**The method must be prone to concurrent execution*/
 public interface JwtAuthenticatedTokenCache {
     Authentication get(JwtCredentials key, Callable<JwtTokenAuthentication> valueLoader) throws ExecutionException;
 }

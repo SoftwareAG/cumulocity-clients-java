@@ -1,10 +1,6 @@
 package com.cumulocity.microservice.security.token;
 
-import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
-import com.google.common.base.Optional;
-import java.util.HashMap;
-import java.util.Map;
+import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import static org.assertj.core.api.Assertions.*;
@@ -20,7 +16,7 @@ import org.springframework.security.core.Authentication;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(JwtTokenAuthenticationProvider.class)
-public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
+public class JwtTokenAuthenticationProviderTest {
     @Mock
     private StandardEnvironment standardEnvironment;
     @Mock
@@ -36,7 +32,7 @@ public class JwtTokenAuthenticationProviderTest extends JwtTokenTestsHelper {
     @Before
     public void setup() {
         jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment, jwtAuthenticatedTokenCache);
-        jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(mockedJwtImpl(), SAMPLE_XSRF_TOKEN);
+        jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(JwtTokenTestsHelper.mockedJwtImpl(), SAMPLE_XSRF_TOKEN);
         jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
     }
 

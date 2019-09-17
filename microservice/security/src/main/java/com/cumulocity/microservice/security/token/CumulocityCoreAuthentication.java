@@ -7,15 +7,15 @@ import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 
-public class CumulocityOAuthUserDetails {
-
-    private CumulocityOAuthUserDetails() {
+class CumulocityCoreAuthentication {
+    private CumulocityCoreAuthentication() {
     }
 
-    public static JwtTokenAuthentication updateTokenWithTenantAndUserDetailsUsingRequestsToCore(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
-        ApacheHttpClient client = createClient(jwtTokenAuthentication);
+    static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
+        Client client = createClientWithAuthenticationFilter(jwtTokenAuthentication);
         CurrentUserRepresentation currUserRepresentation = getCurrentUser(client, baseUrl);
         String tenantName = getTenantName(client, baseUrl);
         jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
@@ -24,23 +24,27 @@ public class CumulocityOAuthUserDetails {
         return updatedToken;
     }
 
-    private static ApacheHttpClient createClient(JwtTokenAuthentication jwtTokenAuthentication) {
+    /**
+     * Remember to release resources when client is not needed
+     */
+    static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
         ApacheHttpClient client = new ApacheHttpClient();
         if (jwtTokenAuthentication != null) {
-            if (jwtTokenAuthentication.getCredentials() instanceof JwtAndXsrfTokenCredentials) {
-                JwtAndXsrfTokenCredentials credentials = (JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials();
+            JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
+            if (jwtCredentials instanceof JwtAndXsrfTokenCredentials) {
+                JwtAndXsrfTokenCredentials jwtAndXsrfCred = (JwtAndXsrfTokenCredentials) jwtCredentials;
                 client.addFilter(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.COOKIE)
-                                .oAuthAccessToken(credentials.getJwt().getEncoded())
-                                .xsrfToken(credentials.getXsrfToken())
+                                .oAuthAccessToken(jwtAndXsrfCred.getJwt().getEncoded())
+                                .xsrfToken(jwtAndXsrfCred.getXsrfToken())
                                 .build()
                 ));
             } else {
                 client.addFilter(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.HEADER)
-                                .oAuthAccessToken((jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
+                                .oAuthAccessToken(jwtCredentials.getJwt().getEncoded())
                                 .build()
                 ));
             }
@@ -48,21 +52,20 @@ public class CumulocityOAuthUserDetails {
         return client;
     }
 
-    private static CurrentUserRepresentation getCurrentUser(ApacheHttpClient client, String baseUrl) {
+    private static CurrentUserRepresentation getCurrentUser(Client client, String baseUrl) {
         return client.resource(baseUrl + "/user/currentUser")
                 .accept(UserMediaType.CURRENT_USER)
                 .get(CurrentUserRepresentation.class);
     }
 
-    private static String getTenantName(ApacheHttpClient client, String baseUrl) {
+    private static String getTenantName(Client client, String baseUrl) {
         SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.resource(baseUrl + "/tenant/currentTenant")
                 .accept(UserMediaType.CURRENT_TENANT)
                 .get(SimplifiedCurrentTenantRepresentation.class);
         return currentTenantRepresentation.name;
     }
 
-    protected static JwtTokenAuthentication updateUserCredentials(String tenantName, JwtTokenAuthentication
-            jwtTokenAuthentication) {
+    static JwtTokenAuthentication updateUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
         UserCredentials userCredentials = buildUserCredentials(tenantName, jwtTokenAuthentication);
         jwtTokenAuthentication.setUserCredentials(userCredentials);
         return jwtTokenAuthentication;
