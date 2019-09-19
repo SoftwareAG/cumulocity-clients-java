@@ -40,7 +40,7 @@ public class CumulocityCoreAuthenticationTest {
         JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(accessToken, SAMPLE_XSRF_TOKEN);
         JwtTokenAuthentication jwtTokenAuthenticationWithXsrf = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
-        Client client = CumulocityCoreAuthentication.createClientWithAuthenticationFilter(jwtTokenAuthenticationWithXsrf);
+        Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtTokenAuthenticationWithXsrf);
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.COOKIE);
@@ -61,7 +61,7 @@ public class CumulocityCoreAuthenticationTest {
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
 
-        Client client = CumulocityCoreAuthentication.createClientWithAuthenticationFilter(jwtOnlyTokenAuthentication);
+        Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtOnlyTokenAuthentication);
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
@@ -73,7 +73,7 @@ public class CumulocityCoreAuthenticationTest {
     public void shouldUpdateAndAddTokenCredentials() {
         when(jwtCredentials.toUserCredentials(TENANT_NAME, jwtTokenAuthentication)).thenReturn(UserCredentials.builder().tenant(TENANT_NAME).username(USERNAME).build());
 
-        JwtTokenAuthentication updatedToken = CumulocityCoreAuthentication.updateUserCredentials(TENANT_NAME, jwtTokenAuthentication);
+        JwtTokenAuthentication updatedToken = CumulocityCoreAuthenticationClient.updateUserCredentials(TENANT_NAME, jwtTokenAuthentication);
 
         assertThat(updatedToken.getUserCredentials().getTenant()).isEqualTo(TENANT_NAME);
         assertThat(updatedToken.getUserCredentials().getUsername()).isEqualTo(USERNAME);

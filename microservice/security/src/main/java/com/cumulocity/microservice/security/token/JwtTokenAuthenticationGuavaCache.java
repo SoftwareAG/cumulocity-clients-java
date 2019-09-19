@@ -1,9 +1,7 @@
-
 package com.cumulocity.microservice.security.token;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +20,7 @@ public class JwtTokenAuthenticationGuavaCache implements JwtAuthenticatedTokenCa
     }
 
     @Override
-    public Authentication get(JwtCredentials key, Callable<JwtTokenAuthentication> valueLoader) throws ExecutionException {
+    public Authentication get(JwtCredentials key, JwtTokenAuthenticationLoader valueLoader) throws ExecutionException {
         return userTokenCache.get(key, valueLoader);
     }
 }

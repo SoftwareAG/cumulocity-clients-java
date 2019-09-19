@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.security.token;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -36,11 +35,11 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
         final JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) authentication;
         JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
         try {
-            return tokenCache.get(jwtCredentials, new Callable<JwtTokenAuthentication>() {
+            return tokenCache.get(jwtCredentials, new JwtTokenAuthenticationLoader() {
                 @Override
                 public JwtTokenAuthentication call() {
                     String baseUrl = "" + environment.getSystemEnvironment().get("C8Y_BASEURL");
-                    return CumulocityCoreAuthentication.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
+                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
                 }
             });
         } catch (ExecutionException e) {

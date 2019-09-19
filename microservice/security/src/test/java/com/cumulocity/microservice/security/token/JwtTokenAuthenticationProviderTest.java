@@ -38,12 +38,12 @@ public class JwtTokenAuthenticationProviderTest {
 
     @Test
     public void shouldReturnAuthentication() throws ExecutionException {
-        when(jwtAuthenticatedTokenCache.get(any(JwtCredentials.class), any(Callable.class))).thenReturn((updatedJwtTokenAuthenticationFromCache));
+        when(jwtAuthenticatedTokenCache.get(any(JwtCredentials.class), any(JwtTokenAuthenticationLoader.class))).thenReturn((updatedJwtTokenAuthenticationFromCache));
         JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
         Authentication tokenFromCache = jwtTokenAuthenticationProvider.authenticate(jwtTokenAuthentication);
 
-        verify(jwtAuthenticatedTokenCache).get(any(JwtCredentials.class), any(Callable.class));
+        verify(jwtAuthenticatedTokenCache).get(any(JwtCredentials.class), any(JwtTokenAuthenticationLoader.class));
         assertThat(tokenFromCache).isSameAs(updatedJwtTokenAuthenticationFromCache);
     }
 }
