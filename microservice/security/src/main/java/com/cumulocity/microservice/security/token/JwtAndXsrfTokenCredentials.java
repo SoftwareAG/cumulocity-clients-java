@@ -1,5 +1,6 @@
 package com.cumulocity.microservice.security.token;
 
+import com.cumulocity.microservice.context.credentials.UserCredentials;
 import org.springframework.security.jwt.Jwt;
 
 import java.util.Objects;
@@ -17,6 +18,16 @@ public class JwtAndXsrfTokenCredentials implements JwtCredentials{
     public Jwt getJwt() {
         return jwt;
     }
+
+    @Override
+    public UserCredentials toUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
+        JwtAndXsrfTokenCredentials credentials = ((JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials());
+        return UserCredentials.builder()
+                .tenant(tenantName)
+                .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())
+                .oAuthAccessToken(credentials.getJwt().getEncoded())
+                .xsrfToken(credentials.getXsrfToken())
+                .build();    }
 
     public String getXsrfToken() {
         return xsrfToken;

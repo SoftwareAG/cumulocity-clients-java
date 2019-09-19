@@ -5,8 +5,14 @@ import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.config.FilterRegistrationConfiguration;
 import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
+import com.cumulocity.microservice.security.token.JwtAuthenticatedTokenCache;
+import com.cumulocity.microservice.security.token.JwtTokenAuthenticationGuavaCache;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,14 +23,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+@Slf4j
 @Order(99)
 @EnableWebSecurity
 @ComponentScan(
         value = "com.cumulocity.microservice.security.token",
         basePackageClasses = {
-        FilterRegistrationConfiguration.class,
-        PreAuthenticateServletFilter.class
-})
+                FilterRegistrationConfiguration.class,
+                PreAuthenticateServletFilter.class
+        })
 public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -42,13 +49,21 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Autowired
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
 
+    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
         auth.authenticationProvider(jwtTokenAuthenticationProvider);
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache(@Value("${cache.guava.maxSize:10000}") int jwtGuavaCacheMaxSize, @Value("${cache.guava.expireAfterAccessInMinutes:10}") int jwtGuavaCacheExpireAfterAccessInMinutes) {
+        log.info("Default Guava implementation for token cache is used.\nParameters:\n- max cache size: " + jwtGuavaCacheMaxSize + "\n- expire after access: " + jwtGuavaCacheExpireAfterAccessInMinutes + " minutes");
+        return new JwtTokenAuthenticationGuavaCache(jwtGuavaCacheMaxSize, jwtGuavaCacheExpireAfterAccessInMinutes);
+    }
+
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/metadata", "/health", "/prometheus", "/metrics");
     }
 

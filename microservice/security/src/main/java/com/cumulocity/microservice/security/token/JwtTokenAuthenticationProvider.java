@@ -1,37 +1,29 @@
 package com.cumulocity.microservice.security.token;
 
-import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
 public class JwtTokenAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
 
-    protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-    @Autowired
+    protected MessageSourceAccessor messages;
     private StandardEnvironment environment;
+    private JwtAuthenticatedTokenCache tokenCache;
 
-    private final Cache<JwtTokenAuthentication, Authentication> userCache = CacheBuilder.newBuilder()
-            .maximumSize(10000)
-            .expireAfterAccess(10, TimeUnit.MINUTES)
-            .build();
+    public JwtTokenAuthenticationProvider(StandardEnvironment environment, JwtAuthenticatedTokenCache tokenCache) {
+        this.environment = environment;
+        this.tokenCache = tokenCache;
+        this.messages = SpringSecurityMessageSource.getAccessor();
+    }
 
     @Override
     public boolean supports(Class<?> authentication) {
@@ -39,51 +31,30 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         final JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) authentication;
+        JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
         try {
-            return userCache.get(jwtTokenAuthentication, new Callable<Authentication>() {
+            return tokenCache.get(jwtCredentials, new JwtTokenAuthenticationLoader() {
                 @Override
-                public Authentication call() throws Exception {
-                    CumulocityOAuthUserDetails cumulocityOAuthUserDetails = CumulocityOAuthUserDetails.from("" + environment.getSystemEnvironment().get("C8Y_BASEURL"), jwtTokenAuthentication);
-                    jwtTokenAuthentication.setCurrentUserRepresentation(cumulocityOAuthUserDetails.getCurrentUser());
-                    String tenantName = cumulocityOAuthUserDetails.getTenantName();
-                    jwtTokenAuthentication.setUserCredentials(buildUserCredentials(tenantName, jwtTokenAuthentication));
-                    return jwtTokenAuthentication;
+                public JwtTokenAuthentication call() {
+                    String baseUrl = "" + environment.getSystemEnvironment().get("C8Y_BASEURL");
+                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
                 }
             });
         } catch (ExecutionException e) {
-            log.info("Error while authenticating", e);
-            return null;
+            throw new TokenCacheException("Problem with token cache.", e);
         }
     }
-
-    private UserCredentials buildUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication) {
-        if (jwtTokenAuthentication.getCredentials() instanceof JwtOnlyCredentials) {
-            return UserCredentials.builder()
-                    .tenant(tenantName)
-                    .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())
-                    .oAuthAccessToken(((JwtCredentials) jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
-                    .build();
-
-        } else if (jwtTokenAuthentication.getCredentials() instanceof JwtAndXsrfTokenCredentials) {
-            JwtAndXsrfTokenCredentials credentials = ((JwtAndXsrfTokenCredentials) jwtTokenAuthentication.getCredentials());
-
-            return UserCredentials.builder()
-                    .tenant(tenantName)
-                    .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())
-                    .oAuthAccessToken(credentials.getJwt().getEncoded())
-                    .xsrfToken(credentials.getXsrfToken())
-                    .build();
-        }
-        throw new IllegalStateException("Unknown jwtTokenAuthentication credentials type");
-    }
-
 
     @Override
     public void setMessageSource(MessageSource messageSource) {
         this.messages = new MessageSourceAccessor(messageSource);
     }
-
 }
+
+
+
+
+
 
