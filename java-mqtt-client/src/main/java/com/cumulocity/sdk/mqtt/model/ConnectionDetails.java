@@ -37,7 +37,7 @@ public class ConnectionDetails {
 
     /**
      * Clear state at end of connection or not (durable or non-durable subscriptions),
-     * by default value being false.
+     * by default value being true.
      */
-    private boolean cleanSession;
+    private boolean cleanSession = true;
 }
