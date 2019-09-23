@@ -39,5 +39,6 @@ public class ConnectionDetails {
      * Clear state at end of connection or not (durable or non-durable subscriptions),
      * by default value being true.
      */
+    @Builder.Default
     private boolean cleanSession = true;
 }
