@@ -14,6 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.cumulocity.sdk.mqtt.model.QoS.AT_LEAST_ONCE;
 import static com.cumulocity.sdk.mqtt.model.QoS.EXACTLY_ONCE;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +44,15 @@ public class MqttClientImplTest {
 
         when(operationsProvider.isConnectionEstablished()).thenReturn(true);
         when(mqttAsyncClient.isConnected()).thenReturn(true);
+    }
+
+    @Test
+    public void cleanSessionIsTrueByDefault() {
+        //when
+        final ConnectionDetails connectionDetails = ConnectionDetails.builder().build();
+
+        //then
+        assertTrue(connectionDetails.isCleanSession());
     }
 
     @Test
