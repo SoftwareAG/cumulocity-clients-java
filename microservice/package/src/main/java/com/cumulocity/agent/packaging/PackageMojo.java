@@ -49,6 +49,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 public class PackageMojo extends BaseMicroserviceMojo {
 
     public static final String TARGET_FILENAME_PATTERN = "%s-%s.zip";
+    public static final DataSize MEMORY_MINIMAL_LIMIT = DataSize.parse("178Mi");
 
     @Component
     private MicroserviceDockerClient dockerClient;
@@ -204,11 +205,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
             final Resources resources = manifest.getResources();
             if (resources != null && resources.getMemoryLimit().isPresent()) {
                 final DataSize memoryLimit = resources.getMemoryLimit().get();
-                if (memoryLimit.compareTo(DataSize.parse("178M")) < 0) {
-                    violations = violations.append(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least 178M"));
+                if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT) < 0) {
+                    violations = violations.append(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
                 }
             }
-            for(String line : manifestValidationFailedMessage(violations)) {
+            for (String line : manifestValidationFailedMessage(violations)) {
                 getLog().error(line);
             }
             if (!violations.isEmpty()) {
