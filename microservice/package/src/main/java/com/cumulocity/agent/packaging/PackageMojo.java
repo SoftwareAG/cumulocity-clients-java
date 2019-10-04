@@ -6,11 +6,10 @@ import com.cumulocity.model.application.microservice.DataSize;
 import com.cumulocity.model.application.microservice.Resources;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import lombok.Value;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -19,9 +18,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 
-import javax.annotation.Nullable;
 import javax.validation.*;
-import javax.validation.metadata.ConstraintDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +26,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -202,20 +198,27 @@ public class PackageMojo extends BaseMicroserviceMojo {
                             return new ManifestConstraintViolation(input.getPropertyPath().toString(), input.getMessage());
                         }
                     });
-            final Resources resources = manifest.getResources();
-            if (resources != null && resources.getMemoryLimit().isPresent()) {
-                final DataSize memoryLimit = resources.getMemoryLimit().get();
-                if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT) < 0) {
-                    violations = violations.append(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
-                }
-            }
-            for (String line : manifestValidationFailedMessage(violations)) {
-                getLog().error(line);
-            }
+
+            violations = violations.append(validateMemory(manifest));
+
             if (!violations.isEmpty()) {
+                for (String line : manifestValidationFailedMessage(violations)) {
+                    getLog().error(line);
+                }
                 throw new ValidationException("Microservice manifest is invalid");
             }
         }
+    }
+
+    private ImmutableList<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
+        final Resources resources = manifest.getResources();
+        if (resources != null && resources.getMemoryLimit().isPresent()) {
+            final DataSize memoryLimit = resources.getMemoryLimit().get();
+            if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT) < 0) {
+                return ImmutableList.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
+            }
+        }
+        return ImmutableList.of();
     }
 
     private <T> Iterable<String> manifestValidationFailedMessage(Iterable<ManifestConstraintViolation> result) {
@@ -261,22 +264,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
             zipOutputStream.closeEntry();
         }
     }
-
+    @Value
     private static final class ManifestConstraintViolation {
         private final String path;
         private final String message;
-
-        public ManifestConstraintViolation(String path, String message) {
-            this.path = path;
-            this.message = message;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public String getMessage() {
-            return message;
-        }
     }
 }
