@@ -165,6 +165,7 @@ pipeline {
                            sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh"
                        }
                    }
+		}
                 stage('Finish release') {
                     when {
                         equals expected: 'RELEASE', actual: params.build_type
