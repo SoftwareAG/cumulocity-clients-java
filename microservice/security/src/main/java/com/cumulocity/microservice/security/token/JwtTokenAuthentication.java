@@ -72,4 +72,8 @@ public class JwtTokenAuthentication implements Authentication {
     public String getName() {
         return currentUserRepresentation != null ? currentUserRepresentation.getUserName() : null;
     }
+
+    String getTenantName(){
+        return userCredentials == null ? null : userCredentials.getTenant();
+    }
 }
