@@ -1,18 +1,19 @@
 package com.cumulocity.microservice.security.token;
 
-import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import static org.assertj.core.api.Assertions.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import static org.mockito.Mockito.*;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.core.Authentication;
+
+import java.util.concurrent.ExecutionException;
+
+import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(JwtTokenAuthenticationProvider.class)
