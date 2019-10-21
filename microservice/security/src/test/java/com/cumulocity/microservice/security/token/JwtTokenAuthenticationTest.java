@@ -14,7 +14,7 @@ public class JwtTokenAuthenticationTest {
     private JwtCredentials credentials;
 
     @Test
-    public void shouldGetTenantNameWhenIsPresentInUserCredentials(){
+    public void shouldGetTenantNameWhenIsPresentInUserCredentials() {
         // given
         JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(credentials);
         jwtTokenAuthentication.setUserCredentials(UserCredentials.builder().tenant(TENANT_NAME).build());
@@ -27,7 +27,7 @@ public class JwtTokenAuthenticationTest {
     }
 
     @Test
-    public void shouldGetNullTenantNameWhenIsNotPresentInUserCredentials(){
+    public void shouldGetNullTenantNameWhenIsNotPresentInUserCredentials() {
         // given
         JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(credentials);
         jwtTokenAuthentication.setUserCredentials(UserCredentials.builder().build());
@@ -40,7 +40,7 @@ public class JwtTokenAuthenticationTest {
     }
 
     @Test
-    public void shouldGetNullTenantNameWhenUserCredentialsAreMissing(){
+    public void shouldGetNullTenantNameWhenUserCredentialsAreMissing() {
         // given
         JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(credentials);
 
