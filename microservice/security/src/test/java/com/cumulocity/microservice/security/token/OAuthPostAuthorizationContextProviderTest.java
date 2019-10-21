@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OauthPostAuthorizationContextProviderTest {
+public class OAuthPostAuthorizationContextProviderTest {
 
     private static final String MY_APPLICATION_NAME = "my-application-name";
     private static final String MY_TENANT_NAME = "my-tenant-name";
@@ -40,15 +40,16 @@ public class OauthPostAuthorizationContextProviderTest {
     private MicroserviceCredentials microserviceCredentials;
 
     // under tests
-    private OauthPostAuthorizationContextProvider provider;
+    private OAuthPostAuthorizationContextProvider provider;
 
     @Before
-    public void setUp(){
-        this.provider = new OauthPostAuthorizationContextProvider(subscriptionService, MY_APPLICATION_NAME);
+    public void setUp() {
+        this.provider = new OAuthPostAuthorizationContextProvider(MY_APPLICATION_NAME);
+        this.provider.setSubscriptionsService(subscriptionService);
     }
 
     @Test
-    public void shouldNotSupportNullSecurityContext(){
+    public void shouldNotSupportNullSecurityContext() {
         //when
         boolean supports = provider.supports(null);
 
@@ -57,7 +58,7 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldNotSupportSecurityContextWithNullAuthorization(){
+    public void shouldNotSupportSecurityContextWithNullAuthorization() {
         //given
         given(securityContext.getAuthentication()).willReturn(null);
 
@@ -69,7 +70,7 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldNotSupportNonJwtAuthenticationWithNullAuthorization(){
+    public void shouldNotSupportNonJwtAuthenticationWithNullAuthorization() {
         //given
         given(securityContext.getAuthentication()).willReturn(authentication);
 
@@ -81,7 +82,7 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldSupportTokenBasedAuthorization(){
+    public void shouldSupportTokenBasedAuthorization() {
         //given
         given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
 
@@ -93,9 +94,9 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldNotSupportAdditionalContextProvidersWhenSubscriptionServiceIsNotAvailable(){
+    public void shouldNotSupportAdditionalContextProvidersWhenSubscriptionServiceIsNotAvailable() {
         //given
-        OauthPostAuthorizationContextProvider provider = new OauthPostAuthorizationContextProvider(null, MY_APPLICATION_NAME);
+        OAuthPostAuthorizationContextProvider provider = new OAuthPostAuthorizationContextProvider(MY_APPLICATION_NAME);
         given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
 
         //when
@@ -106,7 +107,7 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldProvideMicroserviceCredentialsForContext(){
+    public void shouldProvideMicroserviceCredentialsForContext() {
         //given
         given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
         given(jwtTokenAuthentication.getTenantName()).willReturn(MY_TENANT_NAME);
@@ -120,7 +121,7 @@ public class OauthPostAuthorizationContextProviderTest {
     }
 
     @Test
-    public void shouldNotProvideMicroserviceCredentialsWhenTenantNotSubscribeToMicroservice(){
+    public void shouldNotProvideMicroserviceCredentialsWhenTenantNotSubscribeToMicroservice() {
         //given
         given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
         given(jwtTokenAuthentication.getTenantName()).willReturn(MY_TENANT_NAME);
