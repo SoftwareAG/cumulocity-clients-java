@@ -15,16 +15,21 @@ import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
-class OauthPostAuthorizationContextProvider implements PostAuthorizationContextProvider<SecurityContext> {
+class OAuthPostAuthorizationContextProvider implements PostAuthorizationContextProvider<SecurityContext> {
 
-    private final MicroserviceSubscriptionsService subscriptionsService;
     private final String applicationName;
 
-    @Autowired(required = false)
-    public OauthPostAuthorizationContextProvider(MicroserviceSubscriptionsService subscriptionsService,
-                                                 @Value("${application.name:}") String applicationName) {
-        this.subscriptionsService = subscriptionsService;
+    //Optional dependency
+    private MicroserviceSubscriptionsService subscriptionsService;
+
+
+    public OAuthPostAuthorizationContextProvider(@Value("${application.name:}") String applicationName) {
         this.applicationName = applicationName;
+    }
+
+    @Autowired(required = false)
+    public void setSubscriptionsService(MicroserviceSubscriptionsService subscriptionsService) {
+        this.subscriptionsService = subscriptionsService;
     }
 
     @Override
@@ -43,22 +48,21 @@ class OauthPostAuthorizationContextProvider implements PostAuthorizationContextP
 
     @Override
     public Credentials get(SecurityContext context) {
-        final String tenant = getTenantName(context);
-        if (StringUtils.hasText(tenant)) {
-            if (subscriptionsService != null) {
-                final Optional<MicroserviceCredentials> microservice = subscriptionsService.getCredentials(tenant);
-                if (microservice.isPresent()) {
-                    return microservice.get();
-                } else {
-                    throw new AccessDeniedException("Microservice " + applicationName + " is not subscribed by tenant " + tenant);
-                }
+        final Optional<String> tenant = getTenantName(context);
+        if (tenant.isPresent() && (subscriptionsService != null)) {
+            final Optional<MicroserviceCredentials> microservice = subscriptionsService.getCredentials(tenant.get());
+            if (microservice.isPresent()) {
+                return microservice.get();
+            } else {
+                throw new AccessDeniedException("Microservice " + applicationName + " is not subscribed by tenant " + tenant.get());
             }
         }
         return null;
     }
 
-    private String getTenantName(SecurityContext context) {
+    private Optional<String> getTenantName(SecurityContext context) {
         JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) context.getAuthentication();
-        return jwtTokenAuthentication.getTenantName();
+        String tenantName = jwtTokenAuthentication.getTenantName();
+        return StringUtils.hasText(tenantName) ? Optional.of(tenantName) : Optional.<String>absent();
     }
 }
