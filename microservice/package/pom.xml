@@ -55,6 +55,18 @@
 					<groupId>javax.validation</groupId>
 					<artifactId>com.springsource.javax.validation</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+					<artifactId>json-smart</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.nsn.cumulocity.dependencies.osgi</groupId>
+					<artifactId>json-path</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
