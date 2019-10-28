@@ -35,11 +35,11 @@ import java.util.Enumeration;
 @Component
 public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
 
-    @Setter(onMethod = @_(@Autowired))
+    @Setter(onMethod_ = @Autowired)
     private AuthenticationManager authenticationManager;
-    @Setter(onMethod = @_(@Autowired(required = false)))
+    @Setter(onMethod_ = @Autowired(required = false))
     private AuthenticationEntryPoint authenticationEntryPoint;
-    @Setter(onMethod = @_(@Autowired()))
+    @Setter(onMethod_ = @Autowired)
     private ContextService userContextService;
 
     @Override

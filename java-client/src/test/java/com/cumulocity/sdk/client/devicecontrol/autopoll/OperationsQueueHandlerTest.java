@@ -149,7 +149,7 @@ public class OperationsQueueHandlerTest {
         await().atMost(TWO_SECONDS).untilCall(to(testObj).isRunning(), is(true));
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(0));
+        await().atMost(TWO_SECONDS).until(queue::size, is(0));
 
         // When
         testObj.stop();
@@ -157,13 +157,13 @@ public class OperationsQueueHandlerTest {
         queue.add(op);
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(1));
+        await().atMost(TWO_SECONDS).until(queue::size, is(1));
 
         // When
         testObj.start();
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(0));
+        await().atMost(TWO_SECONDS).until(queue::size, is(0));
     }
 
     private ArgumentMatcher<OperationRepresentation> hasId(final GId id) {
