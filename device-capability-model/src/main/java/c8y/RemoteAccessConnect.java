@@ -1,10 +1,7 @@
 package c8y;
 
 import org.svenson.AbstractDynamicProperties;
-
-import javax.ws.rs.core.Response;
 import java.io.Serializable;
-import java.util.List;
 
 public class RemoteAccessConnect extends AbstractDynamicProperties implements Serializable {
 
@@ -15,10 +12,6 @@ public class RemoteAccessConnect extends AbstractDynamicProperties implements Se
     private String hostname;
 
     private Integer port;
-
-    private List<String> myList;
-
-    private Response.Status myEnum;
 
     public String getHostname() {
         return hostname;
@@ -43,25 +36,7 @@ public class RemoteAccessConnect extends AbstractDynamicProperties implements Se
     public void setConnectionKey(String connectionKey) {
         this.connectionKey = connectionKey;
     }
-
-    public List<String> getMyList() {
-        return myList;
-    }
-
-    public RemoteAccessConnect setMyList(List<String> myList) {
-        this.myList = myList;
-        return this;
-    }
-
-    public Response.Status getMyEnum() {
-        return myEnum;
-    }
-
-    public RemoteAccessConnect setMyEnum(Response.Status myEnum) {
-        this.myEnum = myEnum;
-        return this;
-    }
-
+    
     @Override
     public String toString() {
         return "RemoteAccessConnect [hostname=" + hostname + ", port=" + port + "]";
