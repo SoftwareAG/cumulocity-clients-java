@@ -1,7 +1,6 @@
 package com.cumulocity.microservice.subscription.service.impl;
 
 import com.cumulocity.microservice.context.ContextService;
-import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
@@ -45,8 +45,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     private final MicroserviceMetadataRepresentation microserviceMetadataRepresentation;
     private final ContextService<MicroserviceCredentials> contextService;
 
-    private volatile Credentials processed;
-    private volatile boolean subscribing = false;
+    private final List<MicroserviceCredentials> subscribing = new CopyOnWriteArrayList<>();
+
     private volatile boolean registeredSuccessfully = false;
 
     private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
@@ -106,7 +106,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     @Synchronized
     public void subscribe() {
         try {
-            subscribing = true;
+            subscribing.clear();
 
             final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
             if (registeredSuccessfully = maybeApplication.isPresent()) {
@@ -131,8 +131,10 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                         log("Add subscription: {}", user);
 
                         MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
+                        subscribing.add(enhancedUser);
                         for (final MicroserviceChangedListener listener : listeners) {
                             if (!invokeAdded(enhancedUser, listener)) {
+                                subscribing.remove(enhancedUser);
                                 return false;
                             }
                         }
@@ -158,7 +160,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         } catch (Throwable e) {
             log.error("Error while reacting on microservice subscription", e);
         } finally {
-            subscribing = false;
+            subscribing.clear();
         }
     }
 
@@ -177,8 +179,6 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
-            processed = user;
-
             return contextService.callWithinContext(user, new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     return listener.apply(new MicroserviceSubscriptionAddedEvent(user));
@@ -187,8 +187,6 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
-        } finally {
-            processed = null;
         }
     }
 
@@ -207,19 +205,25 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
         }
 
-        if (processed != null) {
-            if (processed.getTenant().equals(tenant)) {
-                return Optional.of((MicroserviceCredentials) processed);
+        for (final MicroserviceCredentials credentials : subscribing) {
+            if (credentials.getTenant().equals(tenant)) {
+                return of(credentials);
             }
         }
 
-        if (!subscribing) {
-            subscribe();
-
+        synchronized (this.$lock) { // '$lock' -- see @lombok.Synchronized
             for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
                 if (subscription.getTenant().equals(tenant)) {
                     return of(subscription);
                 }
+            }
+        }
+
+        subscribe();
+
+        for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
+            if (subscription.getTenant().equals(tenant)) {
+                return of(subscription);
             }
         }
 
