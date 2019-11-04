@@ -5,7 +5,7 @@
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>clients-java</artifactId>
     <packaging>pom</packaging>
-    <version>1005.0.6-SNAPSHOT</version> 
+    <version>1005.0.6</version> 
     <name>Cumulocity :: Clients Java</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
