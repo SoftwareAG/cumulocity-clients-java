@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>1005.0.7</version>
+        <version>1005.0.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
