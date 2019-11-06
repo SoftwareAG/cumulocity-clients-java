@@ -45,7 +45,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     private final MicroserviceMetadataRepresentation microserviceMetadataRepresentation;
     private final ContextService<MicroserviceCredentials> contextService;
 
-    private final List<MicroserviceCredentials> subscribing = new CopyOnWriteArrayList<>();
+    private volatile boolean subscribing = false;
+    private final List<MicroserviceCredentials> subscribingCredentials = new CopyOnWriteArrayList<>();
 
     private volatile boolean registeredSuccessfully = false;
 
@@ -106,7 +107,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
     @Synchronized
     public void subscribe() {
         try {
-            subscribing.clear();
+            subscribing = true;
+            subscribingCredentials.clear();
 
             final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
             if (registeredSuccessfully = maybeApplication.isPresent()) {
@@ -131,10 +133,10 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                         log("Add subscription: {}", user);
 
                         MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
-                        subscribing.add(enhancedUser);
+                        subscribingCredentials.add(enhancedUser);
                         for (final MicroserviceChangedListener listener : listeners) {
                             if (!invokeAdded(enhancedUser, listener)) {
-                                subscribing.remove(enhancedUser);
+                                subscribingCredentials.remove(enhancedUser);
                                 return false;
                             }
                         }
@@ -160,7 +162,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         } catch (Throwable e) {
             log.error("Error while reacting on microservice subscription", e);
         } finally {
-            subscribing.clear();
+            subscribing = false;
+            subscribingCredentials.clear();
         }
     }
 
@@ -205,25 +208,19 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
         }
 
-        for (final MicroserviceCredentials credentials : subscribing) {
+        for (final MicroserviceCredentials credentials : subscribingCredentials) {
             if (credentials.getTenant().equals(tenant)) {
                 return of(credentials);
             }
         }
 
-        synchronized (this.$lock) { // '$lock' -- see @lombok.Synchronized
+        if (!subscribing) {
+            subscribe();
+
             for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
                 if (subscription.getTenant().equals(tenant)) {
                     return of(subscription);
                 }
-            }
-        }
-
-        subscribe();
-
-        for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
-            if (subscription.getTenant().equals(tenant)) {
-                return of(subscription);
             }
         }
 
