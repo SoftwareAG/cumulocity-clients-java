@@ -5,7 +5,6 @@ import com.cumulocity.model.sms.OutgoingMessageRequest;
 import com.cumulocity.model.sms.SendMessageRequest;
 import com.cumulocity.sms.client.messaging.MessagingClient;
 import com.cumulocity.sms.client.messaging.SmsClientException;
-import com.googlecode.catchexception.CatchException;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
