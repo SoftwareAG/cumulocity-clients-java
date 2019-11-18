@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription;
 
 import com.cumulocity.microservice.context.ContextServiceImpl;
+import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -25,6 +26,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,8 +115,7 @@ public class MicroserviceSubscriptionsServiceTest {
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
             public boolean apply(MicroserviceSubscriptionAddedEvent event) {
-                final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(event.getCredentials().getTenant());
-                assertThat(credentials.get()).isEqualTo(event.getCredentials());
+                assertCredentialsExists(event.getCredentials());
                 invoked.set(true);
                 return true;
             }
@@ -126,28 +127,22 @@ public class MicroserviceSubscriptionsServiceTest {
 
     @Test
     public void getCredentialsMethodShouldReturnPreviouslyProcessedCredentialInListener() {
+        final ApplicationRepresentation application = new ApplicationRepresentation();
         final AtomicBoolean credentials1Invoked = new AtomicBoolean(false);
         final AtomicBoolean credentials2Invoked = new AtomicBoolean(false);
-        final ApplicationRepresentation application = new ApplicationRepresentation();
         final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withTenant("tenant1");
         final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
-        final Subscriptions subscriptions = Subscriptions.builder()
-                .added(Arrays.asList(credentials1, credentials2))
-                .removed(Collections.<MicroserviceCredentials>emptyList())
-                .all(Arrays.asList(credentials1, credentials2))
-                .build();
+        final Subscriptions subscriptions = givenSubscriptions(Arrays.asList(credentials1, credentials2));
 
         given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
             public boolean apply(MicroserviceSubscriptionAddedEvent event) {
-                if (credentials1Invoked.get())  {
-                    final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentials1.getTenant());
-                    assertThat(credentials.get()).isEqualTo(credentials1);
+                if (credentials1Invoked.get()) {
+                    assertCredentialsExists(credentials1);
                 }
-                if (credentials2Invoked.get())  {
-                    final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentials2.getTenant());
-                    assertThat(credentials.get()).isEqualTo(credentials2);
+                if (credentials2Invoked.get()) {
+                    assertCredentialsExists(credentials2);
                 }
 
                 if (credentials1.getTenant().equals(event.getCredentials().getTenant())) {
@@ -165,12 +160,21 @@ public class MicroserviceSubscriptionsServiceTest {
         assertThat(credentials2Invoked.get()).isTrue();
     }
 
+    private void assertCredentialsExists(Credentials credentials) {
+        final Optional<MicroserviceCredentials> retrievedCredentials = subscriptionsService.getCredentials(credentials.getTenant());
+        assertThat(retrievedCredentials.get()).isEqualTo(credentials);
+    }
+
     private Subscriptions givenSubscriptions() {
         final MicroserviceCredentials credentials = new MicroserviceCredentials().withUsername("name").withPassword("pass").withTenant("tenant");
+        return givenSubscriptions(Collections.singletonList(credentials));
+    }
+
+    private Subscriptions givenSubscriptions(Collection<MicroserviceCredentials> credentials) {
         return Subscriptions.builder()
-                .added(Arrays.asList(credentials))
-                .removed(Arrays.<MicroserviceCredentials>asList())
-                .all(Arrays.asList(credentials))
+                .added(credentials)
+                .removed(Collections.<MicroserviceCredentials>emptyList())
+                .all(credentials)
                 .build();
     }
 }
