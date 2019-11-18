@@ -162,8 +162,8 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         } catch (Throwable e) {
             log.error("Error while reacting on microservice subscription", e);
         } finally {
-            subscribing = false;
             subscribingCredentials.clear();
+            subscribing = false;
         }
     }
 

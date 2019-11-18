@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +56,7 @@ public class MicroserviceSubscriptionsServiceTest {
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
-    
+
     @InjectMocks
     private MicroserviceSubscriptionsServiceImpl subscriptionsService;
 
@@ -121,6 +122,47 @@ public class MicroserviceSubscriptionsServiceTest {
         subscriptionsService.subscribe();
 
         assertThat(invoked.get()).isTrue();
+    }
+
+    @Test
+    public void getCredentialsMethodShouldReturnPreviouslyProcessedCredentialInListener() {
+        final AtomicBoolean credentials1Invoked = new AtomicBoolean(false);
+        final AtomicBoolean credentials2Invoked = new AtomicBoolean(false);
+        final ApplicationRepresentation application = new ApplicationRepresentation();
+        final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withTenant("tenant1");
+        final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
+        final Subscriptions subscriptions = Subscriptions.builder()
+                .added(Arrays.asList(credentials1, credentials2))
+                .removed(Collections.<MicroserviceCredentials>emptyList())
+                .all(Arrays.asList(credentials1, credentials2))
+                .build();
+
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
+        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
+        subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
+            public boolean apply(MicroserviceSubscriptionAddedEvent event) {
+                if (credentials1Invoked.get())  {
+                    final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentials1.getTenant());
+                    assertThat(credentials.get()).isEqualTo(credentials1);
+                }
+                if (credentials2Invoked.get())  {
+                    final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentials2.getTenant());
+                    assertThat(credentials.get()).isEqualTo(credentials2);
+                }
+
+                if (credentials1.getTenant().equals(event.getCredentials().getTenant())) {
+                    credentials1Invoked.set(true);
+                }
+                if (credentials2.getTenant().equals(event.getCredentials().getTenant())) {
+                    credentials2Invoked.set(true);
+                }
+                return true;
+            }
+        });
+        subscriptionsService.subscribe();
+
+        assertThat(credentials1Invoked.get()).isTrue();
+        assertThat(credentials2Invoked.get()).isTrue();
     }
 
     private Subscriptions givenSubscriptions() {
