@@ -13,7 +13,8 @@ import java.lang.annotation.*;
 @Documented
 @Import({
         EnableWebSecurityConfiguration.class,
-        EnableGlobalMethodSecurityConfiguration.class
+        EnableGlobalMethodSecurityConfiguration.class,
+        TokenCacheConfiguration.class
 })
 public @interface EnableMicroserviceSecurity {
 }

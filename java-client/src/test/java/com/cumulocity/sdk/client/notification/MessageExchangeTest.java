@@ -1,5 +1,7 @@
 package com.cumulocity.sdk.client.notification;
 
+import com.cumulocity.common.notification.ClientSvensonJSONContext;
+import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.AsyncWebResource;
@@ -10,16 +12,22 @@ import com.sun.jersey.api.client.async.FutureListener;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
+import org.hamcrest.collection.IsCollectionWithSize;
+import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.mockito.hamcrest.MockitoHamcrest;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -195,4 +203,32 @@ public class MessageExchangeTest {
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
+
+    @Test
+    public void shouldRetryParsingMessageWhenSingleJsonElementIsBroken() throws ExecutionException, InterruptedException, ParseException {
+        //Given
+        when(request.get()).thenReturn(response);
+        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
+        when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
+        String invalidMessage = "[{\"data\":{\"creationTime\":\"2019-11-07T10:44:07.287Z\",\"deviceId\":\"564\",\"deviceName\":\"Linux MAC CA55B6FBB6F5\",\"self\":\"http://cumulocity.default.svc.cluster.local/devicecontrol/operations/713\",\"id\":\"713\",\n" +
+                "\"status\":\"PENDING\",\"description\":\"Opening remote access tunnel to 'SSH1'\",\"c8y_Availability\": { \"status\": \"xxx\"}},\n" +
+                "\"channel\":\"/564\",\"id\":\"462\"},{\"ext\":{\"ack\":3},\"channel\":\"/meta/connect\",\"id\":\"5\",\"successful\":true}]";
+        when(response.getEntity(String.class)).thenReturn(invalidMessage);
+        when(transport.parseMessages(any(String.class))).thenAnswer(new Answer<List<Mutable>>() {
+            @Override
+            public List<Mutable> answer(InvocationOnMock invocation) throws Throwable {
+                String content = invocation.getArgument(0);
+                return Arrays.asList(new ClientSvensonJSONContext(OperationRepresentation.class).parse(content));
+            }
+        });
+        //When
+        recivedResponse();
+        responseConsumed();
+        //Then
+        verify(listener).onMessages((List<Mutable>)MockitoHamcrest.argThat(IsIterableWithSize.<Mutable>iterableWithSize(1)));
+        verifyNoMoreInteractions(listener);
+        verify(watcher).stop();
+    }
+
+
 }
