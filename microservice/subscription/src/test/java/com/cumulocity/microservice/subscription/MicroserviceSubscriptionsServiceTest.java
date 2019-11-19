@@ -1,45 +1,40 @@
 package com.cumulocity.microservice.subscription;
 
 import com.cumulocity.microservice.context.ContextServiceImpl;
-import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
-import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl.MicroserviceChangedListener;
 import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl;
+import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl.MicroserviceChangedListener;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Optional.of;
+import static com.google.common.collect.FluentIterable.from;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MicroserviceSubscriptionsServiceTest {
@@ -55,9 +50,6 @@ public class MicroserviceSubscriptionsServiceTest {
 
     @Mock
     private ContextServiceImpl contextService;
-
-    @Spy
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks
     private MicroserviceSubscriptionsServiceImpl subscriptionsService;
@@ -106,75 +98,45 @@ public class MicroserviceSubscriptionsServiceTest {
     }
 
     @Test
-    public void getCredentialsMethodShouldReturnCurrentlyProcessedCredentialInListener() {
-        final AtomicBoolean invoked = new AtomicBoolean(false);
+    public void getCredentialsMethodShouldReturnAllSubscribingCredentialsInListener() {
+        // given
         final ApplicationRepresentation application = new ApplicationRepresentation();
         final Subscriptions subscriptions = givenSubscriptions();
+        final Set<MicroserviceCredentials> subscribingCredentials = new HashSet<>();
 
         given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
+
+        // when
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
             public boolean apply(MicroserviceSubscriptionAddedEvent event) {
-                assertCredentialsExists(event.getCredentials());
-                invoked.set(true);
+                subscribingCredentials.add(event.getCredentials());
+
+                from(subscribingCredentials).filter(new Predicate<MicroserviceCredentials>() {
+                    @Override
+                    public boolean apply(MicroserviceCredentials credentialsToVerify) {
+                        final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentialsToVerify.getTenant());
+                        assertThat(credentialsToVerify).isEqualTo(credentials.get());
+                        return true;
+                    }
+                }).toList();
+
                 return true;
             }
         });
         subscriptionsService.subscribe();
 
-        assertThat(invoked.get()).isTrue();
-    }
-
-    @Test
-    public void getCredentialsMethodShouldReturnPreviouslyProcessedCredentialInListener() {
-        final ApplicationRepresentation application = new ApplicationRepresentation();
-        final AtomicBoolean credentials1Invoked = new AtomicBoolean(false);
-        final AtomicBoolean credentials2Invoked = new AtomicBoolean(false);
-        final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withTenant("tenant1");
-        final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
-        final Subscriptions subscriptions = givenSubscriptions(Arrays.asList(credentials1, credentials2));
-
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
-        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
-        subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
-            public boolean apply(MicroserviceSubscriptionAddedEvent event) {
-                if (credentials1Invoked.get()) {
-                    assertCredentialsExists(credentials1);
-                }
-                if (credentials2Invoked.get()) {
-                    assertCredentialsExists(credentials2);
-                }
-
-                if (credentials1.getTenant().equals(event.getCredentials().getTenant())) {
-                    credentials1Invoked.set(true);
-                }
-                if (credentials2.getTenant().equals(event.getCredentials().getTenant())) {
-                    credentials2Invoked.set(true);
-                }
-                return true;
-            }
-        });
-        subscriptionsService.subscribe();
-
-        assertThat(credentials1Invoked.get()).isTrue();
-        assertThat(credentials2Invoked.get()).isTrue();
-    }
-
-    private void assertCredentialsExists(Credentials credentials) {
-        final Optional<MicroserviceCredentials> retrievedCredentials = subscriptionsService.getCredentials(credentials.getTenant());
-        assertThat(retrievedCredentials.get()).isEqualTo(credentials);
+        // then
+        assertThat(subscribingCredentials).containsAll(subscriptions.getAdded());
     }
 
     private Subscriptions givenSubscriptions() {
-        final MicroserviceCredentials credentials = new MicroserviceCredentials().withUsername("name").withPassword("pass").withTenant("tenant");
-        return givenSubscriptions(Collections.singletonList(credentials));
-    }
-
-    private Subscriptions givenSubscriptions(Collection<MicroserviceCredentials> credentials) {
+        final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withTenant("tenant1");
+        final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
         return Subscriptions.builder()
-                .added(credentials)
+                .added(Arrays.asList(credentials1, credentials2))
                 .removed(Collections.<MicroserviceCredentials>emptyList())
-                .all(credentials)
+                .all(Arrays.asList(credentials1, credentials2))
                 .build();
     }
 }
