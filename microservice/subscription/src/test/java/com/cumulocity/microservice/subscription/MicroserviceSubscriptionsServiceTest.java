@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription;
 
 import com.cumulocity.microservice.context.ContextServiceImpl;
+import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -112,14 +113,10 @@ public class MicroserviceSubscriptionsServiceTest {
             public boolean apply(MicroserviceSubscriptionAddedEvent event) {
                 subscribingCredentials.add(event.getCredentials());
 
-                from(subscribingCredentials).filter(new Predicate<MicroserviceCredentials>() {
-                    @Override
-                    public boolean apply(MicroserviceCredentials credentialsToVerify) {
-                        final Optional<MicroserviceCredentials> credentials = subscriptionsService.getCredentials(credentialsToVerify.getTenant());
-                        assertThat(credentialsToVerify).isEqualTo(credentials.get());
-                        return true;
-                    }
-                }).toList();
+                for (Credentials credentialsToVerify : subscribingCredentials) {
+                    final Optional<MicroserviceCredentials> retrievedCredentials = subscriptionsService.getCredentials(credentialsToVerify.getTenant());
+                    assertThat(credentialsToVerify).isEqualTo(retrievedCredentials.get());
+                }
 
                 return true;
             }
