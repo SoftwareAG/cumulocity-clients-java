@@ -285,9 +285,9 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <complianceLevel>${maven.compiler.target}</complianceLevel>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <complianceLevel>1.8</complianceLevel>
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>
