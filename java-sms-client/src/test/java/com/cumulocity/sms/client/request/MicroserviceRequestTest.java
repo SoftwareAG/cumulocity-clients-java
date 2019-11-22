@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import static com.cumulocity.model.sms.Protocol.ICCID;
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
-import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -33,34 +30,40 @@ public class MicroserviceRequestTest {
 
     private MessagingClient client = new MessagingClient("testBaseUrl/service/sms/smsmessaging/", mock(Executor.class));
 
-    @Test
+    @Test(expected = SmsClientException.class)
     public void shouldThrowExceptionWhenSendRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(new IOException("qwe"));
 
-        catchException(client).sendMessage(new Address(), new OutgoingMessageRequest());
-
-        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
-        assertThat(caughtException()).hasMessage("Send sms request failure");
+        try {
+            client.sendMessage(new Address(), new OutgoingMessageRequest());
+        } catch (SmsClientException ex) {
+            assert (ex.getMessage().equals("Send sms request failure"));
+            throw  new SmsClientException(ex.getMessage());
+        }
     }
 
-    @Test
+    @Test(expected = SmsClientException.class)
     public void shouldThrowExceptionWhenGetMessagesRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        catchException(client).getAllMessages(new Address());
-
-        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
-        assertThat(caughtException()).hasMessage("Get sms messages failure");
+        try {
+            client.getAllMessages(new Address());
+        } catch (SmsClientException ex) {
+            assert (ex.getMessage().equals("Get sms messages failure"));
+            throw  new SmsClientException(ex.getMessage());
+        }
     }
 
-    @Test
+    @Test(expected = SmsClientException.class)
     public void shouldThrowExceptionWhenGetMessageRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        catchException(client).getMessage(new Address(), "1");
-
-        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
-        assertThat(caughtException()).hasMessage("Get sms message failure");
+        try {
+            client.getMessage(new Address(), "1");
+        } catch (SmsClientException ex) {
+            assert (ex.getMessage().equals("Get sms message failure"));
+            throw  new SmsClientException(ex.getMessage());
+        }
     }
 
     @Test
@@ -70,10 +73,10 @@ public class MicroserviceRequestTest {
         final ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
 
-        assertThat(captor.getValue().toString()).isEqualTo("POST testBaseUrl/service/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1");
+        assert(captor.getValue().toString().equals("POST testBaseUrl/service/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1"));
     }
 
-    @Test
+    @Test(expected = SmsClientException.class)
     public void shouldThrowExceptionWhenResponseStatusIsIncorrect() throws IOException {
         final Response response = mock(Response.class);
         final HttpResponse httpResponse = mock(HttpResponse.class);
@@ -83,10 +86,12 @@ public class MicroserviceRequestTest {
         when(response.returnResponse()).thenReturn(httpResponse);
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenReturn(response);
 
-        catchException(client).sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
-
-        assertThat(caughtException()).isInstanceOf(SmsClientException.class);
-        assertThat(caughtException()).hasMessage("Incorrect response: 404");
+        try {
+            client.sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
+        } catch (SmsClientException ex) {
+            assert(ex.getMessage().equals("Incorrect response: 404"));
+            throw  new SmsClientException(ex.getMessage());
+        }
     }
 
     @Test
@@ -123,13 +128,13 @@ public class MicroserviceRequestTest {
 
         ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests");
+        assert(captor.getValue().toString().equals("testBaseUrl/service/sms/smsmessaging/outbound/{senderAddress}/requests"));
 
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages");
+        assert(captor.getValue().toString().equals("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages"));
 
         verify(client.getAuthorizedTemplate()).execute(captor.capture());
-        assertThat(captor.getValue().toString()).isEqualTo("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}");
+        assert(captor.getValue().toString().equals("testBaseUrl/service/sms/smsmessaging/inbound/registrations/{receiveAddress}/messages/{messageId}"));
     }
 
     private HttpEntityEnclosingRequest getFieldValue(Request value) throws NoSuchFieldException, IllegalAccessException {
