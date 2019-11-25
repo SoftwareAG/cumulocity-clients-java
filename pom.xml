@@ -48,7 +48,7 @@
 
         <aspectj.version>1.8.13</aspectj.version>
         <assertj.version>2.9.1</assertj.version>
-        <awaitibility.version>4.0.1</awaitibility.version>
+        <awaitility.version>4.0.1</awaitility.version>
         <catch-exception.version>2.0</catch-exception.version>
         <cucumber.version>1.2.5</cucumber.version>
         <cometd.version>3.0.10</cometd.version>
@@ -623,7 +623,7 @@
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
-                <version>${awaitibility.version}</version>
+                <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
