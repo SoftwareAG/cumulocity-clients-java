@@ -2,7 +2,7 @@ package com.cumulocity.sdk.client.buffering;
 
 import static com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider.NEW_REQUESTS_PATH;
 import static com.cumulocity.sdk.client.buffering.FileBasedPersistentProvider.NEW_REQUESTS_TEMP_PATH;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 

@@ -20,7 +20,7 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import static com.cumulocity.rest.representation.operation.DeviceControlMediaType.NEW_DEVICE_REQUEST;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Timer;
 import java.util.TimerTask;

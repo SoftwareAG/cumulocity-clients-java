@@ -26,7 +26,7 @@ import static com.cumulocity.me.rest.representation.SampleManagedObjectRepresent
 import static com.cumulocity.sdk.client.common.SDKExceptionMatcher.sdkException;
 import static java.util.Arrays.asList;
 import static javax.microedition.io.HttpConnection.HTTP_NOT_FOUND;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

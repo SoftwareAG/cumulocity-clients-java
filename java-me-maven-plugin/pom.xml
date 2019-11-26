@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>1005.6.0-SNAPSHOT</version>
+        <version>1005.8.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.cumulocity.me</groupId>
     <artifactId>java-me-maven-plugin</artifactId>
-    <version>1005.6.0-SNAPSHOT</version>
+    <version>1005.8.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Cumulocity :: Clients Java :: Java ME Maven Plugin</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
@@ -179,12 +179,12 @@
                 </plugin>
 
                 <plugin>
-                    <version>${maven-compiler-plugin.version}</version>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>

@@ -29,6 +29,7 @@ import lombok.Synchronized;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,13 +95,13 @@ class MessageExchange {
     }
 
     private void startWatcher() {
-        log.debug("starting heartbeat watcher {}", (Object) messages);
+        log.debug("starting heartbeat watcher {}", messages);
         watcher.start();
     }
 
     @Synchronized("messages")
     public void cancel() {
-        log.debug("canceling {}", (Object) messages);
+        log.debug("canceling {}",  messages);
 
 
         if (request.cancel(true)) {
@@ -135,7 +136,7 @@ class MessageExchange {
             listener.onFinish();
         }
 
-        log.debug("stopping heartbeat watcher {}", (Object) messages);
+        log.debug("stopping heartbeat watcher {}", messages);
         watcher.stop();
     }
 
@@ -189,17 +190,17 @@ class MessageExchange {
         }
 
         private void getHeartBeats(final ClientResponse response) throws IOException {
-            log.debug("getting heartbeants  {}", response);
+            log.debug("getting heartbeats  {}", response);
             InputStream entityInputStream = response.getEntityInputStream();
             entityInputStream.mark(MAX_VALUE);
             int value = -1;
             while ((value = entityInputStream.read()) >= 0) {
                 if (isHeartBeat(value)) {
-                    log.debug("recived heartbeat");
+                    log.debug("received heartbeat");
                     watcher.heartBeat();
                     entityInputStream.mark(MAX_VALUE);
                 } else {
-                    log.debug("new messages recived");
+                    log.debug("new messages received");
                     entityInputStream.reset();
                     break;
                 }
@@ -220,8 +221,11 @@ class MessageExchange {
                 if (!isNullOrEmpty(content)) {
                     try {
                         handleContent(content);
-                    } catch (ParseException x) {
-                        onException(x);
+                    } catch (ParseException | IllegalArgumentException x) {
+                        log.debug("Failed to parse message: {}, will retry.", content);
+                        if (!retryHandleContent(content)) {
+                            onException(x);
+                        }
                     }
                 } else {
                     onTransportException(204);
@@ -276,6 +280,27 @@ class MessageExchange {
             listener.onMessages(messages);
         }
 
+        /**
+         * try parse each message from json array separately
+         * continue when single message parsing fail
+         */
+        private boolean retryHandleContent(String content) {
+            JSONArray jsonArray = new JSONArray(content);
+            List<Mutable> messages = new ArrayList<>(jsonArray.length());
+            for (Object jsonObject : jsonArray) {
+                try {
+                    messages.addAll(transport.parseMessages(jsonObject.toString()));
+                } catch(ParseException | IllegalArgumentException e) {
+                    log.debug("Failed to retry parse json message: {}", e.getMessage());
+                }
+            }
+            log.debug("Messages recovered after failure content handle: {}", messages);
+            if (messages.isEmpty()) {
+                return false;
+            }
+            listener.onMessages(messages);
+            return true;
+        }
     }
 
     final class ResponseHandler implements FutureListener<ClientResponse> {
@@ -285,9 +310,9 @@ class MessageExchange {
             try {
                 synchronized (messages) {
                     if (!f.isCancelled()) {
-                        log.debug("wait for response headers {}", (Object) messages);
+                        log.debug("wait for response headers {}", messages);
                         ClientResponse response = f.get();
-                        log.debug("recived response headers {} ", (Object) messages);
+                        log.debug("received response headers {} ", messages);
                         consumer = executorService.submit(new ResponseConsumer(response));
                     } else {
                         throw new ExecutionException(new RuntimeException("Request canceled"));

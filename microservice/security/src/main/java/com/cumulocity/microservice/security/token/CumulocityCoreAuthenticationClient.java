@@ -3,12 +3,20 @@ package com.cumulocity.microservice.security.token;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
+import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
+import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
+import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
+import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
 class CumulocityCoreAuthenticationClient {
     private static final int CONNECTION_TIMEOUT = 30000;
@@ -32,7 +40,12 @@ class CumulocityCoreAuthenticationClient {
      * Remember to release resources when client is not needed
      */
     static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
-        Client client = new ApacheHttpClient();
+        final HttpClient httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
+        DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
+        clientConfig.getClasses().add(CumulocityJSONMessageBodyReader.class);
+        clientConfig.getClasses().add(ErrorMessageRepresentationReader.class);
+        ApacheHttpClientHandler apacheHttpClientHandler = new ApacheHttpClientHandler(httpClient, clientConfig);
+        ApacheHttpClient client = new ApacheHttpClient(apacheHttpClientHandler);
         client.setConnectTimeout(CONNECTION_TIMEOUT);
         if (jwtTokenAuthentication != null) {
             JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
@@ -81,17 +94,9 @@ class CumulocityCoreAuthenticationClient {
         return jwtCredentials.toUserCredentials(tenantName, jwtTokenAuthentication);
     }
 
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    protected static class SimplifiedCurrentTenantRepresentation {
+    public static class SimplifiedCurrentTenantRepresentation extends AbstractExtensibleRepresentation {
+        @Getter
+        @Setter
         private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 }

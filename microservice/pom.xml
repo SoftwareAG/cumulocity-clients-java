@@ -4,7 +4,7 @@
 
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>microservice-dependencies</artifactId>
-    <version>1005.6.0-SNAPSHOT</version>
+    <version>1005.8.0-SNAPSHOT</version>
 
     <name>Cumulocity :: Clients Java :: Microservice</name>
     <description>Microservice</description>
@@ -16,9 +16,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-
+        <java.version>1.8</java.version>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
@@ -227,6 +225,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>1.8.13</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -234,13 +239,22 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.9</version>
+                    <version>1.11</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <complianceLevel>${maven.compiler.target}</complianceLevel>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <complianceLevel>${java.version}</complianceLevel>
                         <showWeaveInfo>true</showWeaveInfo>
                         <verbose>true</verbose>
                     </configuration>

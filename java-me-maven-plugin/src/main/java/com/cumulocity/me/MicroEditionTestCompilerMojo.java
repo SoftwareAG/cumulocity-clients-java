@@ -11,10 +11,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 @Mojo( name = "testCompile", defaultPhase = LifecyclePhase.TEST_COMPILE, threadSafe = true, requiresDependencyResolution = ResolutionScope.TEST )
 public class MicroEditionTestCompilerMojo extends TestCompilerMojo {
 
-    @Parameter(defaultValue = "1.7", property = "test.javac.source")
+    @Parameter(defaultValue = "1.8", property = "test.javac.source")
     private String testJavacSource;
 
-    @Parameter(defaultValue = "1.7", property = "test.javac.target")
+    @Parameter(defaultValue = "1.8", property = "test.javac.target")
     private String testJavacTarget;
 
     @Override

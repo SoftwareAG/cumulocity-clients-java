@@ -25,7 +25,7 @@ import static com.cumulocity.me.rest.representation.SampleAlarmRepresentation.AL
 import static com.cumulocity.me.rest.representation.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SDKExceptionMatcher.sdkException;
 import static java.lang.System.currentTimeMillis;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 

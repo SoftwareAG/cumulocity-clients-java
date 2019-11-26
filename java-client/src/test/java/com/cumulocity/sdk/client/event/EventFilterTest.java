@@ -43,7 +43,7 @@ public class EventFilterTest {
         Date fromDate = new Date(System.currentTimeMillis());
         Date toDate = new Date(System.currentTimeMillis());
         EventFilter filter = new EventFilter().byFragmentType(Object.class).byDate(fromDate, toDate);
-        assertThat(filter.getFragmentType(), is(Object.class));
+        assertThat(filter.getFragmentType(), is("java_lang_Object"));
         assertThat(filter.getFromDate(), is(DateConverter.date2String(fromDate)));
         assertThat(filter.getToDate(), is(DateConverter.date2String(toDate)));
     }

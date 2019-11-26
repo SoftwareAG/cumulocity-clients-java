@@ -5,14 +5,9 @@ import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.config.FilterRegistrationConfiguration;
 import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
-import com.cumulocity.microservice.security.token.JwtAuthenticatedTokenCache;
-import com.cumulocity.microservice.security.token.JwtTokenAuthenticationGuavaCache;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -53,13 +48,6 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
         auth.authenticationProvider(jwtTokenAuthenticationProvider);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache(@Value("${cache.guava.maxSize:10000}") int jwtGuavaCacheMaxSize, @Value("${cache.guava.expireAfterAccessInMinutes:10}") int jwtGuavaCacheExpireAfterAccessInMinutes) {
-        log.info("Default Guava implementation for token cache is used.\nParameters:\n- max cache size: " + jwtGuavaCacheMaxSize + "\n- expire after access: " + jwtGuavaCacheExpireAfterAccessInMinutes + " minutes");
-        return new JwtTokenAuthenticationGuavaCache(jwtGuavaCacheMaxSize, jwtGuavaCacheExpireAfterAccessInMinutes);
     }
 
     @Override
