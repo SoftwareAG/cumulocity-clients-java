@@ -22,7 +22,7 @@ package com.cumulocity.me.util;
 import static com.cumulocity.me.model.CumulocityCharset.CHARSET;
 import static java.util.Collections.nCopies;
 import static org.apache.commons.lang.StringUtils.join;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

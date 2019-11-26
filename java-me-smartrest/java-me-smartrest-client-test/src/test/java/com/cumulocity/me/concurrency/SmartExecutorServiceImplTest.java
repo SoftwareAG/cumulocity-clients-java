@@ -1,12 +1,9 @@
 package com.cumulocity.me.concurrency;
 
-import com.cumulocity.me.concurrent.exception.ExecutionException;
 import com.cumulocity.me.concurrent.impl.SmartExecutorServiceImpl;
 import com.cumulocity.me.concurrent.model.Future;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Collections;
 
 public class SmartExecutorServiceImplTest {
 

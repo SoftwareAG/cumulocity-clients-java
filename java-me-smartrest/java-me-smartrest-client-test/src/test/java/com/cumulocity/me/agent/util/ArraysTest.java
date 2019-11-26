@@ -1,6 +1,6 @@
 package com.cumulocity.me.agent.util;
 
-import org.fest.assertions.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 

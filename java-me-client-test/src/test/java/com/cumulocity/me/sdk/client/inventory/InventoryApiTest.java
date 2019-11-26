@@ -22,7 +22,7 @@ package com.cumulocity.me.sdk.client.inventory;
 import static com.cumulocity.me.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT;
 import static com.cumulocity.me.rest.representation.inventory.InventoryRepresentationBuilder.anInventoryRepresentation;
 import static com.cumulocity.model.pagination.PageRequest.DEFAULT_PAGE_SIZE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;

@@ -24,7 +24,7 @@ import static com.cumulocity.me.rest.convert.JSONObjectBuilder.aJSONObject;
 import static com.cumulocity.me.rest.representation.devicecontrol.OperationRepresentationBuilder.aOperationRepresentation;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.CREATE;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.UPDATE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
