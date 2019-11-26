@@ -20,7 +20,7 @@
 package com.cumulocity.me.rest.convert.audit;
 
 import static com.cumulocity.me.rest.representation.audit.AuditRecordsRepresentationBuilder.aAuditRecordsRepresentation;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;

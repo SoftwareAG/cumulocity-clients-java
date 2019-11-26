@@ -21,7 +21,7 @@ package com.cumulocity.me.sdk.client;
 
 import static com.cumulocity.me.rest.representation.BaseCumulocityMediaType.ERROR_MESSAGE;
 import static com.cumulocity.me.test.ReturnsThis.doReturnsThis;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

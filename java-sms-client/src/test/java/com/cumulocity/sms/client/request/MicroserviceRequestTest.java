@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import static com.cumulocity.model.sms.Protocol.ICCID;
+import static org.assertj.core.api.ThrowableAssert.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -30,40 +32,35 @@ public class MicroserviceRequestTest {
 
     private MessagingClient client = new MessagingClient("testBaseUrl/service/sms/smsmessaging/", mock(Executor.class));
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenSendRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(new IOException("qwe"));
 
-        try {
-            client.sendMessage(new Address(), new OutgoingMessageRequest());
-        } catch (SmsClientException ex) {
-            assert (ex.getMessage().equals("Send sms request failure"));
-            throw  new SmsClientException(ex.getMessage());
-        }
+        Throwable thrown = catchThrowable(() -> client.sendMessage(new Address(), new OutgoingMessageRequest()));
+
+        assertThat(thrown).isInstanceOf(SmsClientException.class)
+            .hasMessage("Send sms request failure");
     }
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenGetMessagesRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        try {
-            client.getAllMessages(new Address());
-        } catch (SmsClientException ex) {
-            assert (ex.getMessage().equals("Get sms messages failure"));
-            throw  new SmsClientException(ex.getMessage());
-        }
+        Throwable thrown = catchThrowable(() -> client.getAllMessages(new Address()));
+
+        assertThat(thrown).isInstanceOf(SmsClientException.class)
+            .hasMessage("Get sms messages failure");
     }
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenGetMessageRequestFails() throws IOException {
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenThrow(IOException.class);
 
-        try {
-            client.getMessage(new Address(), "1");
-        } catch (SmsClientException ex) {
-            assert (ex.getMessage().equals("Get sms message failure"));
-            throw  new SmsClientException(ex.getMessage());
-        }
+        Throwable thrown = catchThrowable(() -> client.getAllMessages(new Address()));
+
+        assertThat(thrown).isInstanceOf(SmsClientException.class)
+            .hasMessage("Get sms messages failure");
+
     }
 
     @Test
@@ -76,7 +73,7 @@ public class MicroserviceRequestTest {
         assert(captor.getValue().toString().equals("POST testBaseUrl/service/sms/smsmessaging/outbound/iccid:123/requests HTTP/1.1"));
     }
 
-    @Test(expected = SmsClientException.class)
+    @Test
     public void shouldThrowExceptionWhenResponseStatusIsIncorrect() throws IOException {
         final Response response = mock(Response.class);
         final HttpResponse httpResponse = mock(HttpResponse.class);
@@ -86,12 +83,11 @@ public class MicroserviceRequestTest {
         when(response.returnResponse()).thenReturn(httpResponse);
         when(client.getAuthorizedTemplate().execute(any(Request.class))).thenReturn(response);
 
-        try {
-            client.sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest());
-        } catch (SmsClientException ex) {
-            assert(ex.getMessage().equals("Incorrect response: 404"));
-            throw  new SmsClientException(ex.getMessage());
-        }
+        Throwable thrown =
+            catchThrowable(() -> client.sendMessage(new Address(ICCID, "123"), new OutgoingMessageRequest()));
+
+        assertThat(thrown).isInstanceOf(SmsClientException.class)
+            .hasMessage("Incorrect response: 404");
     }
 
     @Test

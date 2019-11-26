@@ -23,7 +23,7 @@ import static com.cumulocity.me.rest.convert.JSONArrayBuilder.aJSONArray;
 import static com.cumulocity.me.rest.convert.JSONObjectBuilder.aJSONObject;
 import static com.cumulocity.me.rest.convert.inventory.ManagedObjectReferenceCollectionRepresentationConverter.PROP_REFERENCES;
 import static com.cumulocity.me.rest.convert.inventory.ManagedObjectReferenceRepresentationConverter.PROP_MANAGED_OBJECT;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
