@@ -3,11 +3,6 @@ package com.cumulocity.microservice.subscription.repository;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -15,10 +10,12 @@ import org.springframework.stereotype.Repository;
 import java.beans.ConstructorProperties;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import static com.google.common.base.Optional.fromNullable;
-import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
 
 @Repository
 public class MicroserviceSubscriptionsRepository {
@@ -69,17 +66,17 @@ public class MicroserviceSubscriptionsRepository {
             SubscriptionsBuilder() {
             }
 
-            public Subscriptions.SubscriptionsBuilder all(Collection<MicroserviceCredentials> all) {
+            public SubscriptionsBuilder all(Collection<MicroserviceCredentials> all) {
                 this.all = all;
                 return this;
             }
 
-            public Subscriptions.SubscriptionsBuilder removed(Collection<MicroserviceCredentials> removed) {
+            public SubscriptionsBuilder removed(Collection<MicroserviceCredentials> removed) {
                 this.removed = removed;
                 return this;
             }
 
-            public Subscriptions.SubscriptionsBuilder added(Collection<MicroserviceCredentials> added) {
+            public SubscriptionsBuilder added(Collection<MicroserviceCredentials> added) {
                 this.added = added;
                 return this;
             }
@@ -95,28 +92,22 @@ public class MicroserviceSubscriptionsRepository {
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
     public Optional<ApplicationRepresentation> register(MicroserviceMetadataRepresentation metadata) {
-        return fromNullable(repository.register(metadata));
+        return ofNullable(repository.register(metadata));
     }
 
     @Deprecated
     public Optional<ApplicationRepresentation> register(String applicationName, MicroserviceMetadataRepresentation metadata) {
-        return fromNullable(repository.register(applicationName, metadata));
+        return ofNullable(repository.register(applicationName, metadata));
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
-        final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId))
-                .transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
-                    public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
-                        return MicroserviceCredentials.builder()
-                                .username(representation.getName())
-                                .tenant(representation.getTenant())
-                                .password(representation.getPassword())
-                                .oAuthAccessToken(null)
-                                .xsrfToken(null)
-                                .build();
-                    }
-                })
-                .toList();
+        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
+                .username(representation.getName())
+                .tenant(representation.getTenant())
+                .password(representation.getPassword())
+                .oAuthAccessToken(null)
+                .xsrfToken(null)
+                .build()).collect(Collectors.toList());
         final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, subscriptions);
         final Collection<MicroserviceCredentials> added = subtract(subscriptions, currentSubscriptions);
         return Subscriptions.builder()
@@ -127,15 +118,12 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     private Collection<MicroserviceCredentials> subtract(Collection<MicroserviceCredentials> a, final Collection<MicroserviceCredentials> b) {
-        return FluentIterable.from(a).filter(new Predicate<MicroserviceCredentials>() {
-            @Override
-            public boolean apply(MicroserviceCredentials credentials) {
-                if(b.contains(credentials)){
-                    return false;
-                }
-                return true;
+        return a.stream().filter(credentials -> {
+            if (b.contains(credentials)) {
+                return false;
             }
-        }).toList();
+            return true;
+        }).collect(Collectors.toList());
     }
 
     public void updateCurrentSubscriptions(final Collection<MicroserviceCredentials> subscriptions) {

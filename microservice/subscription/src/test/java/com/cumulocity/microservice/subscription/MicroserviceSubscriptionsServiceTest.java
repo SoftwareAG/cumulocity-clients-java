@@ -9,11 +9,9 @@ import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
 import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl;
-import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl.MicroserviceChangedListener;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,19 +20,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 
-import static com.google.common.base.Optional.of;
-import static com.google.common.collect.FluentIterable.from;
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,25 +48,24 @@ public class MicroserviceSubscriptionsServiceTest {
     @Mock
     private ContextServiceImpl contextService;
 
+    @Mock
+    private MicroserviceMetadataRepresentation microserviceMetadataRepresentation;
+
     @InjectMocks
     private MicroserviceSubscriptionsServiceImpl subscriptionsService;
 
     @Before
     public void before() {
-        when(contextService.callWithinContext(anyObject(), any(Callable.class))).thenAnswer(new Answer<Object>() {
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return invocationOnMock.callRealMethod();
-            }
-        });
+        when(contextService.callWithinContext(any(), any(Callable.class))).thenAnswer(InvocationOnMock::callRealMethod);
+        given(properties.getApplicationName()).willReturn("mockApp");
     }
 
     @Test
     public void shouldNotUpdateCurrentSubscriptionWhenEventProcessingFails() {
         //given
-        final ApplicationRepresentation application = new ApplicationRepresentation();
         final Subscriptions subscriptions = givenSubscriptions();
 
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId1")));
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
 
         doThrow(new SDKException("mongo connection timeout")).when(eventPublisher).publishEvent(any(ApplicationEvent.class));
@@ -79,16 +74,15 @@ public class MicroserviceSubscriptionsServiceTest {
         subscriptionsService.subscribe();
 
         //then
-        verify(repository).updateCurrentSubscriptions(ImmutableList.<MicroserviceCredentials>of());
+        verify(repository).updateCurrentSubscriptions(ImmutableList.of());
     }
 
     @Test
     public void shouldUpdateCurrentSubscriptionOnlyWhenEventsProcessedSuccessfully() {
         //given
-        final ApplicationRepresentation application = new ApplicationRepresentation();
         final Subscriptions subscriptions = givenSubscriptions();
 
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId2")));
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
 
         //when
@@ -101,25 +95,22 @@ public class MicroserviceSubscriptionsServiceTest {
     @Test
     public void getCredentialsMethodShouldReturnAllSubscribingCredentialsInListener() {
         // given
-        final ApplicationRepresentation application = new ApplicationRepresentation();
         final Subscriptions subscriptions = givenSubscriptions();
         final Set<MicroserviceCredentials> subscribingCredentials = new HashSet<>();
 
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application));
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId3")));
         given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
 
         // when
-        subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, new MicroserviceChangedListener<MicroserviceSubscriptionAddedEvent>() {
-            public boolean apply(MicroserviceSubscriptionAddedEvent event) {
-                subscribingCredentials.add(event.getCredentials());
+        subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, event -> {
+            subscribingCredentials.add(event.getCredentials());
 
-                for (Credentials credentialsToVerify : subscribingCredentials) {
-                    final Optional<MicroserviceCredentials> retrievedCredentials = subscriptionsService.getCredentials(credentialsToVerify.getTenant());
-                    assertThat(credentialsToVerify).isEqualTo(retrievedCredentials.get());
-                }
-
-                return true;
+            for (Credentials credentialsToVerify : subscribingCredentials) {
+                final Optional<MicroserviceCredentials> retrievedCredentials = subscriptionsService.getCredentials(credentialsToVerify.getTenant());
+                assertThat(credentialsToVerify).isEqualTo(retrievedCredentials.get());
             }
+
+            return true;
         });
         subscriptionsService.subscribe();
 
@@ -132,8 +123,14 @@ public class MicroserviceSubscriptionsServiceTest {
         final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
         return Subscriptions.builder()
                 .added(Arrays.asList(credentials1, credentials2))
-                .removed(Collections.<MicroserviceCredentials>emptyList())
+                .removed(Collections.emptyList())
                 .all(Arrays.asList(credentials1, credentials2))
                 .build();
+    }
+
+    private ApplicationRepresentation application(String id) {
+        ApplicationRepresentation applicationRepresentation = new ApplicationRepresentation();
+        applicationRepresentation.setId(id);
+        return applicationRepresentation;
     }
 }

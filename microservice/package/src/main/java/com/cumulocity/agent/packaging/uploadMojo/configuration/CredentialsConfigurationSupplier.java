@@ -1,7 +1,7 @@
 package com.cumulocity.agent.packaging.uploadMojo.configuration;
 
 import com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.FluentIterable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class CredentialsConfigurationSupplier {
         if (result.isPresent()) {
             return Optional.of(result);
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private Optional<String> getSettingsUsername() {

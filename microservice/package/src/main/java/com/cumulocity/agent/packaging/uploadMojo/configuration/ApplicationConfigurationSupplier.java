@@ -1,7 +1,7 @@
 package com.cumulocity.agent.packaging.uploadMojo.configuration;
 
 import com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;

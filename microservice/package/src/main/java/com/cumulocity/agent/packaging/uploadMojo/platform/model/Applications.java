@@ -1,6 +1,6 @@
 package com.cumulocity.agent.packaging.uploadMojo.platform.model;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ public class Applications {
 
     public Optional<Application> first() {
         if (applications == null || applications.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(applications.get(0));
     }

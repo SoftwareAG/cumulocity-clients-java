@@ -1,13 +1,11 @@
 package com.cumulocity.microservice.security.token;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import lombok.experimental.UtilityClass;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.Optional;
 
 @UtilityClass
 public final class CookieReader {
@@ -17,14 +15,9 @@ public final class CookieReader {
     public static Optional<Cookie> readAuthorizationCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
-        return FluentIterable.from(Arrays.asList(cookies)).firstMatch(new Predicate<Cookie>() {
-            @Override
-            public boolean apply(Cookie cookie) {
-                return AUTHORIZATION_KEY.equals(cookie.getName());
-            }
-        });
+        return Arrays.stream(cookies).filter(cookie -> AUTHORIZATION_KEY.equals(cookie.getName())).findFirst();
     }
 
 }

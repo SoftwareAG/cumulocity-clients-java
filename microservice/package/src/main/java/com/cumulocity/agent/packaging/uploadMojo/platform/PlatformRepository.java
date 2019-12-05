@@ -3,7 +3,7 @@ package com.cumulocity.agent.packaging.uploadMojo.platform;
 import com.cumulocity.agent.packaging.uploadMojo.platform.client.Executor;
 import com.cumulocity.agent.packaging.uploadMojo.platform.client.Request;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.*;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

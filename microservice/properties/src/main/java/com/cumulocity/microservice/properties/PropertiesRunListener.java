@@ -65,7 +65,18 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     }
 
     @Override
-    public void finished(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
+    public void started(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {
+
     }
 
     private void processPropertySource(ConfigurableEnvironment environment, Iterable<Path> locations) {

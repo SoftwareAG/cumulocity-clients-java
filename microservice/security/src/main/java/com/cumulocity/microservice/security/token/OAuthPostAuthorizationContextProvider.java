@@ -4,7 +4,7 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.security.filter.provider.PostAuthorizationContextProvider;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,6 +63,6 @@ class OAuthPostAuthorizationContextProvider implements PostAuthorizationContextP
     private Optional<String> getTenantName(SecurityContext context) {
         JwtTokenAuthentication jwtTokenAuthentication = (JwtTokenAuthentication) context.getAuthentication();
         String tenantName = jwtTokenAuthentication.getTenantName();
-        return StringUtils.hasText(tenantName) ? Optional.of(tenantName) : Optional.<String>absent();
+        return StringUtils.hasText(tenantName) ? Optional.of(tenantName) : Optional.<String>empty();
     }
 }

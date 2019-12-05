@@ -9,7 +9,7 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.client.impl.ApacheHttp
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Application;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.ApplicationWithSubscriptions;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
 import org.apache.commons.lang.StringUtils;
@@ -162,7 +162,7 @@ public class MicroserviceUploadMojo extends AbstractMojo {
                 }
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application, ApplicationConfiguration configuration, File file) {
