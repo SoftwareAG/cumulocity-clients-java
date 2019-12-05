@@ -6,8 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
-import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -36,6 +34,7 @@ import java.util.Collections;
 import static com.cumulocity.microservice.security.token.CookieReader.AUTHORIZATION_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.or;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -56,6 +55,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private FilterChain chain;
+    private UserCredentials userCredentials;
 
 
     @Before
@@ -64,6 +64,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
         authenticationEntryPoint = mock(AuthenticationEntryPoint.class);
+        this.userCredentials = UserCredentials.builder().build();
 
         authenticationManager = mock(AuthenticationManager.class);
         contextService = mock(ContextService.class);
@@ -77,7 +78,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
     public void shouldAuthenticateWithAuthorizationBearer() throws IOException, ServletException {
         SecurityContext context = mockSecurityContext();
         when(request.getHeaders("Authorization")).thenReturn(Collections.enumeration(ImmutableSet.of("Basic XXX", "Bearer " + SAMPLE_TOKEN)));
-        mockAuthenticationManagerReturnArgument();
+        mockAuthenticationManager();
         mockContextServiceInvokeRunnable();
 
         filter.doFilter(request, response, chain);
@@ -100,7 +101,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         Cookie[] cookies = {new Cookie(AUTHORIZATION_KEY, SAMPLE_TOKEN)};
         when(request.getCookies()).thenReturn(cookies);
         when(request.getHeader("X-XSRF-TOKEN")).thenReturn(SAMPLE_X_XSRF_TOKEN);
-        mockAuthenticationManagerReturnArgument();
+        mockAuthenticationManager();
         mockContextServiceInvokeRunnable();
 
         filter.doFilter(request, response, chain);
@@ -115,7 +116,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
         verify(chain).doFilter(request, response);
         verify(context).setAuthentication(actualAuthentication);
-        verify(contextService).runWithinContext(any(UserCredentials.class), any(Runnable.class));
+        verify(contextService).runWithinContext(same(userCredentials), any(Runnable.class));
     }
 
 
@@ -167,13 +168,11 @@ public class CumulocityOAuthMicroserviceFilterTest {
         return context;
     }
 
-    private void mockAuthenticationManagerReturnArgument() {
-        when(authenticationManager.authenticate(any(Authentication.class))).thenAnswer(new Answer<Authentication>() {
-            @Override
-            public Authentication answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                return (Authentication) args[0];
-            }
+    private void mockAuthenticationManager() {
+        when(authenticationManager.authenticate(any(JwtTokenAuthentication.class))).thenAnswer((Answer<JwtTokenAuthentication>) invocation -> {
+            JwtTokenAuthentication jwtTokenAuthentication = invocation.getArgument(0);
+            jwtTokenAuthentication.setUserCredentials(userCredentials);
+            return jwtTokenAuthentication;
         });
     }
 
