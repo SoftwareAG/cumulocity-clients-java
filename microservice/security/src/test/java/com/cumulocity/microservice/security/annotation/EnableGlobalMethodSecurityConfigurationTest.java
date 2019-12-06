@@ -23,14 +23,14 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-        EnableGlobalMethodSecurityConfiguration.class,
-        EnableGlobalMethodSecurityConfigurationTest.TestConfiguration.class
+        EnableGlobalMethodSecurityConfigurationTest.TestConfiguration.class,
+        EnableGlobalMethodSecurityConfiguration.class
 })
 public class EnableGlobalMethodSecurityConfigurationTest {
 

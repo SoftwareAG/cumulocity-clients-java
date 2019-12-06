@@ -2,7 +2,8 @@ package com.cumulocity.agent.packaging.uploadMojo.configuration;
 
 import com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils;
 import java.util.Optional;
-import com.google.common.collect.FluentIterable;
+import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
@@ -28,15 +29,15 @@ public class CredentialsConfigurationSupplier {
         final CredentialsConfiguration.CredentialsConfigurationBuilder builder = source.toBuilder();
 
         if (StringUtils.isBlank(source.getPassword())) {
-            builder.password(getSettingsPassword().orNull());
+            builder.password(getSettingsPassword().orElse(null));
         }
 
         if (StringUtils.isBlank(source.getUsername())) {
-            builder.username(getSettingsUsername().orNull());
+            builder.username(getSettingsUsername().orElse(null));
         }
 
         if (StringUtils.isBlank(source.getUrl())) {
-            builder.url(getSettingsUrl().orNull());
+            builder.url(getSettingsUrl().orElse(null));
         }
 
         final CredentialsConfiguration result = builder.build();
@@ -48,30 +49,30 @@ public class CredentialsConfigurationSupplier {
 
     private Optional<String> getSettingsUsername() {
         return getServer()
-                .transform(getServerUsername())
+                .map(getServerUsername())
                 .filter(ServerUtils.isNotBlank())
-                .first();
+                .findFirst();
     }
 
     private Optional<String> getSettingsPassword() {
         return getServer()
-                .transform(getServerPassword())
+                .map(getServerPassword())
                 .filter(ServerUtils.isNotBlank())
-                .first();
+                .findFirst();
     }
 
     private Optional<String> getSettingsUrl() {
         return getServer()
-                .transform(getConfigurationString("url"))
+                .map(getConfigurationString("url"))
                 .filter(ServerUtils.isNotBlank())
-                .first();
+                .findFirst();
     }
 
-    private FluentIterable<Server> getServer() {
+    private Stream<Server> getServer() {
         final Server server = settings.getServer(serviceId);
         if (server == null) {
-            return FluentIterable.of();
+            return Stream.of();
         }
-        return FluentIterable.of(server);
+        return Stream.of(server);
     }
 }

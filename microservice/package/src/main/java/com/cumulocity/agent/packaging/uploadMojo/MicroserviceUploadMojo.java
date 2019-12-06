@@ -9,7 +9,6 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.client.impl.ApacheHttp
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Application;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.ApplicationWithSubscriptions;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
-import java.util.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +20,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;

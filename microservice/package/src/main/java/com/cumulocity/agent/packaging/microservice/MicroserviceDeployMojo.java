@@ -81,12 +81,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             return Optional.empty();
         }
         final Xpp3Dom urlDom = ((Xpp3Dom) configuration).getChild("url");
-        return Optional.fromNullable(urlDom).transform(new Function<Xpp3Dom, String>() {
-            @Override
-            public String apply(final Xpp3Dom input) {
-                return input.getValue();
-            }
-        });
+        return Optional.ofNullable(urlDom).map((Function<Xpp3Dom, String>) Xpp3Dom::getValue);
     }
 
 }

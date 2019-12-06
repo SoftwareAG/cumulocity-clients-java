@@ -41,7 +41,7 @@
 
 	<properties>
 		<maven-plugin-version>3.2.5</maven-plugin-version>
-		<docker-client.version>8.9.0</docker-client.version>
+		<docker-client.version>8.16.0</docker-client.version>
 		<hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
 	</properties>
 
@@ -120,6 +120,17 @@
 			<groupId>com.spotify</groupId>
 			<artifactId>docker-client</artifactId>
 			<version>${docker-client.version}</version>
+		</dependency>
+		<!--two jersey dependencies below are required by docker-client-->
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.29.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.bundles.repackaged</groupId>
+			<artifactId>jersey-guava</artifactId>
+			<version>2.25.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

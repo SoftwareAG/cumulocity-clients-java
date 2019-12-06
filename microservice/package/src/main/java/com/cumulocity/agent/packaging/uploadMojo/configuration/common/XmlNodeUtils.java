@@ -1,7 +1,7 @@
 package com.cumulocity.agent.packaging.uploadMojo.configuration.common;
 
 import com.google.common.base.Function;
-import java.util.Optional;
+import com.google.common.base.Optional;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -39,12 +39,12 @@ public class XmlNodeUtils {
             for (final String element : path) {
                 node = node.getChild(element);
                 if (node == null) {
-                    return empty();
+                    return Optional.absent();
                 }
             }
             return Optional.of(node);
         }
-        return empty();
+        return Optional.absent();
     }
 
     private <T> List<T> getListValue(Xpp3Dom input, final Class<T> target) {
