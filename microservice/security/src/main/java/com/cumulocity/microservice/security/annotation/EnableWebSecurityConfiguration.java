@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Slf4j
@@ -81,7 +82,7 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
         http.addFilterBefore(cumulocityOAuthMicroserviceFilter, BasicAuthenticationFilter.class);
 
         security.addFilterBefore(preAuthenticateServletFilter, BasicAuthenticationFilter.class);
-        security.addFilterAfter(postAuthenticateServletFilter, BasicAuthenticationFilter.class);
+        security.addFilterAfter(postAuthenticateServletFilter, AnonymousAuthenticationFilter.class);
     }
 }
 

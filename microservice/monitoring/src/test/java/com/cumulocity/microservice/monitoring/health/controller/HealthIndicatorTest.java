@@ -1,7 +1,6 @@
 package com.cumulocity.microservice.monitoring.health.controller;
 
 import com.cumulocity.microservice.monitoring.health.controller.configuration.TestConfiguration;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +13,7 @@ import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@Ignore
+
 @RunWith(SpringRunner.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 @SpringBootTest(classes = TestConfiguration.class)
@@ -24,7 +23,7 @@ public class HealthIndicatorTest {
     @WithMockUser(authorities = "ROLE_ACTUATOR")
     public void healthShouldBeUp() {
         when()
-                .get("/actuator/health").
+                .get("/health").
 
         then()
                 .statusCode(200)

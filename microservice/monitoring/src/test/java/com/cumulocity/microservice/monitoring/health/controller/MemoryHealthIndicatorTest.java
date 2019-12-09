@@ -4,17 +4,18 @@ import com.cumulocity.microservice.monitoring.health.controller.configuration.Te
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static io.restassured.http.ContentType.JSON;
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@Ignore
 @RunWith(SpringRunner.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 @SpringBootTest(classes = TestConfiguration.class)
@@ -23,14 +24,15 @@ public class MemoryHealthIndicatorTest {
     @Test
     @WithMockUser(authorities = "ROLE_ACTUATOR")
     public void healthShouldBeUp() {
+        given()
+                .accept(ActuatorMediaType.V3_JSON).
         when()
-                .get("/actuator/health").
-
+                .get("/health").
         then()
                 .statusCode(200)
                 .contentType(JSON)
-                .body("details.nonHeapMemory.status", equalTo("UP"))
-                .body("details.heapMemory.status", equalTo("UP"))
-                .body("details.diskSpace.status", equalTo("UP"));
+                .body("components.nonHeapMemory.status", equalTo("UP"))
+                .body("components.heapMemory.status", equalTo("UP"))
+                .body("components.diskSpace.status", equalTo("UP"));
     }
 }
