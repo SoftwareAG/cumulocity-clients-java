@@ -69,7 +69,7 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     protected void configure(HttpSecurity http) throws Exception {
         final HttpSecurity security = http
                 .authorizeRequests()
-                .antMatchers("/metadata", "/actuator/health", "/actuator/prometheus", "/actuator/metrics").permitAll()
+                .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
                 .anyRequest().fullyAuthenticated()
                 .and()
                 .httpBasic()

@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 
 /**
  * 
- * Indicates that a /actuator/health endpoint is exposed to give microservice health status.
+ * Indicates that a /health endpoint is exposed to give microservice health status.
  *
  */
 @Documented
