@@ -42,7 +42,7 @@ This returns a query to get the objects -- it does not actually get them. In pra
 			System.out.println(mo.getName());
 	}
 
-> **Important**: By default, `allPages()` doesn't return all elements at once rather in batches of 5 elements (paginated). The returned object type is `PagedCollectionIterable` and its elements must not be updated while iterating through it; otherwise the filters may include/exclude different elements.
+> **Important**: By default, `allPages()` doesn't return all elements at once, rather in batches of 5 elements (paginated). The returned object type is `PagedCollectionIterable` and its elements must not be updated while iterating through it; otherwise the filters may include/exclude different elements.
 
 To create a new managed object, simply construct a local representation of the object and send it to the platform. The following code snippet shows how to create a new electricity meter with a relay in it:
 
