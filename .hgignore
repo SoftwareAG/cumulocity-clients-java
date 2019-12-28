@@ -1,9 +1,9 @@
-(^|/)\.
+(^|/)\.(?!gitignore).
 target
 cumulocity-sdk
 ^bin$
 .*\.iml
-.*\.orig
+.*\.orig`
 cucumber.html
 dependency-reduced-pom.xml
 /bin/    
