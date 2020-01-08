@@ -41,7 +41,7 @@
 
 	<properties>
 		<maven-plugin-version>3.2.5</maven-plugin-version>
-		<docker-client.version>8.9.0</docker-client.version>
+		<docker-client.version>8.16.0</docker-client.version>
 		<hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
 	</properties>
 

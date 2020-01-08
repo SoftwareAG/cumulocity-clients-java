@@ -26,7 +26,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
-import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.io.Files.asByteSink;
 import static com.google.common.io.Files.asByteSource;
 import static com.google.common.io.Resources.asByteSource;
