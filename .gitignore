@@ -1,4 +1,5 @@
 *.
+.idea/
 target/
 cumulocity-sdk/
 bin/
