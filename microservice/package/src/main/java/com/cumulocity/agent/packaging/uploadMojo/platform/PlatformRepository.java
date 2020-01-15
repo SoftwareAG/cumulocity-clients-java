@@ -4,6 +4,8 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.client.Executor;
 import com.cumulocity.agent.packaging.uploadMojo.platform.client.Request;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.*;
 import com.google.common.base.Optional;
+import com.google.common.collect.Sets;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -86,6 +88,9 @@ public class PlatformRepository {
 
     public Set<Tenant> getTenantsByNames(List<String> names) {
         getLog().info("get tenants by names " + names);
+
+        if ( names.isEmpty() )             //If empty set is expected ...
+        	return Sets.newHashSet();  // ... then return an empty set and avoid "Forbidden - Access is denied" exception on Get("tenant/tenants")
 
         final Request<Tenants> request = Get("tenant/tenants?pageSize=2000")
                 .withResponse(Tenants.class);
