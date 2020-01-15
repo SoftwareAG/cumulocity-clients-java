@@ -13,6 +13,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -72,6 +73,9 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "skip.microservice.upload")
     protected boolean skipMicroserviceUpload;
 
+    @Parameter(defaultValue = "${session}", readonly = true)
+    protected MavenSession mavenSession;
+    
     @Component
     private Settings settings;
 
@@ -82,7 +86,7 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private final CredentialsConfigurationSupplier credentialsSupplier = new CredentialsConfigurationSupplier(serviceId, settings, credentials);
 
     @Getter(lazy = true)
-    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject().get(), getLog()), getLog());
+    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject().get(), getLog(), mavenSession), getLog());
 
     @Override
     public void execute() {
@@ -112,13 +116,13 @@ public class MicroserviceUploadMojo extends AbstractMojo {
             getLog().info("application configuration " + applicationMaybe);
 
             if (!applicationMaybe.isPresent() || !credentialsMaybe.isPresent()) {
-                getLog().info("Skipping");
+                getLog().info("Skipping because present of application: " + applicationMaybe.isPresent() + " or present of credentials: " + credentialsMaybe.isPresent() );
                 return;
             }
 
             final File file = targetFile();
             if (!file.exists()) {
-                getLog().info("Skipping");
+                getLog().info("Skipping because target file " + file.getAbsolutePath() + " doesn't exist.");
                 return;
             }
 
