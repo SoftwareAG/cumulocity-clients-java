@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.List;
 
 import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
