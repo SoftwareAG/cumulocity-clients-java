@@ -13,7 +13,7 @@ import com.sun.jersey.spi.MessageBodyWorkers;
 import junit.extensions.RepeatedTest;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
-import org.fest.assertions.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;

@@ -33,9 +33,8 @@ import org.mockito.stubbing.Answer;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.to;
-import static com.jayway.awaitility.Duration.TWO_SECONDS;
+import static org.awaitility.Awaitility.*;
+import static org.awaitility.Durations.TWO_SECONDS;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -146,24 +145,24 @@ public class OperationsQueueHandlerTest {
 
         // When
         testObj.start();
-        await().atMost(TWO_SECONDS).untilCall(to(testObj).isRunning(), is(true));
+        await().atMost(TWO_SECONDS).until(() -> testObj.isRunning());
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(0));
+        await().atMost(TWO_SECONDS).until(() -> queue.size() == 0);
 
         // When
         testObj.stop();
-        await().atMost(TWO_SECONDS).untilCall(to(testObj).isRunning(), is(false));
+        await().atMost(TWO_SECONDS).until(() -> !testObj.isRunning());
         queue.add(op);
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(1));
+        await().atMost(TWO_SECONDS).until(() -> queue.size() == 1);
 
         // When
         testObj.start();
 
         // Then
-        await().atMost(TWO_SECONDS).untilCall(to(queue).size(), is(0));
+        await().atMost(TWO_SECONDS).until(() -> queue.size() == 0);
     }
 
     private ArgumentMatcher<OperationRepresentation> hasId(final GId id) {

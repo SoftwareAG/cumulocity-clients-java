@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.google.common.base.Optional.fromNullable;
@@ -95,6 +94,11 @@ public class MicroserviceSubscriptionsRepository {
 
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
+    public Optional<ApplicationRepresentation> register(MicroserviceMetadataRepresentation metadata) {
+        return fromNullable(repository.register(metadata));
+    }
+
+    @Deprecated
     public Optional<ApplicationRepresentation> register(String applicationName, MicroserviceMetadataRepresentation metadata) {
         return fromNullable(repository.register(applicationName, metadata));
     }

@@ -19,34 +19,27 @@
  */
 package com.cumulocity.sdk.client;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.fest.assertions.Assertions;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.cumulocity.rest.pagination.RestPageRequest;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.PageStatisticsRepresentation;
 import com.cumulocity.rest.representation.TestCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
+import com.cumulocity.sdk.client.common.UriMatcher;
 import com.sun.jersey.api.client.ClientResponse;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 public class PagedCollectionResourceImplTest {
 
@@ -119,7 +112,7 @@ public class PagedCollectionResourceImplTest {
         TestCollectionRepresentation expectedRepresentation = new TestCollectionRepresentation();
         String expectedUrl = URL + "?param1=value1&param2=value2&pageSize=" + PAGE_SIZE;
 
-        when(restConnector.get(eq(expectedUrl), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRepresentation);
+        when(restConnector.get(argThat(new UriMatcher(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRepresentation);
 
         // When
         TestCollectionRepresentation page = target.get();
@@ -137,7 +130,7 @@ public class PagedCollectionResourceImplTest {
 
         String expectedUrl = input.getSelf() + "?pageSize=" + PAGE_SIZE + "&currentPage=5";
         TestCollectionRepresentation expectedRep = new TestCollectionRepresentation();
-        when(restConnector.get(eq(expectedUrl), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
+        when(restConnector.get(argThat(new UriMatcher(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
         // When
         TestCollectionRepresentation page = target.getPage(input, 5);
@@ -155,7 +148,7 @@ public class PagedCollectionResourceImplTest {
 
         String expectedUrl = myUrl + "?pageSize=50&currentPage=5";
         TestCollectionRepresentation expectedRep = new TestCollectionRepresentation();
-        when(restConnector.get(eq(expectedUrl), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
+        when(restConnector.get(argThat(new UriMatcher(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
         // When
         TestCollectionRepresentation page = target.getPage(input, 5, 50);
@@ -173,7 +166,7 @@ public class PagedCollectionResourceImplTest {
 
         String expectedUrl = input.getSelf() + "&pageSize=" + PAGE_SIZE + "&currentPage=5";
         TestCollectionRepresentation expectedRep = new TestCollectionRepresentation();
-        when(restConnector.get(eq(expectedUrl), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
+        when(restConnector.get(argThat(new UriMatcher(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
         // When
         TestCollectionRepresentation page = target.getPage(input, 5);
@@ -192,7 +185,7 @@ public class PagedCollectionResourceImplTest {
 
         String expectedUrl = URL + "/measuremnt/measurments?param1=value1" + "&pageSize=" + PAGE_SIZE + "&currentPage=6";
         TestCollectionRepresentation expectedRep = new TestCollectionRepresentation();
-        when(restConnector.get(eq(expectedUrl), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
+        when(restConnector.get(argThat(new UriMatcher(expectedUrl)), eq(MEDIA_TYPE), eq(CLAZZ))).thenReturn(expectedRep);
 
         // When
         TestCollectionRepresentation page = target.getPage(input, 6);

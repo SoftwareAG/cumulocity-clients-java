@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>clients-java</artifactId>
-        <version>1004.6.1-SNAPSHOT</version>
+        <version>1005.12.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.cumulocity.me</groupId>
     <artifactId>java-me-maven-plugin</artifactId>
-    <version>1004.6.1-SNAPSHOT</version>
+    <version>1005.12.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Cumulocity :: Clients Java :: Java ME Maven Plugin</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
@@ -62,9 +62,16 @@
         <maven-deploy-plugin.version>2.8.1</maven-deploy-plugin.version>
         <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
         <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>${commons-beanutils.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
@@ -172,12 +179,12 @@
                 </plugin>
 
                 <plugin>
-                    <version>${maven-compiler-plugin.version}</version>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>

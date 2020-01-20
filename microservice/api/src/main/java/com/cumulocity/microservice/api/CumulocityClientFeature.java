@@ -40,6 +40,10 @@ public class CumulocityClientFeature {
     @Value("${C8Y.proxyPort:0}")
     private Integer proxyPort;
 
+    //in milliseconds, 0 = infinite
+    @Value("${C8Y.httpReadTimeout:}")
+    private Integer httpReadTimeout;
+
     @Autowired(required = false)
     private ResponseMapper responseMapper;
 
@@ -63,6 +67,7 @@ public class CumulocityClientFeature {
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
+                .withHttpReadTimeout(httpReadTimeout)
                 .build();
     }
 
@@ -88,6 +93,7 @@ public class CumulocityClientFeature {
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
+                .withHttpReadTimeout(httpReadTimeout)
                 .build();
     }
 

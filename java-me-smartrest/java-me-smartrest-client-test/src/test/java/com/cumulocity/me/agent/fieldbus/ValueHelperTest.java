@@ -3,12 +3,12 @@ package com.cumulocity.me.agent.fieldbus;
 import com.cumulocity.me.agent.fieldbus.impl.RegisterDefinitionBuilder;
 import com.cumulocity.me.agent.fieldbus.model.Conversion;
 import com.cumulocity.me.agent.fieldbus.model.RegisterDefinition;
-import org.fest.assertions.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 public class ValueHelperTest {

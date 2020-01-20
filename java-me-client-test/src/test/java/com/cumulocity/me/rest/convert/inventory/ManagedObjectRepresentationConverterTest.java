@@ -22,7 +22,7 @@ package com.cumulocity.me.rest.convert.inventory;
 import static com.cumulocity.me.rest.convert.inventory.ManagedObjectRepresentationConverter.*;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.CREATE;
 import static com.cumulocity.me.rest.validate.CommandBasedRepresentationValidationContext.UPDATE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 

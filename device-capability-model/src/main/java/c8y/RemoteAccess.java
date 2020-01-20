@@ -35,7 +35,14 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.hostname = getValueAsString(map, "hostname");
         this.port = ((Long) map.get("port")).intValue();
         this.protocol = RemoteAccessProtocol.valueOf(getValueAsString(map, "protocol"));
-        this.credentials = credentialsFromMap(getValueAsMap(map, "credentials"), this.protocol);
+        this.credentials = credentials(map);
+    }
+
+    private RemoteAccessCredentials credentials(Map<String, Object> configuration) {
+        if (configuration.containsKey("credentials")) {
+            return credentialsFromMap(getValueAsMap(configuration, "credentials"), this.protocol);
+        }
+        return legacyCredentials(configuration);
     }
 
     private RemoteAccessCredentials credentialsFromMap(Map<String, Object> map, RemoteAccessProtocol protocol) {
@@ -45,6 +52,13 @@ public class RemoteAccess extends AbstractDynamicProperties {
                 .privateKey(getValueAsString(map,"privateKey"))
                 .publicKey(getValueAsString(map,"publicKey"))
                 .hostKey(getValueAsString(map,"hostKey"))
+                .build();
+    }
+
+    private RemoteAccessCredentials legacyCredentials(Map<String, Object> configuration) {
+        return new RemoteAccessCredentialsBuilder(null, protocol)
+                .user(getValueAsString(configuration, "username"))
+                .password(getValueAsString(configuration, "password"))
                 .build();
     }
 

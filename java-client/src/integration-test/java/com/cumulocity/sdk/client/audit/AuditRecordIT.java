@@ -120,7 +120,7 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should I get all the audit records
-        shouldGetAllMeasurements();
+        iShouldGetAtLeastNumberOfAudits(3);
     }
 
 //
@@ -140,7 +140,7 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get the audit record
-        shouldGetTheMeasurement();
+        shouldGetTheAuditRecord();
     }
 
 //    Scenario: Query by user
@@ -160,19 +160,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by user 'user1'
         iQueryByUser("user1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by user 'user3'
         iQueryByUser("user3");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -193,19 +193,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by type 'com.type1'
         iQueryByType("com.type1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by type 'com.type3'
         iQueryByType("com.type3");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -227,19 +227,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by application 'app1'
         iQueryByApp("app1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by application 'app3'
         iQueryByApp("app3");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -260,19 +260,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by user 'user1' and type 'com.type1'
         iQueryByUserAndType("user1", "com.type1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by user 'user3' and type 'com.type1'
         iQueryByUserAndType("user3", "com.type1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -293,19 +293,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by user 'user1' and application 'app1'
         iQueryByUserAndApp("user1", "app1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by user 'user3' and application 'app1'
         iQueryByUserAndApp("user3", "app1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -327,19 +327,19 @@ public class AuditRecordIT {
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
+        iShouldGetNumberOfAudits(3);
 //    And I query the audit record collection by user 'user1' and application 'app1' and type 'com.type1'
         iQueryByUserAndAppAndType("user1", "app1", "com.type1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
+        iShouldGetNumberOfAudits(1);
 //    And I query the audit record collection by user 'user3' and application 'app1' and type 'com.type1'
         iQueryByUserAndAppAndType("user3", "app1", "com.type1");
 //    Then Audit record response status should be success
         shouldBeSuccess();
 //    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
 //
@@ -539,17 +539,22 @@ public class AuditRecordIT {
     }
 
     @Then("I should get the audit record$")
-    public void shouldGetTheMeasurement() {
+    public void shouldGetTheAuditRecord() {
         assertThat(result1.get(0).getId(), is(equalTo(result2.get(0).getId())));
     }
 
     @Then("I should get '(\\d+)' audit records$")
-    public void iShouldGetNumberOfMeasurements(int count) {
+    public void iShouldGetNumberOfAudits(int count) {
         assertThat(collection1.getAuditRecords().size(), is(equalTo(count)));
     }
 
+    @Then("I should get at least '(\\d+)' audit records$")
+    public void iShouldGetAtLeastNumberOfAudits(int count) {
+        assertThat(collection1.getAuditRecords().size(), is(greaterThanOrEqualTo(count)));
+    }
+
     @Then("I should I get all the audit records$")
-    public void shouldGetAllMeasurements() {
+    public void shouldGetAllAudits() {
         assertThat(collection1.getAuditRecords().size(), is(equalTo(result1.size())));
 
         Map<GId, AuditRecordRepresentation> map = new HashMap<GId, AuditRecordRepresentation>();

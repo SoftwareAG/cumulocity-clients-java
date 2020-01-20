@@ -8,7 +8,7 @@ import static com.cumulocity.me.agent.smartrest.model.template.Method.*;
 import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.*;
 import static com.cumulocity.me.agent.smartrest.model.template.PlaceholderType.STRING;
 import static com.cumulocity.me.agent.smartrest.model.template.PlaceholderType.UNSIGNED;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateBuilderTest {
 

@@ -50,15 +50,17 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                }
             }
         }
         stage('Build') {
-            agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                }
-            }
+//            agent {
+//                dockerfile {
+//                    dir '.jenkins/build'
+//                }
+//            }
             options {
                 retry(3)
             }
@@ -90,14 +92,16 @@ pipeline {
                         subdir          : 'cumulocity-sdk',
                         source          : 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
                 ])
-                sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                }
             }
         }
         stage('Deploy to Nexus') {
             when {
                 allOf {
                     equals expected: 'DEFAULT', actual: params.build_type
-                    anyOf{
+                    anyOf {
                         branch 'release/**';
                         branch 'develop'
                     }
@@ -105,7 +109,9 @@ pipeline {
 
             }
             steps {
-                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                }
             }
         }
         stage('Release') {
@@ -140,7 +146,9 @@ pipeline {
                     steps {
                         sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
                         sshagent(['jenkins-hg-key']) {
-                            sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
+                            withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
+                            }
                         }
                     }
                 }
@@ -151,13 +159,27 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                                    sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                }
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                withCredentials([
+                                        usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
+                                        file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                    sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                }
                             }
+                        }
+                    }
+                }
+                stage('Scan third party dependencies') {
+                    steps {
+                        echo "executing scan of third party dependencies"
+                        withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                          sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
                         }
                     }
                 }

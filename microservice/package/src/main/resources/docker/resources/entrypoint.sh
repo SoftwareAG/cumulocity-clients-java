@@ -1,33 +1,29 @@
-#!/bin/ash
+#!/bin/sh
 if [ -n "$MEMORY_LIMIT" ];
  then
   value=$(numfmt  --from=auto  --grouping $MEMORY_LIMIT)
   value=$(($value/1048576)) # convert to MB
-  value=$(awk "BEGIN { print(int($value - 50))}") # leave 50MB of memory space for system
-  if [ $value -le "256" ]; # if less then 256MB fail
+  echo "MEMORY_LIMIT: ${value}MB"
+  memory_left=$(awk "BEGIN { memory = int($value * 0.1); if (memory <50) {memory = 50} print memory} ")
+  echo "${memory_left}MB is left for system"
+  value=$(awk "BEGIN { print(int($value - $memory_left))}") # leave memory space for system
+  echo "${value}MB is left for application"
+  if [ $value -lt "128" ]; # if less then 128MB fail
   then
-    echo "memory limit is to small must be at lest 256MB"
+    echo "Memory left for application is to small must be at lest 128MB"
     exit 1;
    else
-    perm=$(awk "BEGIN { print(int($value * 0.1))}") # take 10% of available memory to perm/metaspace
-    if [ $perm -gt "1024" ];
-    then
-      perm=1024
-    fi
-    if [ $perm -lt "128" ];
-    then
-      perm=128
-    fi
+    perm=$(awk "BEGIN { memory= int($value * 0.1); if (memory >1024) {memory = 1024} else if ( memory < 64 ){ memory = 64 } print memory} ") # take 10% of available memory to perm/metaspace
     heap=$(($value - $perm))
-    echo "Memory: perm/metaspace=$perm  heap=$heap from ${value} for $MEMORY_LIMIT"
+    echo "Java Memory Settings: perm/metaspace=${perm}MB heap=${heap}MB  from ${value}MB the ${memory_left}MB is left for system for $MEMORY_LIMIT"
   fi
    case $JAVA_VERSION in
    7*)
-    echo " Using JDK7 memory settings"
+    echo "Using JDK7 memory settings"
     export JAVA_MEM="-XX:MaxPermSize=${perm}m -Xmx${heap}m"
    ;;
    *)
-    echo " Using JDK8+ memory settings"
+    echo "Using JDK8+ memory settings"
     export JAVA_MEM="-XX:MaxMetaspaceSize=${perm}m -Xmx${heap}m"
    ;;
    esac

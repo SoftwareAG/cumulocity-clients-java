@@ -3,7 +3,6 @@ package com.cumulocity.sdk.services.client;
 import com.cumulocity.email.client.EmailApi;
 import com.cumulocity.email.client.EmailApiImpl;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
-import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.sms.client.SmsMessagingApi;
 import com.cumulocity.sms.client.SmsMessagingApiImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
-import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static org.apache.http.client.fluent.Executor.newInstance;
 
@@ -77,7 +77,13 @@ public class ServicesPlatformImpl implements ServicesPlatform {
     }
 
     private static HttpHost getHost(String host) {
-        final URI uri = URI.create(host);
-        return new HttpHost(uri.getHost(), uri.getPort());
+        final URL url;
+        try {
+            url = new URL(host);
+        } catch (MalformedURLException e) {
+            log.error("Invalid url string", e);
+            throw new IllegalArgumentException("Missing or invalid protocol information, or else wrong format/encoding of provided address: " + host);
+        }
+        return new HttpHost(url.getHost(), url.getPort());
     }
 }

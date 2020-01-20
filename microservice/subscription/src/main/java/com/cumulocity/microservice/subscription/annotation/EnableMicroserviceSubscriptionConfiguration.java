@@ -20,6 +20,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Slf4j
 @Configuration
 @ComponentScan(basePackageClasses = {
         MicroserviceSubscriptionsService.class,
@@ -55,6 +57,8 @@ public class EnableMicroserviceSubscriptionConfiguration {
     @ConditionalOnMissingBean
     public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties, final Environment environment) {
         final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
+        String applicationName = properties.getApplicationName();
+        log.info("Microservice repository will be build for application '{}'.", applicationName);
         return MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
                 .baseUrl(properties.getUrl())
                 .environment(environment)
@@ -65,6 +69,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                                 .tenantId(boostrapUser.getTenant())
                                 .build()))
                 .objectMapper(objectMapper)
+                .applicationName(applicationName)
                 .build();
     }
 

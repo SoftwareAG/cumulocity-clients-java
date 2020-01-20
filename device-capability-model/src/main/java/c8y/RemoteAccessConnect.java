@@ -1,7 +1,6 @@
 package c8y;
 
 import org.svenson.AbstractDynamicProperties;
-
 import java.io.Serializable;
 
 public class RemoteAccessConnect extends AbstractDynamicProperties implements Serializable {
@@ -37,7 +36,7 @@ public class RemoteAccessConnect extends AbstractDynamicProperties implements Se
     public void setConnectionKey(String connectionKey) {
         this.connectionKey = connectionKey;
     }
-
+    
     @Override
     public String toString() {
         return "RemoteAccessConnect [hostname=" + hostname + ", port=" + port + "]";

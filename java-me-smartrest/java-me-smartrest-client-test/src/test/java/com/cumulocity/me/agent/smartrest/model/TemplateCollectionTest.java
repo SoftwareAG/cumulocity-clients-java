@@ -3,7 +3,7 @@ package com.cumulocity.me.agent.smartrest.model;
 import org.junit.Test;
 
 import static com.cumulocity.me.agent.smartrest.model.template.TemplateBuilder.responseTemplate;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateCollectionTest {
 

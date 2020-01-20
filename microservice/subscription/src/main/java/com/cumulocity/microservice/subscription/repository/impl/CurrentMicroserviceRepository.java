@@ -41,11 +41,11 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
 
     // no registration needed, this is done now during deployment on kubernetes
     @Override
-    public ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata) {
-        log.debug("Self registration procedure not activated for application {} with {}", applicationName, metadata);
-        final ApplicationRepresentation application = getApplication();
+    public ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata) {
+        log.debug("Self registration procedure not activated for current application with {}", metadata);
+        final ApplicationRepresentation application = getCurrentApplication();
         if (application == null) {
-            throw new SDKException("Failed to load current microservice. Microservice \"" + applicationName + "\" must be configured before running the SDK, please contact administrator");
+            throw new SDKException("Failed to load current microservice. Microservice must be configured before running the SDK, please contact administrator");
         } else {
             if (!MICROSERVICE.equals(application.getType())) {
                 throw new SDKException("Failed to load current microservice. There is another application with name \"" + application.getName() + "\"");
@@ -54,7 +54,15 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         }
     }
 
-    private ApplicationRepresentation getApplication() {
+    // no registration needed, this is done now during deployment on kubernetes
+    @Override
+    @Deprecated//this method will be removed
+    public ApplicationRepresentation register(final String applicationNameNotUsed, final MicroserviceMetadataRepresentation metadata) {
+        return register(metadata);
+    }
+
+    @Override
+    public ApplicationRepresentation getCurrentApplication() {
         try {
             return applicationApi().currentApplication().get();
         } catch (final Exception ex) {
@@ -62,13 +70,19 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         }
     }
 
-    public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
+    @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions() {
         final String url = api.getCurrentApplicationSubscriptions();
         try {
             return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
         } catch (final Exception ex) {
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
+    }
+
+    @Override
+    public Iterable<ApplicationUserRepresentation> getSubscriptions(String notUsedApplicationId) {
+        return getSubscriptions();
     }
 
     private RestOperations rest() {

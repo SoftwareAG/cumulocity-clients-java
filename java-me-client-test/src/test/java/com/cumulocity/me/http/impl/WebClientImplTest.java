@@ -23,7 +23,7 @@ import static javax.microedition.io.HttpConnection.HTTP_CREATED;
 import static javax.microedition.io.HttpConnection.HTTP_INTERNAL_ERROR;
 import static javax.microedition.io.HttpConnection.HTTP_NO_CONTENT;
 import static javax.microedition.io.HttpConnection.HTTP_OK;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 
