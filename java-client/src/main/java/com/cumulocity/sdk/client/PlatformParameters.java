@@ -252,6 +252,10 @@ public class PlatformParameters {
         if (bufferProcessor != null) {
             bufferProcessor.shutdown();
         }
+
+        if (restConnector != null) {
+            restConnector.getClient().destroy();
+        }
     }
 
     public boolean registerInterceptor(HttpClientInterceptor interceptor) {
