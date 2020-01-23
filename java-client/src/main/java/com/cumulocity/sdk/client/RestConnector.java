@@ -58,8 +58,7 @@ import java.net.URL;
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
-public class RestConnector implements RestOperations {
-
+public class RestConnector implements RestOperations, AutoCloseable {
 
     public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
 
@@ -110,6 +109,13 @@ public class RestConnector implements RestOperations {
 
     public ResponseParser getResponseParser() {
         return responseParser;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (client != null) {
+            client.destroy();
+        }
     }
 
     @Override
