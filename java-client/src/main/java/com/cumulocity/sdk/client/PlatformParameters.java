@@ -26,8 +26,7 @@ import com.cumulocity.sdk.client.base.Suppliers;
 import com.cumulocity.sdk.client.buffering.*;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Set;
@@ -38,9 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Creates processor responsible for handling buffered requests.
  * Important to call close() method on shutdown to finish processing.
  */
+@Slf4j
 public class PlatformParameters {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PlatformParameters.class);
 
     public final static int DEFAULT_PAGE_SIZE = 5;
 
@@ -261,7 +259,7 @@ public class PlatformParameters {
             try {
                 restConnector.close();
             } catch (Exception e) {
-                LOG.debug("Error while closing restConnector.", e);
+                log.debug("Error while closing restConnector.", e);
             }
         }
     }
