@@ -139,8 +139,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             String httpsProxy = null;
 
             //loop about Proxy settings
-            for ( int i = 0; i < list.size(); i++ ) {
-            	Proxy proxy = list.get( i );
+            for ( Proxy proxy : list ) {
             	if ( proxy.isActive() ) {
             		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
             		getLog().info( "Found Proxy settings: " + pS );
