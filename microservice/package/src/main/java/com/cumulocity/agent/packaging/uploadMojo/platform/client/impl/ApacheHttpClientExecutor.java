@@ -67,14 +67,13 @@ public class ApacheHttpClientExecutor implements Executor {
         List<Proxy>  list = mavenSession.getSettings().getProxies();
 
         //loop about Proxy settings
-        for ( int i = 0; i < list.size(); i++ ) {
-        	Proxy proxy = list.get( i );
+        for ( Proxy proxy : list ) {
         	if ( proxy.isActive() ) {
         		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
         		log.info( "Found Proxy settings and passing to Apache Client: " + pS );
         		return new HttpHost( proxy.getHost(), proxy.getPort(), proxy.getProtocol() );
-        	}
-        }
+        	}			
+		}
 
     	return null;
     }
