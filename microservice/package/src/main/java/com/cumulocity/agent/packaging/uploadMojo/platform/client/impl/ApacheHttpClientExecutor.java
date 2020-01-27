@@ -59,15 +59,12 @@ public class ApacheHttpClientExecutor implements Executor {
                         return new UsernamePasswordCredentials(credentials.getUsername(), credentials.getPassword());
                     }
                 })
-                //.useSystemProperties()
                 .setProxy( getProxyHost( mavenSession ) )
                 .build();
     }
 
     private HttpHost getProxyHost( MavenSession mavenSession ) {
         List<Proxy>  list = mavenSession.getSettings().getProxies();
-        String  httpProxy = null;
-        String httpsProxy = null;
 
         //loop about Proxy settings
         for ( int i = 0; i < list.size(); i++ ) {
