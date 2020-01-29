@@ -60,7 +60,6 @@ import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 public class RestConnector implements RestOperations {
 
-
     public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
 
         Proxy proxy;
@@ -110,6 +109,13 @@ public class RestConnector implements RestOperations {
 
     public ResponseParser getResponseParser() {
         return responseParser;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (client != null) {
+            client.destroy();
+        }
     }
 
     @Override
