@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.HttpRequestHandler;
@@ -51,6 +52,7 @@ import com.cumulocity.me.lang.Map;
 import com.cumulocity.me.rest.representation.ResourceRepresentation;
 import com.cumulocity.me.rest.representation.ErrorMessageRepresentation;
 
+@Ignore
 public class WebClientImplTest extends BaseHttpTestCase {
 
     private static final String TEST_CONTENT = "Hello world!";
