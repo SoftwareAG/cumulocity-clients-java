@@ -1,5 +1,5 @@
-FROM openjdk:@package.java-version@-alpine
-RUN apk add  --no-cache coreutils
+FROM alpine:3
+RUN apk add  --no-cache coreutils openjdk@package.java-version@
 COPY etc/ /etc/@package.directory@/
 ADD resources/* /data/
 RUN chmod +x /data/entrypoint.sh
