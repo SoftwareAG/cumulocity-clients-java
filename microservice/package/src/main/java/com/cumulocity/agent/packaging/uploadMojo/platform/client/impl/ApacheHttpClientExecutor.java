@@ -64,16 +64,21 @@ public class ApacheHttpClientExecutor implements Executor {
     }
 
     private HttpHost getProxyHost( MavenSession mavenSession ) {
-        List<Proxy>  list = mavenSession.getSettings().getProxies();
-
-        //loop about Proxy settings
-        for ( Proxy proxy : list ) {
-        	if ( proxy.isActive() ) {
-        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
-        		log.info( "Found Proxy settings and passing to Apache Client: " + pS );
-        		return new HttpHost( proxy.getHost(), proxy.getPort(), proxy.getProtocol() );
-        	}			
-		}
+    	try {    		
+	        List<Proxy>  list = mavenSession.getSettings().getProxies();
+	
+	        //loop about Proxy settings
+	        for ( Proxy proxy : list ) {
+	        	if ( proxy.isActive() ) {
+	        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+	        		log.info( "Found Proxy settings and passing to Apache Client: " + pS );
+	        		return new HttpHost( proxy.getHost(), proxy.getPort(), proxy.getProtocol() );
+	        	}			
+			}
+    	}
+    	catch ( NullPointerException e ) {
+    		//suppress NPEs because no proxy settings can be retrieved
+    	}
 
     	return null;
     }
