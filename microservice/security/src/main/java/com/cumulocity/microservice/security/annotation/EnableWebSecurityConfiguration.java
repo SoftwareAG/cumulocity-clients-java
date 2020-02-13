@@ -8,14 +8,17 @@ import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFil
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Slf4j
@@ -50,15 +53,23 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
         auth.authenticationProvider(jwtTokenAuthenticationProvider);
     }
 
+    @Bean
     @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/metadata", "/health", "/prometheus", "/metrics");
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Bean
+    public static NoOpPasswordEncoder passwordEncoder() {
+        return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         final HttpSecurity security = http
                 .authorizeRequests()
+                .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
                 .anyRequest().fullyAuthenticated()
                 .and()
                 .httpBasic()
@@ -71,8 +82,7 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
         http.addFilterBefore(cumulocityOAuthMicroserviceFilter, BasicAuthenticationFilter.class);
 
         security.addFilterBefore(preAuthenticateServletFilter, BasicAuthenticationFilter.class);
-        security.addFilterAfter(postAuthenticateServletFilter, BasicAuthenticationFilter.class);
-
+        security.addFilterAfter(postAuthenticateServletFilter, AnonymousAuthenticationFilter.class);
     }
 }
 

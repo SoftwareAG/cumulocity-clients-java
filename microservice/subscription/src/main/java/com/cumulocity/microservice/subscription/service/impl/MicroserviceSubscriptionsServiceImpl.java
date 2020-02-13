@@ -10,12 +10,10 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceSubscript
 import com.cumulocity.microservice.subscription.repository.MicroserviceSubscriptionsRepository.Subscriptions;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import lombok.Synchronized;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,17 +21,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
-import static com.google.common.base.Optional.absent;
-import static com.google.common.base.Optional.of;
-import static com.google.common.collect.FluentIterable.from;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 @Service
 public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscriptionsService {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(MicroserviceSubscriptionsService.class);
+    private static final Logger log = LoggerFactory.getLogger(MicroserviceSubscriptionsService.class);
 
     public interface MicroserviceChangedListener<T> {
         boolean apply(T event) throws Exception;
@@ -50,7 +49,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private volatile boolean registeredSuccessfully = false;
 
-    private final List<MicroserviceChangedListener> listeners = Lists.<MicroserviceChangedListener>newArrayList(
+    private final List<MicroserviceChangedListener> listeners = Lists.newArrayList(
             new MicroserviceChangedListener() {
                 public boolean apply(Object event) {
                     try {
@@ -93,13 +92,11 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     @Synchronized
     public <T> void listen(final Class<T> clazz, final MicroserviceChangedListener<T> listener) {
-        listen(new MicroserviceChangedListener<T>() {
-            public boolean apply(T event) throws Exception {
-                if (clazz.isInstance(event)) {
-                    return listener.apply((T) event);
-                }
-                return true;
+        listen((MicroserviceChangedListener<T>) event -> {
+            if (clazz.isInstance(event)) {
+                return listener.apply((T) event);
             }
+            return true;
         });
     }
 
@@ -115,47 +112,39 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                 final ApplicationRepresentation application = maybeApplication.get();
                 final Subscriptions subscriptions = repository.retrieveSubscriptions(application.getId());
 
-                from(subscriptions.getRemoved()).filter(new Predicate<MicroserviceCredentials>() {
-                    public boolean apply(final MicroserviceCredentials user) {
-                        log("Remove subscription: {}", user);
+                subscriptions.getRemoved().stream().filter(user -> {
+                    log("Remove subscription: {}", user);
 
-                        for (final MicroserviceChangedListener listener : listeners) {
-                            if (!invokeRemoved(user, listener)) {
-                                return false;
-                            }
+                    for (final MicroserviceChangedListener listener : listeners) {
+                        if (!invokeRemoved(user, listener)) {
+                            return false;
                         }
-                        return true;
                     }
-                }).toList();
+                    return true;
+                }).collect(Collectors.toList());
 
-                final ImmutableList<MicroserviceCredentials> successfullyAdded = from(subscriptions.getAdded()).filter(new Predicate<MicroserviceCredentials>() {
-                    public boolean apply(final MicroserviceCredentials user) {
-                        log("Add subscription: {}", user);
+                final List<MicroserviceCredentials> successfullyAdded = subscriptions.getAdded().stream().filter(user -> {
+                    log("Add subscription: {}", user);
 
-                        MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
-                        subscribingCredentials.add(enhancedUser);
-                        for (final MicroserviceChangedListener listener : listeners) {
-                            if (!invokeAdded(enhancedUser, listener)) {
-                                subscribingCredentials.remove(enhancedUser);
-                                return false;
-                            }
+                    MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
+                    subscribingCredentials.add(enhancedUser);
+                    for (final MicroserviceChangedListener listener : listeners) {
+                        if (!invokeAdded(enhancedUser, listener)) {
+                            subscribingCredentials.remove(enhancedUser);
+                            return false;
                         }
-                        return true;
                     }
-                }).toList();
+                    return true;
+                }).collect(Collectors.toList());
 
 //                Must be done at the very end of subscription synchronization because this process is very time consuming.
 //                Before this process ends the method #getCredentials will return the old state.
-                repository.updateCurrentSubscriptions(from(subscriptions.getAll())
-                        .filter(new Predicate<MicroserviceCredentials>() {
-                            public boolean apply(MicroserviceCredentials user) {
-                                if (subscriptions.getAdded().contains(user)) {
-                                    return successfullyAdded.contains(user);
-                                }
-                                return true;
-                            }
-                        })
-                        .toList());
+                repository.updateCurrentSubscriptions(subscriptions.getAll().stream().filter(user -> {
+                    if (subscriptions.getAdded().contains(user)) {
+                        return successfullyAdded.contains(user);
+                    }
+                    return true;
+                }).collect(Collectors.toList()));
             } else {
                 log.error("Application {} not found", properties.getApplicationName());
             }
@@ -169,11 +158,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
-            return contextService.callWithinContext(user, new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    return listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant()));
-                }
-            });
+            return contextService.callWithinContext(user, () -> listener.apply(new MicroserviceSubscriptionRemovedEvent(user.getTenant())));
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
@@ -182,11 +167,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
         try {
-            return contextService.callWithinContext(user, new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    return listener.apply(new MicroserviceSubscriptionAddedEvent(user));
-                }
-            });
+            return contextService.callWithinContext(user, () -> listener.apply(new MicroserviceSubscriptionAddedEvent(user)));
         } catch (final Exception ex) {
             log.error(ex.getMessage(), ex);
             return false;
@@ -224,7 +205,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             }
         }
 
-        return absent();
+        return empty();
     }
 
     @Override
@@ -241,20 +222,18 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
     @Override
     public void runForTenant(String tenant, final Runnable runnable) {
-        callForTenant(tenant, new Callable<Void>() {
-            public Void call() {
-                runnable.run();
-                return null;
-            }
+        callForTenant(tenant, (Callable<Void>) () -> {
+            runnable.run();
+            return null;
         });
     }
 
     @Override
     public <T> T callForTenant(String tenant, Callable<T> runnable) {
-        for (final MicroserviceCredentials credentials : getCredentials(tenant).asSet()) {
-            return contextService.callWithinContext(credentials, runnable);
-        }
-        return null;
+        Optional<MicroserviceCredentials> maybeCredentials = getCredentials(tenant);
+        return maybeCredentials
+                .map(microserviceCredentials -> contextService.callWithinContext(microserviceCredentials, runnable))
+                .orElse(null);
     }
 
     @Override

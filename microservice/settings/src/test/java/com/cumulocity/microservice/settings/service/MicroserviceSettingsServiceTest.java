@@ -6,17 +6,15 @@ import com.cumulocity.microservice.settings.repository.CurrentApplicationSetting
 import com.cumulocity.microservice.settings.service.impl.MicroserviceSettingsServiceImpl;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
-import com.google.common.base.Suppliers;
 import lombok.RequiredArgsConstructor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.concurrent.Callable;
-
 
 import static org.mockito.Mockito.*;
 
@@ -35,7 +33,6 @@ public class MicroserviceSettingsServiceTest {
     @Before
     public void setUp() {
         doReturn(bootstrapUser()).when(platformProperties).getMicroserviceBoostrapUser();
-        doReturn(Suppliers.ofInstance("http://c8y:80")).when(platformProperties).getUrl();
         doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));
         microserviceSettingsService = new MicroserviceSettingsServiceImpl(platformProperties, contextService, currentApplicationSettingsApi);
     }
@@ -74,15 +71,11 @@ public class MicroserviceSettingsServiceTest {
     }
 
     @RequiredArgsConstructor
-    private class TenantMatcher extends ArgumentMatcher<MicroserviceCredentials> {
+    private static class TenantMatcher implements ArgumentMatcher<MicroserviceCredentials> {
         private final String tenantId;
         @Override
-        public boolean matches(Object o) {
-            if (!MicroserviceCredentials.class.isAssignableFrom(o.getClass())) {
-                return false;
-            }
-            return ((MicroserviceCredentials)o).getTenant().equals(tenantId);
+        public boolean matches(MicroserviceCredentials credentials) {
+            return credentials.getTenant().equals(tenantId);
         }
     }
-
 }

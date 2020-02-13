@@ -3,13 +3,12 @@ package com.cumulocity.microservice.security.token;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.google.common.base.Optional;
-import org.assertj.core.api.ThrowableAssert;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -97,7 +96,6 @@ public class OAuthPostAuthorizationContextProviderTest {
     public void shouldNotSupportAdditionalContextProvidersWhenSubscriptionServiceIsNotAvailable() {
         //given
         OAuthPostAuthorizationContextProvider provider = new OAuthPostAuthorizationContextProvider(MY_APPLICATION_NAME);
-        given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
 
         //when
         boolean supports = provider.supports(securityContext);
@@ -125,15 +123,11 @@ public class OAuthPostAuthorizationContextProviderTest {
         //given
         given(securityContext.getAuthentication()).willReturn(jwtTokenAuthentication);
         given(jwtTokenAuthentication.getTenantName()).willReturn(MY_TENANT_NAME);
-        given(subscriptionService.getCredentials(MY_TENANT_NAME)).willReturn(Optional.<MicroserviceCredentials>absent());
+        given(subscriptionService.getCredentials(MY_TENANT_NAME)).willReturn(Optional.empty());
 
-
-        assertThatThrownBy(new ThrowableAssert.ThrowingCallable() {
-            @Override
-            public void call() throws Throwable {
-                //when
-                provider.get(securityContext);
-            }
+        assertThatThrownBy(() -> {
+            //when
+            provider.get(securityContext);
             //then
         }).isInstanceOf(AccessDeniedException.class);
     }

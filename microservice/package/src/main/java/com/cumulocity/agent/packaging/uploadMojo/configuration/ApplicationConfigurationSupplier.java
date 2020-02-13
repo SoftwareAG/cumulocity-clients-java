@@ -1,8 +1,6 @@
 package com.cumulocity.agent.packaging.uploadMojo.configuration;
 
 import com.cumulocity.agent.packaging.uploadMojo.configuration.common.ServerUtils;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import lombok.Getter;
@@ -13,6 +11,7 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ApplicationConfigurationSupplier {
@@ -64,10 +63,10 @@ public class ApplicationConfigurationSupplier {
             if (subscriptions != null) {
                 builder.subscriptions(subscriptions);
             } else {
-                builder.subscriptions(Lists.<String>newArrayList());
+                builder.subscriptions(Lists.newArrayList());
             }
         } else {
-            builder.subscriptions(Lists.<String>newArrayList());
+            builder.subscriptions(Lists.newArrayList());
         }
 
         return Optional.of(builder.build());
@@ -92,18 +91,16 @@ public class ApplicationConfigurationSupplier {
     private Optional<ApplicationConfiguration> getSettingsConfig() {
         return getServer()
                 .transformAndConcat(ServerUtils.getConfigurationList(ApplicationConfiguration.class, "applications"))
-                .filter(new Predicate<ApplicationConfiguration>() {
-                    public boolean apply(ApplicationConfiguration input) {
-                        if (input.getGroupId() != null && !input.getGroupId().equals(project.getGroupId())) {
-                            return false;
-                        }
-                        if (input.getArtifactId() != null && !input.getArtifactId().equals(project.getArtifactId())) {
-                            return false;
-                        }
-                        return true;
+                .filter(input -> {
+                    if (input.getGroupId() != null && !input.getGroupId().equals(project.getGroupId())) {
+                        return false;
                     }
+                    if (input.getArtifactId() != null && !input.getArtifactId().equals(project.getArtifactId())) {
+                        return false;
+                    }
+                    return true;
                 })
-                .first();
+                .first().toJavaUtil();
     }
 
     private FluentIterable<Server> getServer() {

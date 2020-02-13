@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Optional.absent;
+import static java.util.Optional.empty;
 
 @UtilityClass
 public class XmlNodeUtils {
@@ -39,12 +39,12 @@ public class XmlNodeUtils {
             for (final String element : path) {
                 node = node.getChild(element);
                 if (node == null) {
-                    return absent();
+                    return Optional.absent();
                 }
             }
             return Optional.of(node);
         }
-        return absent();
+        return Optional.absent();
     }
 
     private <T> List<T> getListValue(Xpp3Dom input, final Class<T> target) {

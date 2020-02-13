@@ -13,7 +13,7 @@ import com.cumulocity.rest.representation.application.ApplicationUserRepresentat
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
@@ -101,7 +101,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     private ApplicationRepresentation getByName(String applicationName) {
         try {
             Optional<ApplicationRepresentation> byName = applicationApi().getByName(applicationName);
-            return byName.orNull();
+            return byName.orElse(null);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("GET", api.getFindByNameUrl(applicationName), ex);
         }
@@ -164,13 +164,6 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
         throw new SDKException("Error invoking " + method + " " + url, ex);
     }
 
-    private CumulocityCredentials asCredentials(ApplicationUserRepresentation user) {
-        return CumulocityBasicCredentials.builder()
-                .username(user.getName())
-                .password(user.getPassword())
-                .tenantId(user.getTenant())
-                .build();
-    }
 
     private ApplicationApi applicationApi() {
         return new ApplicationApi(platform.get(), api);

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableContextSupport
-public class PlatformConfiguration {
+public class TestPlatformConfiguration {
     @Bean
     public PlatformProperties platformProperties() {
         return mock(PlatformProperties.class);

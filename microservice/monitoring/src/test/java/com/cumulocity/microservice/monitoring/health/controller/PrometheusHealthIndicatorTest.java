@@ -12,14 +12,15 @@ import static io.restassured.http.ContentType.TEXT;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
+
 @RunWith(SpringRunner.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 @SpringBootTest(classes = TestConfiguration.class)
-public class PrometeusHealthIndicatorTest {
+public class PrometheusHealthIndicatorTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_ACTUATOR")
-    public void prometeusShouldBeUp() {
+    public void prometheusShouldBeUp() {
         when()
                 .get("/prometheus").
 
@@ -29,7 +30,7 @@ public class PrometeusHealthIndicatorTest {
     }
 
     @Test
-    public void prometeusShouldBeSecured() {
+    public void prometheusShouldBeSecured() {
         when()
                 .get("/prometheus").
 

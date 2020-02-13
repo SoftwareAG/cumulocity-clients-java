@@ -1,26 +1,27 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.*;
 import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandler;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import static org.mockito.Mockito.when;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import org.springframework.security.jwt.Jwt;
+
+import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
+import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.mockedJwtImpl;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CumulocityCoreAuthenticationTest {
 
-    private static final String BASE_URL = "someUrl";
     private static final String TENANT_NAME = "test1234";
     private static final String USERNAME = "user1234";
 
@@ -31,7 +32,6 @@ public class CumulocityCoreAuthenticationTest {
     @Before
     public void setup() {
         jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials);
-        when(jwtCredentials.getJwt()).thenReturn(mockedJwtImpl());
     }
 
     @Test
