@@ -114,6 +114,65 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //@formatter:on
     }
 
+    private Xpp3Dom getDockerBuildConfig() {
+        List<Proxy>  list = mavenSession.getSettings().getProxies();
+        String  httpProxy = null;
+        String httpsProxy = null;
+
+        //loop about Proxy settings
+        for ( Proxy proxy : list ) {
+        	if ( proxy.isActive() ) {
+        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+        		getLog().info( "Found Proxy settings: " + pS );
+        		if ( proxy.getProtocol().equals( "http" ) )
+        			httpProxy = pS;
+        		if ( proxy.getProtocol().equals( "https" ) )
+        			httpsProxy = pS;
+        	}
+        }
+
+        if ( httpsProxy == null && httpProxy != null ) 
+        	httpsProxy = httpProxy;
+
+        if ( httpProxy == null && httpsProxy != null )
+        	httpProxy = httpsProxy;
+
+        //Set Docker building configuration depending on Proxy settings
+        Xpp3Dom back; 
+        if ( httpProxy != null ) {
+        	
+            getLog().info( "Passing HTTP  proxy setting to Docker : " + httpProxy );
+            getLog().info( "Passing HTTPS proxy setting to Docker : " + httpsProxy );
+
+            back = 
+                configuration(
+                        element(name("imageName"), image),
+                        element("imageTags",
+                                element("imageTag", project.getVersion()),
+                                element("imageTag", "latest")
+                        ),
+                        element("network", dockerBuildNetwork),
+                        element("buildArgs", 
+                        		element("HTTP_PROXY",  httpProxy), 
+                        		element("HTTPS_PROXY", httpsProxy),
+                        		element("http_proxy",  httpProxy), 
+                        		element("https_proxy", httpsProxy) ),
+                        element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
+        }
+        else {
+            back = 
+                    configuration(
+                            element(name("imageName"), image),
+                            element("imageTags",
+                                    element("imageTag", project.getVersion()),
+                                    element("imageTag", "latest")
+                            ),
+                            element("network", dockerBuildNetwork),
+                            element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
+        }
+    	return back;
+    }
+
     private void dockerContainer() throws MojoExecutionException {
 
         final File dockerWorkResources = new File(dockerWorkDir, "resources");
@@ -134,67 +193,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
 //            copy content of project src/main/docker to docker work directory replacing placeholders
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcDockerDir.getAbsolutePath()), dockerWorkDir, true);
 
-            List<Proxy>  list = mavenSession.getSettings().getProxies();
-            String  httpProxy = null;
-            String httpsProxy = null;
-
-            //loop about Proxy settings
-            for ( Proxy proxy : list ) {
-            	if ( proxy.isActive() ) {
-            		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
-            		getLog().info( "Found Proxy settings: " + pS );
-            		if ( proxy.getProtocol().equals( "http" ) )
-            			httpProxy = pS;
-            		if ( proxy.getProtocol().equals( "https" ) )
-            			httpsProxy = pS;
-            	}
-            }
-
-            if ( httpsProxy == null && httpProxy != null ) 
-            	httpsProxy = httpProxy;
-
-            if ( httpProxy == null && httpsProxy != null )
-            	httpProxy = httpsProxy;
-
-            //Set Docker building configuration depending on Proxy settings
-            Xpp3Dom dockerBuildConfig; 
-            if ( httpProxy != null ) {
-            	
-                getLog().info( "Passing HTTP  proxy setting to Docker : " + httpProxy );
-                getLog().info( "Passing HTTPS proxy setting to Docker : " + httpsProxy );
-
-                dockerBuildConfig = 
-                    configuration(
-                            element(name("imageName"), image),
-                            element("imageTags",
-                                    element("imageTag", project.getVersion()),
-                                    element("imageTag", "latest")
-                            ),
-                            element("network", dockerBuildNetwork),
-                            element("buildArgs", 
-                            		element("HTTP_PROXY",  httpProxy), 
-                            		element("HTTPS_PROXY", httpsProxy),
-                            		element("http_proxy",  httpProxy), 
-                            		element("https_proxy", httpsProxy) ),
-                            element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-            }
-            else {
-                dockerBuildConfig = 
-                        configuration(
-                                element(name("imageName"), image),
-                                element("imageTags",
-                                        element("imageTag", project.getVersion()),
-                                        element("imageTag", "latest")
-                                ),
-                                element("network", dockerBuildNetwork),
-                                element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-            }
-            	   
             //@formatter:off
             executeMojo(
                     docker(),
                     goal("build"),
-                    dockerBuildConfig,
+                    getDockerBuildConfig(),
                     executionEnvironment(this.project, this.mavenSession, this.pluginManager));
             //@formatter:on
 
