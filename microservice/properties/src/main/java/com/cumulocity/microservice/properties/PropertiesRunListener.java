@@ -79,6 +79,11 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
 
     }
 
+    // temporary for backward compatibility with spring-boot 1.x
+    public void finished(ConfigurableApplicationContext context, Throwable exception) {
+        failed(context, exception);
+    }
+
     private void processPropertySource(ConfigurableEnvironment environment, Iterable<Path> locations) {
         final PropertySourceFactory factory = new DefaultPropertySourceFactory();
 

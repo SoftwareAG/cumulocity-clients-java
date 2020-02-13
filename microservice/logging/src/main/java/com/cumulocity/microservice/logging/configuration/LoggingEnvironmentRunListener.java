@@ -68,6 +68,11 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
 
     }
 
+    // temporary for backward compatibility with spring-boot 1.x
+    public void finished(ConfigurableApplicationContext context, Throwable exception) {
+        failed(context, exception);
+    }
+
     public void initLogging(ConfigurationFileProvider configurationFileProvider) {
         Iterable<Path> paths = Iterables
                 .concat(configurationFileProvider.find("-logging.xml", "-server-logging.xml", "-agent-server-logging.xml"),
