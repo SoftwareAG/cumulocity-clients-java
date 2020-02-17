@@ -4,7 +4,6 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.client.Executor;
 import com.cumulocity.agent.packaging.uploadMojo.platform.client.Request;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.*;
 import java.util.Optional;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
