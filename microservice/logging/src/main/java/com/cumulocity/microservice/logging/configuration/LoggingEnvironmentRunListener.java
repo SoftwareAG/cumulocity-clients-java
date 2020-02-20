@@ -54,8 +54,23 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
     }
 
     @Override
-    public void finished(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
+    public void started(ConfigurableApplicationContext context) {
 
+    }
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {
+
+    }
+
+    // temporary for backward compatibility with spring-boot 1.x
+    public void finished(ConfigurableApplicationContext context, Throwable exception) {
+        failed(context, exception);
     }
 
     public void initLogging(ConfigurationFileProvider configurationFileProvider) {

@@ -1,7 +1,9 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.ContextService;
-import com.google.common.base.Optional;
+import java.util.Optional;
+
+import com.cumulocity.microservice.context.credentials.UserCredentials;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
     @Setter(onMethod_ = @Autowired(required = false))
     private AuthenticationEntryPoint authenticationEntryPoint;
     @Setter(onMethod_ = @Autowired)
-    private ContextService userContextService;
+    private ContextService<UserCredentials> userContextService;
 
     @Override
     public void doFilter(final ServletRequest req, final ServletResponse res, final FilterChain chain) throws IOException, ServletException {
@@ -64,14 +66,11 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                     SecurityContextHolder.getContext().setAuthentication(authResult);
                     userContextService.runWithinContext(
                             ((JwtTokenAuthentication)authResult).getUserCredentials(),
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        chain.doFilter(req, res);
-                                    } catch (Exception e) {
-                                        throw new AuthenticationServiceException("Error on login attempt", e);
-                                    }
+                            () -> {
+                                try {
+                                    chain.doFilter(req, res);
+                                } catch (Exception e) {
+                                    throw new AuthenticationServiceException("Error on login attempt", e);
                                 }
                             });
                     return;
@@ -104,7 +103,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
             while (headers.hasMoreElements()) {
                 String header = headers.nextElement();
                 if (header.toLowerCase().startsWith("bearer")) {
-                    return Optional.of((JwtCredentials) new JwtOnlyCredentials(JwtHelper.decode(header.substring(7))));
+                    return Optional.of(new JwtOnlyCredentials(JwtHelper.decode(header.substring(7))));
                 }
             }
         }
@@ -112,12 +111,12 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         if (accessToken.isPresent()) {
             String xsrfToken = req.getHeader("X-XSRF-TOKEN");
             if (!StringUtils.isEmpty(xsrfToken)) {
-                return Optional.of((JwtCredentials) new JwtAndXsrfTokenCredentials(
+                return Optional.of(new JwtAndXsrfTokenCredentials(
                         JwtHelper.decode(accessToken.get().getValue()),
                         xsrfToken));
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }
 

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.core.env.StandardEnvironment;
@@ -17,7 +18,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(JwtTokenAuthenticationProvider.class)
+@PowerMockIgnore("javax.security.*")
 public class JwtTokenAuthenticationProviderTest {
+
     @Mock
     private StandardEnvironment standardEnvironment;
     @Mock
@@ -25,16 +28,13 @@ public class JwtTokenAuthenticationProviderTest {
     @Mock
     private JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache;
 
-
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
-    private JwtTokenAuthentication jwtTokenAuthentication;
     private JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials;
 
     @Before
     public void setup() {
         jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment, jwtAuthenticatedTokenCache);
         jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(JwtTokenTestsHelper.mockedJwtImpl(), SAMPLE_XSRF_TOKEN);
-        jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
     }
 
     @Test

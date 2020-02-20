@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription.service;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -53,7 +53,7 @@ public interface MicroserviceSubscriptionsService {
      * Gets microservice credentials of the given tenant
      * @param tenant
      * @return  <code>Optional.of</code> microservice credentials if tenant is found in current subscriptions;
-     *          <code>Optional.<MicroserviceCredentials>absent()</code> otherwise
+     *          <code>Optional.<MicroserviceCredentials>empty()</code> otherwise
      */
     Optional<MicroserviceCredentials> getCredentials(String tenant);
 

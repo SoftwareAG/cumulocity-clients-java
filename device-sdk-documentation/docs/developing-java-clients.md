@@ -42,6 +42,8 @@ This returns a query to get the objects -- it does not actually get them. In pra
 			System.out.println(mo.getName());
 	}
 
+> **Important**: By default, `allPages()` doesn't return all elements at once, rather in batches of 5 elements (paginated). A separated request is made for each subsequent page after the iteration of the previous page is completed. Hence, it is not recommended to change/edit those objects while iterating through them, otherwise the filters may include/exclude different elements. It is better to collect them all and save them in memory, and only then perform edit operations.
+
 To create a new managed object, simply construct a local representation of the object and send it to the platform. The following code snippet shows how to create a new electricity meter with a relay in it:
 
     ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
@@ -271,4 +273,5 @@ The configuration file looks like this:
 
 When the code is run, the console should contain a message similar to the following:
 
-    21:52:02.790 [Start Level Event Dispatcher] DEBUG com.cumulocity.javaclient - A debug message
+    21:52:02.790 [Start Level Event Dispatcher] DEBUG com.cumulocity.javaclient - A debug message
+

@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
-public interface RestOperations {
+public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException;
 
     <T > T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException;

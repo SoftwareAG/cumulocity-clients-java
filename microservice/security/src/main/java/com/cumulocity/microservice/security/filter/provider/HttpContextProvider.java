@@ -1,20 +1,16 @@
 package com.cumulocity.microservice.security.filter.provider;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.microservice.security.filter.util.HttpRequestUtils;
-import com.cumulocity.microservice.security.filter.util.HttpRequestUtils.AuthorizationHeader;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
+import com.cumulocity.microservice.security.filter.util.HttpRequestUtils.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Optional;
 
-import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.TFA_TOKEN_HEADER;
-import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.XSRF_TOKEN_HEADER;
-import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.X_CUMULOCITY_APPLICATION_KEY;
+import static com.cumulocity.microservice.security.filter.util.HttpRequestUtils.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
@@ -24,7 +20,7 @@ public class HttpContextProvider implements PreAuthorizationContextProvider<Http
         final String authorization = request.getHeader(AUTHORIZATION);
         final String applicationKey = request.getHeader(X_CUMULOCITY_APPLICATION_KEY);
         final String tfaToken = request.getHeader(TFA_TOKEN_HEADER);
-        final AuthorizationHeader from = HttpRequestUtils.authorizationHeader(authorization);
+        final AuthorizationHeader from = authorizationHeader(authorization);
 
         if (StringUtils.hasText(from.getTenant())) {
             return UserCredentials.builder()
@@ -44,23 +40,13 @@ public class HttpContextProvider implements PreAuthorizationContextProvider<Http
         if (request == null || request.getCookies() == null) {
             return null;
         }
-        Optional<Cookie> cookieOptional = FluentIterable.from(request.getCookies())
-                .firstMatch(new Predicate<Cookie>() {
-                    @Override
-                    public boolean apply(Cookie cookie) {
-                        return AUTHORIZATION.equalsIgnoreCase(cookie.getName());
-                    }
-                });
+        Optional<Cookie> cookieOptional = Arrays.stream(request.getCookies()).filter(cookie -> AUTHORIZATION.equalsIgnoreCase(cookie.getName())).findFirst();
 
-        if (cookieOptional.isPresent()) {
-            return cookieOptional.get().getValue();
-        } else {
-            return null;
-        }
+        return cookieOptional.map(Cookie::getValue).orElse(null);
     }
 
     @Override
     public boolean supports(HttpServletRequest credentialSource) {
-        return HttpRequestUtils.hasAuthorizationHeader(credentialSource);
+        return hasAuthorizationHeader(credentialSource);
     }
 }

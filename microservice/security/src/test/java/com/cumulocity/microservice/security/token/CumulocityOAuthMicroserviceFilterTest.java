@@ -2,25 +2,15 @@ package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import static com.cumulocity.microservice.security.token.CookieReader.AUTHORIZATION_KEY;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
-import java.util.Collections;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Mockito.*;
-import org.mockito.invocation.InvocationOnMock;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -32,8 +22,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+
+import static com.cumulocity.microservice.security.token.CookieReader.AUTHORIZATION_KEY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.or;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SecurityContextHolder.class})
+@PowerMockIgnore("javax.security.*")
 public class CumulocityOAuthMicroserviceFilterTest {
 
     private final static String SAMPLE_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOm51bGwsImlzcyI6ImN1bXVsb2NpdHkuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbCIsImF1ZCI6ImN1bXVsb2NpdHkuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbCIsInN1YiI6ImFkbWluIiwidGNpIjoiZDMwMTczNjYtY2Y3Yi00MjdlLWE2OTMtNzJiYjg2MGE5MDgzIiwiaWF0IjoxNTY1NzYxMTg0LCJuYmYiOjE1NjU3NjExODQsImV4cCI6MTU2Njk3MDc4NCwidGZhIjpmYWxzZSwidGVuIjoibWFuYWdlbWVudCIsInhzcmZUb2tlbiI6InZ2VXlpS3h6c1VHQlhNbGNPb2RrIn0.TDz9k0NfKeLK5f0dwZ_gqOWyweMLpaIdEtU6snos9_0ephtI4HibCVEOV9JPoHZnaqjAUyfmhQc7WN2JLpMX6Q";
@@ -41,13 +47,14 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
     private CumulocityOAuthMicroserviceFilter filter;
     private AuthenticationEntryPoint authenticationEntryPoint;
-    private ContextService contextService;
+    private ContextService<UserCredentials> contextService;
 
     private AuthenticationManager authenticationManager;
 
     private HttpServletRequest request;
     private HttpServletResponse response;
     private FilterChain chain;
+    private UserCredentials userCredentials;
 
 
     @Before
@@ -56,6 +63,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
         authenticationEntryPoint = mock(AuthenticationEntryPoint.class);
+        this.userCredentials = UserCredentials.builder().build();
 
         authenticationManager = mock(AuthenticationManager.class);
         contextService = mock(ContextService.class);
@@ -69,7 +77,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
     public void shouldAuthenticateWithAuthorizationBearer() throws IOException, ServletException {
         SecurityContext context = mockSecurityContext();
         when(request.getHeaders("Authorization")).thenReturn(Collections.enumeration(ImmutableSet.of("Basic XXX", "Bearer " + SAMPLE_TOKEN)));
-        mockAuthenticationMangerReturnArgument();
+        mockAuthenticationManager();
         mockContextServiceInvokeRunnable();
 
         filter.doFilter(request, response, chain);
@@ -92,7 +100,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         Cookie[] cookies = {new Cookie(AUTHORIZATION_KEY, SAMPLE_TOKEN)};
         when(request.getCookies()).thenReturn(cookies);
         when(request.getHeader("X-XSRF-TOKEN")).thenReturn(SAMPLE_X_XSRF_TOKEN);
-        mockAuthenticationMangerReturnArgument();
+        mockAuthenticationManager();
         mockContextServiceInvokeRunnable();
 
         filter.doFilter(request, response, chain);
@@ -107,7 +115,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
         verify(chain).doFilter(request, response);
         verify(context).setAuthentication(actualAuthentication);
-        verify(contextService).runWithinContext(any(UserCredentials.class), any(Runnable.class));
+        verify(contextService).runWithinContext(same(userCredentials), any(Runnable.class));
     }
 
 
@@ -159,24 +167,19 @@ public class CumulocityOAuthMicroserviceFilterTest {
         return context;
     }
 
-    private void mockAuthenticationMangerReturnArgument() {
-        when(authenticationManager.authenticate(any(Authentication.class))).thenAnswer(new Answer<Authentication>() {
-            @Override
-            public Authentication answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                return (Authentication) args[0];
-            }
+    private void mockAuthenticationManager() {
+        when(authenticationManager.authenticate(any(JwtTokenAuthentication.class))).thenAnswer((Answer<JwtTokenAuthentication>) invocation -> {
+            JwtTokenAuthentication jwtTokenAuthentication = invocation.getArgument(0);
+            jwtTokenAuthentication.setUserCredentials(userCredentials);
+            return jwtTokenAuthentication;
         });
     }
 
     private void mockContextServiceInvokeRunnable() {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Runnable runnableObject = (Runnable)invocationOnMock.getArguments()[1];
-                runnableObject.run();
-                return null;
-            }
-        }).when(contextService).runWithinContext(any(UserCredentials.class), any(Runnable.class));
+        doAnswer(invocationOnMock -> {
+            Runnable runnableObject = (Runnable)invocationOnMock.getArguments()[1];
+            runnableObject.run();
+            return null;
+        }).when(contextService).runWithinContext(or(any(UserCredentials.class), Mockito.isNull()), any(Runnable.class));
     }
 }

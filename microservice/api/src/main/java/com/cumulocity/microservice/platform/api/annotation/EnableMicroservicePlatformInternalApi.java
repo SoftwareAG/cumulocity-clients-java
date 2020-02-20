@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- *  Prepares environment to work with platform api. Injects basic beans for comuunication with the platform.
+ *  Prepares environment to work with platform api. Injects basic beans for communication with the platform.
  *
  *  @deprecated Use @EnableMicroservicePlatformApi
  *

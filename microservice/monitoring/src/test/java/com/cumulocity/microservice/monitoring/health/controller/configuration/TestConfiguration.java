@@ -4,16 +4,15 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 
 import javax.annotation.PostConstruct;
 
 @AutoConfigureMockMvc
-@SpringBootTest(classes = {
-        IndicatorConfiguration.class,
+@Import({
         TestConfiguration.MainConfiguration.class,
+        IndicatorConfiguration.class
 })
 public class TestConfiguration {
 
@@ -26,10 +25,6 @@ public class TestConfiguration {
 
     @PostConstruct
     public void setUp() {
-        RestAssuredMockMvc.standaloneSetup(new MockMvcBuilder() {
-            public MockMvc build() {
-                return mvc;
-            }
-        });
+        RestAssuredMockMvc.standaloneSetup(() -> mvc);
     }
 }

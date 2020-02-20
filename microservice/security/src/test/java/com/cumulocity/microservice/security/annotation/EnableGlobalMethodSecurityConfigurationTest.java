@@ -4,7 +4,7 @@ import com.cumulocity.microservice.security.service.SecurityExpressionService;
 import com.cumulocity.microservice.security.service.impl.SecurityExpressionServiceImpl;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,14 +23,14 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-        EnableGlobalMethodSecurityConfiguration.class,
-        EnableGlobalMethodSecurityConfigurationTest.TestConfiguration.class
+        EnableGlobalMethodSecurityConfigurationTest.TestConfiguration.class,
+        EnableGlobalMethodSecurityConfiguration.class
 })
 public class EnableGlobalMethodSecurityConfigurationTest {
 
@@ -98,7 +98,7 @@ public class EnableGlobalMethodSecurityConfigurationTest {
     @WithMockUser
     @Test(expected = AccessDeniedException.class)
     public void shouldFailValidationOfFeature() {
-        when(applications.getByName(anyString())).thenReturn(Optional.<ApplicationRepresentation>absent());
+        when(applications.getByName(anyString())).thenReturn(Optional.<ApplicationRepresentation>empty());
 
         testService.doSomethingWhatRequiresFeatureEnabled();
     }

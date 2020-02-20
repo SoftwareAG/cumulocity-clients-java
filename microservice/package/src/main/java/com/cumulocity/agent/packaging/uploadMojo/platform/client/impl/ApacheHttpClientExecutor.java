@@ -6,7 +6,7 @@ import com.cumulocity.agent.packaging.uploadMojo.configuration.CredentialsConfig
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import jersey.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Throwables;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.io.IOUtils;

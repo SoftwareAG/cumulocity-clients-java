@@ -325,6 +325,11 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
             public void delete(String path) throws SDKException {
 
             }
+
+            @Override
+            public void close() throws Exception {
+
+            }
         };
     }
 

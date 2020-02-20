@@ -4,7 +4,7 @@ import com.cumulocity.rest.representation.application.ApplicationCollectionRepre
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +35,7 @@ public class ApplicationApi {
         if (response.getApplications().size() == 1) {
             return Optional.of(response.getApplications().get(0));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     public ApplicationRepresentation create(ApplicationRepresentation application) {
