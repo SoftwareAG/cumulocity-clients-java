@@ -28,8 +28,8 @@ function call-mvn {
 
 function tag-version {
     tag=$1
-    hg commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
-    hg tag -f -m "copy for tag ${tag}" "${tag}"
+    git commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
+    git tag -a -m "copy for tag ${tag}" "${tag}"
 }
 
 function update-property {
