@@ -317,6 +317,9 @@ public class AlarmIT extends JavaSdkITBase {
         //When
         alarmApi.deleteAlarmsByFilter(emptyFilter);
 
+        //wait as bulk delete is asynchronous
+        Thread.sleep(5000);
+
         //Then
         int resultNumber = 0;
         Iterable<AlarmRepresentation> pager = alarmApi.getAlarms().get().allPages();
@@ -354,6 +357,10 @@ public class AlarmIT extends JavaSdkITBase {
 
         // When
         alarmApi.deleteAlarmsByFilter(alarmFilter);
+
+        //wait as bulk delete is asynchronous
+        Thread.sleep(5000);
+
 
         // Then
         List<AlarmRepresentation> allAlarms = alarmApi.getAlarmsByFilter(new AlarmFilter().bySource(mo1)).get().getAlarms();
