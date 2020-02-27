@@ -1,38 +1,27 @@
 package com.cumulocity.agent.packaging;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
-import com.cumulocity.model.application.MicroserviceManifest;
-import com.cumulocity.model.application.microservice.DataSize;
-import com.cumulocity.model.application.microservice.Resources;
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import lombok.Value;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import javax.validation.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Iterator;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.List;
 
 import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.Files.asByteSource;
 import static java.nio.file.Files.createDirectories;
@@ -59,6 +48,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(property = "project.build.sourceEncoding", defaultValue = "utf8")
     private String encoding;
 
+    @Parameter(defaultValue = "")
+    private String dockerBuildNetwork;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skip) {
@@ -72,7 +64,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         }
 
         if (!containerSkip) {
-            getLog().info("docker container " + project.getArtifactId());
+            getLog().info("docker container " + project.getArtifactId() + " in network '" + (dockerBuildNetwork != null ? dockerBuildNetwork : "<default>") + "'");
             dockerContainer();
 
             if (!skipMicroservicePackage) {
@@ -122,6 +114,65 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //@formatter:on
     }
 
+    private Xpp3Dom getDockerBuildConfig() {
+        List<Proxy>  list = mavenSession.getSettings().getProxies();
+        String  httpProxy = null;
+        String httpsProxy = null;
+
+        //loop about Proxy settings
+        for ( Proxy proxy : list ) {
+        	if ( proxy.isActive() ) {
+        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+        		getLog().info( "Found Proxy settings: " + pS );
+        		if ( proxy.getProtocol().equals( "http" ) )
+        			httpProxy = pS;
+        		if ( proxy.getProtocol().equals( "https" ) )
+        			httpsProxy = pS;
+        	}
+        }
+
+        if ( httpsProxy == null && httpProxy != null ) 
+        	httpsProxy = httpProxy;
+
+        if ( httpProxy == null && httpsProxy != null )
+        	httpProxy = httpsProxy;
+
+        //Set Docker building configuration depending on Proxy settings
+        Xpp3Dom back; 
+        if ( httpProxy != null ) {
+        	
+            getLog().info( "Passing HTTP  proxy setting to Docker : " + httpProxy );
+            getLog().info( "Passing HTTPS proxy setting to Docker : " + httpsProxy );
+
+            back = 
+                configuration(
+                        element(name("imageName"), image),
+                        element("imageTags",
+                                element("imageTag", project.getVersion()),
+                                element("imageTag", "latest")
+                        ),
+                        element("network", dockerBuildNetwork),
+                        element("buildArgs", 
+                        		element("HTTP_PROXY",  httpProxy), 
+                        		element("HTTPS_PROXY", httpsProxy),
+                        		element("http_proxy",  httpProxy), 
+                        		element("https_proxy", httpsProxy) ),
+                        element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
+        }
+        else {
+            back = 
+                    configuration(
+                            element(name("imageName"), image),
+                            element("imageTags",
+                                    element("imageTag", project.getVersion()),
+                                    element("imageTag", "latest")
+                            ),
+                            element("network", dockerBuildNetwork),
+                            element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
+        }
+    	return back;
+    }
+
     private void dockerContainer() throws MojoExecutionException {
 
         final File dockerWorkResources = new File(dockerWorkDir, "resources");
@@ -146,14 +197,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             executeMojo(
                     docker(),
                     goal("build"),
-                    configuration(
-                            element(name("imageName"), image),
-                            element("imageTags",
-                                    element("imageTag", project.getVersion()),
-                                    element("imageTag", "latest")
-                            ),
-                            element("dockerDirectory", dockerWorkDir.getAbsolutePath())
-                    ),
+                    getDockerBuildConfig(),
                     executionEnvironment(this.project, this.mavenSession, this.pluginManager));
             //@formatter:on
 
