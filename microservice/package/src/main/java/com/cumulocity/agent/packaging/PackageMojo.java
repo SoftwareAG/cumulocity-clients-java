@@ -1,7 +1,15 @@
 package com.cumulocity.agent.packaging;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
+import com.cumulocity.model.application.MicroserviceManifest;
+import com.cumulocity.model.application.microservice.DataSize;
+import com.cumulocity.model.application.microservice.Resources;
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import lombok.Value;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -12,9 +20,13 @@ import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
+import javax.validation.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.List;
