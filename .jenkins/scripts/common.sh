@@ -28,8 +28,8 @@ function call-mvn {
 
 function tag-version {
     tag=$1
-    hg commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
-    hg tag -f -m "copy for tag ${tag}" "${tag}"
+    git commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
+    git tag -f -m "copy for tag ${tag}" "${tag}" # create tag with additional message "copy for tag TAG_TAME" and remove old one if exists
 }
 
 function update-property {
