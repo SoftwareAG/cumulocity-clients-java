@@ -11,7 +11,7 @@ function update-dependencies {
         cd cumulocity-sdk
         update-property cumulocity.version ${1}
         if [ -n "$(git status -s)" ]; then
-            git commit -m "Update dependencies to new version"
+            git commit -am "Update dependencies to new version" --allow-empty
         else
             echo "no changes found no commit"
         fi

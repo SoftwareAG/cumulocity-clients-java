@@ -28,7 +28,7 @@ function call-mvn {
 
 function tag-version {
     tag=$1
-    git commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
+    git commit -am "[maven-release-plugin] prepare release ${tag}" --allow-empty || echo ""
     git tag -f -m "copy for tag ${tag}" "${tag}" # create tag with additional message "copy for tag TAG_TAME" and remove old one if exists
 }
 

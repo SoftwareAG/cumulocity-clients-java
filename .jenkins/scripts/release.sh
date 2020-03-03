@@ -51,9 +51,9 @@ cd -
 
 echo "Update version to ${next_version}"
 call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
-git commit -am "[maven-release-plugin] prepare for next development iteration"
+git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd cumulocity-sdk
-git commit -am "[maven-release-plugin] prepare for next development iteration"
+git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
 git push ssh://git@bitbucket.org/m2m/cumulocity-clients-java ${branch_name}
 cd cumulocity-sdk

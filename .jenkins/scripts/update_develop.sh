@@ -13,12 +13,12 @@ cd -
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
 # update-dependencies ${development_version}
 
-git commit -m 'Update dependencies to next SNAPSHOT version'
+git commit -am 'Update dependencies to next SNAPSHOT version' --allow-empty
 git push https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/cumulocity-clients-java develop
 
 cd cumulocity-sdk
 
-git commit -m 'Update to dependencies next SNAPSHOT version'
+git commit -am 'Update to dependencies next SNAPSHOT version' --allow-empty
 git push https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/cumulocity-sdk develop
 
 cd -
