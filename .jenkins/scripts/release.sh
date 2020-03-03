@@ -26,10 +26,10 @@ echo "branch name: $branch_name"
 
 repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
 
-git pull ${repository_url}/cumulocity-clients-java
+git pull ${repository_url}/cumulocity-clients-java ${branch_name}
 git checkout ${branch_name}
 cd cumulocity-sdk
-git pull ${repository_url}/cumulocity-sdk
+git pull ${repository_url}/cumulocity-sdk ${branch_name}
 git checkout ${branch_name}
 cd -
 
