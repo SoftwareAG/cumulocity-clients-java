@@ -16,19 +16,19 @@ while [ "$1" != "" ]; do
 done
 
 call-mvn clean -T 4
-#if it is a release on develop branch, hg branch will return release/rX.X.X as it is the branch created in previous step.
-# If it is a release/hotfix on release branch it should just push the branch it was on
-branch_name=$(hg branch)
-if [ "!develop" == "!branch_name" ]; then
+#if it is a release on develop branch, hg branch (git symbolic-ref --short HEAD) will return release/rX.X.X as it is the branch created in previous step.
+# If it is a release/hotfix on release branch it should just push the branch it was on TODO check
+branch_name=$(git symbolic-ref --short HEAD)
+if [ "develop" == "${branch_name}" ]; then
     branch_name="release/r${version}"
 fi
 echo "branch name: $branch_name"
 
-hg pull -u 
-hg up -C ${branch_name}
+git pull
+git checkout ${branch_name}
 cd cumulocity-sdk
-hg pull -u 
-hg up -C ${branch_name}
+git pull
+git checkout ${branch_name}
 cd -
 
 echo "Update version to ${version}"
@@ -51,13 +51,13 @@ cd -
 
 echo "Update version to ${next_version}"
 call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
-hg commit -m "[maven-release-plugin] prepare for next development iteration"
+git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd cumulocity-sdk
-hg commit -m "[maven-release-plugin] prepare for next development iteration"
+git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
-hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-clients-java --new-branch
+git push ssh://git@bitbucket.org/m2m/cumulocity-clients-java ${branch_name}
 cd cumulocity-sdk
-hg push -r${branch_name} ssh://hg@bitbucket.org/m2m/cumulocity-sdk --new-branch
+git push ssh:/git@bitbucket.org/m2m/cumulocity-sdk ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh
