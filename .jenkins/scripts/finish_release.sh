@@ -4,7 +4,7 @@ release_version=$1
 
 function git_finish_release {
   repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/$1
-  git pull $repository_url develop
+  git pull $repository_url
   git commit -am "flow: Closed <release> ${release_version}" --allow-empty
   git checkout develop
   git merge -s recursive -Xtheirs release/r${release_version}

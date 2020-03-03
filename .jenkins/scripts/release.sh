@@ -24,10 +24,12 @@ if [ "develop" == "${branch_name}" ]; then
 fi
 echo "branch name: $branch_name"
 
-git pull
+repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
+
+git pull ${repository_url}/cumulocity-clients-java
 git checkout ${branch_name}
 cd cumulocity-sdk
-git pull
+git pull ${repository_url}/cumulocity-sdk
 git checkout ${branch_name}
 cd -
 
