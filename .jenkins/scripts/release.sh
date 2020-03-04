@@ -28,13 +28,13 @@ repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
 
 git branch ${branch_name}
 git checkout ${branch_name}
-git branch --set-upstream-to=origin/${branch_name} ${branch_name}
-git pull ${repository_url}/cumulocity-clients-java
+git push --set-upstream origin ${branch_name}
+git pull
 cd cumulocity-sdk
 git branch ${branch_name}
 git checkout ${branch_name}
-git branch --set-upstream-to=origin/${branch_name} ${branch_name}
-git pull ${repository_url}/cumulocity-sdk
+git push --set-upstream origin ${branch_name}
+git pull
 cd -
 
 echo "Update version to ${version}"
