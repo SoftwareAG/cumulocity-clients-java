@@ -11,7 +11,7 @@
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
     <scm>
-        <connection>scm:git:ssh://hg@bitbucket.org/m2m/cumulocity-clients-java-test-git</connection>
+        <connection>scm:git:ssh://git@bitbucket.org/m2m/cumulocity-clients-java-test-git</connection>
         <tag>HEAD</tag>
     </scm>
 
