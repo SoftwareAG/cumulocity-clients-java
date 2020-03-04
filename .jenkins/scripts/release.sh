@@ -26,18 +26,12 @@ echo "branch name: $branch_name"
 
 repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
 
-echo make branch ${branch_name}
-git branch ${branch_name}
 echo checkout to new branch
 git checkout ${branch_name}
-echo set upstreams for branch
-git push --set-upstream origin ${branch_name}
 echo pull changes
 git pull
 cd cumulocity-sdk
-git branch ${branch_name}
 git checkout ${branch_name}
-git push --set-upstream origin ${branch_name}
 git pull
 cd -
 
