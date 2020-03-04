@@ -64,9 +64,11 @@ git commit -am "[maven-release-plugin] prepare for next development iteration" -
 cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
-git push ssh://git@bitbucket.org/m2m/cumulocity-clients-java ${branch_name}
+git status
+echo "Push repositores"
+git push origin ${branch_name}
 cd cumulocity-sdk
-git push ssh:/git@bitbucket.org/m2m/cumulocity-sdk ${branch_name}
+git push origin ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh
