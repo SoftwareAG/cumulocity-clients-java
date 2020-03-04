@@ -90,7 +90,7 @@ pipeline {
                         disableChangeLog: true,
                         revision        : "${env.BRANCH_NAME}",
                         subdir          : 'cumulocity-sdk',
-                        source          : 'ssh://git@bitbucket.org/m2m/cumulocity-sdk'
+                        source          : 'ssh://git@bitbucket.org/m2m/cumulocity-sdk-test-git'
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
