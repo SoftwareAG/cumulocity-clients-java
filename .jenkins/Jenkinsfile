@@ -83,10 +83,9 @@ pipeline {
             }
             steps {
                 checkout([
-                        $class          : 'MercurialSCM',
+                        $class          : 'GitSCM',
                         clear           : true,
                         credentialsId   : 'jenkins-master-key',
-                        installation    : 'Mercurial',
                         disableChangeLog: true,
                         revision        : "${env.BRANCH_NAME}",
                         subdir          : 'cumulocity-sdk',
