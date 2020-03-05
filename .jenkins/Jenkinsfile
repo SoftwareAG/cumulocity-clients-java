@@ -86,7 +86,6 @@ pipeline {
                             $class: 'GitSCM',
                             branches: [[name: '${env.BRANCH_NAME}']],
                             extensions: [[$class: 'CleanCheckout'],[$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk']],
-                            changelog: false,
                             userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk-test-git', credentialsId:'jenkins-master-key']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
