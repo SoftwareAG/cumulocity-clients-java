@@ -196,9 +196,9 @@ pipeline {
         }
         failure {
             script {
-                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                    chat 'AAAAvnc5o90'
-                }
+                //if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
+                //    chat 'AAAAvnc5o90'
+                //}
             }
 
             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
