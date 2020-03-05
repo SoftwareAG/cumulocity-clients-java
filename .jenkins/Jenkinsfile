@@ -83,7 +83,7 @@ pipeline {
             }
             steps {
                 checkout([
-                            class: 'GitSCM',
+                            $class: 'GitSCM',
                             branches: [[name: '${env.BRANCH_NAME}']],
                             extensions: [[$class: 'CleanCheckout'],[$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk']],
                             changelog: false,
