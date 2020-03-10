@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice-dependencies</artifactId>
-        <version>0.0.GIT-MGR-SNAPSHOT</version>
+        <version>0.1.GIT-MGR</version>
     </parent>
 
     <artifactId>microservice-subscription</artifactId>
