@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
-    	<version>0.2.GIT-MGR-SNAPSHOT</version>
+    	<version>0.2.GIT-MGR</version>
 	</parent>
 
 	<groupId>com.nsn.cumulocity.model</groupId>
