@@ -2,7 +2,7 @@
 
 
 function update-status {
-    commitId=${MERCURIAL_REVISION}
+    commitId=${GIT_COMMIT}
     status=${1}
     name=${2}
     key=$( echo $3 | rev | cut -c -40 | rev )
