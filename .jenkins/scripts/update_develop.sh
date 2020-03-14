@@ -5,9 +5,9 @@ source ${BASH_SOURCE%/*}/update_dependencies.sh
 hotfix_version=$1
 development_version=$2
 
-hg update develop
+git checkout develop
 cd cumulocity-sdk
-hg update develop
+git checkout develop
 cd -
 
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
