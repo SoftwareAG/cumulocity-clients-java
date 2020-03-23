@@ -14,8 +14,8 @@ function git_finish_release {
 }
 
 echo "equivalent of git flow release finish r${release_version}"
-git_finish_release cumulocity-clients-java-test-git
+
+git_finish_release cumulocity-clients-java
 
 cd cumulocity-sdk
-git_finish_release cumulocity-sdk-test-git
-cd -
+git_finish_release cumulocity-sdk

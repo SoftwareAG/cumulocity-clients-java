@@ -1,10 +1,11 @@
 FROM buildpack-deps:stretch-scm
 ENV SDKMAN_DIR /usr/local/sdkman
 RUN apt-get update \
-      && apt-get upgrade -y && apt-get install -y sudo libltdl-dev rpm openssh-client openssl gnupg git curl zip unzip
+      && apt-get upgrade -y \
+      && apt-get install -y sudo libltdl-dev rpm openssh-client openssl gnupg git curl zip unzip
 RUN curl -s "https://get.sdkman.io" | bash \
       && bash -c 'source "$SDKMAN_DIR/bin/sdkman-init.sh" && sdk install java 8.0.242-zulu'\
-      && rm -rf /var/lib/apt/lists/* \
+      && rm -rf /var/lib/apt/lists/*
 RUN apt-get clean
 RUN git config --global user.email "jenkins@jenkins.cumulocity.com"
 RUN git config --global user.name "jenkins"

@@ -17,14 +17,12 @@ done
 
 call-mvn clean -T 4
 #if it is a release on develop branch, hg branch (git symbolic-ref --short HEAD) will return release/rX.X.X as it is the branch created in previous step.
-# If it is a release/hotfix on release branch it should just push the branch it was on TODO check
+# If it is a release/hotfix on release branch it should just push the branch it was on
 branch_name=$(git symbolic-ref --short HEAD)
 if [ "develop" == "${branch_name}" ]; then
     branch_name="release/r${version}"
 fi
 echo "branch name: $branch_name"
-
-repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
 
 echo checkout to new branch
 git checkout ${branch_name}
@@ -64,7 +62,6 @@ git commit -am "[maven-release-plugin] prepare for next development iteration" -
 cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
-git status
 echo "Push repositores"
 git push origin ${branch_name}
 cd cumulocity-sdk
