@@ -32,6 +32,9 @@ public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                   Class<T> responseClass);
 
+    <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, long length, InputStream inputStream,
+                                                          Class<T> responseClass);
+
     <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException;
 
     <T extends ResourceRepresentation> Future postAsync(String path, CumulocityMediaType mediaType, T representation)
