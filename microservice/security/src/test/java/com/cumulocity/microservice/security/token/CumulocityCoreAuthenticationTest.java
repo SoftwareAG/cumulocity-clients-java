@@ -1,23 +1,25 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.cumulocity.model.authentication.AuthenticationMethod;
-import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.ClientRequest;
+import java.net.URI;
+import javax.ws.rs.core.MultivaluedMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
+import static org.mockito.Mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import org.springframework.security.jwt.Jwt;
 
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.mockedJwtImpl;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CumulocityCoreAuthenticationTest {
@@ -27,6 +29,13 @@ public class CumulocityCoreAuthenticationTest {
 
     @Mock
     private JwtCredentials jwtCredentials;
+
+    @Mock
+    private ClientRequest clientRequest;
+
+    @Mock
+    private MultivaluedMap requestProperties;
+
     private JwtTokenAuthentication jwtTokenAuthentication;
 
     @Before
@@ -36,46 +45,68 @@ public class CumulocityCoreAuthenticationTest {
 
     @Test
     public void shouldCreateClientWithFilterForCookieAuth() {
+        //given
         Jwt accessToken = mockedJwtImpl();
         JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(accessToken, SAMPLE_XSRF_TOKEN);
         JwtTokenAuthentication jwtTokenAuthenticationWithXsrf = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
+        mockRequest();
 
+        //when
         Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtTokenAuthenticationWithXsrf);
+        CumulocityAuthenticationFilter filter = getAuthenticationFilter(client);
+        filter.handle(clientRequest);
 
-        CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
-        assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.COOKIE);
-        assertThat(credentials.getAuthenticationString()).isEqualTo(accessToken.getEncoded());
-        assertThat(credentials.getXsrfToken()).isEqualTo(SAMPLE_XSRF_TOKEN);
+        //then
+        verify(requestProperties).remove(eq("Authorization"));
+        verify(requestProperties).putSingle(eq("Cookie"), eq("authorization=" + jwtAndXsrfTokenCredentials.getJwt().getEncoded()));
+        verify(requestProperties).putSingle(eq("X-XSRF-TOKEN"), eq(jwtAndXsrfTokenCredentials.getXsrfToken()));
     }
 
-    private CumulocityOAuthCredentials retrieveOAuthCredentialsFromFilter(Client client) {
+    private void mockRequest() {
+        String someMethod = "GET";
+        when(clientRequest.getMethod()).thenReturn(someMethod);
+        URI someUri = URI.create("https://www.tenant.cumulocity.com");
+        when(clientRequest.getURI()).thenReturn(someUri);
+        when(clientRequest.getMetadata()).thenReturn(requestProperties);
+        when(clientRequest.getHeaders()).thenReturn(requestProperties);
+    }
+
+    private CumulocityAuthenticationFilter getAuthenticationFilter(Client client) {
         ClientHandler clientHandler = client.getHeadHandler();
         assertThat(clientHandler).isInstanceOf(CumulocityAuthenticationFilter.class);
-        CumulocityAuthenticationFilter filterForXsrf = (CumulocityAuthenticationFilter) clientHandler;
-        return Whitebox.getInternalState(filterForXsrf, "credentials");
+        return (CumulocityAuthenticationFilter) clientHandler;
     }
 
     @Test
     public void shouldCreateClientWithFilterForHeaderAuth() {
+        //given
         Jwt accessToken = mockedJwtImpl();
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
+        mockRequest();
 
+        //when
         Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtOnlyTokenAuthentication);
+        CumulocityAuthenticationFilter filter = getAuthenticationFilter(client);
+        filter.handle(clientRequest);
 
-        CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
-        assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
-        assertThat(credentials.getAuthenticationString()).isEqualTo("Bearer " + accessToken.getEncoded());
-        assertThat(credentials.getXsrfToken()).isEqualTo(null);
+        //then
+        verify(requestProperties, times(0)).remove(eq("Authorization"));
+        verify(requestProperties).add(eq("Authorization"), eq("Bearer " + jwtOnlyCredentials.getJwt().getEncoded()));
+        verify(requestProperties, times(0)).putSingle(eq("X-XSRF-TOKEN"), anyString());
     }
 
     @Test
     public void shouldUpdateAndAddTokenCredentials() {
+        //given
         when(jwtCredentials.toUserCredentials(TENANT_NAME, jwtTokenAuthentication)).thenReturn(UserCredentials.builder().tenant(TENANT_NAME).username(USERNAME).build());
 
+        //when
         JwtTokenAuthentication updatedToken = CumulocityCoreAuthenticationClient.updateUserCredentials(TENANT_NAME, jwtTokenAuthentication);
 
+        //then
         assertThat(updatedToken.getUserCredentials().getTenant()).isEqualTo(TENANT_NAME);
         assertThat(updatedToken.getUserCredentials().getUsername()).isEqualTo(USERNAME);
     }
 }
+

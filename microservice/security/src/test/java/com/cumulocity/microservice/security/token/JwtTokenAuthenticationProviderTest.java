@@ -4,9 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.core.Authentication;
 
@@ -16,9 +14,7 @@ import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAM
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(JwtTokenAuthenticationProvider.class)
-@PowerMockIgnore("javax.security.*")
+@RunWith(MockitoJUnitRunner.class)
 public class JwtTokenAuthenticationProviderTest {
 
     @Mock
@@ -39,11 +35,14 @@ public class JwtTokenAuthenticationProviderTest {
 
     @Test
     public void shouldReturnAuthentication() throws ExecutionException {
+        //given
         when(jwtAuthenticatedTokenCache.get(any(JwtCredentials.class), any(JwtTokenAuthenticationLoader.class))).thenReturn((updatedJwtTokenAuthenticationFromCache));
         JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
+        //when
         Authentication tokenFromCache = jwtTokenAuthenticationProvider.authenticate(jwtTokenAuthentication);
 
+        //then
         verify(jwtAuthenticatedTokenCache).get(any(JwtCredentials.class), any(JwtTokenAuthenticationLoader.class));
         assertThat(tokenFromCache).isSameAs(updatedJwtTokenAuthenticationFromCache);
     }
