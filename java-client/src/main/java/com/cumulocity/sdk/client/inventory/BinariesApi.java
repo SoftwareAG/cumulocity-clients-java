@@ -10,7 +10,7 @@ public interface BinariesApi {
     
     ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, byte[] bytes) throws SDKException;
 
-    ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, long length, InputStream inputStream) throws SDKException;
+    ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, InputStream inputStream) throws SDKException;
 
     ManagedObjectRepresentation replaceFile(GId containerId, String contentType, InputStream fileStream) throws SDKException;
 

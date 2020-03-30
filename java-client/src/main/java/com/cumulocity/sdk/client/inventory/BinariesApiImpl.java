@@ -26,8 +26,8 @@ public class BinariesApiImpl implements BinariesApi {
     }
 
     @Override
-    public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, long length, InputStream inputStream) throws SDKException {
-        return restConnector.postFileAsStream(getBinariesUrl(), container, length, inputStream, ManagedObjectRepresentation.class);
+    public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, InputStream inputStream) throws SDKException {
+        return restConnector.postFileAsStream(getBinariesUrl(), container, inputStream, ManagedObjectRepresentation.class);
     }
 
     @Override
