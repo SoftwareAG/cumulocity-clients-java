@@ -1,13 +1,13 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class JwtTokenAuthenticationTest {
 
     private static final String TENANT_NAME = "super-tenant-name";

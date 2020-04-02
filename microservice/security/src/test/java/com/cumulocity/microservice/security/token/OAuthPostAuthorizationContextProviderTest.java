@@ -4,11 +4,11 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import java.util.Optional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OAuthPostAuthorizationContextProviderTest {
 
     private static final String MY_APPLICATION_NAME = "my-application-name";
@@ -41,7 +41,7 @@ public class OAuthPostAuthorizationContextProviderTest {
     // under tests
     private OAuthPostAuthorizationContextProvider provider;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.provider = new OAuthPostAuthorizationContextProvider(MY_APPLICATION_NAME);
         this.provider.setSubscriptionsService(subscriptionService);

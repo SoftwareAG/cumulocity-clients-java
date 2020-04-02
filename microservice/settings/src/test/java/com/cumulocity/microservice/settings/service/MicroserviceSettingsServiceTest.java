@@ -7,18 +7,18 @@ import com.cumulocity.microservice.settings.service.impl.MicroserviceSettingsSer
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
 import lombok.RequiredArgsConstructor;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.Callable;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MicroserviceSettingsServiceTest {
 
     @Mock
@@ -30,7 +30,7 @@ public class MicroserviceSettingsServiceTest {
 
     private MicroserviceSettingsService microserviceSettingsService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         doReturn(bootstrapUser()).when(platformProperties).getMicroserviceBoostrapUser();
         doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));

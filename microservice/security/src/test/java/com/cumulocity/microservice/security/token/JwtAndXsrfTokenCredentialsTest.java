@@ -3,7 +3,7 @@ package com.cumulocity.microservice.security.token;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JwtAndXsrfTokenCredentialsTest extends JwtTokenTestsHelper{
     @Test

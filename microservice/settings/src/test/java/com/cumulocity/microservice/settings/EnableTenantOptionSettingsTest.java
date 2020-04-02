@@ -1,6 +1,5 @@
 package com.cumulocity.microservice.settings;
 
-
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.annotation.EnableContextSupportConfiguration;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
@@ -8,12 +7,10 @@ import com.cumulocity.microservice.settings.service.MicroserviceSettingsService;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.core.MediaType;
 
@@ -21,13 +18,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
         EnableContextSupportConfiguration.class,
         EnableTenantOptionSettingsTestConfiguration.class
