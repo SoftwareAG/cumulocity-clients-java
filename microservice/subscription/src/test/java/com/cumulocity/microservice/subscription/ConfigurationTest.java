@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription;
 
 import com.cumulocity.microservice.subscription.annotation.EnableMicroserviceSubscriptionConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = EnableMicroserviceSubscriptionConfiguration.class)

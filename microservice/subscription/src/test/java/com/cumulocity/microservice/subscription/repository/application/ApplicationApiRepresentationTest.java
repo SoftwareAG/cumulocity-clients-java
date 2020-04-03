@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription.repository.application;
 
 import com.google.common.base.Suppliers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

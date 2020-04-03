@@ -10,10 +10,6 @@
     <artifactId>microservice-security</artifactId>
     <name>Cumulocity :: Clients Java :: Microservice :: Security</name>
 
-    <properties>
-        <powermock.version>2.0.4</powermock.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -58,17 +54,5 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

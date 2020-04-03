@@ -11,10 +11,11 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.springframework.http.HttpMethod.POST;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CurrentMicroserviceRepositoryTest {
 
     private static final String BASE_URL = "http://c8y.com";
@@ -38,7 +39,7 @@ public class CurrentMicroserviceRepositoryTest {
 
     private CurrentMicroserviceRepository repository;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockEnvironment environment = mockEnvironment();
 

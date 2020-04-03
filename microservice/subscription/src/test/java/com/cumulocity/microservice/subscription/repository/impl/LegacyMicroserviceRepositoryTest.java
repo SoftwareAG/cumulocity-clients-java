@@ -11,8 +11,8 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -37,7 +37,7 @@ public class LegacyMicroserviceRepositoryTest {
 
     private LegacyMicroserviceRepository repository;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockEnvironment environment = new MockEnvironment();
 
