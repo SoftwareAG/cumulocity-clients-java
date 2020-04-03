@@ -38,7 +38,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
             return tokenCache.get(jwtCredentials, new JwtTokenAuthenticationLoader() {
                 @Override
                 public JwtTokenAuthentication call() {
-                    String baseUrl = "" + environment.getSystemEnvironment().get("C8Y_BASEURL");
+                    String baseUrl = environment.getProperty("C8Y.baseURL");
                     return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
                 }
             });
