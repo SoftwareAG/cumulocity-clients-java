@@ -3,6 +3,7 @@ package com.cumulocity.microservice.subscription.annotation;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.properties.ConfigurationFileProvider;
+import com.cumulocity.microservice.subscription.condition.ManifestFileCondition;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
@@ -25,8 +26,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 
 import java.io.BufferedReader;
@@ -75,23 +76,18 @@ public class EnableMicroserviceSubscriptionConfiguration {
     }
 
     @Bean
-    @Order
-    @ConditionalOnMissingBean
+    @Conditional(ManifestFileCondition.class)
     public MicroserviceMetadataRepresentation metadata(Environment environment) throws IOException {
         ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
 
         final Iterable<Path> manifests = provider.find(new String[]{"cumulocity"}, ".json");
-        if (!Iterables.isEmpty(manifests)) {
-            try (final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)) {
-                final MicroserviceManifestRepresentation manifest = JSONBase.fromJSON(reader, MicroserviceManifestRepresentation.class);
-                return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
-                        .requiredRoles(MoreObjects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
-                        .roles(MoreObjects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
-                        .build();
-            }
+        try (final BufferedReader reader = Files.newBufferedReader(Iterables.getFirst(manifests, null), Charsets.UTF_8)) {
+            final MicroserviceManifestRepresentation manifest = JSONBase.fromJSON(reader, MicroserviceManifestRepresentation.class);
+            return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
+                    .requiredRoles(MoreObjects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
+                    .roles(MoreObjects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
+                    .build();
         }
-
-        return new MicroserviceMetadataRepresentation();
     }
 
     @Bean
