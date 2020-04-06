@@ -46,7 +46,7 @@ echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
 ssh ${resources}  "mkdir  /tmp/maven-repository-${version} ;  tar -xvzf /tmp/maven-repository-${version}.tar.gz -C /tmp/maven-repository-${version}"
 echo "Publish extracted files to maven repository"
-ssh ${resources}  "sudo cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
+ssh ${resources}  "cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
 echo "Cleanup tmp files"
 ssh ${resources}  "rm -R /tmp/maven-repository-${version}*"
 echo "tagging cumulocity-clients-java"
