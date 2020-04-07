@@ -142,7 +142,7 @@ pipeline {
                     steps {
                         sshagent(['jenkins-master-key']) {
                             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
--                                 file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                 file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
 				sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
                                 sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
                             }
