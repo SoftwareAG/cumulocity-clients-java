@@ -2,6 +2,10 @@
 set -e
 source ${BASH_SOURCE%/*}/common.sh
 
+repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
+repository_clients_java=$repository_url/cumulocity-clients-java
+repository_sdk=$repository_url/cumulocity-sdk
+
 while [ "$1" != "" ]; do
     case $1 in
         -r | --release )        shift
@@ -26,16 +30,13 @@ echo "branch name: $branch_name"
 
 echo checkout to new branch
 git checkout ${branch_name}
-git push --set-upstream origin ${branch_name}
-git branch --set-upstream-to=origin/${branch_name} ${branch_name}
-echo pull changes
-git pull
+git push $repository_clients_java ${branch_name}
+git pull $repository_clients_java
 
 cd cumulocity-sdk
 git checkout ${branch_name}
-git push --set-upstream origin ${branch_name}
-git branch --set-upstream-to=origin/${branch_name} ${branch_name}
-git pull
+git push $repository_sdk ${branch_name}
+git pull $repository_sdk
 cd -
 
 echo "Update version to ${version}"
@@ -63,9 +64,9 @@ cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
 echo "Push repositores"
-git push origin ${branch_name}
+git push $repository_clients_java ${branch_name}
 cd cumulocity-sdk
-git push origin ${branch_name}
+git push $repository_sdk ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh
