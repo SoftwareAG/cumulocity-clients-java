@@ -31,12 +31,12 @@ echo "branch name: $branch_name"
 echo checkout to new branch
 git checkout ${branch_name}
 git push $repository_clients_java ${branch_name}
-git pull $repository_clients_java
+git pull $repository_clients_java ${branch_name}
 
 cd cumulocity-sdk
 git checkout ${branch_name}
 git push $repository_sdk ${branch_name}
-git pull $repository_sdk
+git pull $repository_sdk ${branch_name}
 cd -
 
 echo "Update version to ${version}"
