@@ -199,14 +199,7 @@ public class RestConnector implements RestOperations {
     @Override
     public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
                                                           Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
-        builder = addApplicationKeyHeader(builder);
-        builder = addTfaHeader(builder);
-        builder = addRequestOriginHeader(builder);
-        builder = applyInterceptors(builder);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
-        }
+        WebResource.Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
@@ -215,7 +208,7 @@ public class RestConnector implements RestOperations {
     @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                          Class<T> responseClass) {
-        WebResource.Builder builder = getWebResourceBuilder(path);
+        WebResource.Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("filesize", String.valueOf(bytes.length)));
@@ -226,7 +219,7 @@ public class RestConnector implements RestOperations {
     @Override
     public <T extends ResourceRepresentation> T postFileAsStream(String path, T representation,
                                                                  InputStream inputStream, Class<T> responseClass) {
-        WebResource.Builder builder = getWebResourceBuilder(path);
+        WebResource.Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("file", inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
@@ -422,6 +415,9 @@ public class RestConnector implements RestOperations {
                 }
             });
         }
+        if(platformParameters.getChunkedEncodingSize() > 0){
+            client.getProperties().put(ClientConfig.PROPERTY_CHUNKED_ENCODING_SIZE, platformParameters.getChunkedEncodingSize());
+        }
         return client;
     }
 
@@ -487,7 +483,7 @@ public class RestConnector implements RestOperations {
         return true;
     }
 
-    private WebResource.Builder getWebResourceBuilder(String path){
+    private WebResource.Builder getResourceBuilder(String path){
         WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -498,7 +494,6 @@ public class RestConnector implements RestOperations {
         }
 
         return builder;
-
     }
 
 }
