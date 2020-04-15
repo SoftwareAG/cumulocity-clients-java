@@ -4,21 +4,19 @@ import com.cumulocity.microservice.monitoring.health.controller.configuration.Te
 import com.cumulocity.microservice.monitoring.health.controller.configuration.TestMicroserviceSubscriptionConfiguration;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@RunWith(SpringRunner.class)
 @DirtiesContext(classMode = AFTER_CLASS)
 @SpringBootTest(classes = { TestMicroserviceSubscriptionConfiguration.class, TestConfiguration.class },
         properties = {

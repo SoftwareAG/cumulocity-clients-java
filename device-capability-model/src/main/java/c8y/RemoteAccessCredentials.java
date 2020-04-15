@@ -1,5 +1,6 @@
 package c8y;
 
+import com.cumulocity.model.audit.annotation.SkipFieldInChangeScanner;
 import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,11 +20,25 @@ public class RemoteAccessCredentials {
 
     private RemoteAccessCredentialsType type;
     private String username;
+    @SkipFieldInChangeScanner
     private String password;
     private String publicKey;
+    @SkipFieldInChangeScanner
     private String privateKey;
     /**Can be either hostKey or hostCertificate*/
     private String hostKey;
+
+    /** Creates and returns deep copy of current object */
+    public RemoteAccessCredentials copy() {
+        RemoteAccessCredentials copy = new RemoteAccessCredentials();
+        copy.setType(this.type);
+        copy.setUsername(this.username);
+        copy.setPassword(this.password);
+        copy.setHostKey(this.hostKey);
+        copy.setPrivateKey(this.privateKey);
+        copy.setPublicKey(this.publicKey);
+        return copy;
+    }
 
     @Override
     public String toString() {

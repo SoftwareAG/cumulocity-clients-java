@@ -2,10 +2,12 @@ package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Test;
 
 public class JwtOnlyCredentialsTest extends JwtTokenTestsHelper {
+
     @Test
     public void shouldBuildUserCredentialsWithoutXsrfToken() {
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(mockedJwtImpl());

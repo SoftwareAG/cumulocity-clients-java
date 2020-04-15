@@ -38,6 +38,18 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.credentials = credentials(map);
     }
 
+    /**Creates and returns deep copy*/
+    public RemoteAccess copy() {
+        RemoteAccess copy = new RemoteAccess();
+        copy.setId(this.getId());
+        copy.setName(this.getName());
+        copy.setHostname(this.getHostname());
+        copy.setPort(this.getPort());
+        copy.setProtocol(this.getProtocol());
+        copy.setCredentials(this.getCredentials().copy());
+        return copy;
+    }
+
     private RemoteAccessCredentials credentials(Map<String, Object> configuration) {
         if (configuration.containsKey("credentials")) {
             return credentialsFromMap(getValueAsMap(configuration, "credentials"), this.protocol);

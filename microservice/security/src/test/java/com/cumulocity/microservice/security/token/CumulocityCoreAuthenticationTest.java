@@ -6,20 +6,20 @@ import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.mockedJwtImpl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CumulocityCoreAuthenticationTest {
 
     private static final String TENANT_NAME = "test1234";
@@ -29,7 +29,7 @@ public class CumulocityCoreAuthenticationTest {
     private JwtCredentials jwtCredentials;
     private JwtTokenAuthentication jwtTokenAuthentication;
 
-    @Before
+    @BeforeEach
     public void setup() {
         jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials);
     }
@@ -52,7 +52,7 @@ public class CumulocityCoreAuthenticationTest {
         ClientHandler clientHandler = client.getHeadHandler();
         assertThat(clientHandler).isInstanceOf(CumulocityAuthenticationFilter.class);
         CumulocityAuthenticationFilter filterForXsrf = (CumulocityAuthenticationFilter) clientHandler;
-        return Whitebox.getInternalState(filterForXsrf, "credentials");
+        return (CumulocityOAuthCredentials )ReflectionTestUtils.getField(filterForXsrf, CumulocityOAuthCredentials.class, "credentials");
     }
 
     @Test

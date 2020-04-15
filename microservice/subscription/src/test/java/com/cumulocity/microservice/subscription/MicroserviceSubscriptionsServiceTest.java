@@ -13,14 +13,14 @@ import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import java.util.Optional;
 import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -33,7 +33,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MicroserviceSubscriptionsServiceTest {
 
     @Mock
@@ -54,7 +54,7 @@ public class MicroserviceSubscriptionsServiceTest {
     @InjectMocks
     private MicroserviceSubscriptionsServiceImpl subscriptionsService;
 
-    @Before
+    @BeforeEach
     public void before() {
         when(contextService.callWithinContext(any(), any(Callable.class))).thenAnswer(InvocationOnMock::callRealMethod);
         given(properties.getApplicationName()).willReturn("mockApp");

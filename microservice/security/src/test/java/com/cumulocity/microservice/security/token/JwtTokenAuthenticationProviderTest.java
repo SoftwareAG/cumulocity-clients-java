@@ -1,24 +1,20 @@
 package com.cumulocity.microservice.security.token;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.core.Authentication;
-
 import java.util.concurrent.ExecutionException;
 
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(JwtTokenAuthenticationProvider.class)
-@PowerMockIgnore("javax.security.*")
+@ExtendWith({MockitoExtension.class})
 public class JwtTokenAuthenticationProviderTest {
 
     @Mock
@@ -31,7 +27,7 @@ public class JwtTokenAuthenticationProviderTest {
     private JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider;
     private JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials;
 
-    @Before
+    @BeforeEach
     public void setup() {
         jwtTokenAuthenticationProvider = new JwtTokenAuthenticationProvider(standardEnvironment, jwtAuthenticatedTokenCache);
         jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(JwtTokenTestsHelper.mockedJwtImpl(), SAMPLE_XSRF_TOKEN);

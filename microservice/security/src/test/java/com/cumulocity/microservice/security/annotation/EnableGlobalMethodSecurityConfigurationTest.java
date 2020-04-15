@@ -6,8 +6,8 @@ import com.cumulocity.microservice.subscription.repository.application.Applicati
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,14 +20,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
         EnableGlobalMethodSecurityConfigurationTest.TestConfiguration.class,
         EnableGlobalMethodSecurityConfiguration.class
@@ -96,11 +95,13 @@ public class EnableGlobalMethodSecurityConfigurationTest {
     }
 
     @WithMockUser
-    @Test(expected = AccessDeniedException.class)
+    @Test
     public void shouldFailValidationOfFeature() {
         when(applications.getByName(anyString())).thenReturn(Optional.<ApplicationRepresentation>empty());
 
-        testService.doSomethingWhatRequiresFeatureEnabled();
+        Throwable throwable = catchThrowable(() -> testService.doSomethingWhatRequiresFeatureEnabled());
+
+        assertThat(throwable).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -111,16 +112,20 @@ public class EnableGlobalMethodSecurityConfigurationTest {
         assertThat(result).isTrue();
     }
 
-    @Test(expected = AccessDeniedException.class)
+    @Test
     @WithMockUser(username = "service_smartrulessssss")
     public void shouldFailValidationOfServiceUser() {
-        testService.doSomethingWhatRequiresServiceUser();
+        Throwable throwable = catchThrowable(() -> testService.doSomethingWhatRequiresServiceUser());
+
+        assertThat(throwable).isInstanceOf(AccessDeniedException.class);
     }
 
-    @Test(expected = AccessDeniedException.class)
+    @Test
     @WithUserDetails(value = "t500+/adrian")
     public void shouldFailForOtherTenantNotBeingManagement() {
-        testService.doSomethingWhatRequiresToBeTenantManagement();
+        Throwable throwable = catchThrowable(() -> testService.doSomethingWhatRequiresToBeTenantManagement());
+
+        assertThat(throwable).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
