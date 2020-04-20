@@ -85,7 +85,11 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "${env.BRANCH_NAME}"]],
-                    extensions: [[$class: 'CleanCheckout'],[$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk']],
+                    extensions: [
+                        [$class: 'CleanCheckout'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
+                        [$class: 'LocalBranch', localBranch: "**"]
+                    ],
                     userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master-key']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
