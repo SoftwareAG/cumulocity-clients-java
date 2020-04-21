@@ -30,12 +30,12 @@ echo "branch name: $branch_name"
 
 echo checkout to new branch
 git checkout ${branch_name}
-git push $repository_clients_java ${branch_name}
+git push --follow-tags $repository_clients_java ${branch_name}
 git pull $repository_clients_java ${branch_name}
 
 cd cumulocity-sdk
 git checkout ${branch_name}
-git push $repository_sdk ${branch_name}
+git push --follow-tags $repository_sdk ${branch_name}
 git pull $repository_sdk ${branch_name}
 cd -
 
@@ -64,9 +64,9 @@ cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
 echo "Push repositores"
-git push $repository_clients_java ${branch_name}
+git push --follow-tags $repository_clients_java ${branch_name}
 cd cumulocity-sdk
-git push $repository_sdk ${branch_name}
+git push --follow-tags $repository_sdk ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh
