@@ -77,6 +77,14 @@ public class PlatformParameters {
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
 
+    /** This property determines whether the chunked encoding is used and if so,
+     * the chunk size used by the http client while sending the request.
+     * A value < 0 declares that chunked encoding will not be used.
+     * A value = 0 declares that chunked encoding will be used with default chunk size.
+     * A value > 0 declares that chunked encoding will be used with provided chunk size.
+     */
+    private int chunkedEncodingSize = -1;
+
     public PlatformParameters() {
         //empty constructor for spring based initialization
     }
@@ -278,6 +286,14 @@ public class PlatformParameters {
 
     public void setResponseMapper(ResponseMapper responseMapper) {
         this.responseMapper = responseMapper;
+    }
+
+    public void setChunkedEncodingSize(int chunkedEncodingSize) {
+        this.chunkedEncodingSize = chunkedEncodingSize;
+    }
+
+    public int getChunkedEncodingSize() {
+        return this.chunkedEncodingSize;
     }
 
     private class DisabledBufferRequestService implements BufferRequestService {
