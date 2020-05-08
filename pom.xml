@@ -64,7 +64,7 @@
         <logback.version>1.0.2</logback.version>
         <lombok.version>1.16.20</lombok.version>
         <microemu.version>2.0.4</microemu.version>
-        <mockito.version>2.22.0</mockito.version>
+        <mockito.version>3.3.3</mockito.version>
         <powermock.version>1.7.4</powermock.version>
         <slf4j.version>1.7.0</slf4j.version>
         <spring.version>3.2.18.RELEASE</spring.version>
