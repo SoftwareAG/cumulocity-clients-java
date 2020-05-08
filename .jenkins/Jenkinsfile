@@ -13,9 +13,9 @@ pipeline {
     }
     parameters {
         choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
-        string(name: 'release_version', defaultValue: '0.0.GIT-MGR-SNAPSHOT', description: "version you want to release");
-        string(name: 'hotfix_version', defaultValue: '0.0.GIT-MGR-SNAPSHOT', description: "version with micro part bump, available in release branch");
-        string(name: 'development_version', defaultValue: '0.0.GIT-MGR-SNAPSHOT', description: "version that will be in develop branch after process")
+        string(name: 'release_version', defaultValue: '9.91.0', description: "version you want to release");
+        string(name: 'hotfix_version', defaultValue: '9.91.1-SNAPSHOT', description: "version with micro part bump, available in release branch");
+        string(name: 'development_version', defaultValue: '9.92.0-SNAPSHOT', description: "version that will be in develop branch after process")
 
     }
 
@@ -147,7 +147,7 @@ pipeline {
                         sshagent(['jenkins-master-key']) {
                             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
                                  file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-				sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                                sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
                                 sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
                             }
                         }
@@ -197,11 +197,11 @@ pipeline {
             }
         }
         failure {
-            //script {
-                //if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                //    chat 'AAAAvnc5o90'
-                //}
-            //}
+            script {
+                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
+                    chat 'AAAAvnc5o90'
+                }
+            }
 
             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
