@@ -4,7 +4,7 @@ RUN apt-get update \
       && apt-get upgrade -y \
       && apt-get install -y sudo libltdl-dev rpm openssh-client openssl gnupg git curl zip unzip
 RUN curl -s "https://get.sdkman.io" | bash \
-      && bash -c 'source "$SDKMAN_DIR/bin/sdkman-init.sh" && sdk install java 8.0.242-zulu'\
+      && bash -c 'source "$SDKMAN_DIR/bin/sdkman-init.sh" && sdk install java $(sdk list java | grep -e 8\.0\..*-zulu[^fx] | sed -r s/^.*8/8/)'\
       && rm -rf /var/lib/apt/lists/*
 RUN apt-get clean
 RUN git config --global user.email "jenkins@jenkins.cumulocity.com"
