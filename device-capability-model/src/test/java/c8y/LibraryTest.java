@@ -5,9 +5,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import com.cumulocity.model.JSONBase;
+import org.apache.commons.beanutils.ConversionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.svenson.JSONParseException;
+import org.svenson.JSONParser;
 import org.svenson.tokenize.InputStreamSource;
 
 import com.cumulocity.model.ManagedObject;
@@ -17,16 +20,18 @@ import static org.junit.Assert.*;
 
 public class LibraryTest {
 
-	private ManagedObject<GId> sensorLib;
+    private ManagedObject<GId> sensorLib;
     private ManagedObject<GId> deviceMgmtLib;
     private ManagedObject<GId> incorrectFragmentLib;
+    private ManagedObject<GId> incorrectFragmentLib2;
 
-	@Before
-	public void setup() {
-		sensorLib = readFile("/sensor-library");
-        deviceMgmtLib = readFile("/device-management-library");
-        incorrectFragmentLib = readFile("/incorrect-fragment-library");
-	}
+    @Before
+    public void setup() {
+        sensorLib = readFile("/sensor-library");
+        deviceMgmtLib = readFile("/device-management-library.json");
+        incorrectFragmentLib = readFile("/incorrect-fragment-library.json");
+        incorrectFragmentLib2 = readFile("/incorrect-fragment-library2.json");
+    }
 
 	@SuppressWarnings("unchecked")
 	private ManagedObject<GId> readFile(String file) {
@@ -72,8 +77,8 @@ public class LibraryTest {
     }
 
     @Test
-    public void shouldReadAsCustomFragmentOnIncorrectPropertyFields() {
-
+    @SuppressWarnings("unchecked")
+    public void shouldReadArrayOnIncorrectPropertyFields() {
         // should be able to read as
         Map<String, Object> customFragment = incorrectFragmentLib.getAttrs();
         List<Object> positions = (List<Object>) customFragment.get("c8y_Position");
@@ -84,26 +89,47 @@ public class LibraryTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    public void shouldReadObjectOnIncorrectPropertyFields() {
+        Map<String, Object> customFragments = incorrectFragmentLib2.getAttrs();
+        Map<String, Object> position = (Map<String, Object>) customFragments.get("c8y_Position");
+
+        assertEquals(67L, position.get("lat"));
+        assertEquals("123", position.get("lng"));
+        assertEquals("xxxxstr", position.get("alt"));
+    }
+
+    @Test
     public void shouldNotReadAsClassOnIncorrectPropertyFields() {
         assertNull(incorrectFragmentLib.get(Position.class));
         assertNull(incorrectFragmentLib.get(Relay.class));
+        assertNull(incorrectFragmentLib2.get(Position.class));
     }
 
     @Test
     public void shouldThrowExceptionOnExplicitParseOnIncorrectPropertyFields() {
         try {
             incorrectFragmentLib.get("c8y_Position", Position.class);
+            fail("Should throw exception");
         } catch (JSONParseException e) {
         } catch (Exception e) {
             fail("incorrect exception type " + e.getMessage());
         }
+
         try {
-            incorrectFragmentLib.get("c8y_Relay", Position.class);
+            incorrectFragmentLib.get("c8y_Relay", Relay.class);
+            fail("Should throw exception");
         } catch (JSONParseException e) {
+        } catch (Exception e) {
+            fail("incorrect exception type " + e.getMessage());
+        }
+
+        try {
+            incorrectFragmentLib2.get("c8y_Position", Position.class);
+            fail("Should throw exception");
+        } catch (JSONParseException | ConversionException e) {
         } catch (Exception e) {
             fail("incorrect exception type " + e.getMessage());
         }
     }
-
-
 }
