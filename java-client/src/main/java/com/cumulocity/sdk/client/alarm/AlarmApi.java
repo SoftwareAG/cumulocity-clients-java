@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client.alarm;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.sdk.client.SDKException;
@@ -103,4 +104,8 @@ public interface AlarmApi {
      */
     @Deprecated
     AlarmRepresentation updateAlarm(AlarmRepresentation alarm) throws SDKException;
+
+    void register(ProcessingMode processingMode);
+
+    void unregister();
 }

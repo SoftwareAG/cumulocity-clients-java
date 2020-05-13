@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client.measurement;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
@@ -48,7 +49,7 @@ public interface MeasurementApi {
      * @throws SDKException if the measurement could not be created
      */
     MeasurementRepresentation create(MeasurementRepresentation measurement) throws SDKException;
-    
+
     /**
      * Creates measurement in the platform. Does not send Accept header to make the request be processed faster.
      *
@@ -128,4 +129,8 @@ public interface MeasurementApi {
      */
     @Deprecated
     void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException;
+
+    void register(ProcessingMode processingMode);
+
+    void unregister();
 }

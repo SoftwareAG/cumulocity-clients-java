@@ -21,7 +21,9 @@
 package com.cumulocity.sdk.client.alarm;
 
 import java.util.Map;
+import java.util.Objects;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
@@ -30,8 +32,9 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.service.ProcessingModeService;
 
-public class AlarmApiImpl implements AlarmApi {
+public class AlarmApiImpl extends ProcessingModeService implements AlarmApi {
 
     private final RestConnector restConnector;
 
@@ -42,6 +45,7 @@ public class AlarmApiImpl implements AlarmApi {
     private UrlProcessor urlProcessor;
 
     public AlarmApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, AlarmsApiRepresentation alarmsApiRepresentation, int pageSize) {
+        super(restConnector);
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
         this.alarmsApiRepresentation = alarmsApiRepresentation;
@@ -118,5 +122,16 @@ public class AlarmApiImpl implements AlarmApi {
             Map<String, String> params = filter.getQueryParams();
             restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
         }
+    }
+
+    @Override
+    protected boolean isSupportedProcessingMode(ProcessingMode processingMode) {
+        if (Objects.isNull(processingMode)) {
+            return false;
+        }
+        if (ProcessingMode.TRANSIENT.equals(processingMode)) {
+            return true;
+        }
+        return false;
     }
 }

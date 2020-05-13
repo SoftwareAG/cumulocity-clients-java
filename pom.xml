@@ -497,6 +497,11 @@
             <!-- COMPILE DEPENDENCIES START -->
             <dependency>
                 <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>application-model</artifactId>
+                <version>${cumulocity.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
                 <artifactId>core-model</artifactId>
                 <version>${cumulocity.core.version}</version>
             </dependency>

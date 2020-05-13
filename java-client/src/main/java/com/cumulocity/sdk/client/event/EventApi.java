@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client.event;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.sdk.client.SDKException;
@@ -101,4 +102,8 @@ public interface EventApi {
      * @throws SDKException if the event could not be updated
      */
     EventRepresentation update(EventRepresentation eventRepresentation) throws SDKException;
+
+    void register(ProcessingMode processingMode);
+
+    void unregister();
 }

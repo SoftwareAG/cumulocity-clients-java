@@ -20,6 +20,7 @@
 
 package com.cumulocity.sdk.client.measurement;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementMediaType;
@@ -29,10 +30,12 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.service.ProcessingModeService;
 
 import java.util.Map;
+import java.util.Objects;
 
-public class MeasurementApiImpl implements MeasurementApi {
+public class MeasurementApiImpl extends ProcessingModeService implements MeasurementApi {
 
     private final RestConnector restConnector;
 
@@ -43,6 +46,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     private UrlProcessor urlProcessor;
 
     public MeasurementApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, MeasurementsApiRepresentation measurementsApiRepresentation, int pageSize) {
+        super(restConnector);
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
         this.measurementsApiRepresentation = measurementsApiRepresentation;
@@ -116,7 +120,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     public void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException {
           restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
-    
+
     @Override
     public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
           return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
@@ -126,4 +130,16 @@ public class MeasurementApiImpl implements MeasurementApi {
         return getMeasurementApiRepresentation().getMeasurements().getSelf();
     }
 
+    @Override
+    protected boolean isSupportedProcessingMode(ProcessingMode processingMode) {
+        if (Objects.isNull(processingMode)) {
+            return false;
+        }
+        if (ProcessingMode.TRANSIENT.equals(processingMode) ||
+                ProcessingMode.QUIESCENT.equals(processingMode) ||
+                ProcessingMode.CEP.equals(processingMode)) {
+            return true;
+        }
+        return false;
+    }
 }

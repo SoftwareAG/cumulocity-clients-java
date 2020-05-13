@@ -87,6 +87,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>application-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>rest-representation</artifactId>
 		</dependency>
 		<dependency>

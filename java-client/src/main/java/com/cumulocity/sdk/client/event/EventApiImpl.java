@@ -20,18 +20,26 @@
 
 package com.cumulocity.sdk.client.event;
 
+import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.event.EventMediaType;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.CepProcessingHttpClientInterceptor;
+import com.cumulocity.sdk.client.interceptor.ProcessingModeHttpClientInterceptor;
+import com.cumulocity.sdk.client.interceptor.QuiescentProcessingHttpClientInterceptor;
+import com.cumulocity.sdk.client.interceptor.TransientProcessingHttpClientInterceptor;
+import com.cumulocity.sdk.client.interceptor.service.ProcessingModeService;
 
 import java.util.Map;
+import java.util.Objects;
 
-public class EventApiImpl implements EventApi {
+public class EventApiImpl extends ProcessingModeService implements EventApi {
 
     private final RestConnector restConnector;
 
@@ -42,6 +50,7 @@ public class EventApiImpl implements EventApi {
     private UrlProcessor urlProcessor;
 
     public EventApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, EventsApiRepresentation eventsApiRepresentation, int pageSize) {
+        super(restConnector);
         this.restConnector = restConnector;
         this.urlProcessor = urlProcessor;
         this.eventsApiRepresentation = eventsApiRepresentation;
@@ -107,5 +116,18 @@ public class EventApiImpl implements EventApi {
     public EventRepresentation update(EventRepresentation eventRepresentation) throws SDKException {
         String url = getSelfUri() + "/" + eventRepresentation.getId().getValue();
         return restConnector.put(url, EventMediaType.EVENT, eventRepresentation);
+    }
+
+    @Override
+    protected boolean isSupportedProcessingMode(ProcessingMode processingMode) {
+        if (Objects.isNull(processingMode)) {
+            return false;
+        }
+        if (ProcessingMode.TRANSIENT.equals(processingMode) ||
+            ProcessingMode.QUIESCENT.equals(processingMode) ||
+            ProcessingMode.CEP.equals(processingMode)) {
+            return true;
+        }
+        return false;
     }
 }
