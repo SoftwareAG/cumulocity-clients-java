@@ -24,8 +24,12 @@ import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
+
+import java.util.Set;
 
 /**
  * API for creating, deleting and retrieving measurements from the platform.
@@ -133,4 +137,8 @@ public interface MeasurementApi {
     void register(ProcessingMode processingMode);
 
     void unregister();
+
+    public Set<HttpClientInterceptor> getHttpInterceptors();
+
+    public PlatformParameters getPlatformParameters();
 }

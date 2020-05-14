@@ -5,9 +5,19 @@ import com.sun.jersey.api.client.WebResource.Builder;
 
 public class QuiescentProcessingHttpClientInterceptor extends ProcessingModeHttpClientInterceptor {
 
+    private static QuiescentProcessingHttpClientInterceptor instance;
+
+    private QuiescentProcessingHttpClientInterceptor() {}
+
+    public static QuiescentProcessingHttpClientInterceptor getInstance() {
+        if (instance == null) {
+            instance = new QuiescentProcessingHttpClientInterceptor();
+        }
+        return instance;
+    }
+
     @Override
-    public Builder apply(Builder builder) {
-        builder.header(X_CUMULOCITY_PROCESSING_MODE, ProcessingMode.QUIESCENT.name());
-        return builder;
+    protected String getProcessingModeName() {
+        return ProcessingMode.QUIESCENT.name();
     }
 }

@@ -5,9 +5,19 @@ import com.sun.jersey.api.client.WebResource.Builder;
 
 public class CepProcessingHttpClientInterceptor extends ProcessingModeHttpClientInterceptor {
 
+    private static CepProcessingHttpClientInterceptor instance;
+
+    private CepProcessingHttpClientInterceptor() {}
+
+    public static CepProcessingHttpClientInterceptor getInstance() {
+        if (instance == null) {
+            instance = new CepProcessingHttpClientInterceptor();
+        }
+        return instance;
+    }
+
     @Override
-    public Builder apply(Builder builder) {
-        builder.header(X_CUMULOCITY_PROCESSING_MODE, ProcessingMode.CEP.name());
-        return builder;
+    protected String getProcessingModeName() {
+        return ProcessingMode.CEP.name();
     }
 }

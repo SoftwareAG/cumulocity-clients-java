@@ -3,10 +3,9 @@ package com.cumulocity.sdk.client.interceptor.service;
 import com.cumulocity.model.cep.ProcessingMode;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.sdk.client.interceptor.CepProcessingHttpClientInterceptor;
-import com.cumulocity.sdk.client.interceptor.ProcessingModeHttpClientInterceptor;
-import com.cumulocity.sdk.client.interceptor.QuiescentProcessingHttpClientInterceptor;
-import com.cumulocity.sdk.client.interceptor.TransientProcessingHttpClientInterceptor;
+import com.cumulocity.sdk.client.interceptor.*;
+
+import java.util.Set;
 
 public abstract class ProcessingModeService {
 
@@ -23,20 +22,8 @@ public abstract class ProcessingModeService {
     public void register(ProcessingMode processingMode) {
         if (isSupportedProcessingMode(processingMode)) {
             PlatformParameters platformParameters = restConnector.getPlatformParameters();
-            switch (processingMode) {
-                case TRANSIENT:
-                    processingModeHttpClientInterceptor = new TransientProcessingHttpClientInterceptor();
-                    platformParameters.registerInterceptor(processingModeHttpClientInterceptor);
-                    break;
-                case QUIESCENT:
-                    processingModeHttpClientInterceptor = new QuiescentProcessingHttpClientInterceptor();
-                    platformParameters.registerInterceptor(processingModeHttpClientInterceptor);
-                    break;
-                case CEP:
-                    processingModeHttpClientInterceptor = new CepProcessingHttpClientInterceptor();
-                    platformParameters.registerInterceptor(processingModeHttpClientInterceptor);
-                    break;
-            }
+            processingModeHttpClientInterceptor = getByProcessingMode(processingMode);
+            platformParameters.registerInterceptor(processingModeHttpClientInterceptor);
         }
     }
 
@@ -46,5 +33,26 @@ public abstract class ProcessingModeService {
             platformParameters.unregisterInterceptor(processingModeHttpClientInterceptor);
             processingModeHttpClientInterceptor = null;
         }
+    }
+
+    public static ProcessingModeHttpClientInterceptor getByProcessingMode(ProcessingMode processingMode) {
+        switch (processingMode) {
+            case TRANSIENT:
+                return TransientProcessingHttpClientInterceptor.getInstance();
+            case QUIESCENT:
+                return QuiescentProcessingHttpClientInterceptor.getInstance();
+            case CEP:
+                return CepProcessingHttpClientInterceptor.getInstance();
+            default:
+                return PersistenceProcessingMode.getInstance();
+        }
+    }
+
+    public Set<HttpClientInterceptor> getHttpInterceptors() {
+        return restConnector.getPlatformParameters().getInterceptorSet();
+    }
+
+    public PlatformParameters getPlatformParameters() {
+        return restConnector.getPlatformParameters();
     }
 }

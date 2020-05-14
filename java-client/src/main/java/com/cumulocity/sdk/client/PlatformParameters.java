@@ -280,6 +280,14 @@ public class PlatformParameters {
         return interceptorSet.remove(interceptor);
     }
 
+    public Set<HttpClientInterceptor> getInterceptorSet() {
+        return interceptorSet;
+    }
+
+    public void setInterceptorSet(Set<HttpClientInterceptor> interceptorSet) {
+        this.interceptorSet = interceptorSet;
+    }
+
     public ResponseMapper getResponseMapper() {
         return responseMapper;
     }
