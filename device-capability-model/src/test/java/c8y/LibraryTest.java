@@ -5,17 +5,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import com.cumulocity.model.JSONBase;
 import org.apache.commons.beanutils.ConversionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.svenson.JSONParseException;
-import org.svenson.JSONParser;
 import org.svenson.tokenize.InputStreamSource;
 
 import com.cumulocity.model.ManagedObject;
 import com.cumulocity.model.idtype.GId;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 public class LibraryTest {
@@ -108,28 +107,13 @@ public class LibraryTest {
 
     @Test
     public void shouldThrowExceptionOnExplicitParseOnIncorrectPropertyFields() {
-        try {
-            incorrectFragmentLib.get("c8y_Position", Position.class);
-            fail("Should throw exception");
-        } catch (JSONParseException e) {
-        } catch (Exception e) {
-            fail("incorrect exception type " + e.getMessage());
-        }
+        assertThatThrownBy(() -> incorrectFragmentLib.get("c8y_Position", Position.class))
+                .isInstanceOf(JSONParseException.class);
 
-        try {
-            incorrectFragmentLib.get("c8y_Relay", Relay.class);
-            fail("Should throw exception");
-        } catch (JSONParseException e) {
-        } catch (Exception e) {
-            fail("incorrect exception type " + e.getMessage());
-        }
+        assertThatThrownBy(() -> incorrectFragmentLib.get("c8y_Relay", Relay.class))
+                .isInstanceOf(JSONParseException.class);
 
-        try {
-            incorrectFragmentLib2.get("c8y_Position", Position.class);
-            fail("Should throw exception");
-        } catch (JSONParseException | ConversionException e) {
-        } catch (Exception e) {
-            fail("incorrect exception type " + e.getMessage());
-        }
+        assertThatThrownBy(() -> incorrectFragmentLib2.get("c8y_Position", Position.class))
+                .isInstanceOfAny(JSONParseException.class, ConversionException.class);
     }
 }
