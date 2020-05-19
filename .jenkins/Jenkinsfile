@@ -1,211 +1,288 @@
-pipeline {
-    agent {
-        dockerfile {
-            dir '.jenkins/build'
-            args '--network centos_default'
-        }
-    }
-    triggers { pollSCM('H/5 * * * *') }
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 1, unit: 'HOURS')
-        disableConcurrentBuilds()
-    }
-    parameters {
-        choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
-        string(name: 'release_version', defaultValue: '9.91.0', description: "version you want to release");
-        string(name: 'hotfix_version', defaultValue: '9.91.1-SNAPSHOT', description: "version with micro part bump, available in release branch");
-        string(name: 'development_version', defaultValue: '9.92.0-SNAPSHOT', description: "version that will be in develop branch after process")
+//main pipeline
+node
+{
 
+    //global defines
+
+    //build types used to define what to run
+    normal = false
+    release = false
+    hotfix = false
+
+    //Exit pipeline when set to true
+    stoppipeline = false
+
+    //credentials
+    withBitbucketCredentials = usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')
+    withMavenCredentials = file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')
+
+    //credential groups
+    bitBucketCreds = [withBitbucketCredentials]
+    mavenCreds = [withMavenCredentials]
+    bitBucketandMavenCreds = [withBitbucketCredentials, withMavenCredentials]
+
+    //ssh keys
+    sshAgentKey = ['jenkins-master-key']
+
+    //Set stage to unstable default will be Failure
+    on_failure_set_status_unstable = "UNSTABLE"
+
+
+    //declarative pipeline do a 'hidden' checkout of the SCM
+    stage('Checkout SCM')
+    {
+        checkout scm
+        getGitChangeset()
     }
+    // set config parameters
+    job_options()
 
-    stages {
-        stage('Fail in case of incorrect input parameters') {
-            when {
-                not {
-                    anyOf {
-                        allOf {
-                            equals expected: 'RELEASE', actual: params.build_type;
-                            branch 'develop'
-                        };
-                        allOf {
-                            equals expected: 'HOTFIX', actual: params.build_type;
-                            branch 'release/*'
-                        }
-                        equals expected: 'DEFAULT', actual: params.build_type
-                    }
-                }
-            }
-            steps {
-                error("Incorrect input parameters")
-            }
-        }
-        stage('Checkout') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                    sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
-                }
-                sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
-            }
-        }
-        stage('Compile') {
-            steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
-                }
-            }
-        }
-        stage('Build') {
-//            agent {
-//                dockerfile {
-//                    dir '.jenkins/build'
-//                }
-//            }
-            options {
-                retry(3)
-            }
-            steps {
-                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
-            }
-            post {
-                always {
-                    junit(testResults: '**/TEST-*.xml', keepLongStdio: true)
-                    jacoco()
-                }
-            }
-        }
-        stage('Verify maven repo') {
-            when {
-                anyOf {
-                    branch 'develop'
-                    branch 'release/**'
-                }
-            }
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${env.BRANCH_NAME}"]],
-                    extensions: [
-                        [$class: 'CleanCheckout'],
-                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
-                        [$class: 'LocalBranch', localBranch: "**"]
-                    ],
-                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master-key']]
-                ])
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
-                }
-            }
-        }
-        stage('Deploy to Nexus') {
-            when {
-                allOf {
-                    equals expected: 'DEFAULT', actual: params.build_type
-                    anyOf {
-                        branch 'release/**';
-                        branch 'develop'
-                    }
-                }
+    //build the docker file
+    def dockerclientjava = docker.build("docker-client-java", ".jenkins/build")
 
-            }
-            steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+    //run using the docker image and pass arguments to be used in the container
+    dockerclientjava.inside("--network centos_default")
+    {
+        try
+        {
+            //set the timeout
+            timeout(time: 4, unit: 'HOURS')
+            {
+                stage('Fail in case of incorrect input parameters')
+                {
+                    check_input_params()
+                    //check if we need to stop the pipeline the error only works from the main body not a function
+                    if (stoppipeline)
+                    {
+                        error "Stopping pipeline"
+                    }
+                }
+                stage('Checkout')
+                {
+                    run(bitBucketCreds, ".jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG}")
+                    run(mavenCreds, ".jenkins/scripts/clean.sh")
+                }
+                stage('Compile')
+                {
+                    run(mavenCreds, ".jenkins/scripts/compile.sh")
+                }
+                stage('Build')
+                {
+                    retry(3)
+                    {
+                        run(mavenCreds, ".jenkins/scripts/build.sh")
+                    }
+                }
+                stage('Publish post build test results')
+                {
+                    publish_post_build_test_results()
+                }
+                if (env.BRANCH_NAME == "develop" || env.BRANCH_NAME.startsWith("release"))
+                {
+                    stage('Verify maven repo')
+                    {
+                        checkout([
+                                $class           : 'GitSCM',
+                                branches         : [[name: "${env.BRANCH_NAME}"]],
+                                extensions       : [
+                                        [$class: 'CleanCheckout'],
+                                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
+                                        [$class: 'LocalBranch', localBranch: "**"]
+                                ],
+                                userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId: 'jenkins-master-key']]
+                        ])
+                        run(mavenCreds, ".jenkins/scripts/repo.sh")
+                    }
+                    stage('Deploy to nexus')
+                    {
+                        run(mavenCreds, ".jenkins/scripts/deploy.sh")
+                    }
+                }
+                //build type selected during check_input_params can either be default or release builds
+                if (release || hotfix)
+                {
+                    create_release_and_deploy()
                 }
             }
         }
-        stage('Release') {
-            when {
-                anyOf {
-                    allOf {
-                        equals expected: 'RELEASE', actual: params.build_type;
-                        branch 'develop'
-                    };
-                    allOf {
-                        equals expected: 'HOTFIX', actual: params.build_type;
-                        branch 'release/*'
-                    }
-                }
-            }
-            stages {
-                stage('Prepare release') {
-                    when {
-                        equals expected: 'RELEASE', actual: params.build_type
-                    }
-                    steps {
-                        sh "chmod +x .jenkins/scripts/prepare_release.sh && .jenkins/scripts/prepare_release.sh ${params.release_version}"
-                    }
-                }
-                stage('Release') {
-                    when {
-                        anyOf {
-                            equals expected: 'RELEASE', actual: params.build_type;
-                            equals expected: 'HOTFIX', actual: params.build_type
-                        }
-                    }
-                    steps {
-                        sshagent(['jenkins-master-key']) {
-                            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
-                                 file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                                sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
-                                sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
-                            }
-                        }
-                    }
-                }
-                stage('Finish release') {
-                    when {
-                        equals expected: 'RELEASE', actual: params.build_type
-                    }
-                    stages {
-                        stage('Close and merge release branch') {
-                            steps {
-                                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                                    sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
-                                }
-                            }
-                        }
-                        stage('Bump develop branch') {
-                            steps {
-                                withCredentials([
-                                        usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
-                                        file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                                    sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('Scan third party dependencies') {
-                    steps {
-                        echo "executing scan of third party dependencies"
-                        withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                          sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
-                        }
-                    }
-                }
-            }
+        catch (Exception err)
+        {
+            currentBuild.result = "FAILURE"
+            println err
         }
-    }
-    post {
-        always {
-            sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
-        }
-        success {
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
-            }
-        }
-        failure {
-            script {
-                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                    chat 'AAAAvnc5o90'
-                }
-            }
-
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
-            }
+        finally
+        {
+            notify_clean()
         }
     }
 }
+
+
+//do the release
+def create_release_and_deploy()
+{
+    if (release)
+    {
+        stage('Prepare release')
+        {
+            run(bitBucketCreds, ".jenkins/scripts/prepare_release.sh ${params.release_version}")
+        }
+    }
+    stage('Release')
+    {
+        sshagent(sshAgentKey)
+        {
+            run(bitBucketandMavenCreds, ".jenkins/scripts/update_dependencies.sh ${params.release_version}")
+            run(bitBucketandMavenCreds, ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}")
+        }
+    }
+    //only continue if previous stages have passed
+    if (currentBuild.result != "SUCCESS")
+    {
+        error "Stop the pipeline due to earlier failure"
+    }
+    if (release)
+    {
+        stage('Close and merge release branch')
+        {
+            run(bitBucketCreds, ".jenkins/scripts/finish_release.sh ${params.release_version}")
+        }
+        stage('Bump develop branch')
+        {
+            run(bitBucketandMavenCreds, ".jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}")
+        }
+    }
+    stage('Scan 3rd party dependancies')
+    {
+        run(mavenCreds, ".jenkins/scripts/scan_dependencies.sh ${params.release_version}", on_failure_set_status_unstable)
+    }
+}
+
+
+//get the Git changeset
+def getGitChangeset()
+{
+    raw_changeset = sh label: '', returnStdout: true, script: 'git rev-parse HEAD'
+    //remove branch name not required
+    changeset = (raw_changeset.split("\\s")[0])
+    env.GIT_COMMIT = changeset
+}
+
+def job_options()
+{
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
+                disableConcurrentBuilds(),
+                parameters([choice(choices: ['DEFAULT', 'RELEASE', 'HOTFIX'], description: '', name: 'build_type'),
+                            string(defaultValue: '0.0.0', description: 'version you want to release', name: 'release_version', trim: false),
+                            string(defaultValue: '0.0.1-SNAPSHOT', description: 'version with micro part bump, available in release branch', name: 'hotfix_version', trim: false),
+                            string(defaultValue: '0.1.0-SNAPSHOT', description: "version that will be in develop branch after process", name: 'development_version', trim: false)]),
+                pipelineTriggers([pollSCM('H/5 * * * *')])])
+}
+
+def check_input_params()
+{
+    try
+    {
+        if (params.build_type == "DEFAULT")
+        {
+            normal = true
+        }
+        else
+        {
+            if ((params.build_type == "RELEASE") && (env.BRANCH_NAME == "develop"))
+            {
+                release = true
+            }
+            else
+            {
+                if ((params.build_type == "HOTFIX") && (env.BRANCH_NAME.startsWith("release")))
+                {
+                    hotfix = true
+                }
+                else
+                {
+                    stoppipeline = true
+                    //stop the pipeline
+                    error("Invalid input parameters ${params.build_type} and ${env.BRANCH_NAME}")
+                }
+            }
+        }
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        currentBuild.result = "FAILURE"
+        println err
+    }
+}
+
+def publish_post_build_test_results()
+{
+    try
+    {
+        junit(testResults: '**/TEST-*.xml', keepLongStdio: true)
+        jacoco()
+    }
+    catch (Exception err)
+    {
+        currentBuild.result = "FAILURE"
+        println err
+    }
+}
+
+
+def notify_clean()
+{
+    try
+    {
+        run(mavenCreds, ".jenkins/scripts/clean.sh")
+
+        //if the scan_dependancies fails we mark the result as unstable but want to complete the job
+        if (currentBuild.result != "FAILURE")
+        {
+            run(bitBucketCreds, ".jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} ")
+        }
+        else
+        {
+            if (env.BRANCH_NAME ==~ '(develop|release/.*)')
+            {
+                echo "in"
+                chat room: 'AAAAvnc5o90', message: "Job failed check ${BUILD_URL} for details"
+            }
+            else
+            {
+                echo "out ${env.BRANCH_NAME}"
+            }
+            run(bitBucketCreds, ".jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} ")
+        }
+        //Clean the ws if the job passed leave for debug if it failed
+        cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false, notFailBuild: true
+    }
+    catch (Exception err)
+    {
+        currentBuild.result = "FAILURE"
+        println err
+    }
+}
+
+// Pass bitbucket or maven credentials, command to run and error status default is FAILURE
+def run(credentials, String runCmd, String result = "FAILURE")
+{
+    try
+    {
+        withCredentials(credentials)
+        {
+            sh "${runCmd}"
+        }
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        currentBuild.result = "${result}"
+        println err
+    }
+}
+
+
+
+
