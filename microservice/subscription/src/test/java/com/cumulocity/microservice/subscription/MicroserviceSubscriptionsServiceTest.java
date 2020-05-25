@@ -11,15 +11,12 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceSubscript
 import com.cumulocity.microservice.subscription.service.impl.MicroserviceSubscriptionsServiceImpl;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,8 +26,8 @@ import java.util.concurrent.Callable;
 
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,7 +43,7 @@ public class MicroserviceSubscriptionsServiceTest {
     private MicroserviceSubscriptionsRepository repository;
 
     @Mock
-    private ContextServiceImpl contextService;
+    private ContextServiceImpl<MicroserviceCredentials> contextService;
 
     @Mock
     private MicroserviceMetadataRepresentation microserviceMetadataRepresentation;
@@ -56,19 +53,17 @@ public class MicroserviceSubscriptionsServiceTest {
 
     @BeforeEach
     public void before() {
-        when(contextService.callWithinContext(any(), any(Callable.class))).thenAnswer(InvocationOnMock::callRealMethod);
-        given(properties.getApplicationName()).willReturn("mockApp");
+        given(repository.register(any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId")));
+        given(contextService.callWithinContext(any(), any(Callable.class))).willCallRealMethod();
     }
 
     @Test
     public void shouldNotUpdateCurrentSubscriptionWhenEventProcessingFails() {
         //given
-        final Subscriptions subscriptions = givenSubscriptions();
-
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId1")));
-        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
-
-        doThrow(new SDKException("mongo connection timeout")).when(eventPublisher).publishEvent(any(ApplicationEvent.class));
+        given(repository.retrieveSubscriptions()).willReturn(givenSubscriptions());
+        
+        doThrow(new SDKException("mongo connection timeout"))
+                .when(eventPublisher).publishEvent(any(ApplicationEvent.class));
 
         //when
         subscriptionsService.subscribe();
@@ -80,16 +75,13 @@ public class MicroserviceSubscriptionsServiceTest {
     @Test
     public void shouldUpdateCurrentSubscriptionOnlyWhenEventsProcessedSuccessfully() {
         //given
-        final Subscriptions subscriptions = givenSubscriptions();
-
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId2")));
-        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
+        given(repository.retrieveSubscriptions()).willReturn(givenSubscriptions());
 
         //when
         subscriptionsService.subscribe();
 
         //then
-        verify(repository).updateCurrentSubscriptions(Matchers.anyCollection());
+        verify(repository).updateCurrentSubscriptions(anyCollection());
     }
 
     @Test
@@ -98,8 +90,7 @@ public class MicroserviceSubscriptionsServiceTest {
         final Subscriptions subscriptions = givenSubscriptions();
         final Set<MicroserviceCredentials> subscribingCredentials = new HashSet<>();
 
-        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId3")));
-        given(repository.retrieveSubscriptions(anyString())).willReturn(subscriptions);
+        given(repository.retrieveSubscriptions()).willReturn(subscriptions);
 
         // when
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, event -> {

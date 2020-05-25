@@ -100,18 +100,27 @@ public class MicroserviceSubscriptionsRepository {
         return ofNullable(repository.register(applicationName, metadata));
     }
 
-    public Subscriptions retrieveSubscriptions(String applicationId) {
-        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
+    @Deprecated
+    public Subscriptions retrieveSubscriptions(String unnecessaryApplicationId) {
+        return retrieveSubscriptions();
+    }
+
+    public Subscriptions retrieveSubscriptions() {
+        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions().spliterator(), false).map(representation -> MicroserviceCredentials.builder()
                 .username(representation.getName())
                 .tenant(representation.getTenant())
                 .password(representation.getPassword())
                 .oAuthAccessToken(null)
                 .xsrfToken(null)
                 .build()).collect(Collectors.toList());
-        final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, subscriptions);
-        final Collection<MicroserviceCredentials> added = subtract(subscriptions, currentSubscriptions);
+        return diffWithCurrentSubscriptions(subscriptions);
+    }
+
+    public Subscriptions diffWithCurrentSubscriptions(List<MicroserviceCredentials> credentials) {
+        final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, credentials);
+        final Collection<MicroserviceCredentials> added = subtract(credentials, currentSubscriptions);
         return Subscriptions.builder()
-                .all(subscriptions)
+                .all(credentials)
                 .removed(removed)
                 .added(added)
                 .build();

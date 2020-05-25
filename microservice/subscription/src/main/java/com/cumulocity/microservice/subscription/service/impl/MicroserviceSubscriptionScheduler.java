@@ -16,14 +16,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.cumulocity.microservice.subscription.model.core.PlatformProperties.IsolationLevel.PER_TENANT;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * 
  * A service which creates a scheduled task to fetch microservice subscriptions.
  * Emits MicroserviceSubscriptionsInitializedEvent when scheduled task is initialized.
- *
  */
 @Service
 public class MicroserviceSubscriptionScheduler implements ApplicationListener<ContextRefreshedEvent> {
@@ -54,28 +53,44 @@ public class MicroserviceSubscriptionScheduler implements ApplicationListener<Co
         if (started.get()) {
             return;
         }
+
+        if (PER_TENANT.equals(properties.getIsolation())) {
+            subscribe();
+        } else {
+            schedulePeriodicSubscription();
+        }
+    }
+
+    private void subscribe() {
+        service.subscribe();
+        eventPublisher.publishEvent(new MicroserviceSubscriptionsInitializedEvent());
+        started.set(true);
+    }
+
+    private void schedulePeriodicSubscription() {
         final int subscriptionDelay = getSubscriptionDelay();
         final int subscriptionInitialDelay = getSubscriptionInitialDelay();
         log.info("Start; subscriptionDelay = {}, subscriptionInitialDelay = {}", subscriptionDelay, subscriptionInitialDelay);
         if (subscriptionDelay <= 0) {
-            return;
+            throw new IllegalStateException("Subscription delay should be greater than 0");
         }
-        subscriptionsWatcher.scheduleWithFixedDelay(new Runnable() {
-            public void run() {
-                try {
-                    service.subscribe();
-                } finally {
-                    if (!started.get()) {
-                        eventPublisher.publishEvent(new MicroserviceSubscriptionsInitializedEvent());
-                    }
-                    started.set(true);
+
+        subscriptionsWatcher.scheduleWithFixedDelay(() -> {
+            try {
+                service.subscribe();
+            } catch (Throwable e) {
+                log.error("Error while reacting on microservice subscription", e);
+            } finally {
+                if (!started.get()) {
+                    eventPublisher.publishEvent(new MicroserviceSubscriptionsInitializedEvent());
                 }
+                started.set(true);
             }
         }, subscriptionInitialDelay, subscriptionDelay, MILLISECONDS);
     }
 
     private int getSubscriptionDelay() {
-        return firstNonNull(properties.getSubscriptionDelay(), -1);
+        return firstNonNull(properties.getSubscriptionDelay(), 10_000);
     }
 
     private int getSubscriptionInitialDelay() {

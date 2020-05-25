@@ -8,16 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import static com.cumulocity.microservice.subscription.model.core.PlatformProperties.IsolationLevel.PER_TENANT;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.springframework.util.StringUtils.isEmpty;
 
 public class PlatformProperties {
-    @java.beans.ConstructorProperties({"applicationName", "url", "mqttUrl", "microserviceBoostrapUser", "subscriptionDelay", "subscriptionInitialDelay", "isolation"})
-    public PlatformProperties(String applicationName, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation, boolean forceInitialHost) {
+    @java.beans.ConstructorProperties({"applicationName", "url", "mqttUrl", "microserviceBoostrapUser", "microserviceUser", "subscriptionDelay", "subscriptionInitialDelay", "isolation"})
+    public PlatformProperties(String applicationName, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Credentials microserviceUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation, boolean forceInitialHost) {
         this.applicationName = applicationName;
         this.url = url;
         this.mqttUrl = mqttUrl;
         this.microserviceBoostrapUser = microserviceBoostrapUser;
+        this.microserviceUser = microserviceUser;
         this.subscriptionDelay = subscriptionDelay;
         this.subscriptionInitialDelay = subscriptionInitialDelay;
         this.isolation = isolation;
@@ -42,6 +44,10 @@ public class PlatformProperties {
 
     public Credentials getMicroserviceBoostrapUser() {
         return this.microserviceBoostrapUser;
+    }
+
+    public Credentials getMicroserviceUser() {
+        return microserviceUser;
     }
 
     public Integer getSubscriptionDelay() {
@@ -76,6 +82,10 @@ public class PlatformProperties {
         this.microserviceBoostrapUser = microserviceBoostrapUser;
     }
 
+    public void setMicroserviceUser(Credentials microserviceUser) {
+        this.microserviceUser = microserviceUser;
+    }
+
     public void setSubscriptionDelay(Integer subscriptionDelay) {
         this.subscriptionDelay = subscriptionDelay;
     }
@@ -90,7 +100,7 @@ public class PlatformProperties {
 
 
     public String toString() {
-        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
+        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", microserviceUser=" + this.getMicroserviceUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
     }
 
     public enum IsolationLevel {
@@ -126,6 +136,15 @@ public class PlatformProperties {
         @Value("${C8Y.bootstrap.password:${platform.bootstrap.agent.password:!j5iBT0GE7,a73s2;4q51h_52m&6%#}}")
         private String microserviceBootstrapPassword;
 
+        @Value("${C8Y.tenant:}")
+        private String microserviceTenant;
+
+        @Value("${C8Y.user:}")
+        private String microserviceUser;
+
+        @Value("${C8Y.password:}")
+        private String microservicePassword;
+
         @Value("${C8Y.bootstrap.delay:${platform.bootstrap.agent.delay:10000}}")
         private int microserviceSubscriptionDelay;
 
@@ -145,6 +164,7 @@ public class PlatformProperties {
             if (isEmpty(name)) {
                 throw new IllegalStateException("Please set up application name");
             }
+            IsolationLevel isolationLevel = isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation);
             return PlatformProperties.builder()
                     .url(Suppliers.ofInstance(url))
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
@@ -155,21 +175,27 @@ public class PlatformProperties {
                             .oAuthAccessToken(null)
                             .xsrfToken(null)
                             .build())
+                    .microserviceUser(PER_TENANT.equals(isolationLevel) ? MicroserviceCredentials.builder()
+                            .tenant(microserviceTenant)
+                            .username(microserviceUser)
+                            .password(microservicePassword)
+                            .oAuthAccessToken(null)
+                            .xsrfToken(null)
+                            .build() : null)
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(name)
-                    .isolation(isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
+                    .isolation(isolationLevel)
                     .forceInitialHost(forceInitialHost)
                     .build();
         }
-
-
     }
 
     private String applicationName;
     private Supplier<String> url;
     private Supplier<String> mqttUrl;
     private Credentials microserviceBoostrapUser;
+    private Credentials microserviceUser;
     private Integer subscriptionDelay;
     private Integer subscriptionInitialDelay;
     private IsolationLevel isolation;
@@ -180,6 +206,7 @@ public class PlatformProperties {
         private Supplier<String> url;
         private Supplier<String> mqttUrl;
         private Credentials microserviceBoostrapUser;
+        private Credentials microserviceUser;
         private Integer subscriptionDelay;
         private Integer subscriptionInitialDelay;
         private IsolationLevel isolation;
@@ -208,6 +235,11 @@ public class PlatformProperties {
             return this;
         }
 
+        public PlatformProperties.PlatformPropertiesBuilder microserviceUser(Credentials microserviceUser) {
+            this.microserviceUser = microserviceUser;
+            return this;
+        }
+
         public PlatformProperties.PlatformPropertiesBuilder subscriptionDelay(Integer subscriptionDelay) {
             this.subscriptionDelay = subscriptionDelay;
             return this;
@@ -229,11 +261,11 @@ public class PlatformProperties {
         }
 
         public PlatformProperties build() {
-            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation, forceInitialHost);
+            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, microserviceUser, subscriptionDelay, subscriptionInitialDelay, isolation, forceInitialHost);
         }
 
         public String toString() {
-            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
+            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", microserviceUser=" + this.microserviceUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
         }
     }
 }
