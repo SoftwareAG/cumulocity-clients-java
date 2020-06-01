@@ -53,15 +53,16 @@ public class MicroserviceSubscriptionsServiceTest {
 
     @BeforeEach
     public void before() {
-        given(repository.register(any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId")));
         given(contextService.callWithinContext(any(), any(Callable.class))).willCallRealMethod();
+        given(properties.getApplicationName()).willReturn("mockApp");
     }
 
     @Test
     public void shouldNotUpdateCurrentSubscriptionWhenEventProcessingFails() {
         //given
-        given(repository.retrieveSubscriptions()).willReturn(givenSubscriptions());
-        
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId1")));
+        given(repository.retrieveSubscriptions(anyString())).willReturn(givenSubscriptions());
+
         doThrow(new SDKException("mongo connection timeout"))
                 .when(eventPublisher).publishEvent(any(ApplicationEvent.class));
 
@@ -75,7 +76,8 @@ public class MicroserviceSubscriptionsServiceTest {
     @Test
     public void shouldUpdateCurrentSubscriptionOnlyWhenEventsProcessedSuccessfully() {
         //given
-        given(repository.retrieveSubscriptions()).willReturn(givenSubscriptions());
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId2")));
+        given(repository.retrieveSubscriptions(anyString())).willReturn(givenSubscriptions());
 
         //when
         subscriptionsService.subscribe();
@@ -90,7 +92,8 @@ public class MicroserviceSubscriptionsServiceTest {
         final Subscriptions subscriptions = givenSubscriptions();
         final Set<MicroserviceCredentials> subscribingCredentials = new HashSet<>();
 
-        given(repository.retrieveSubscriptions()).willReturn(subscriptions);
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId3")));
+        given(repository.retrieveSubscriptions(any())).willReturn(subscriptions);
 
         // when
         subscriptionsService.listen(MicroserviceSubscriptionAddedEvent.class, event -> {

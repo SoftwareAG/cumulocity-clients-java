@@ -116,13 +116,25 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
             subscriptions.getRemoved().stream().filter(user -> {
                 log("Remove subscription: {}", user);
-                return invokeRemovedListeners(user);
+                for (final MicroserviceChangedListener listener : listeners) {
+                    if (!invokeRemoved(user, listener)) {
+                        return false;
+                    }
+                }
+                return true;
             }).collect(Collectors.toList());
 
             final List<MicroserviceCredentials> successfullyAdded = subscriptions.getAdded().stream().filter(user -> {
                 log("Add subscription: {}", user);
                 MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
-                return invokeAddedListeners(enhancedUser);
+                subscribingCredentials.add(enhancedUser);
+                for (final MicroserviceChangedListener listener : listeners) {
+                    if (!invokeAdded(enhancedUser, listener)) {
+                        subscribingCredentials.remove(enhancedUser);
+                        return false;
+                    }
+                }
+                return true;
             }).collect(Collectors.toList());
 
             // Must be done at the very end of subscription synchronization because this process is very time consuming.
@@ -150,23 +162,14 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
 
             return repository.diffWithCurrentSubscriptions(singletonList(microserviceCredentials));
         }
-        return repository.retrieveSubscriptions();
+        return repository.retrieveSubscriptions(application.getId());
     }
 
     private ApplicationRepresentation registerApplication() {
-        ApplicationRepresentation application = repository.register(microserviceMetadataRepresentation)
+        ApplicationRepresentation application = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation)
                 .orElseThrow(() -> new IllegalStateException(format("Application %s not found", properties.getApplicationName())));
         registeredSuccessfully = true;
         return application;
-    }
-
-    private boolean invokeRemovedListeners(MicroserviceCredentials user) {
-        for (final MicroserviceChangedListener listener : listeners) {
-            if (!invokeRemoved(user, listener)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
@@ -176,17 +179,6 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             log.error(ex.getMessage(), ex);
             return false;
         }
-    }
-
-    private boolean invokeAddedListeners(MicroserviceCredentials user) {
-        subscribingCredentials.add(user);
-        for (final MicroserviceChangedListener listener : listeners) {
-            if (!invokeAdded(user, listener)) {
-                subscribingCredentials.remove(user);
-                return false;
-            }
-        }
-        return true;
     }
 
     private boolean invokeAdded(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {

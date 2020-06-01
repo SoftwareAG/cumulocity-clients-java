@@ -100,13 +100,8 @@ public class MicroserviceSubscriptionsRepository {
         return ofNullable(repository.register(applicationName, metadata));
     }
 
-    @Deprecated
-    public Subscriptions retrieveSubscriptions(String unnecessaryApplicationId) {
-        return retrieveSubscriptions();
-    }
-
-    public Subscriptions retrieveSubscriptions() {
-        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions().spliterator(), false).map(representation -> MicroserviceCredentials.builder()
+    public Subscriptions retrieveSubscriptions(String applicationId) {
+        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
                 .username(representation.getName())
                 .tenant(representation.getTenant())
                 .password(representation.getPassword())

@@ -5,20 +5,18 @@ import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingP
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
-import com.cumulocity.model.authentication.CumulocityBasicCredentials;
-import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
