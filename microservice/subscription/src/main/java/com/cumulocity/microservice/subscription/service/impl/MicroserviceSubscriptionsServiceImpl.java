@@ -26,9 +26,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import static com.cumulocity.microservice.subscription.model.core.PlatformProperties.IsolationLevel.PER_TENANT;
+import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+@SuppressWarnings("rawtypes")
 @Service
 public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscriptionsService {
 
@@ -107,53 +111,65 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
             subscribing = true;
             subscribingCredentials.clear();
 
-            final Optional<ApplicationRepresentation> maybeApplication = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation);
-            if (registeredSuccessfully = maybeApplication.isPresent()) {
-                final ApplicationRepresentation application = maybeApplication.get();
-                final Subscriptions subscriptions = repository.retrieveSubscriptions(application.getId());
+            final ApplicationRepresentation application = registerApplication();
+            Subscriptions subscriptions = retrieveSubscriptions(application);
 
-                subscriptions.getRemoved().stream().filter(user -> {
-                    log("Remove subscription: {}", user);
-
-                    for (final MicroserviceChangedListener listener : listeners) {
-                        if (!invokeRemoved(user, listener)) {
-                            return false;
-                        }
+            subscriptions.getRemoved().stream().filter(user -> {
+                log("Remove subscription: {}", user);
+                for (final MicroserviceChangedListener listener : listeners) {
+                    if (!invokeRemoved(user, listener)) {
+                        return false;
                     }
-                    return true;
-                }).collect(Collectors.toList());
+                }
+                return true;
+            }).collect(Collectors.toList());
 
-                final List<MicroserviceCredentials> successfullyAdded = subscriptions.getAdded().stream().filter(user -> {
-                    log("Add subscription: {}", user);
-
-                    MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
-                    subscribingCredentials.add(enhancedUser);
-                    for (final MicroserviceChangedListener listener : listeners) {
-                        if (!invokeAdded(enhancedUser, listener)) {
-                            subscribingCredentials.remove(enhancedUser);
-                            return false;
-                        }
+            final List<MicroserviceCredentials> successfullyAdded = subscriptions.getAdded().stream().filter(user -> {
+                log("Add subscription: {}", user);
+                MicroserviceCredentials enhancedUser = MicroserviceCredentials.copyOf(user).appKey(application.getKey()).build();
+                subscribingCredentials.add(enhancedUser);
+                for (final MicroserviceChangedListener listener : listeners) {
+                    if (!invokeAdded(enhancedUser, listener)) {
+                        subscribingCredentials.remove(enhancedUser);
+                        return false;
                     }
-                    return true;
-                }).collect(Collectors.toList());
+                }
+                return true;
+            }).collect(Collectors.toList());
 
-//                Must be done at the very end of subscription synchronization because this process is very time consuming.
-//                Before this process ends the method #getCredentials will return the old state.
-                repository.updateCurrentSubscriptions(subscriptions.getAll().stream().filter(user -> {
-                    if (subscriptions.getAdded().contains(user)) {
-                        return successfullyAdded.contains(user);
-                    }
-                    return true;
-                }).collect(Collectors.toList()));
-            } else {
-                log.error("Application {} not found", properties.getApplicationName());
-            }
-        } catch (Throwable e) {
-            log.error("Error while reacting on microservice subscription", e);
+            // Must be done at the very end of subscription synchronization because this process is very time consuming.
+            // Before this process ends the method #getCredentials will return the old state.
+            repository.updateCurrentSubscriptions(subscriptions.getAll().stream().filter(user -> {
+                if (subscriptions.getAdded().contains(user)) {
+                    return successfullyAdded.contains(user);
+                }
+                return true;
+            }).collect(Collectors.toList()));
         } finally {
             subscribingCredentials.clear();
             subscribing = false;
         }
+    }
+
+    private Subscriptions retrieveSubscriptions(ApplicationRepresentation application) {
+        if (PER_TENANT.equals(properties.getIsolation())) {
+            MicroserviceCredentials microserviceCredentials = MicroserviceCredentials.builder()
+                    .username(properties.getMicroserviceUser().getUsername())
+                    .tenant(properties.getMicroserviceUser().getTenant())
+                    .password(properties.getMicroserviceUser().getPassword())
+                    .appKey(application.getKey())
+                    .build();
+
+            return repository.diffWithCurrentSubscriptions(singletonList(microserviceCredentials));
+        }
+        return repository.retrieveSubscriptions(application.getId());
+    }
+
+    private ApplicationRepresentation registerApplication() {
+        ApplicationRepresentation application = repository.register(properties.getApplicationName(), microserviceMetadataRepresentation)
+                .orElseThrow(() -> new IllegalStateException(format("Application %s not found", properties.getApplicationName())));
+        registeredSuccessfully = true;
+        return application;
     }
 
     private boolean invokeRemoved(final MicroserviceCredentials user, final MicroserviceChangedListener listener) {
@@ -174,13 +190,13 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
         }
     }
 
-//    During subscription synchronization the method will just return old state.
+    //    During subscription synchronization the method will just return old state.
     @Override
     public Collection<MicroserviceCredentials> getAll() {
         return repository.getCurrentSubscriptions();
     }
 
-//    During subscription synchronization the method will just return old state.
+    //    During subscription synchronization the method will just return old state.
     @Override
     public Optional<MicroserviceCredentials> getCredentials(String tenant) {
         for (final MicroserviceCredentials subscription : repository.getCurrentSubscriptions()) {
