@@ -72,7 +72,8 @@ public class MicroserviceSubscriptionScheduler implements ApplicationListener<Co
         final int subscriptionInitialDelay = getSubscriptionInitialDelay();
         log.info("Start; subscriptionDelay = {}, subscriptionInitialDelay = {}", subscriptionDelay, subscriptionInitialDelay);
         if (subscriptionDelay <= 0) {
-            throw new IllegalStateException("Subscription delay should be greater than 0");
+            log.warn("Subscription delay should be greater than 0, is: {}", subscriptionDelay);
+            return;
         }
 
         subscriptionsWatcher.scheduleWithFixedDelay(() -> {
