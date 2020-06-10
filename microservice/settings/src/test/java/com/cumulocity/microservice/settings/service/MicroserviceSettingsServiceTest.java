@@ -32,7 +32,6 @@ public class MicroserviceSettingsServiceTest {
 
     @BeforeEach
     public void setUp() {
-        doReturn(bootstrapUser()).when(platformProperties).getMicroserviceBoostrapUser();
         doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));
         microserviceSettingsService = new MicroserviceSettingsServiceImpl(platformProperties, contextService, currentApplicationSettingsApi);
     }
@@ -52,6 +51,7 @@ public class MicroserviceSettingsServiceTest {
     public void mustFallbackToBootstrapUserWhenNotInContext() {
         // given
         doReturn(false).when(contextService).isInContext();
+        doReturn(bootstrapUser()).when(platformProperties).getMicroserviceBoostrapUser();
         // when
         microserviceSettingsService.getAll();
         // then
