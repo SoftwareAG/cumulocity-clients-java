@@ -52,7 +52,8 @@ public class CumulocityCoreAuthenticationTest {
         ClientHandler clientHandler = client.getHeadHandler();
         assertThat(clientHandler).isInstanceOf(CumulocityAuthenticationFilter.class);
         CumulocityAuthenticationFilter filterForXsrf = (CumulocityAuthenticationFilter) clientHandler;
-        return (CumulocityOAuthCredentials )ReflectionTestUtils.getField(filterForXsrf, CumulocityOAuthCredentials.class, "credentials");
+        Object object = ReflectionTestUtils.getField(filterForXsrf, "credentials");
+        return (CumulocityOAuthCredentials)object;
     }
 
     @Test

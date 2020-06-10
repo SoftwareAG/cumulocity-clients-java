@@ -42,6 +42,7 @@ import java.nio.file.Path;
 })
 @ConditionalOnProperty(value = "microservice.subscription.enabled", havingValue = "true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {
+
     @Bean
     @ConditionalOnMissingBean
     public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider() {
@@ -57,7 +58,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties, final Environment environment) {
-        final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
+        final Credentials bootstrapUser = properties.getMicroserviceBoostrapUser();
         String applicationName = properties.getApplicationName();
         log.info("Microservice repository will be build for application '{}'.", applicationName);
         return MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
@@ -65,9 +66,9 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 .environment(environment)
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
                         .switchTo(CumulocityBasicCredentials.builder()
-                                .username(boostrapUser.getUsername())
-                                .password(boostrapUser.getPassword())
-                                .tenantId(boostrapUser.getTenant())
+                                .username(bootstrapUser.getUsername())
+                                .password(bootstrapUser.getPassword())
+                                .tenantId(bootstrapUser.getTenant())
                                 .build()))
                 .objectMapper(objectMapper)
                 .applicationName(applicationName)
