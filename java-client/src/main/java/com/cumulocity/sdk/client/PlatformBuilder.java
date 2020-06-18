@@ -17,6 +17,7 @@ public class PlatformBuilder {
     private ResponseMapper responseMapper;
     private boolean forceInitialHost;
     private Integer httpReadTimeout;
+    private Integer connectionPoolConfigPerHost;
 
     public Platform build() {
         return configure(new PlatformImpl(baseUrl, buildCredentials()));
@@ -34,11 +35,17 @@ public class PlatformBuilder {
         }
         platform.setTfaToken(tfaToken);
         platform.setForceInitialHost(forceInitialHost);
+
+        HttpClientConfig.HttpClientConfigBuilder httpClientConfigBuilder = HttpClientConfig.httpConfig();
         if (httpReadTimeout != null) {
-            platform.setHttpClientConfig(HttpClientConfig.httpConfig()
-                    .httpReadTimeout(httpReadTimeout)
+            httpClientConfigBuilder.httpReadTimeout(httpReadTimeout);
+        }
+        if (connectionPoolConfigPerHost != null) {
+            httpClientConfigBuilder.pool(ConnectionPoolConfig.connectionPool()
+                    .perHost(connectionPoolConfigPerHost)
                     .build());
         }
+        platform.setHttpClientConfig(httpClientConfigBuilder.build());
         return platform;
     }
 

@@ -24,6 +24,7 @@ import com.cumulocity.sdk.client.user.UserApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -43,6 +44,9 @@ public class CumulocityClientFeature {
     //in milliseconds, 0 = infinite
     @Value("${C8Y.httpReadTimeout:}")
     private Integer httpReadTimeout;
+
+    @Value("${C8Y.connectionPool.perHost:}")
+    private Integer connectionPoolConfigPerHost;
 
     @Autowired(required = false)
     private ResponseMapper responseMapper;
@@ -68,6 +72,7 @@ public class CumulocityClientFeature {
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
                 .withHttpReadTimeout(httpReadTimeout)
+                .withConnectionPoolConfigPerHost(connectionPoolConfigPerHost)
                 .build();
     }
 
@@ -94,6 +99,7 @@ public class CumulocityClientFeature {
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
                 .withHttpReadTimeout(httpReadTimeout)
+                .withConnectionPoolConfigPerHost(connectionPoolConfigPerHost)
                 .build();
     }
 
