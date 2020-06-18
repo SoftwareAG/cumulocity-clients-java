@@ -5,9 +5,11 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +43,7 @@ public class CumulocityHttpClientTest {
     }
 
     @Test
-    public void shouldChangeHostToPlatformHostIfThisIsForcedInParameters() throws Exception {
+    public void shouldChangeHostToPlatformHostIfThisIsForcedInParameters() {
         String queryParams = "?test=1&a=1";
         String pathParams = "/test/1/q=1&a=1";
 
@@ -54,9 +56,19 @@ public class CumulocityHttpClientTest {
     }
 
     @Test
-    public void shouldEnableChunckedEncoding() throws Exception {
+    public void shouldEnableChunckedEncoding() {
         Integer chunkedProperty = (Integer) jerseyClient.getProperties().get(clientConfig.PROPERTY_CHUNKED_ENCODING_SIZE);
         assertEquals(chunkedProperty,Integer.valueOf(chunkedEncodingSize));
+    }
+
+    @Test
+    public void shouldThrowExceptionWithCode400WhenIllegalCharactersInPath() {
+        String path = "http://example.com/{^test^}";
+        Throwable thrown = catchThrowable(() -> client.resource(path));
+
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class);
+        Assertions.assertThat(thrown).hasMessageContaining("Illegal characters used in URL.");
+        Assertions.assertThat(((SDKException) thrown).getHttpStatus()).isEqualTo(400);
     }
     
     private void verifyResolvedPath(String expected, String initial) {
