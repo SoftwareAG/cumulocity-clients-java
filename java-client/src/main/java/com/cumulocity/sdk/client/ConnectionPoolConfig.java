@@ -1,12 +1,9 @@
 package com.cumulocity.sdk.client;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import lombok.Builder.Default;
-import lombok.Value;
 
-@Value
+@Data
 @Builder(builderMethodName = "connectionPool", toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class ConnectionPoolConfig {
@@ -16,7 +13,6 @@ public class ConnectionPoolConfig {
     private int perHost = 50;
     @Default
     private int max = 100;
-
     @Default
     private int awaitTimeout = 10000;
 }
