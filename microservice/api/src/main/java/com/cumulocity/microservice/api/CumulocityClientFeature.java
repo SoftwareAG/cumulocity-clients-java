@@ -45,8 +45,11 @@ public class CumulocityClientFeature {
     @Value("${C8Y.httpReadTimeout:}")
     private Integer httpReadTimeout;
 
-    @Value("${C8Y.connectionPool.perHost:}")
-    private Integer connectionPoolConfigPerHost;
+    @Bean
+    @ConfigurationProperties(prefix = "c8y.httpclient")
+    public HttpClientConfig httpClientConfig() {
+        return HttpClientConfig.httpConfig().build();
+    }
 
     @Autowired(required = false)
     private ResponseMapper responseMapper;
@@ -63,7 +66,7 @@ public class CumulocityClientFeature {
                 .withXsrfToken(login.getXsrfToken())
                 .withApplicationKey(login.getAppKey())
                 .getCredentials();
-        return (PlatformImpl) PlatformBuilder.platform()
+        PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
@@ -71,9 +74,9 @@ public class CumulocityClientFeature {
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
-                .withHttpReadTimeout(httpReadTimeout)
-                .withConnectionPoolConfigPerHost(connectionPoolConfigPerHost)
                 .build();
+        setHttpClientConfig(platform);
+        return platform;
     }
 
     @Bean
@@ -89,8 +92,7 @@ public class CumulocityClientFeature {
                 .withXsrfToken(login.getXsrfToken())
                 .withApplicationKey(login.getAppKey())
                 .getCredentials();
-
-        return (PlatformImpl) PlatformBuilder.platform()
+        PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
@@ -98,9 +100,9 @@ public class CumulocityClientFeature {
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
-                .withHttpReadTimeout(httpReadTimeout)
-                .withConnectionPoolConfigPerHost(connectionPoolConfigPerHost)
                 .build();
+        setHttpClientConfig(platform);
+        return platform;
     }
 
     @Bean
@@ -200,5 +202,13 @@ public class CumulocityClientFeature {
     @Primary
     public TenantOptionApi tenantOptionApi(Platform platform) throws SDKException {
         return platform.getTenantOptionApi();
+    }
+
+    private void setHttpClientConfig(PlatformImpl platform) {
+        HttpClientConfig httpClientConfig = httpClientConfig();
+        if (httpReadTimeout != null) {
+            httpClientConfig.setHttpReadTimeout(httpReadTimeout);
+        }
+        platform.setHttpClientConfig(httpClientConfig);
     }
 }
