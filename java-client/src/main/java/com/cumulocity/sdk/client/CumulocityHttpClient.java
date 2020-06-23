@@ -20,7 +20,13 @@ public class CumulocityHttpClient extends ApacheHttpClient {
 
     @Override
     public WebResource resource(String path) {
-        return super.resource(resolvePath(path));
+        WebResource resource;
+        try {
+            resource = super.resource(resolvePath(path));
+        } catch (IllegalArgumentException ex) {
+            throw new SDKException(400, "Illegal characters used in URL.");
+        }
+        return resource;
     }
 
     protected String resolvePath(String path) {
