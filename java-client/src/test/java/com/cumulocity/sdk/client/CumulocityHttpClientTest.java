@@ -8,6 +8,11 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+@RunWith(Parameterized.class)
 public class CumulocityHttpClientTest {
     
     private static final String HOST = "http://management.cumulocity.com:8080";
@@ -30,7 +36,20 @@ public class CumulocityHttpClientTest {
     private  ResponseParser responseParser;
 
     private RestConnector restConnector;
-    
+
+    @Parameterized.Parameters
+    public static Collection<Character> invalidUrlCharacters() {
+        return Arrays.asList(
+                '{', '}', '<', '>', '[', ']', '^', '`', '|'
+        );
+    }
+
+    private final Character character;
+
+    public CumulocityHttpClientTest(Character character) {
+        this.character = character;
+    }
+
     @Before
     public void setUp() {
         PlatformParameters platformParameters = new PlatformParameters();
@@ -63,7 +82,7 @@ public class CumulocityHttpClientTest {
 
     @Test
     public void shouldThrowExceptionWithCode400WhenIllegalCharactersInPath() {
-        String path = "http://example.com/{^test^}";
+        String path = "http://example.com/" + character;
         Throwable thrown = catchThrowable(() -> client.resource(path));
 
         Assertions.assertThat(thrown).isInstanceOf(SDKException.class);
