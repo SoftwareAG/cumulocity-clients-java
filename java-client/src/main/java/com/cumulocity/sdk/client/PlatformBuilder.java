@@ -16,7 +16,6 @@ public class PlatformBuilder {
     private String tfaToken;
     private ResponseMapper responseMapper;
     private boolean forceInitialHost;
-    private Integer httpReadTimeout;
 
     public Platform build() {
         return configure(new PlatformImpl(baseUrl, buildCredentials()));
@@ -34,11 +33,6 @@ public class PlatformBuilder {
         }
         platform.setTfaToken(tfaToken);
         platform.setForceInitialHost(forceInitialHost);
-        if (httpReadTimeout != null) {
-            platform.setHttpClientConfig(HttpClientConfig.httpConfig()
-                    .httpReadTimeout(httpReadTimeout)
-                    .build());
-        }
         return platform;
     }
 
