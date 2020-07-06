@@ -7,5 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 public interface MicroserviceDockerClient {
-    void saveDockerImage(final String image, final File targetFile) throws DockerCertificateException, InterruptedException, DockerException, IOException;
+    void saveDockerImage(final String image, final File targetFile) throws  InterruptedException, DockerException, IOException;
+
+    void deleteAll(String image) throws DockerException, InterruptedException;
 }
