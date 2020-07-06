@@ -74,9 +74,8 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     @Override
     public void stop() throws StoppingException {
         getLogger().debug("Stopping docker client ");
-        if (docker == null) {
+        if (docker != null) {
             docker.close();
-
         }
     }
 }
