@@ -23,8 +23,10 @@ package com.cumulocity.sdk.client;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toMap;
 
 public class QueryParam {
 
@@ -51,10 +53,6 @@ public class QueryParam {
     }
 
     private static Map<String, String> asMap(Collection<QueryParam> params) {
-        Map<String, String> result = new HashMap<>();
-        for (QueryParam param : params) {
-            result.put(param.getKey().getName(), param.getValue());
-        }
-        return result;
+        return params.stream().collect(toMap((param-> param.getKey().getName()), QueryParam::getValue));
     }
 }
