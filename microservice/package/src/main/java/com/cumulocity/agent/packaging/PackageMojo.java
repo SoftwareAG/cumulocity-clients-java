@@ -63,6 +63,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(defaultValue = "")
     private String dockerBuildNetwork;
 
+    @Parameter(defaultValue = "true")
+    private Boolean deleteImage = true;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skip) {
@@ -233,6 +236,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 validateManifest(file);
                 addFileToZip(zipOutputStream, file, "cumulocity.json");
                 addFileToZip(zipOutputStream, dockerImage, "image.tar");
+            }
+            if(deleteImage!= null && deleteImage) {
+                dockerClient.deleteAll(image);
+            }else{
+                getLog().info("Skipping docker image cleanup");
             }
 
             dockerImage.delete();
