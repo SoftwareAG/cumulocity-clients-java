@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,14 +19,12 @@
  */
 package com.cumulocity.sdk.client.inventory;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.inventory.*;
+import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.UrlProcessor;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,15 +32,18 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.inventory.InventoryMediaType;
-import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceCollectionRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PagedCollectionResource;
-import com.cumulocity.sdk.client.RestConnector;
-import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.UrlProcessor;
+import java.util.ArrayList;
+
+import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT;
+import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_COLLECTION;
+import static com.cumulocity.sdk.client.inventory.InventoryFilter.searchInventory;
+import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildren;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class InventoryApiImplTest {
 
@@ -62,8 +63,7 @@ public class InventoryApiImplTest {
     @Mock
     private RestConnector restConnector;
 
-    @Mock
-    private UrlProcessor urlProcessor;
+    private UrlProcessor urlProcessor = new UrlProcessor();
 
     @Before
     public void setup() throws Exception {
@@ -72,7 +72,7 @@ public class InventoryApiImplTest {
         ManagedObjectReferenceCollectionRepresentation representation = new ManagedObjectReferenceCollectionRepresentation();
         representation.setSelf(INVENTORY_COLLECTION_URL);
         inventoryRepresentation.setManagedObjects(representation);
-       
+
         inventoryApiResource = new InventoryApiImpl(restConnector, urlProcessor, inventoryRepresentation, DEFAULT_PAGE_SIZE);
     }
 
@@ -143,7 +143,7 @@ public class InventoryApiImplTest {
     @Test
     public void shouldGetMosByEmptyFilter() throws SDKException {
         // Given
-        when(urlProcessor.replaceOrAddQueryParam(INVENTORY_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(INVENTORY_COLLECTION_URL);
+        inventoryRepresentation.setManagedObjectsForType(TEMPLATE_URL);
         ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector,
                 INVENTORY_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
@@ -162,7 +162,6 @@ public class InventoryApiImplTest {
         InventoryFilter filter = new InventoryFilter().byType(myType);
         inventoryRepresentation.setManagedObjectsForType(TEMPLATE_URL);
         String moByTypeUrl = INVENTORY_COLLECTION_URL + "?type=" + myType;
-        when(urlProcessor.replaceOrAddQueryParam(INVENTORY_COLLECTION_URL, filter.getQueryParams())).thenReturn(moByTypeUrl);
         ManagedObjectCollection expected = new ManagedObjectCollectionImpl(restConnector, moByTypeUrl, DEFAULT_PAGE_SIZE);
 
         // When
@@ -170,5 +169,46 @@ public class InventoryApiImplTest {
 
         // Then 
         assertThat(result, is(expected));
-    }    
+    }
+
+    @Test
+    public void shouldAddQueryParamsWhenFetchingManagedObject() {
+        //Given
+        GId id = GId.asGId(1l);
+        givenRespondManagedObject(id);
+        //When;
+        ManagedObjectRepresentation managedObject = inventoryApiResource.get(id, withoutChildren());
+        //Then
+
+        verify(restConnector).get(contains("withChildren=false"), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class));
+        assertThat(managedObject, notNullValue());
+
+    }
+
+
+    @Test
+    public void shouldAddQueryParamsWhenFetchingManagedObjectCollection() {
+        //Given
+        InventoryFilter filter = searchInventory();
+        givenRespondWithEmptyListOnManagedObjectCollectionQuery();
+        //When
+        PagedManagedObjectCollectionRepresentation list = inventoryApiResource.getManagedObjectsByFilter(filter).get(withoutChildren());
+        //Then
+
+        verify(restConnector).get(contains("withChildren=false"), eq(MANAGED_OBJECT_COLLECTION), eq(ManagedObjectCollectionRepresentation.class));
+        assertThat(list, notNullValue());
+
+    }
+    private void givenRespondManagedObject(GId id) {
+        ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
+        when(restConnector.get(contains(INVENTORY_COLLECTION_URL+"/"+ GId.asString(id)), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class)))
+                .thenReturn(mo);
+    }
+
+    private void givenRespondWithEmptyListOnManagedObjectCollectionQuery() {
+        ManagedObjectCollectionRepresentation collection = new ManagedObjectCollectionRepresentation();
+        collection.setManagedObjects(new ArrayList<>());
+        when(restConnector.get(contains(INVENTORY_COLLECTION_URL), eq(MANAGED_OBJECT_COLLECTION), eq(ManagedObjectCollectionRepresentation.class)))
+                .thenReturn(collection);
+    }
 }
