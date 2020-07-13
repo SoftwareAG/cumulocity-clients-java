@@ -26,6 +26,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.SupportedMeasurementsRepresentation;
 import com.cumulocity.rest.representation.inventory.SupportedSeriesRepresentation;
+import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -41,6 +42,14 @@ public interface InventoryApi {
      * @throws SDKException
      */
     ManagedObjectRepresentation get(GId id) throws SDKException;
+
+    /**
+     * Returns the Managed Object of the Resource. Using additional query params e.g. withChildren=false to optimize access time.
+     *
+     * @return ManagedObjectRepresentation
+     * @throws SDKException
+     */
+    ManagedObjectRepresentation get(GId id, QueryParam ... params) throws SDKException;
     
     /**
      * Deletes the Managed Object from the Cumulocity Server.

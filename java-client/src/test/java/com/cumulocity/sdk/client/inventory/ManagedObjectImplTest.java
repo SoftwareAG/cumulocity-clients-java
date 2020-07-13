@@ -24,13 +24,16 @@ import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MA
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.cumulocity.sdk.client.UrlProcessor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -67,10 +70,11 @@ public class ManagedObjectImplTest {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        managedObject = new ManagedObjectImpl(restConnector, MANAGED_OBJECT_URL, DEFAULT_PAGE_SIZE);
+        managedObject = new ManagedObjectImpl(restConnector, new UrlProcessor(), MANAGED_OBJECT_URL, DEFAULT_PAGE_SIZE);
 
         managedObjectRep = createMoWithChildDevicesAndAssetsAndAdditions();
-        when(restConnector.get(MANAGED_OBJECT_URL, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class)).thenReturn(
+
+        when(restConnector.get(startsWith(MANAGED_OBJECT_URL), eq(InventoryMediaType.MANAGED_OBJECT), eq(ManagedObjectRepresentation.class))).thenReturn(
                 managedObjectRep);
     }
 
@@ -81,6 +85,20 @@ public class ManagedObjectImplTest {
 
         // then 
         assertThat(mor, sameInstance(managedObjectRep));
+    }
+
+    @Test
+    public void shouldUseWithoutChildrenFlagWhenTryingToAccessManagedObjectToGetChildAssetsLink() throws SDKException {
+        //Given
+        ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
+        ManagedObjectReferenceRepresentation newChildDevice = new ManagedObjectReferenceRepresentation();
+        when(restConnector.post(CHILD_DEVICES_URL, MANAGED_OBJECT_REFERENCE, newChildDevice)).thenReturn(created);
+
+        // when
+        ManagedObjectReferenceRepresentation result = managedObject.addChildDevice(newChildDevice);
+
+        // then
+        verify(restConnector).get(contains("withChildren=false"),eq(MANAGED_OBJECT),eq(ManagedObjectRepresentation.class));
     }
 
     @Test
