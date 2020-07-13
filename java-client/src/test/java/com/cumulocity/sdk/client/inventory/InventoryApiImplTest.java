@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -38,6 +39,7 @@ import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MA
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_COLLECTION;
 import static com.cumulocity.sdk.client.inventory.InventoryFilter.searchInventory;
 import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildren;
+import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutParents;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.fail;
@@ -172,7 +174,7 @@ public class InventoryApiImplTest {
     }
 
     @Test
-    public void shouldAddQueryParamsWhenFetchingManagedObject() {
+    public void shouldAddQueryParamWithoutChildrenWhenFetchingManagedObject() {
         //Given
         GId id = GId.asGId(1l);
         givenRespondManagedObject(id);
@@ -181,6 +183,21 @@ public class InventoryApiImplTest {
         //Then
 
         verify(restConnector).get(contains("withChildren=false"), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class));
+        assertThat(managedObject, notNullValue());
+
+    }
+
+
+    @Test
+    public void shouldAddQueryParamsWhenFetchingManagedObject() {
+        //Given
+        GId id = GId.asGId(1l);
+        givenRespondManagedObject(id);
+        //When;
+        ManagedObjectRepresentation managedObject = inventoryApiResource.get(id, withoutChildren(), withoutParents());
+        //Then
+
+        verify(restConnector).get(argThat(url -> url.contains("withChildren=false") && url.contains("withParents=false")), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class));
         assertThat(managedObject, notNullValue());
 
     }
