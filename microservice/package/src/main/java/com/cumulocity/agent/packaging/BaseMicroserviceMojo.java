@@ -135,8 +135,21 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         Memory heap = this.heap.or(new Memory("128m", "384m"));
         Memory perm = this.perm.or(new Memory("64m", "128m"));
 
-        return ImmutableList.of("-Xms" + heap.getMin(), "-Xmx" + heap.getMax(), "-XX:PermSize=" + perm.getMin(),
-            "-XX:MaxPermSize=" + perm.getMax());
+        if (isJava7()) {
+            return ImmutableList.of(
+                    "-Xms" + heap.getMin(),
+                    "-Xmx" + heap.getMax(),
+                    "-XX:PermSize=" + perm.getMin(),
+                    "-XX:MaxPermSize=" + perm.getMax()
+            );
+        }
+
+        return ImmutableList.of(
+                "-Xms" + heap.getMin(),
+                "-Xmx" + heap.getMax(),
+                "-XX:MetaspaceSize=" + perm.getMin(),
+                "-XX:MaxMetaspaceSize=" + perm.getMax()
+        );
     }
 
     private List<String> getJvmGc() {
@@ -217,5 +230,9 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return javaRuntime.substring(2);
         }
         return javaRuntime;
+    }
+
+    private boolean isJava7() {
+        return "7".equals(getJavaVersion());
     }
 }
