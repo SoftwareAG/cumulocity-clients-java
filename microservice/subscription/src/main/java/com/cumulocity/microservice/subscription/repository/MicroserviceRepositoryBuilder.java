@@ -18,7 +18,6 @@ public class MicroserviceRepositoryBuilder {
     private String tenant;
     private String username;
     private String password;
-    private ObjectMapper objectMapper;
     private CredentialsSwitchingPlatform connector;
     private Environment environment;
     private String applicationName;
@@ -29,7 +28,6 @@ public class MicroserviceRepositoryBuilder {
      * - when C8Y.microservice.isolation not defined, then microservice should support old SDK (before 8.18)
      */
     public MicroserviceRepository build() {
-        final ObjectMapper nonNullObjectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
         final CumulocityCredentials credentials = CumulocityBasicCredentials.builder()
                 .username(username)
                 .password(password)
@@ -41,9 +39,9 @@ public class MicroserviceRepositoryBuilder {
         final Environment notNullEnvironment = environment == null ? new StandardEnvironment() : environment;
 
         if (notNullEnvironment.containsProperty(MICROSERVICE_ISOLATION_ENV_NAME)) {
-            return new CurrentMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
+            return new CurrentMicroserviceRepository(nonNullConnector, api);
         } else {
-            return new LegacyMicroserviceRepository(applicationName, nonNullConnector, nonNullObjectMapper, api);
+            return new LegacyMicroserviceRepository(applicationName, nonNullConnector, api);
         }
     }
 
@@ -78,12 +76,7 @@ public class MicroserviceRepositoryBuilder {
         this.password = password;
         return this;
     }
-
-    public MicroserviceRepositoryBuilder objectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-        return this;
-    }
-
+    
     public MicroserviceRepositoryBuilder connector(CredentialsSwitchingPlatform connector) {
         this.connector = connector;
         return this;

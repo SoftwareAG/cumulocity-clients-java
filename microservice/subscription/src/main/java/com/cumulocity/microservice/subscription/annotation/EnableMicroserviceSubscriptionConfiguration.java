@@ -15,7 +15,6 @@ import com.cumulocity.model.JSONBase;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.rest.representation.application.MicroserviceManifestRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -57,7 +56,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties, final Environment environment) {
+    public MicroserviceRepository microserviceRepository(final PlatformProperties properties, final Environment environment) {
         final Credentials bootstrapUser = properties.getMicroserviceBoostrapUser();
         String applicationName = properties.getApplicationName();
         log.info("Microservice repository will be build for application '{}'.", applicationName);
@@ -70,7 +69,6 @@ public class EnableMicroserviceSubscriptionConfiguration {
                                 .password(bootstrapUser.getPassword())
                                 .tenantId(bootstrapUser.getTenant())
                                 .build()))
-                .objectMapper(objectMapper)
                 .applicationName(applicationName)
                 .build();
     }

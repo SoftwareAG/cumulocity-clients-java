@@ -30,12 +30,10 @@ import static org.apache.commons.httpclient.HttpStatus.*;
 public class CurrentMicroserviceRepository implements MicroserviceRepository {
 
     private final CredentialsSwitchingPlatform platform;
-    private final ObjectMapper objectMapper;
     private final ApplicationApiRepresentation api;
 
-    public CurrentMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+    public CurrentMicroserviceRepository(CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
         this.platform = platform;
-        this.objectMapper = objectMapper;
         this.api = api;
     }
 
@@ -74,7 +72,7 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
     public Iterable<ApplicationUserRepresentation> getSubscriptions() {
         final String url = api.getCurrentApplicationSubscriptions();
         try {
-            return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
+            return rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class);
         } catch (final Exception ex) {
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
@@ -87,15 +85,6 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
 
     private RestOperations rest() {
         return platform.get();
-    }
-
-    private ApplicationUserCollectionRepresentation retrieveUsers(ApplicationUserCollectionRepresentation result) {
-        final List<ApplicationUserRepresentation> users = new ArrayList<>();
-        for (final Object userMap : result.getUsers()) {
-            users.add(objectMapper.convertValue(userMap, ApplicationUserRepresentation.class));
-        }
-        result.setUsers(users);
-        return result;
     }
 
     private Object handleException(String method, String url, Exception ex) {
