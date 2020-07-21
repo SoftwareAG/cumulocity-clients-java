@@ -63,7 +63,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(defaultValue = "")
     private String dockerBuildNetwork;
 
-    @Parameter(defaultValue = "true")
+    @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
     private Boolean deleteImage = true;
 
     @Override
