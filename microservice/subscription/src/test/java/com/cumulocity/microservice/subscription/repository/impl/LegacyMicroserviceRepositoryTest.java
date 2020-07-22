@@ -7,10 +7,8 @@ import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Condition;
-import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -18,11 +16,13 @@ import org.springframework.mock.env.MockEnvironment;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.StreamSupport;
 
 import static com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation.microserviceMetadataRepresentation;
 import static com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder.microserviceRepositoryBuilder;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.applicationRepresentation;
+import static com.cumulocity.rest.representation.application.ApplicationUserRepresentation.applicationUserRepresentation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.springframework.http.HttpMethod.POST;
@@ -33,7 +33,7 @@ public class LegacyMicroserviceRepositoryTest {
     private static final String BASE_URL = "http://c8y.com";
     private static final String CURRENT_APPLICATION_NAME = "current-application-name";
 
-    private FakeCredentialsSwitchingPlatform platform = new FakeCredentialsSwitchingPlatform();
+    private final FakeCredentialsSwitchingPlatform platform = new FakeCredentialsSwitchingPlatform();
 
     private LegacyMicroserviceRepository repository;
 
@@ -66,12 +66,7 @@ public class LegacyMicroserviceRepositoryTest {
         final MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
 
         //when
-        Throwable throwable = catchThrowable(new ThrowableAssert.ThrowingCallable() {
-            @Override
-            public void call() {
-                repository.register(microserviceMetadataRepresentation().build());
-            }
-        });
+        Throwable throwable = catchThrowable(() -> repository.register(microserviceMetadataRepresentation().build()));
 
         //then
         assertThat(throwable)
@@ -85,12 +80,7 @@ public class LegacyMicroserviceRepositoryTest {
         final MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
 
         //when
-        Throwable throwable = catchThrowable(new ThrowableAssert.ThrowingCallable() {
-            @Override
-            public void call() {
-                repository.getCurrentApplication();
-            }
-        });
+        Throwable throwable = catchThrowable(() -> repository.getCurrentApplication());
 
         //then
         assertThat(throwable)
@@ -292,15 +282,13 @@ public class LegacyMicroserviceRepositoryTest {
     @Test
     public void shouldGetSubscriptions(){
         //given
-        //given
         ApplicationRepresentation existing = applicationRepresentation()
                 .id("3")
                 .type(MICROSERVICE)
                 .name(CURRENT_APPLICATION_NAME)
                 .build();
         givenApplications(existing);
-        ApplicationUserRepresentation applicationUserRepresentation = new ApplicationUserRepresentation();
-        platform.addApplicationUserRepresentation(applicationUserRepresentation);
+        ApplicationUserRepresentation user = givenApplicationUser();
 
         //when
         Iterable<ApplicationUserRepresentation> subscriptions = repository.getSubscriptions();
@@ -309,22 +297,15 @@ public class LegacyMicroserviceRepositoryTest {
         assertThat(subscriptions)
                 .isNotNull()
                 .hasSize(1);
-        ApplicationUserRepresentation firstSubscription = FluentIterable
-                .from(subscriptions)
-                .first()
+        ApplicationUserRepresentation firstSubscription = StreamSupport.stream(subscriptions.spliterator(), false).findFirst()
                 .get();
         assertThat(firstSubscription)
                 .isNotNull()
-                .isSameAs(applicationUserRepresentation);
+                .isSameAs(user);
     }
 
     private Predicate<FakeCredentialsSwitchingPlatform.Request> byMethod(final HttpMethod method) {
-        return new Predicate<FakeCredentialsSwitchingPlatform.Request>() {
-            @Override
-            public boolean apply(FakeCredentialsSwitchingPlatform.Request request) {
-                return request.getMethod().equals(method);
-            }
-        };
+        return request -> request.getMethod().equals(method);
     }
 
     private void givenApplications(ApplicationRepresentation... applications) {
@@ -334,6 +315,16 @@ public class LegacyMicroserviceRepositoryTest {
         for (ApplicationRepresentation app : applications) {
             platform.addApplication(app);
         }
+    }
+
+    private ApplicationUserRepresentation givenApplicationUser() {
+        final ApplicationUserRepresentation user = applicationUserRepresentation()
+                .tenant("t1000")
+                .name("scott")
+                .password("p4sswd")
+                .build();
+        platform.addApplicationUserRepresentation(user);
+        return user;
     }
 
     private MicroserviceRepository repositoryWithoutCurrentApplicationName() {

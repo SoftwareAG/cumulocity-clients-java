@@ -32,23 +32,21 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 public class LegacyMicroserviceRepository implements MicroserviceRepository {
 
     private final CredentialsSwitchingPlatform platform;
-    private final ObjectMapper objectMapper;
     private final ApplicationApiRepresentation api;
     private final String applicationName;
 
-    public LegacyMicroserviceRepository(String applicationName, CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
+    public LegacyMicroserviceRepository(String applicationName, CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
         if(isBlank(applicationName)){
             log.warn("Current application name was not provided to LegacyMicroserviceRepository. Please correct LegacyMicroserviceRepository usage in your code.");
         }
         this.applicationName = applicationName;
         this.platform = platform;
-        this.objectMapper = objectMapper;
         this.api = api;
     }
 
     @Deprecated
-    public LegacyMicroserviceRepository(CredentialsSwitchingPlatform platform, ObjectMapper objectMapper, ApplicationApiRepresentation api) {
-        this(null, platform, objectMapper, api);
+    public LegacyMicroserviceRepository(CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
+        this(null, platform, api);
     }
 
     @Override
@@ -90,7 +88,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     public Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId) {
         String url = api.getApplicationSubscriptions(applicationId);
         try {
-            return retrieveUsers(rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class));
+            return rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class);
         } catch (final Exception ex) {
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
@@ -136,16 +134,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     private RestOperations rest() {
         return platform.get();
     }
-
-    private ApplicationUserCollectionRepresentation retrieveUsers(ApplicationUserCollectionRepresentation result) {
-        final List<ApplicationUserRepresentation> users = new ArrayList<>();
-        for (final Object userMap : result.getUsers()) {
-            users.add(objectMapper.convertValue(userMap, ApplicationUserRepresentation.class));
-        }
-        result.setUsers(users);
-        return result;
-    }
-
+    
     private Object handleException(String method, String url, Exception ex) {
         if (ex instanceof SDKException) {
             final SDKException sdkException = (SDKException) ex;
