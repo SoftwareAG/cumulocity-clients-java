@@ -98,8 +98,8 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "agent-package.arguments")
     private List<String> arguments;
 
-    @Parameter(property = "project.build.sourceEncoding", defaultValue = "utf8")
-    private String encoding;
+    @Parameter(property = "project.build.sourceEncoding", defaultValue = "UTF-8")
+    protected String encoding;
 
     @Parameter(property = "agent-package.heap")
     private Memory heap;

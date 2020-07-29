@@ -57,9 +57,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     private String image;
 
-    @Parameter(property = "project.build.sourceEncoding", defaultValue = "utf8")
-    private String encoding;
-
     @Parameter(defaultValue = "")
     private String dockerBuildNetwork;
 
