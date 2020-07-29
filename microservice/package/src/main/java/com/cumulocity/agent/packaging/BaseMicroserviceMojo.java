@@ -101,6 +101,9 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "project.build.sourceEncoding", defaultValue = "UTF-8")
     protected String encoding;
 
+    @Parameter(property = "nonFilteredFileExtensions", defaultValue = "jks,jar")
+    private List<String> nonFilteredFileExtensions;
+
     @Parameter(property = "agent-package.heap")
     private Memory heap;
 
@@ -115,7 +118,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         createDirectories(destination.toPath());
         execution.setOverwrite(override);
         execution.setFilterFilenames(true);
-        execution.setNonFilteredFileExtensions(ImmutableList.of("jks","jar"));
+        execution.setNonFilteredFileExtensions(nonFilteredFileExtensions);
         execution.setDelimiters(Sets.newLinkedHashSet(ImmutableSet.of("@*@")));
         execution.setSupportMultiLineFiltering(true);
         final Properties props = new Properties();
