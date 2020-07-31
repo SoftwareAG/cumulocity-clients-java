@@ -102,8 +102,8 @@ public class TenantOptionApiImplTest {
 
     private List<OptionRepresentation> getExpectedOptions() {
         List<OptionRepresentation> expectedOptions = new ArrayList();
-        expectedOptions.add(OptionRepresentation.asOptionRepresetation(CATEGORY, KEY, "val1"));
-        expectedOptions.add(OptionRepresentation.asOptionRepresetation(CATEGORY, KEY2, "val2"));
+        expectedOptions.add(OptionRepresentation.asOptionRepresentation(CATEGORY, KEY, "val1"));
+        expectedOptions.add(OptionRepresentation.asOptionRepresentation(CATEGORY, KEY2, "val2"));
         return expectedOptions;
     }
 

@@ -10,7 +10,7 @@ import com.cumulocity.sdk.client.buffering.Future;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cumulocity.rest.representation.tenant.OptionRepresentation.asOptionRepresetation;
+import static com.cumulocity.rest.representation.tenant.OptionRepresentation.asOptionRepresentation;
 
 public class TenantOptionApiImpl implements TenantOptionApi {
 
@@ -104,7 +104,7 @@ public class TenantOptionApiImpl implements TenantOptionApi {
         List<OptionRepresentation> options = new ArrayList<>();
         for (String key : optionsRepresentation.propertyNames()) {
             options.add(
-                    asOptionRepresetation(
+                    asOptionRepresentation(
                             category,
                             key,
                             optionsRepresentation.getProperty(key)));
