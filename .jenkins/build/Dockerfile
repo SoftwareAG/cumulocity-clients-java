@@ -11,4 +11,4 @@ RUN git config --global user.email "jenkins@jenkins.cumulocity.com"
 RUN git config --global user.name "jenkins"
 ENV MAVEN_OPTS="-Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dhttps.protocols=TLSv1.2"
 ENV JAVA_HOME="$SDKMAN_DIR/candidates/java/current"
-ENV LC_ALL="en_US.UTF-8"
+ENV LANG en_US.UTF-8
