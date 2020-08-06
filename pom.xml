@@ -57,7 +57,7 @@
         <hamcrest.version>2.2</hamcrest.version>
         <jaxrs.version>1.1.1</jaxrs.version>
         <jersey1.version>1.8</jersey1.version>
-        <jetty.version>9.4.30.v20200611</jetty.version>
+        <jetty.version>9.4.31.v20200723</jetty.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit.version>4.13</junit.version>
         <logback.version>1.2.3</logback.version>
