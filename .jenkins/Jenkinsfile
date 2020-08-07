@@ -10,6 +10,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
         disableConcurrentBuilds()
+        copyArtifactPermission('OVAS-scanner-integration');
     }
     parameters {
         choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
@@ -189,6 +190,7 @@ pipeline {
     }
     post {
         always {
+            archiveArtifacts artifacts:"**"
             sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
         }
         success {
