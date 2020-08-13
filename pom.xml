@@ -53,7 +53,7 @@
         <cometd.version>3.0.10</cometd.version>
         <commons-configuration.version>1.7</commons-configuration.version>
         <osgi.commons-configuration.version>${commons-configuration.version}-${cumulocity.core.version}</osgi.commons-configuration.version>
-        <guava.version>18.0</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <hamcrest.version>2.2</hamcrest.version>
         <jaxrs.version>1.1.1</jaxrs.version>
         <jersey1.version>1.8</jersey1.version>
@@ -66,8 +66,8 @@
         <mockito.version>3.3.3</mockito.version>
         <powermock.version>1.7.4</powermock.version>
         <slf4j.version>1.7.0</slf4j.version>
-        <spring.version>3.2.18.RELEASE</spring.version>
-        <spring.test.version>3.2.18.RELEASE</spring.test.version>
+        <spring.version>5.2.8.RELEASE</spring.version>
+        <spring.security.version>5.3.4.RELEASE</spring.security.version>
         <svenson.version>1.5.8</svenson.version>
         <osgi.svenson.version>${svenson.version}-${cumulocity.core.version}</osgi.svenson.version>
 
@@ -432,7 +432,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring.test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -581,20 +580,17 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
+                <artifactId>spring-framework-bom</artifactId>
                 <version>${spring.version}</version>
-                <exclusions>
-                    <!-- Exclude Commons Logging in favor of SLF4j -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring.version}</version>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-bom</artifactId>
+                <version>${spring.security.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.sun.jersey.contribs</groupId>
@@ -699,12 +695,6 @@
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
                 <version>${jsonassert.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-test</artifactId>
-                <version>${spring.version}</version>
                 <scope>test</scope>
             </dependency>
             <!-- TEST DEPENDENCIES END -->
