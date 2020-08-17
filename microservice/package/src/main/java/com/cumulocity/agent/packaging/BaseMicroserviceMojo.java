@@ -23,6 +23,7 @@ import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -125,7 +126,8 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         props.put("package.name", name);
         props.put("package.directory", directory);
         props.put("package.description", firstNonNull(description, name + " Service"));
-        props.put("package.jvm-mem", Joiner.on(' ').join(getJvmMem()));
+        props.put("package.jvm-heap", Joiner.on(' ').join(getJvmHeap()));
+        props.put("package.jvm-perm", Joiner.on(' ').join(getJvmPerm()));
         props.put("package.jvm-gc", Joiner.on(' ').join(getJvmGc()));
         props.put("package.arguments", Joiner.on(' ').join(arguments));
         props.put("package.required-java", javaRuntime);
@@ -134,31 +136,35 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         mavenResourcesFiltering.filterResources(execution);
     }
 
-    private List<String> getJvmMem() {
-        Memory heap = this.heap.or(new Memory("128m", "384m"));
-        Memory perm = this.perm.or(new Memory("64m", "128m"));
+    private List<String> getJvmHeap() {
+        return heap.isEmpty() ? Collections.emptyList() : ImmutableList.of(
+                "-Xms" + heap.getMin(),
+                "-Xmx" + heap.getMax()
+        );
+    }
+
+    private List<String> getJvmPerm() {
+        if (perm.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         if (isJava7()) {
             return ImmutableList.of(
-                    "-Xms" + heap.getMin(),
-                    "-Xmx" + heap.getMax(),
                     "-XX:PermSize=" + perm.getMin(),
                     "-XX:MaxPermSize=" + perm.getMax()
             );
+        } else {
+            return ImmutableList.of(
+                    "-XX:MetaspaceSize=" + perm.getMin(),
+                    "-XX:MaxMetaspaceSize=" + perm.getMax()
+            );
         }
-
-        return ImmutableList.of(
-                "-Xms" + heap.getMin(),
-                "-Xmx" + heap.getMax(),
-                "-XX:MetaspaceSize=" + perm.getMin(),
-                "-XX:MaxMetaspaceSize=" + perm.getMax()
-        );
     }
 
     private List<String> getJvmGc() {
         if (jvmArgs == null || jvmArgs.isEmpty()) {
             return ImmutableList.<String>builder().add("-XX:+UseConcMarkSweepGC", "-XX:+CMSParallelRemarkEnabled",
-                "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark").build();
+                    "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark").build();
         } else
             return jvmArgs;
     }
@@ -190,7 +196,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         final File to = new File(destination, String.format("%s.jar", name));
         Files.createParentDirs(to);
         getLog().debug(String.format("copy artifact %s to %s ", project.getArtifact().getFile().getAbsolutePath(), to.getAbsolutePath()));
-        if(!to.exists() || !asByteSource(project.getArtifact().getFile()).contentEquals(asByteSource(to))) {
+        if (!to.exists() || !asByteSource(project.getArtifact().getFile()).contentEquals(asByteSource(to))) {
             java.nio.file.Files.copy(project.getArtifact().getFile().toPath(), to.toPath(), REPLACE_EXISTING);
         }
     }
