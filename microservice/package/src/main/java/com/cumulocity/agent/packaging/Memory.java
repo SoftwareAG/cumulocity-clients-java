@@ -42,4 +42,7 @@ public class Memory {
         return defaultValue;
     }
 
+    public boolean isEmpty() {
+        return isNullOrEmpty(min) && isNullOrEmpty(max);
+    }
 }
