@@ -153,12 +153,12 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
                     "-XX:PermSize=" + perm.getMin(),
                     "-XX:MaxPermSize=" + perm.getMax()
             );
-        } else {
-            return ImmutableList.of(
-                    "-XX:MetaspaceSize=" + perm.getMin(),
-                    "-XX:MaxMetaspaceSize=" + perm.getMax()
-            );
         }
+
+        return ImmutableList.of(
+                "-XX:MetaspaceSize=" + perm.getMin(),
+                "-XX:MaxMetaspaceSize=" + perm.getMax()
+        );
     }
 
     private List<String> getJvmGc() {
