@@ -7,7 +7,7 @@ public enum RemoteAccessCredentialsType {
     NONE(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
-
+            return;
         }
     }),
     PASS_ONLY(new CredentialsValidator() {

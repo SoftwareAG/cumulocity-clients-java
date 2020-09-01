@@ -1,15 +1,18 @@
 package c8y;
 
 import com.google.common.collect.Lists;
-
 import java.util.List;
-
-import static c8y.RemoteAccessCredentialsType.*;
 
 public enum RemoteAccessProtocol {
 
     // Null has been introduced to fix backward compatibility for VNC
-    VNC(null, RemoteAccessCredentialsType.NONE, PASS_ONLY), TELNET(NONE), SSH(USER_PASS, KEY_PAIR);
+    VNC(null, RemoteAccessCredentialsType.NONE, RemoteAccessCredentialsType.PASS_ONLY),
+
+    TELNET(RemoteAccessCredentialsType.NONE),
+
+    SSH(RemoteAccessCredentialsType.USER_PASS, RemoteAccessCredentialsType.KEY_PAIR),
+
+    PASSTHROUGH(RemoteAccessCredentialsType.NONE);
 
     private final List<RemoteAccessCredentialsType> supportedCredentialTypes;
 
