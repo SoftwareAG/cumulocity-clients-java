@@ -135,7 +135,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     private List<String> getJvmMem() {
-        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmHeap()));
+        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmPerm()));
     }
 
     private List<String> getJvmHeap() {
