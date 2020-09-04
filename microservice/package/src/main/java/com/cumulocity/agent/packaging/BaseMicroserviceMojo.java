@@ -2,10 +2,7 @@ package com.cumulocity.agent.packaging;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 import lombok.NonNull;
@@ -128,12 +125,17 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         props.put("package.description", firstNonNull(description, name + " Service"));
         props.put("package.jvm-heap", Joiner.on(' ').join(getJvmHeap()));
         props.put("package.jvm-perm", Joiner.on(' ').join(getJvmPerm()));
+        props.put("package.jvm-mem", Joiner.on(' ').join(getJvmMem()));
         props.put("package.jvm-gc", Joiner.on(' ').join(getJvmGc()));
         props.put("package.arguments", Joiner.on(' ').join(arguments));
         props.put("package.required-java", javaRuntime);
         props.put("package.java-version", getJavaVersion());
         execution.setAdditionalProperties(props);
         mavenResourcesFiltering.filterResources(execution);
+    }
+
+    private List<String> getJvmMem() {
+        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmHeap()));
     }
 
     private List<String> getJvmHeap() {
