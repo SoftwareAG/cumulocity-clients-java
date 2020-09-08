@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.io.Files.asByteSink;
@@ -81,7 +83,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip.microservice.package")
     protected boolean skipMicroservicePackage;
 
-    @Parameter(defaultValue = "${maven.compiler.target}")
+    @Parameter(defaultValue = "${maven.compiler.release}, ${maven.compiler.target}, ${microservice.java.version}")
     protected String javaRuntime;
 
     @Component
@@ -128,8 +130,8 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         props.put("package.jvm-mem", Joiner.on(' ').join(getJvmMem()));
         props.put("package.jvm-gc", Joiner.on(' ').join(getJvmGc()));
         props.put("package.arguments", Joiner.on(' ').join(arguments));
-        props.put("package.required-java", javaRuntime);
         props.put("package.java-version", getJavaVersion());
+        props.put("package.required-java", javaRuntime);
         execution.setAdditionalProperties(props);
         mavenResourcesFiltering.filterResources(execution);
     }
@@ -237,6 +239,16 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     private String getJavaVersion() {
+        Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
+        Matcher matcher = pattern.matcher(javaRuntime);
+
+        if (matcher.find()) {
+            javaRuntime = matcher.group();
+        } else {
+            throw new IllegalArgumentException("Wrong format or missing java version. Missing at least one property from list: " +
+                    "maven.compiler.release, maven.compiler.target, microservice.java.version in valid format (1.8, 11 etc.)");
+        }
+
         if (javaRuntime.startsWith("1.")) {
             return javaRuntime.substring(2);
         }
