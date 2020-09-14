@@ -4,13 +4,12 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import lombok.ToString;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -101,14 +100,32 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
-        final List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
+        List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
                 .username(representation.getName())
                 .tenant(representation.getTenant())
                 .password(representation.getPassword())
                 .oAuthAccessToken(null)
                 .xsrfToken(null)
-                .build()).collect(Collectors.toList());
+                .build()).collect(Collectors.toCollection(ArrayList::new));
+        moveManagementToFront(subscriptions);
         return diffWithCurrentSubscriptions(subscriptions);
+    }
+
+    private void moveManagementToFront(List<MicroserviceCredentials> subscriptions) {
+        if (CollectionUtils.size(subscriptions) < 2) {
+            return;
+        }
+        MicroserviceCredentials management = null;
+        for (MicroserviceCredentials subscription : subscriptions) {
+            if ("management".equals(subscription.getTenant())) {
+                management = subscription;
+                break;
+            }
+        }
+        if (management != null) {
+            subscriptions.remove(management);
+            subscriptions.add(0, management);
+        }
     }
 
     public Subscriptions diffWithCurrentSubscriptions(List<MicroserviceCredentials> credentials) {
