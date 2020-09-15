@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,9 +20,6 @@
 
 package com.cumulocity.sdk.client;
 
-import static com.cumulocity.rest.pagination.RestPageRequest.DEFAULT_PAGE_SIZE;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,11 +33,12 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
         implements PagedCollectionResource<T, I> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedCollectionResourceImpl.class);
+    private static final int DEFAULT_PAGE_SIZE = 5;
 
     private UrlProcessor urlProcessor = new UrlProcessor();
 
     protected int pageSize = 5;
-    
+
     private final String url;
 
     protected final RestConnector restConnector;
@@ -126,7 +124,7 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
         }
     	return get(params);
     }
-    
+
     protected I get(Map<String, String> params) throws SDKException {
     	String urlToCall = urlProcessor.replaceOrAddQueryParam(url, params);
     	return wrap(restConnector.get(urlToCall, getMediaType(), getResponseClass()));
@@ -137,7 +135,7 @@ public abstract class PagedCollectionResourceImpl<T, C extends BaseCollectionRep
 		result.put(PAGE_SIZE_KEY, String.valueOf(pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize));
 		return result;
 	}
-    
+
     @SuppressWarnings("deprecation")
     @Override
     public boolean equals(Object obj) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>com.nsn.cumulocity.clients-java</groupId>
 		<artifactId>clients-java</artifactId>
@@ -14,7 +14,7 @@
 	<description>Rest Representations of device capability model</description>
 	<name>Cumulocity :: Model :: Device Capability Model Rest Representation</name>
 	<url>http://startups.jira.com/wiki/display/MTM/Home</url>
-	
+
 	<dependencies>
 		<dependency>
 		    <groupId>com.nsn.cumulocity.model</groupId>
@@ -24,8 +24,23 @@
 			<groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
 		</dependency>
-
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>java9+</id>
+			<activation>
+				<jdk>[9,)</jdk>
+			</activation>
+			<dependencies>
+				<!-- API -->
+				<dependency>
+					<groupId>javax.annotation</groupId>
+					<artifactId>javax.annotation-api</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 
 	<build>
 		<plugins>

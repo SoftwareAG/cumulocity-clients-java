@@ -19,9 +19,6 @@
  */
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
-import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
-import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
@@ -29,6 +26,9 @@ import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
+import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReader;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -79,8 +79,11 @@ public class RestConnector implements RestOperations {
 
     private static final String TFA_TOKEN_HEADER = "TFAToken";
 
-    private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
-            ErrorMessageRepresentationReader.class};
+    private final static Class<?>[] PROVIDERS_CLASSES = {
+            CumulocityJSONMessageBodyWriter.class,
+            CumulocityJSONMessageBodyReader.class,
+            ErrorMessageRepresentationReader.class
+    };
 
     private final PlatformParameters platformParameters;
 

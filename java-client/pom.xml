@@ -43,51 +43,13 @@
 	</organization>
 
 	<dependencies>
-        <dependency>
-            <groupId>com.nsn.cumulocity.shared-components</groupId>
-            <artifactId>common-notification</artifactId>
-        </dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.shared-components</groupId>
-			<artifactId>common-rest</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.cxf</groupId>
-					<artifactId>cxf-bundle-jaxrs</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>com.springsource.javax.validation</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-lang</groupId>
-					<artifactId>commons-lang</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.nsn.cumulocity.shared-components</groupId>
-					<artifactId>common-exception</artifactId>
-				</exclusion>
-				<exclusion>
-                 	<groupId>com.nsn.cumulocity.shared-components</groupId>
-                	 <artifactId>common-spring</artifactId>
-                </exclusion>
-				<exclusion>
-				    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-				    <groupId>org.apache.cxf</groupId>
-				</exclusion>
-				<exclusion>
-				    <artifactId>cxf-rt-transports-http-jetty</artifactId>
-				    <groupId>org.apache.cxf</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.shared-components</groupId>
-			<artifactId>common-utils</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.nsn.cumulocity.model</groupId>
 			<artifactId>rest-representation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.nsn.cumulocity.model</groupId>
+			<artifactId>realtime-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
@@ -101,6 +63,11 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
         </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -168,7 +135,7 @@
 			<artifactId>cucumber-spring</artifactId>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -19,6 +19,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.File;
 import java.util.Optional;
@@ -75,7 +76,7 @@ public class MicroserviceUploadMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${session}", readonly = true)
     protected MavenSession mavenSession;
-    
+
     @Component
     private Settings settings;
 
@@ -86,7 +87,13 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private final CredentialsConfigurationSupplier credentialsSupplier = new CredentialsConfigurationSupplier(serviceId, settings, credentials);
 
     @Getter(lazy = true)
-    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject().get(), getLog(), mavenSession), getLog());
+    private final PlatformRepository repository = new PlatformRepository(
+            new ApacheHttpClientExecutor(
+                    getCredentialsSupplier().getObject().get(),
+                    (Log)getLog(),
+                    mavenSession),
+            (Log)getLog()
+    );
 
     @Override
     public void execute() {
