@@ -10,20 +10,18 @@ import com.cumulocity.rest.representation.application.ApplicationUserCollectionR
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.httpclient.HttpStatus.*;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * works OK with platform API older than 8.18
@@ -134,7 +132,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     private RestOperations rest() {
         return platform.get();
     }
-    
+
     private Object handleException(String method, String url, Exception ex) {
         if (ex instanceof SDKException) {
             final SDKException sdkException = (SDKException) ex;

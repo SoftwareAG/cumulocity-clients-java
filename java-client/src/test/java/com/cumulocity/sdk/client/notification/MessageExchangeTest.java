@@ -1,6 +1,6 @@
 package com.cumulocity.sdk.client.notification;
 
-import com.cumulocity.common.notification.ClientSvensonJSONContext;
+import com.cumulocity.model.realtime.ClientSvensonJSONContext;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
@@ -12,7 +12,6 @@ import com.sun.jersey.api.client.async.FutureListener;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
-import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.After;
 import org.junit.Before;

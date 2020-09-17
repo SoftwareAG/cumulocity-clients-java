@@ -1,8 +1,8 @@
 package com.cumulocity.sdk.client.notification;
 
-import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.sdk.client.notification.MessageExchange.ResponseHandler;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import com.sun.jersey.api.client.AsyncWebResource;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientRequest;
@@ -10,15 +10,12 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.async.FutureListener;
 import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
-import junit.extensions.RepeatedTest;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.assertj.core.api.Assertions;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.test.annotation.Repeat;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -27,11 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,16 +35,14 @@ import static com.google.common.util.concurrent.Callables.returning;
 import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class MessageExchangeBlockingThreadsTest {
 
     private ScheduledExecutorService executorService = newScheduledThreadPool(1);
-
 
     @Test(timeout = 2000)
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
@@ -71,7 +63,7 @@ public class MessageExchangeBlockingThreadsTest {
         verify(listener).onFailure(any(Throwable.class), any(List.class));
     }
 
-    private void givenUnfinishedClientResponse(final Client client) throws Exception {
+    private void givenUnfinishedClientResponse(final Client client) {
         final AsyncWebResource asyncWebResource = mock(AsyncWebResource.class);
         final InputStream blockOnRead = new InputStream() {
             @Override
@@ -86,7 +78,7 @@ public class MessageExchangeBlockingThreadsTest {
             }
 
             @Override
-            public synchronized void close() throws IOException {
+            public synchronized void close() {
             }
         };
 
@@ -96,7 +88,7 @@ public class MessageExchangeBlockingThreadsTest {
             public Future<ClientResponse> answer(final InvocationOnMock invocationOnMock) throws Throwable {
                 final MessageBodyWorkers workers = mock(MessageBodyWorkers.class);
                 final MessageBodyReader messageBodyReader = mock(MessageBodyReader.class);
-                
+
                 given(messageBodyReader.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).willAnswer(new Answer<Object>() {
                     @Override
                     public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
@@ -105,7 +97,7 @@ public class MessageExchangeBlockingThreadsTest {
                     }
                 });
                 given(workers.getMessageBodyReader(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class))).willReturn(messageBodyReader);
-                
+
                 final ClientResponse response = new ClientResponse(OK.getStatusCode(), new InBoundHeaders(), blockOnRead, workers);
 
                 final FutureTask<ClientResponse> futureTask = new FutureTask<ClientResponse>(returning(response)) {
@@ -125,12 +117,7 @@ public class MessageExchangeBlockingThreadsTest {
     }
 
     private void executorShouldHaveFreeThread() throws Exception {
-        final Future<String> task = executorService.submit(new Callable<String>() {
-            @Override
-            public String call() {
-                return "OK";
-            }
-        });
+        final Future<String> task = executorService.submit(() -> "OK");
         Assertions.assertThat(task.get(500, MILLISECONDS)).isEqualTo("OK");
     }
 
