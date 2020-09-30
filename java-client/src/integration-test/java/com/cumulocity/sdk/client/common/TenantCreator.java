@@ -106,7 +106,7 @@ public class TenantCreator {
 
     private ClientResponse deleteTenant(Client httpClient) {
         String host = platform.getHost();
-        WebResource tenantResource = httpClient.resource(host + TENANT_URI + "/" + platform.getTenantId());
+        WebResource tenantResource = httpClient.resource(host + TENANT_URI + "/" + platform.getTenantId() + "?synchronous=true");
         return tenantResource.delete(ClientResponse.class);
     }
 }
