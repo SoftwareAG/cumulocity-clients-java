@@ -139,7 +139,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
 
     /**
      * This static method creates the Platform from the system parameters.
-     * <p/>
+     * <p>
      * System Properties
      * cumolocityHost     : ip address or name of the Cumulocity server
      * cumulocityPort     : port number of the Cumulocity server;
@@ -147,14 +147,14 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
      * cumulocityUser     : User ID ;
      * cumulocityPassword : Password ;
      * cumulocityPageSize : Page size for the paging parameters.
-     * <p/>
+     * <p>
      * proxyHost          : Proxy Host Name;
      * proxyPort          : Proxy Port Name
      * proxyUser          : Proxy User Name
-     * proxyPassword      : Proxy Passowrd
+     * proxyPassword      : Proxy Password
      *
      * @return Platform for the handle to get other methods.
-     * @throws SDKException
+     * @throws SDKException when platform creation fails
      */
 
     public static Platform createPlatform() throws SDKException {

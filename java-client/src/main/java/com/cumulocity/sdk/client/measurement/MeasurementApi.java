@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -48,7 +48,7 @@ public interface MeasurementApi {
      * @throws SDKException if the measurement could not be created
      */
     MeasurementRepresentation create(MeasurementRepresentation measurement) throws SDKException;
-    
+
     /**
      * Creates measurement in the platform. Does not send Accept header to make the request be processed faster.
      *
@@ -75,8 +75,8 @@ public interface MeasurementApi {
     void createBulkWithoutResponse(MeasurementCollectionRepresentation measurementCollection) throws SDKException;
 
     /**
-     * Creates measurement in the platform. Immediate response is available through the Future object. 
-     * In case of lost connection, buffers data in persistence provider. 
+     * Creates measurement in the platform. Immediate response is available through the Future object.
+     * In case of lost connection, buffers data in persistence provider.
      *
      * @param measurement measurement to be created
      * @return the created measurement with the generated id
@@ -97,7 +97,7 @@ public interface MeasurementApi {
      * Delete measurements from the platform based on the specified filter
      *
      * @param filter the filter criteria(s)
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException when invalid filter provided
      * @throws SDKException if the query failed
      */
     void deleteMeasurementsByFilter(MeasurementFilter filter) throws IllegalArgumentException, SDKException;
@@ -118,7 +118,7 @@ public interface MeasurementApi {
      * @throws SDKException if the query failed
      */
     MeasurementCollection getMeasurementsByFilter(MeasurementFilter filter) throws SDKException;
-    
+
     /**
      * Deletes measurement from the platform.
      * The measurement to be deleted is identified by the id within the given measurement.

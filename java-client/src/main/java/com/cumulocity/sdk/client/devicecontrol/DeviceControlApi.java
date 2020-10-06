@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -58,10 +58,10 @@ public interface DeviceControlApi {
      * @throws SDKException if the operation could not be updated
      */
     OperationRepresentation update(OperationRepresentation operation) throws SDKException;
-    
+
     /**
-     * Updates operation in the platform. Immediate response is available through the Future object. 
-     * In case of lost connection, buffers data in persistence provider. 
+     * Updates operation in the platform. Immediate response is available through the Future object.
+     * In case of lost connection, buffers data in persistence provider.
      *
      * @param operation to be updated
      * @return the updated operation
@@ -78,7 +78,7 @@ public interface DeviceControlApi {
     OperationCollection getOperations() throws SDKException;
 
     /**
-     * Gets the operations from the platform based on specified filter. Queris based on [{@code status}, {@code deviceId}, {@code agentId}]
+     * Gets the operations from the platform based on specified filter. Queries based on [{@code status}, {@code deviceId}, {@code agentId}]
      * and [{@code deviceId}, {@code agentId}] are not supported.
      * currently not supported.
      *
@@ -89,33 +89,33 @@ public interface DeviceControlApi {
      *                                  deviceId}, {@code agentId}]
      */
     OperationCollection getOperationsByFilter(OperationFilter filter) throws SDKException;
-    
+
     /**
      * Gets the notifications subscriber, which allows to receive newly created operations for agent.
      * <pre>
      * <code>
      * Example:
-     * 
+     *
      *  final GId agentId = ...
-     *  Subscriber<GId, OperationRepresentation> subscriber = deviceControlApi.getNotificationsSubscriber();
-     *  
-     *  subscriber.subscirbe( agentId , new SubscriptionListener<GId, OperationRepresentation>() {
+     *  Subscriber&lt;GId, OperationRepresentation&gt; subscriber = deviceControlApi.getNotificationsSubscriber();
+     *
+     *  subscriber.subscribe( agentId , new SubscriptionListener&lt;GId, OperationRepresentation&gt;() {
      *
      *      {@literal @}Override
-     *      public void onNotification(Subscription<GId> subscription, OperationRepresentation operation) {
-     *             //process operation 
+     *      public void onNotification(Subscription&lt;GId&gt; subscription, OperationRepresentation operation) {
+     *             //process operation
      *      }
-     *    
+     *
      *      {@literal @}Override
-     *      public void onError(Subscription<GId> subscription, Throwable ex) {
+     *      public void onError(Subscription&lt;GId&gt; subscription, Throwable ex) {
      *          // handle subscribe operation error
      *      }
      *  });
      *  </code>
      *  </pre>
-     * 
-     * @return subscriber 
-     * @throws SDKException
+     *
+     * @return subscriber
+     * @throws SDKException when subscriber creation fail
      */
     Subscriber<GId, OperationRepresentation> getNotificationsSubscriber() throws SDKException;
 }
