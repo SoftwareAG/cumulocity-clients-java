@@ -37,11 +37,8 @@ import java.util.Enumeration;
 @Component
 public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
 
-    @Setter(onMethod_ = @Autowired)
     private AuthenticationManager authenticationManager;
-    @Setter(onMethod_ = @Autowired(required = false))
     private AuthenticationEntryPoint authenticationEntryPoint;
-    @Setter(onMethod_ = @Autowired)
     private ContextService<UserCredentials> userContextService;
 
     @Override
@@ -117,6 +114,20 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
             }
         }
         return Optional.empty();
+    }
+
+    @Autowired
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
+    @Autowired
+    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) {
+        this.authenticationEntryPoint = authenticationEntryPoint;
+    }
+    @Autowired
+    public void setUserContextService(ContextService<UserCredentials> userContextService) {
+        this.userContextService = userContextService;
     }
 }
 

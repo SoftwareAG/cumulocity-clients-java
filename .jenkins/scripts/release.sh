@@ -40,7 +40,7 @@ git pull $repository_sdk ${branch_name}
 cd -
 
 echo "Update version to ${version}"
-call-mvn versions:set -DnewVersion=${version} 
+call-mvn versions:set -DnewVersion=${version}
 call-mvn clean deploy -Dmaven.javadoc.skip=true -s $MVN_SETTINGS
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
@@ -50,6 +50,23 @@ echo "Publish extracted files to maven repository"
 ssh ${resources}  "cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
 echo "Cleanup tmp files"
 ssh ${resources}  "rm -R /tmp/maven-repository-${version}*"
+
+echo "Publishing java-client/target/java-client-${version}-javadoc.jar to resources tmp "
+scp java-client/target/java-client-${version}-javadoc.jar ${resources}:/tmp/java-client-${version}-javadoc.jar
+ssh ${resources} "mkdir /resources/documentation/javasdk/${version} ; unzip /tmp/java-client-${version}-javadoc.jar -d /resources/documentation/javasdk/${version}"
+echo "Update current symbolic link of javasdk javadocs"
+ssh ${resources} "rm -f /resources/documentation/javasdk/current ; ln -s /resources/documentation/javasdk/${version} /resources/documentation/javasdk/current"
+echo "Delete /tmp/java-client-${version}-javadoc.jar file"
+ssh ${resources}  "rm -f /tmp/java-client-${version}-javadoc.jar"
+
+echo "Publishing microservice/target/microservice-dependencies-${version}-javadoc.jar to resources tmp "
+scp microservice/target/microservice-dependencies-${version}-javadoc.jar ${resources}:/tmp/microservice-dependencies-${version}-javadoc.jar
+ssh ${resources} "mkdir /resources/documentation/microservicesdk/${version} ; unzip /tmp/microservice-dependencies-${version}-javadoc.jar -d /resources/documentation/microservicesdk/${version}"
+echo "Update current symbolic link of microservicesdk javadocs"
+ssh ${resources} "rm -f /resources/documentation/microservicesdk/current ; ln -s /resources/documentation/microservicesdk/${version} /resources/documentation/microservicesdk/current"
+echo "Delete /tmp/microservice-dependencies-${version}-javadoc.jar file"
+ssh ${resources}  "rm -f /tmp/microservice-dependencies-${version}-javadoc.jar"
+
 echo "tagging cumulocity-clients-java"
 tag-version "clients-java-${version}"
 echo "tagging cumulocity-sdk"

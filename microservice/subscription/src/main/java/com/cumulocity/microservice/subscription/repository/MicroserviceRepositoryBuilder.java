@@ -26,6 +26,7 @@ public class MicroserviceRepositoryBuilder {
      * creates MicroserviceRepository implementation according to microservice isolation env variable:
      * - when C8Y.microservice.isolation is defined, then microservice runs on new SDK (8.18+) in kubernetes
      * - when C8Y.microservice.isolation not defined, then microservice should support old SDK (before 8.18)
+     * @return microservice repository instance
      */
     public MicroserviceRepository build() {
         final CumulocityCredentials credentials = CumulocityBasicCredentials.builder()
@@ -76,7 +77,7 @@ public class MicroserviceRepositoryBuilder {
         this.password = password;
         return this;
     }
-    
+
     public MicroserviceRepositoryBuilder connector(CredentialsSwitchingPlatform connector) {
         this.connector = connector;
         return this;
