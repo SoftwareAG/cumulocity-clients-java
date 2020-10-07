@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,35 +30,35 @@ import java.io.InputStream;
  *
  */
 public interface CepApi {
-    
+
     /**
      * Gets the notifications subscriber, which allows to receive notifications sent from cep.
      * <pre>
      * <code>
      * Example:
-     * 
-     *  Subscriber<String, Object> subscriber = deviceControlApi.getNotificationsSubscriber();
-     *  
-     *  subscriber.subscirbe( "channelId" , new SubscriptionListener<String, Object>() {
+     *
+     *  Subscriber&lt;String, Object&gt; subscriber = deviceControlApi.getNotificationsSubscriber();
+     *
+     *  subscriber.subscribe( "channelId" , new SubscriptionListener&lt;String, Object&gt;() {
      *
      *      {@literal @}Override
-     *      public void onNotification(Subscription<GId> subscription, Object operation) {
-     *             //process notification from cep module 
+     *      public void onNotification(Subscription&lt;GId&gt; subscription, Object operation) {
+     *             //process notification from cep module
      *      }
-     *    
+     *
      *      {@literal @}Override
-     *      public void onError(Subscription<GId> subscription, Throwable ex) {
+     *      public void onError(Subscription&lt;GId&gt; subscription, Throwable ex) {
      *          // handle subscribe error
      *      }
      *  });
      *  </code>
      *  </pre>
-     * 
-     * @return subscriber 
-     * @throws SDKException
+     *
+     * @return subscriber
+     * @throws SDKException when subscriber creation fail
      */
     CepCustomNotificationsSubscriber getCustomNotificationsSubscriber();
-    
+
     /**
      * Gets an cep module by id
      *
@@ -67,7 +67,7 @@ public interface CepApi {
      * @throws SDKException if the cep module is not found or if the query failed
      */
     CepModuleRepresentation get(String id);
-    
+
     /**
      * Gets a cep module text by id
      *
@@ -76,21 +76,21 @@ public interface CepApi {
      * @throws SDKException if the cep module is not found or if the query failed
      */
     String getText(String id);
-    
+
     /**
      * Creates an cep module in the platform.
      *
-     * @param content input stream to resource with cep module definition 
+     * @param content input stream to resource with cep module definition
      * @return the created cep module with the generated id
      * @throws SDKException if the cep module could not be created
      */
     @Deprecated
     CepModuleRepresentation create(InputStream content);
-    
+
     /**
      * Creates an cep module in the platform.
      *
-     * @param content of cep module definition 
+     * @param content of cep module definition
      * @return the created cep module with the generated id
      * @throws SDKException if the cep module could not be created
      */
@@ -100,7 +100,7 @@ public interface CepApi {
      * The cep module to be updated is identified by the id.
      *
      * @param id of cep module to update
-     * @param content input stream to resource with cep module definition 
+     * @param content input stream to resource with cep module definition
      * @return the updated cep module
      * @throws SDKException if the cep module could not be updated
      */
@@ -117,23 +117,28 @@ public interface CepApi {
      * @throws SDKException if the query failed
      */
     CepModuleCollection getModules();
-    
+
     /**
      * Deletes the cep module from the platform.
      *
-     * @throws SDKException
+     * @param module cep module to delete
+     * @throws SDKException when delete of cep module fail
      */
     void delete(CepModuleRepresentation module);
-    
+
     /**
      * Deletes the cep module from the platform.
      *
-     * @throws SDKException
+     * @param id identifier of cep module to delete
+     * @throws SDKException when delete of cep module fail
      */
     void delete(String id);
 
     /**
      * Checks state of cep microservice.
+     * @param clazz expected class result
+     * @param <T> generic type of class result
+     * @return the cep health status object
      */
     <T> T health(Class<T> clazz);
 }

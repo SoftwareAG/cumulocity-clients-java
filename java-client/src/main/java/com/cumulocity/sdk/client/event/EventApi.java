@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -49,8 +49,8 @@ public interface EventApi {
     EventRepresentation create(EventRepresentation event) throws SDKException;
 
     /**
-     * Creates event in the platform. Immediate response is available through the Future object. 
-     * In case of lost connection, buffers data in persistence provider. 
+     * Creates event in the platform. Immediate response is available through the Future object.
+     * In case of lost connection, buffers data in persistence provider.
      *
       * @param event event to be created
      * @return the created event with the generated id
@@ -71,7 +71,7 @@ public interface EventApi {
      * Deletes events from the platform based on the specified filter
      *
      * @param filter the filter criteria(s)
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException when null event filter provided
      * @throws SDKException if the event(s) could not be deleted
      */
     void deleteEventsByFilter(EventFilter filter) throws IllegalArgumentException, SDKException;
@@ -96,7 +96,7 @@ public interface EventApi {
     /**
      * This update the event in the platform. Cannot update the ID.
      *
-     * @param eventRepresentation
+     * @param eventRepresentation event to be updated
      * @return The created event
      * @throws SDKException if the event could not be updated
      */

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -44,10 +44,10 @@ public class EventFilter extends Filter {
 
     @ParamSource
     private String dateTo;
-    
+
     @ParamSource
     private String createdFrom;
-    
+
     @ParamSource
     private String createdTo;
 
@@ -56,7 +56,7 @@ public class EventFilter extends Filter {
 
     @ParamSource
     private String source;
-    
+
     /**
      * Specifies the {@code type} query parameter
      *
@@ -71,14 +71,14 @@ public class EventFilter extends Filter {
     /**
      * Specifies the {@code source} query parameter
      *
-     * @param source the managed object that generated the event(s)
+     * @param id the managed object id that generated the event(s)
      * @return the event filter with {@code source} set
      */
     public EventFilter bySource(GId id) {
         this.source = id.getValue();
         return this;
     }
-    
+
     /**
      * Specifies the {@code source} query parameter
      *
@@ -124,7 +124,7 @@ public class EventFilter extends Filter {
     	this.dateTo = DateConverter.date2String(toDate);
     	return this;
     }
-    
+
     public EventFilter byFromDate(Date fromDate) {
     	this.dateFrom = DateConverter.date2String(fromDate);
     	return this;
@@ -145,13 +145,13 @@ public class EventFilter extends Filter {
 	public String getCreatedTo() {
 		return createdTo;
 	}
-	
+
 	public EventFilter byCreationDate(Date fromDate, Date toDate) {
 		this.createdFrom = DateConverter.date2String(fromDate);
 		this.createdTo = DateConverter.date2String(toDate);
 		return this;
 	}
-	
+
 	public EventFilter byFromCreationDate(Date fromDate) {
 		this.createdFrom = DateConverter.date2String(fromDate);
 		return this;

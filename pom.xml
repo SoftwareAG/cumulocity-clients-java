@@ -58,6 +58,7 @@
         <junit.version>4.13</junit.version>
         <logback.version>1.2.3</logback.version>
         <lombok.version>1.18.12</lombok.version>
+        <lombok-plugin.version>${lombok.version}.0</lombok-plugin.version>
         <microemu.version>2.0.4</microemu.version>
         <mockito.version>3.3.3</mockito.version>
         <powermock.version>1.7.4</powermock.version>
@@ -228,7 +229,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

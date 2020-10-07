@@ -65,6 +65,7 @@ public interface TenantOptionApi {
      * Gets all options from the platform for the specific category
      * Requires role ROLE_OPTION_MANAGEMENT_READ
      *
+     * @param category tenant options category
      * @return collection of options
      * @throws SDKException if the query failed
      */

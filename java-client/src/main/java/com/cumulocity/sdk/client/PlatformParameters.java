@@ -213,7 +213,7 @@ public class PlatformParameters {
      *      .build())
      *  .build()
      * );
-     * @param httpClientConfig
+     * @param httpClientConfig http client configuration
      */
     public void setHttpClientConfig(HttpClientConfig httpClientConfig) {
         this.httpClientConfig = httpClientConfig;
@@ -222,7 +222,7 @@ public class PlatformParameters {
     /**
      * Set header to the http client to close connection always.
      *
-     * @param alwaysCloseConnection
+     * @param alwaysCloseConnection specifies if header value should be set
      */
     public void setAlwaysCloseConnection(boolean alwaysCloseConnection) {
         httpClientConfig = httpClientConfig.toBuilder().pool(httpClientConfig.getPool().toBuilder().enabled(!alwaysCloseConnection).build()).build();
