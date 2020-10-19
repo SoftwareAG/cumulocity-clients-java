@@ -7,18 +7,16 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A locking mechanism based on keys, where a lock is created per given key.
- * @author Darek Kaczynski
- * 
- * @warning This class is copied from com.cumulocity.common.concurrent.KeyBasedLocksMap
+ *
  */
 public class KeyBasedLocksMap {
 
     private final ConcurrentMap<Object, ReentrantLock> locks;
-    
+
     public static Object createLockKey(Object...keyElements) {
         return new LockKey(keyElements);
     }
-    
+
     public KeyBasedLocksMap() {
         this.locks = new ConcurrentHashMap<Object, ReentrantLock>();
     }
@@ -33,10 +31,10 @@ public class KeyBasedLocksMap {
     public KeyBasedLock lockForKeyElements(Object...keyElements) {
         return lockForKey(createLockKey(keyElements));
     }
-    
+
     /**
      * Acquires the lock for the given key. To acquire a lock for current thread means to successfully
-     * {@link ConcurrentHashMap#putIfAbsent(Object, Object) putIfAbsent()} a {@link ReentrantLock lock} locked 
+     * {@link ConcurrentHashMap#putIfAbsent(Object, Object) putIfAbsent()} a {@link ReentrantLock lock} locked
      * for current thread into {@link ConcurrentMap locks map}.
      * <p>Acquires the lock if it is not held by any thread and returns immediately, setting the lock hold count to one.
      * <p>If the lock is held by any thread then the current thread becomes disabled for thread scheduling
@@ -53,8 +51,9 @@ public class KeyBasedLocksMap {
      * using {@link ReentrantLock#lock() lock()} method it waits until it succeeds in acquiring the lock for itself.
      * <li>When current thread finally acquired the lock from different thread it unlocks previously created
      * {@link ReentrantLock myLock} object and uses the {@link ReentrantLock otherLock} in it's place and goes back
-     * to step 2.
+     * to step 2.</ol>
      * @param lockKey the key to acquire lock for.
+     * @return key based lock
      * @see Lock#lock()
      */
     public KeyBasedLock lockForKey(Object lockKey) {
@@ -63,40 +62,40 @@ public class KeyBasedLocksMap {
             myLock.lock();
             return new KeyBasedLock(lockKey, myLock);
         }
-        
+
         myLock = new ReentrantLock();
         myLock.lock();
         ReentrantLock otherLock = null;
         do {
             otherLock = locks.putIfAbsent(lockKey, myLock);
-            
+
             if (otherLock != null) {
                 otherLock.lock();
                 myLock.unlock();
                 myLock = otherLock;
             }
         } while (otherLock != null);
-        
+
         return new KeyBasedLock(lockKey, myLock);
     }
-    
+
     void unlockKey(Object lockKey, ReentrantLock myLock) {
         if (myLock.getHoldCount() == 1) {
             locks.remove(lockKey);
         }
         myLock.unlock();
     }
-    
+
     public class KeyBasedLock {
-        
+
         private Object lockKey;
         private ReentrantLock lock;
-        
+
         KeyBasedLock(Object lockKey, ReentrantLock lock) {
             this.lockKey = lockKey;
             this.lock = lock;
         }
-        
+
         /**
          * Unlocks this the lock for this key.
          */
@@ -104,20 +103,20 @@ public class KeyBasedLocksMap {
             unlockKey(lockKey, lock);
         }
     }
-    
+
     /**
      * A common lock key implementation. Proper {@link #hashCode()} and {@link #equals(Object)} implementations are
-     * required for any key class to wotk correctly. 
+     * required for any key class to wotk correctly.
      * @author Darek Kaczynski
      */
     private static class LockKey {
-        
+
         private Object[] keyElements;
-        
+
         public LockKey(Object...keyElements) {
             this.keyElements = keyElements;
         }
-        
+
         @Override
         public int hashCode() {
             int hash = 0;
@@ -128,7 +127,7 @@ public class KeyBasedLocksMap {
             }
             return hash;
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {

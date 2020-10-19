@@ -288,18 +288,19 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.2.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>aggregate-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                         <configuration>
                             <doctitle>Cumulocity Microservice SDK</doctitle>
                             <windowtitle>Cumulocity Microservice SDK</windowtitle>
                             <overview>${project.basedir}/javadoc/overview.html</overview>
-                            <executions>
-                                <execution>
-                                    <goals>
-                                          <goal>aggregate</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
+                            <source>8</source>
                     </configuration>
                 </plugin>
             </plugins>
@@ -325,7 +326,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.1</version>
+                        <version>0.8.4</version>
                         <configuration>
                             <destFile>${project.basedir}/../target/jacoco.exec</destFile>
                             <append>true</append>

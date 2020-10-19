@@ -9,8 +9,11 @@ public interface MicroserviceRepository {
     ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata);
 
     /**
-     * Method is Deprecated. Method {@link this#register(MicroserviceMetadataRepresentation)} should be used instead.
-     * Method {@link this#register(String, MicroserviceMetadataRepresentation)} will be removed in the future.
+     * Method is Deprecated and will be removed in the future
+     * Use {@link #register(MicroserviceMetadataRepresentation)} method instead.
+     * @param applicationName application name
+     * @param metadata microservice metadata
+     * @return application representation
      */
     @Deprecated
     ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation metadata);
@@ -20,8 +23,10 @@ public interface MicroserviceRepository {
     Iterable<ApplicationUserRepresentation> getSubscriptions();
 
     /**
-     * Method is Deprecated. Method {@link this#getSubscriptions()} should be used instead.
-     * Method {@link this#getSubscriptions(String)} will be removed in the future.
+     * Method is Deprecated and will be removed in the future.
+     * Use {@link #getSubscriptions()} method instead.
+     * @param applicationId application identifier
+     * @return collection of application users
      */
     @Deprecated
     Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId);

@@ -23,7 +23,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.httpclient.HttpStatus.*;
 
 /**
- * works with platform API >= 8.18
+ * works with platform API &gt;= 8.18
  */
 @Slf4j
 @Setter(value = PRIVATE)
