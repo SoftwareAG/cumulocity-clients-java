@@ -121,7 +121,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         this.authenticationManager = authenticationManager;
     }
 
-    @Autowired
+    @Autowired(required = false)
     public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) {
         this.authenticationEntryPoint = authenticationEntryPoint;
     }
