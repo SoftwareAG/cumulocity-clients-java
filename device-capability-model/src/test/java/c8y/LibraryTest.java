@@ -19,10 +19,10 @@ import static org.junit.Assert.*;
 
 public class LibraryTest {
 
-    private ManagedObject<GId> sensorLib;
-    private ManagedObject<GId> deviceMgmtLib;
-    private ManagedObject<GId> incorrectFragmentLib;
-    private ManagedObject<GId> incorrectFragmentLib2;
+    private ManagedObject sensorLib;
+    private ManagedObject deviceMgmtLib;
+    private ManagedObject incorrectFragmentLib;
+    private ManagedObject incorrectFragmentLib2;
 
     @Before
     public void setup() {
@@ -33,7 +33,7 @@ public class LibraryTest {
     }
 
 	@SuppressWarnings("unchecked")
-	private ManagedObject<GId> readFile(String file) {
+	private ManagedObject readFile(String file) {
 		InputStream is = getClass().getResourceAsStream(file);
 		InputStreamSource source = new InputStreamSource(is, true);
 		return ManagedObject.getJSONParser().parse(ManagedObject.class, source);
