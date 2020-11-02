@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,6 +30,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -38,6 +39,8 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class MeasurementApiImplTest {
@@ -142,7 +145,7 @@ public class MeasurementApiImplTest {
         verify(restConnector, times(1)).delete(measurementsUrl);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testDeleteByNullFilter() {
         measurementApi.deleteMeasurementsByFilter(null);
     }
@@ -268,6 +271,28 @@ public class MeasurementApiImplTest {
 
         //then
         verify(restConnector).postWithoutResponse(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate);
+    }
+
+    @Test
+    public void shouldOptimizeSource() throws SDKException {
+        // Given
+        final String uselessFieldName = "uselessParameter";
+        final ArgumentCaptor<MeasurementRepresentation> captor = ArgumentCaptor.forClass(MeasurementRepresentation.class);
+
+        MeasurementRepresentation representation = new MeasurementRepresentation();
+        ManagedObjectRepresentation source = new ManagedObjectRepresentation();
+        source.setId(GId.asGId("123"));
+        source.set("uselessValue", uselessFieldName);
+        representation.setSource(source);
+
+        // When
+        measurementApi.create(representation);
+
+        // Then
+        verify(restConnector).post(eq(MEASUREMENT_COLLECTION_URL), eq(MeasurementMediaType.MEASUREMENT), captor.capture());
+        final MeasurementRepresentation actuallySendValue = captor.getValue();
+        assertNull(representation.getSource().get(uselessFieldName));
+        assertEquals(actuallySendValue.getSource().toJSON(), "{\"id\":\"123\"}");
     }
 
     public static class NonRelevantFragmentType {

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -31,6 +31,8 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
 
+import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
+
 public class AlarmApiImpl implements AlarmApi {
 
     private final RestConnector restConnector;
@@ -38,7 +40,7 @@ public class AlarmApiImpl implements AlarmApi {
     private final int pageSize;
 
     private AlarmsApiRepresentation alarmsApiRepresentation;
-    
+
     private UrlProcessor urlProcessor;
 
     public AlarmApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, AlarmsApiRepresentation alarmsApiRepresentation, int pageSize) {
@@ -51,7 +53,7 @@ public class AlarmApiImpl implements AlarmApi {
     private AlarmsApiRepresentation getAlarmsApiRepresentation() throws SDKException {
         return alarmsApiRepresentation;
     }
-    
+
     @Override
     public AlarmRepresentation getAlarm(GId alarmId) throws SDKException {
         String url = getSelfUri() + "/" + alarmId.getValue();
@@ -63,7 +65,7 @@ public class AlarmApiImpl implements AlarmApi {
     public AlarmRepresentation updateAlarm(AlarmRepresentation alarmToUpdate) throws SDKException {
         return update(alarmToUpdate);
     }
-    
+
     @Override
     public AlarmRepresentation update(AlarmRepresentation alarmToUpdate) throws SDKException {
         String url = getSelfUri() + "/" + alarmToUpdate.getId().getValue();
@@ -92,11 +94,13 @@ public class AlarmApiImpl implements AlarmApi {
 
     @Override
     public AlarmRepresentation create(AlarmRepresentation representation) throws SDKException {
+        optimizeSource(representation);
         return restConnector.post(getSelfUri(), AlarmMediaType.ALARM, representation);
     }
-    
+
     @Override
     public Future createAsync(AlarmRepresentation representation) throws SDKException {
+        optimizeSource(representation);
         return restConnector.postAsync(getSelfUri(), AlarmMediaType.ALARM, representation);
     }
 

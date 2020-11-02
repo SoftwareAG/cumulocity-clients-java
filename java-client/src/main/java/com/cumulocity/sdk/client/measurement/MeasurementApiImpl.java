@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,7 +30,11 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
 
 public class MeasurementApiImpl implements MeasurementApi {
 
@@ -39,7 +43,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     private final int pageSize;
 
     private MeasurementsApiRepresentation measurementsApiRepresentation;
-    
+
     private UrlProcessor urlProcessor;
 
     public MeasurementApiImpl(RestConnector restConnector, UrlProcessor urlProcessor, MeasurementsApiRepresentation measurementsApiRepresentation, int pageSize) {
@@ -48,11 +52,11 @@ public class MeasurementApiImpl implements MeasurementApi {
         this.measurementsApiRepresentation = measurementsApiRepresentation;
         this.pageSize = pageSize;
     }
-  
+
     private MeasurementsApiRepresentation getMeasurementApiRepresentation() throws SDKException {
         return measurementsApiRepresentation;
     }
-    
+
     @Override
     public MeasurementRepresentation getMeasurement(GId measurementId) throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf() + "/" + measurementId.getValue();
@@ -64,7 +68,7 @@ public class MeasurementApiImpl implements MeasurementApi {
     public void deleteMeasurement(MeasurementRepresentation measurement) throws SDKException {
         delete(measurement);
     }
-    
+
     @Override
     public void delete(MeasurementRepresentation measurement) throws SDKException {
         String url = getMeasurementApiRepresentation().getMeasurements().getSelf() + "/" + measurement.getId().getValue();
@@ -99,27 +103,40 @@ public class MeasurementApiImpl implements MeasurementApi {
 
     @Override
     public MeasurementRepresentation create(MeasurementRepresentation measurementRepresentation) throws SDKException {
-          return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
+        optimizeSource(measurementRepresentation);
+        return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 
     @Override
     public MeasurementCollectionRepresentation createBulk(MeasurementCollectionRepresentation measurementCollection) {
+        collectionAsStream(measurementCollection.getMeasurements())
+                .forEach(measurement -> optimizeSource(measurement));
         return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
     }
 
     @Override
     public void createBulkWithoutResponse(MeasurementCollectionRepresentation measurementCollection) {
+        collectionAsStream(measurementCollection.getMeasurements())
+                .forEach(measurement -> optimizeSource(measurement));
         restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
+    }
+
+    Stream<MeasurementRepresentation> collectionAsStream(Collection<MeasurementRepresentation> collection) {
+        return collection == null
+                ? Stream.empty()
+                : collection.stream();
     }
 
     @Override
     public void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException {
-          restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
+        optimizeSource(measurementRepresentation);
+        restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
-    
+
     @Override
     public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
-          return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
+        optimizeSource(measurementRepresentation);
+        return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 
     protected String getSelfUri() throws SDKException {
