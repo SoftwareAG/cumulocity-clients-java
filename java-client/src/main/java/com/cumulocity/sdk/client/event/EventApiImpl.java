@@ -31,7 +31,7 @@ import com.cumulocity.sdk.client.buffering.Future;
 
 import java.util.Map;
 
-import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
+import static com.cumulocity.sdk.client.SourceableUtils.keepOnlySourceId;
 
 public class EventApiImpl implements EventApi {
 
@@ -68,13 +68,13 @@ public class EventApiImpl implements EventApi {
 
     @Override
     public EventRepresentation create(EventRepresentation representation) throws SDKException {
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         return restConnector.post(getSelfUri(), EventMediaType.EVENT, representation);
     }
 
     @Override
     public Future createAsync(EventRepresentation representation) throws SDKException {
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         return restConnector.postAsync(getSelfUri(), EventMediaType.EVENT, representation);
     }
 

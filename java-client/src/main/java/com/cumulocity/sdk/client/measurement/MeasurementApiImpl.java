@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
+import static com.cumulocity.sdk.client.SourceableUtils.keepOnlySourceId;
 
 public class MeasurementApiImpl implements MeasurementApi {
 
@@ -103,21 +103,21 @@ public class MeasurementApiImpl implements MeasurementApi {
 
     @Override
     public MeasurementRepresentation create(MeasurementRepresentation measurementRepresentation) throws SDKException {
-        optimizeSource(measurementRepresentation);
+        keepOnlySourceId(measurementRepresentation);
         return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 
     @Override
     public MeasurementCollectionRepresentation createBulk(MeasurementCollectionRepresentation measurementCollection) {
         collectionAsStream(measurementCollection.getMeasurements())
-                .forEach(measurement -> optimizeSource(measurement));
+                .forEach(measurement -> keepOnlySourceId(measurement));
         return restConnector.post(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
     }
 
     @Override
     public void createBulkWithoutResponse(MeasurementCollectionRepresentation measurementCollection) {
         collectionAsStream(measurementCollection.getMeasurements())
-                .forEach(measurement -> optimizeSource(measurement));
+                .forEach(measurement -> keepOnlySourceId(measurement));
         restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT_COLLECTION, measurementCollection);
     }
 
@@ -129,13 +129,13 @@ public class MeasurementApiImpl implements MeasurementApi {
 
     @Override
     public void createWithoutResponse(MeasurementRepresentation measurementRepresentation) throws SDKException {
-        optimizeSource(measurementRepresentation);
+        keepOnlySourceId(measurementRepresentation);
         restConnector.postWithoutResponse(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 
     @Override
     public Future createAsync(MeasurementRepresentation measurementRepresentation) throws SDKException {
-        optimizeSource(measurementRepresentation);
+        keepOnlySourceId(measurementRepresentation);
         return restConnector.postAsync(getSelfUri(), MeasurementMediaType.MEASUREMENT, measurementRepresentation);
     }
 

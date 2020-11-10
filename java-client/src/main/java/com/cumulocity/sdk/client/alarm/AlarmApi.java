@@ -27,6 +27,7 @@ import com.cumulocity.sdk.client.buffering.Future;
 
 /**
  * API for creating, updating and retrieving alarms from the platform.
+ * All creating methods modifies the source object, including only the ID value, ignoring the rest.
  */
 public interface AlarmApi {
 

@@ -31,7 +31,8 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import com.cumulocity.sdk.client.buffering.Future;
 
-import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
+import static com.cumulocity.sdk.client.SourceableUtils.keepOnlySourceId;
+
 
 public class AlarmApiImpl implements AlarmApi {
 
@@ -94,13 +95,13 @@ public class AlarmApiImpl implements AlarmApi {
 
     @Override
     public AlarmRepresentation create(AlarmRepresentation representation) throws SDKException {
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         return restConnector.post(getSelfUri(), AlarmMediaType.ALARM, representation);
     }
 
     @Override
     public Future createAsync(AlarmRepresentation representation) throws SDKException {
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         return restConnector.postAsync(getSelfUri(), AlarmMediaType.ALARM, representation);
     }
 

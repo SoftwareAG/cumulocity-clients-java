@@ -7,11 +7,11 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import org.junit.Test;
 
-import static com.cumulocity.sdk.client.SourceUtils.optimizeSource;
+import static com.cumulocity.sdk.client.SourceableUtils.keepOnlySourceId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class SourceUtilsTest {
+public class SourceableUtilsTest {
 
     @Test
     public void shouldOptimizeSourceWhenContainsUnnecessaryFields() {
@@ -23,7 +23,7 @@ public class SourceUtilsTest {
         source.set("uselessValue", uselessFieldName);
         representation.setSource(source);
         // When
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         // Then
         assertNull(representation.getSource().get(uselessFieldName));
         assertEquals("{\"id\":\"123\"}", representation.getSource().toJSON());
@@ -38,7 +38,7 @@ public class SourceUtilsTest {
         toOptimizeRepresentation.setSource(source);
         final String jsonBeforeOptimize = toOptimizeRepresentation.toJSON();
         // When
-        optimizeSource(toOptimizeRepresentation);
+        keepOnlySourceId(toOptimizeRepresentation);
         // Then
         assertEquals(jsonBeforeOptimize, toOptimizeRepresentation.toJSON());
     }
@@ -49,7 +49,7 @@ public class SourceUtilsTest {
         final MeasurementRepresentation representation = new MeasurementRepresentation();
         final String jsonBeforeOptimize = representation.toJSON();
         // When
-        optimizeSource(representation);
+        keepOnlySourceId(representation);
         // Then
         assertEquals(jsonBeforeOptimize, representation.toJSON());
     }
