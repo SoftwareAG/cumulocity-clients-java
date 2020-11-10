@@ -42,6 +42,10 @@ cd -
 echo "Update version to ${version}"
 call-mvn versions:set -DnewVersion=${version}
 call-mvn clean deploy -Dmaven.javadoc.skip=true -s $MVN_SETTINGS
+./mvnw generate-resources -Pjavadoc
+cd microservice
+../mvnw javadoc:aggregate-jar
+cd -
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
