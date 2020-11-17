@@ -6,12 +6,13 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 
 public class SourceableUtils {
 
-    public static void keepOnlySourceId(SourceableRepresentation representation) {
+    public static <T extends SourceableRepresentation> T keepOnlySourceId(T representation) {
         if (representation.getSource() != null) {
             final GId id = representation.getSource().getId();
             final ManagedObjectRepresentation optimizedSource = new ManagedObjectRepresentation();
             optimizedSource.setId(id);
             representation.setSource(optimizedSource);
         }
+        return representation;
     }
 }
