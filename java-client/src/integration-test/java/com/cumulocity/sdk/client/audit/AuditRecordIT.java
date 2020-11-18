@@ -19,7 +19,6 @@
  */
 package com.cumulocity.sdk.client.audit;
 
-import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
@@ -27,10 +26,8 @@ import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBui
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
+import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TenantCreator;
-import com.cumulocity.sdk.client.inventory.InventoryIT;
-
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -39,7 +36,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -57,25 +53,7 @@ public class AuditRecordIT {
 
     @BeforeClass
     public static void createTenantWithApplication() throws Exception {
-        platform = createPlatform();
-
-    }
-
-    private static PlatformImpl createPlatform() throws IOException {
-        Properties cumulocityProps = new Properties();
-        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-
-        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        PlatformImpl platform = new PlatformImpl(
-                p.get("cumulocity.host"),
-                CumulocityBasicCredentials.builder()
-                        .tenantId(p.get("cumulocity.tenant"))
-                        .username(p.get("cumulocity.user"))
-                        .password(p.get("cumulocity.password"))
-                        .build(),
-                5);
-        platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
-        return platform;
+        platform = JavaSdkITBase.createPlatform(false);
     }
 
     @Before
