@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -51,21 +52,25 @@ public class JavaSdkITBase {
         tenantCreator.removeTenant();
     }
 
-    private static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
+    public static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
         Properties cumulocityProps = new Properties();
         cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-        
-        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user"; 
-        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password"; 
+
+        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user";
+        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password";
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         PlatformImpl platform = new PlatformImpl(
                 p.get("cumulocity.host"),
                 CumulocityBasicCredentials.builder()
-                        .tenantId(p.get("cumulocity.tenant"))
+                        .tenantId(nextTenantId())
                         .username(p.get(userKey))
                         .password(p.get(userPassword))
                         .build());
         platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
         return platform;
+    }
+
+    private static String nextTenantId() {
+        return "sdk_tenant_" + RandomUtils.nextInt(1_000_000);
     }
 }
