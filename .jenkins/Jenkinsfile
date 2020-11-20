@@ -49,19 +49,15 @@ pipeline {
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
             }
         }
-        stage('Compile') {
-            steps {
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
-                }
-            }
-        }
         stage('Build') {
             options {
                 retry(3)
             }
             steps {
-                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+                }
             }
             post {
                 always {
