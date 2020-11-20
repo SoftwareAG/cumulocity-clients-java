@@ -71,12 +71,12 @@ pipeline {
             }
         }
         stage('Verify maven repo') {
-            when {
-                anyOf {
-                    branch 'develop'
-                    branch 'release/**'
-                }
-            }
+            // when {
+            //     anyOf {
+            //         branch 'develop'
+            //         branch 'release/**'
+            //     }
+            // }
             steps {
                 checkout([
                     $class: 'GitSCM',
@@ -97,10 +97,10 @@ pipeline {
             when {
                 allOf {
                     equals expected: 'DEFAULT', actual: params.build_type
-                    anyOf {
-                        branch 'release/**';
-                        branch 'develop'
-                    }
+                    // anyOf {
+                    //     branch 'release/**';
+                    //     branch 'develop'
+                    // }
                 }
 
             }
