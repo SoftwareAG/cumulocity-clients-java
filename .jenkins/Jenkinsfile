@@ -1,7 +1,7 @@
 pipeline {
     agent {
-        label 'docker, rpm, jdk11, ssh'
-        kubernetes{
+        kubernetes { 
+            inheritFrom 'java-11'
             defaultContainer 'default'
         }
     }
