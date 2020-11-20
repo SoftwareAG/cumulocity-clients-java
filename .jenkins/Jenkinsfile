@@ -1,11 +1,10 @@
 pipeline {
     agent {
-        dockerfile {
-            dir '.jenkins/build'
-            args '--network centos_default'
+        label 'docker, rpm, jdk11, ssh'
+        kubernetes{
+            defaultContainer 'default'
         }
     }
-    triggers { pollSCM('H/5 * * * *') }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
@@ -57,11 +56,6 @@ pipeline {
             }
         }
         stage('Build') {
-//            agent {
-//                dockerfile {
-//                    dir '.jenkins/build'
-//                }
-//            }
             options {
                 retry(3)
             }
