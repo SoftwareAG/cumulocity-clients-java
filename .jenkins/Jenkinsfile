@@ -74,11 +74,18 @@ pipeline {
             //     }
             // }
             steps {
-                git(
-                    branch: "${env.BRANCH_NAME}",
-                    url: 'git@bitbucket.org/m2m/cumulocity-sdk',
-                    credentialsId:' jenkins-master'
-                )
+                sh "mkdir -p ~/.ssh"
+                sh "grep -qF $host ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${env.BRANCH_NAME}"]],
+                    extensions: [
+                        [$class: 'CleanCheckout'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
+                        [$class: 'LocalBranch', localBranch: "**"]
+                    ],
+                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'bitbucket-m2m']]
+                ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
                 }
