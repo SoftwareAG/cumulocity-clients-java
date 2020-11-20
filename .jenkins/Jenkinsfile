@@ -78,7 +78,7 @@ pipeline {
                 sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "develop"]]//[[name: "${env.BRANCH_NAME}"]],
+                    branches: [[name: "develop"]],//[[name: "${env.BRANCH_NAME}"]],
                     extensions: [
                         [$class: 'CleanCheckout'],
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
