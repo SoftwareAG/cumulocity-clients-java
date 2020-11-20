@@ -82,7 +82,7 @@ pipeline {
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
                         [$class: 'LocalBranch', localBranch: "**"]
                     ],
-                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master-key']]
+                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'bitbucket-m2m']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
@@ -136,7 +136,7 @@ pipeline {
                         }
                     }
                     steps {
-                        sshagent(['jenkins-master-key']) {
+                        sshagent(['hudson-ssh-resources']) {
                             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
                                  file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                                 sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
