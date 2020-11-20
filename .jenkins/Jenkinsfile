@@ -84,7 +84,7 @@ pipeline {
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
                         [$class: 'LocalBranch', localBranch: "**"]
                     ],
-                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'bitbucket-m2m']]
+                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
