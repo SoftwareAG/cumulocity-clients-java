@@ -66,14 +66,14 @@ pipeline {
                 }
             }
         }
-//         stage('Verify maven repo') {
+        stage('Verify maven repo') {
 //             // when {
 //             //     anyOf {
 //             //         branch 'develop'
 //             //         branch 'release/**'
 //             //     }
 //             // }
-//             steps {
+            steps {
 //                 sh "mkdir -p ~/.ssh"
 //                 sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
 //                 checkout([
@@ -89,8 +89,8 @@ pipeline {
 //                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
 //                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
 //                 }
-//             }
-//         }
+            }
+        }
         stage('Deploy to Nexus') {
             when {
                 allOf {
