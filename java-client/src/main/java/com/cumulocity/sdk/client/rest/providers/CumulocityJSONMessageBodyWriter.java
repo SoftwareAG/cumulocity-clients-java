@@ -3,6 +3,7 @@ package com.cumulocity.sdk.client.rest.providers;
 import com.cumulocity.model.JSONBase;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.SourceableConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -32,7 +33,10 @@ public class CumulocityJSONMessageBodyWriter implements MessageBodyWriter<BaseRe
     private final JSON marshaller;
 
     public CumulocityJSONMessageBodyWriter() {
-        this.marshaller = JSONBase.getJSONGenerator();
+        this.marshaller = JSONBase.JSONGeneratorBuilder.jsonGenerator()
+                .withDefaults()
+                .typeConverter(new SourceableConverter())
+                .build();
     }
 
     @Override
