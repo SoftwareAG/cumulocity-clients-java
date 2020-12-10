@@ -23,6 +23,7 @@ public class RemoteAccessCredentials {
     @SkipFieldInChangeScanner
     private String password;
     private String publicKey;
+    private String certificate;
     @SkipFieldInChangeScanner
     private String privateKey;
     /**Can be either hostKey or hostCertificate*/
@@ -34,9 +35,10 @@ public class RemoteAccessCredentials {
         copy.setType(this.type);
         copy.setUsername(this.username);
         copy.setPassword(this.password);
-        copy.setHostKey(this.hostKey);
-        copy.setPrivateKey(this.privateKey);
         copy.setPublicKey(this.publicKey);
+        copy.setCertificate(this.certificate);
+        copy.setPrivateKey(this.privateKey);
+        copy.setHostKey(this.hostKey);
         return copy;
     }
 
@@ -47,6 +49,7 @@ public class RemoteAccessCredentials {
                 .add("user", username)
                 .add("password", getHiddenValuesIfPresent(password))
                 .add("publicKey", publicKey)
+                .add("certificate", certificate)
                 .add("privateKey", getHiddenValuesIfPresent(privateKey))
                 .add("hostKey", hostKey)
                 .toString();
