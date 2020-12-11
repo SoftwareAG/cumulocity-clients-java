@@ -10,7 +10,7 @@ public enum RemoteAccessProtocol {
 
     TELNET(RemoteAccessCredentialsType.NONE),
 
-    SSH(RemoteAccessCredentialsType.USER_PASS, RemoteAccessCredentialsType.KEY_PAIR),
+    SSH(RemoteAccessCredentialsType.USER_PASS, RemoteAccessCredentialsType.KEY_PAIR, RemoteAccessCredentialsType.CERTIFICATE),
 
     PASSTHROUGH(RemoteAccessCredentialsType.NONE);
 

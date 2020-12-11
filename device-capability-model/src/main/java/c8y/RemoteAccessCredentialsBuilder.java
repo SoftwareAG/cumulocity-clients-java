@@ -6,6 +6,7 @@ public class RemoteAccessCredentialsBuilder {
     private String user;
     private String password;
     private String publicKey;
+    private String certificate;
     private String privateKey;
     private String hostKey;
 
@@ -21,6 +22,7 @@ public class RemoteAccessCredentialsBuilder {
         this.user(credentials.getUsername())
                 .password(credentials.getPassword())
                 .privateKey(credentials.getPrivateKey())
+                .certificate(credentials.getCertificate())
                 .publicKey(credentials.getPublicKey())
                 .hostKey(credentials.getHostKey());
     }
@@ -44,6 +46,11 @@ public class RemoteAccessCredentialsBuilder {
         return this;
     }
 
+    public RemoteAccessCredentialsBuilder certificate(String certificate) {
+        this.certificate = certificate;
+        return this;
+    }
+
     public RemoteAccessCredentialsBuilder privateKey(String privateKey) {
         this.privateKey = privateKey;
         return this;
@@ -55,7 +62,7 @@ public class RemoteAccessCredentialsBuilder {
     }
 
     public RemoteAccessCredentials build() {
-        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, privateKey, hostKey);
+        RemoteAccessCredentials credentials = new RemoteAccessCredentials(type, user, password, publicKey, certificate, privateKey, hostKey);
         if (type != null) {
             type.validateCredentials(credentials);
         }
