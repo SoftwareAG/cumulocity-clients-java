@@ -29,6 +29,15 @@ public class RemoteAccessCredentials {
     /**Can be either hostKey or hostCertificate*/
     private String hostKey;
 
+    public RemoteAccessCredentials(RemoteAccessCredentialsType type, String username, String password, String publicKey, String privateKey, String hostKey){
+        this.type = type;
+        this.username = username;
+        this.password = password;
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+        this.hostKey = hostKey;
+    }
+
     /** Creates and returns deep copy of current object */
     public RemoteAccessCredentials copy() {
         RemoteAccessCredentials copy = new RemoteAccessCredentials();
