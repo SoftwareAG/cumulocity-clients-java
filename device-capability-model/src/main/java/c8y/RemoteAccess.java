@@ -66,6 +66,7 @@ public class RemoteAccess extends AbstractDynamicProperties {
                 .password(getValueAsString(map, "password"))
                 .privateKey(getValueAsString(map,"privateKey"))
                 .publicKey(getValueAsString(map,"publicKey"))
+                .certificate(getValueAsString(map,"certificate"))
                 .hostKey(getValueAsString(map,"hostKey"))
                 .build();
     }

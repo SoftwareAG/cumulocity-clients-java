@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Password publicKey, privateKey & hostKey will be encoded and with {cipher} as prefix
+ * Password publicKey, privateKey, certificate & hostKey will be encoded and with {cipher} as prefix
  */
 @Getter
 @Setter
