@@ -67,12 +67,12 @@ pipeline {
             }
         }
         stage('Verify maven repo') {
-//             // when {
-//             //     anyOf {
-//             //         branch 'develop'
-//             //         branch 'release/**'
-//             //     }
-//             // }
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'release/**'
+                }
+            }
             steps {
                 sh "mkdir -p ~/.ssh"
                 sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
@@ -95,10 +95,10 @@ pipeline {
             when {
                 allOf {
                     equals expected: 'DEFAULT', actual: params.build_type
-                    // anyOf {
-                    //     branch 'release/**';
-                    //     branch 'develop'
-                    // }
+                    anyOf {
+                        branch 'release/**';
+                        branch 'develop'
+                    }
                 }
 
             }
