@@ -194,7 +194,7 @@ pipeline {
         failure {
             script {
                 if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                    chat 'AAAAvnc5o90'
+//                     chat 'AAAAvnc5o90'
                 }
             }
 
