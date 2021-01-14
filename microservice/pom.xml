@@ -27,7 +27,6 @@
         <jackson.version>2.9.9</jackson.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
-        <nexus.basePath>/nexus/content/repositories</nexus.basePath>
     </properties>
 
     <modules>
@@ -332,11 +331,11 @@
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>
-            <url>${nexus.url}${nexus.basePath}/snapshots/</url>
+            <url>${nexus.url}/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>release</id>
-            <url>${nexus.url}${nexus.basePath}/releases/</url>
+            <url>${nexus.url}/nexus/content/repositories/releases/</url>
         </repository>
     </distributionManagement>
 

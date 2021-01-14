@@ -1,11 +1,11 @@
 pipeline {
     agent {
-        kubernetes {
-            label 'jdk11'
-            inheritFrom 'jdk11'
-            defaultContainer 'default'
+        dockerfile {
+            dir '.jenkins/build'
+            args '--network centos_default'
         }
     }
+    triggers { pollSCM('H/5 * * * *') }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
@@ -48,15 +48,24 @@ pipeline {
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
             }
         }
+        stage('Compile') {
+            steps {
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                }
+            }
+        }
         stage('Build') {
+//            agent {
+//                dockerfile {
+//                    dir '.jenkins/build'
+//                }
+//            }
             options {
                 retry(3)
             }
             steps {
-
-                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
-                }
+                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
             }
             post {
                 always {
@@ -73,8 +82,6 @@ pipeline {
                 }
             }
             steps {
-                sh "mkdir -p ~/.ssh"
-                sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "${env.BRANCH_NAME}"]],
@@ -83,7 +90,7 @@ pipeline {
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
                         [$class: 'LocalBranch', localBranch: "**"]
                     ],
-                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master']]
+                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master-key']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
@@ -137,11 +144,11 @@ pipeline {
                         }
                     }
                     steps {
-                        sshagent(['hudson-ssh-resources']) {
+                        sshagent(['jenkins-master-key']) {
                             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
                                  file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                                sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
-                                sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
+				sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                                sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
                             }
                         }
                     }
@@ -169,20 +176,19 @@ pipeline {
                         }
                     }
                 }
-/*                 stage('Scan third party dependencies') {
+                stage('Scan third party dependencies') {
                     steps {
                         echo "executing scan of third party dependencies"
                         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                           sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
                         }
                     }
-                } */
+                }
             }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts:"**"
             sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
         }
         success {
@@ -191,11 +197,11 @@ pipeline {
             }
         }
         failure {
-            script {
-                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-//                     chat 'AAAAvnc5o90'
-                }
-            }
+            //script {
+                //if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
+                //    chat 'AAAAvnc5o90'
+                //}
+            //}
 
             withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
                 sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
