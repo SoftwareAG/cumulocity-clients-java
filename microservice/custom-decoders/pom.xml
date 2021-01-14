@@ -3,7 +3,7 @@
     <parent>
         <artifactId>microservice-dependencies</artifactId>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <version>1006.6.25-SNAPSHOT</version>
+        <version>1006.6.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
