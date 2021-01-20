@@ -52,7 +52,7 @@ cd -
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
-ssh ${resources}  "mkdir  /tmp/maven-repository-${version} ;  tar -xvzf /tmp/maven-repository-${version}.tar.gz -C /tmp/maven-repository-${version}"
+ssh ${resources}  "mkdir -p  /tmp/maven-repository-${version} ;  tar -xvzf /tmp/maven-repository-${version}.tar.gz -C /tmp/maven-repository-${version}"
 echo "Publish extracted files to maven repository"
 ssh ${resources}  "cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
 echo "Cleanup tmp files"
@@ -60,7 +60,7 @@ ssh ${resources}  "rm -R /tmp/maven-repository-${version}*"
 
 echo "Publishing java-client/target/java-client-${version}-javadoc.jar to resources tmp "
 scp java-client/target/java-client-${version}-javadoc.jar ${resources}:/tmp/java-client-${version}-javadoc.jar
-ssh ${resources} "mkdir /resources/documentation/javasdk/${version} ; unzip /tmp/java-client-${version}-javadoc.jar -d /resources/documentation/javasdk/${version}"
+ssh ${resources} "mkdir -p /resources/documentation/javasdk/${version} ; unzip -o /tmp/java-client-${version}-javadoc.jar -d /resources/documentation/javasdk/${version}"
 if [ "RELEASE" == "${build_type}" ]; then
     echo "Update current symbolic link of javasdk javadocs"
     ssh ${resources} "rm -f /resources/documentation/javasdk/current ; ln -s /resources/documentation/javasdk/${version} /resources/documentation/javasdk/current"
@@ -70,7 +70,7 @@ ssh ${resources}  "rm -f /tmp/java-client-${version}-javadoc.jar"
 
 echo "Publishing microservice/target/microservice-dependencies-${version}-javadoc.jar to resources tmp "
 scp microservice/target/microservice-dependencies-${version}-javadoc.jar ${resources}:/tmp/microservice-dependencies-${version}-javadoc.jar
-ssh ${resources} "mkdir /resources/documentation/microservicesdk/${version} ; unzip /tmp/microservice-dependencies-${version}-javadoc.jar -d /resources/documentation/microservicesdk/${version}"
+ssh ${resources} "mkdir -p /resources/documentation/microservicesdk/${version} ; unzip -o /tmp/microservice-dependencies-${version}-javadoc.jar -d /resources/documentation/microservicesdk/${version}"
 if [ "RELEASE" == "${build_type}" ]; then
     echo "Update current symbolic link of microservicesdk javadocs"
     ssh ${resources} "rm -f /resources/documentation/microservicesdk/current ; ln -s /resources/documentation/microservicesdk/${version} /resources/documentation/microservicesdk/current"
