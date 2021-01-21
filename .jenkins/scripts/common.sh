@@ -3,6 +3,12 @@ set +eu
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 set -e
 
+add-key-for-host(){
+  mkdir -p ~/.ssh > /dev/null || echo
+  grep -qF $1 ~/.ssh/known_hosts || ssh-keyscan -t rsa $1 >> ~/.ssh/known_hosts
+}
+add-key-for-host bitbucket.org
+add-key-for-host yum.cumulocity.com
 export resources=hudson@yum.cumulocity.com
 export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
 function call-mvn {
