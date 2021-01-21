@@ -10,7 +10,8 @@ add-key-for-host(){
 add-key-for-host bitbucket.org
 add-key-for-host yum.cumulocity.com
 export resources=hudson@yum.cumulocity.com
-export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
+export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false"
+
 function call-mvn {
     ./mvnw ${@}
     if [ -f microservice/pom.xml ] ;
@@ -39,6 +40,8 @@ function tag-version {
 }
 
 function update-property {
-    echo "update property ${1} to value ${2}"
-    find . -name 'pom.xml' | xargs sed -i "s/<${1}>.*<\/${1}>/<${1}>${2}<\/${1}>/g"
+    property=$1
+    property_value=$1
+    echo "update property ${property} to value ${property_value}"
+    find . -name 'pom.xml' | xargs sed -i "s/<${property}>.*<\/${property}>/<${property}>${property_value}<\/${property}>/g"
 }
