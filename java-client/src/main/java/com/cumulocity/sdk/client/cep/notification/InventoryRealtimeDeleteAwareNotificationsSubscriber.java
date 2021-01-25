@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -24,17 +24,17 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
 
 public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subscriber<String, ManagedObjectDeleteAwareNotification> {
-    
-    private static final String REALTIME_NOTIFICATIONS_URL = "cep/realtime";
+
+    private static final String REALTIME_NOTIFICATIONS_URL = "notification/realtime";
 
     private final Subscriber<String, ManagedObjectDeleteAwareNotification> subscriber;
-    
+
     private static final String channelPrefix = "/managedobjects/";
 
     public InventoryRealtimeDeleteAwareNotificationsSubscriber(PlatformParameters parameters) {
         subscriber = createSubscriber(parameters);
     }
-    
+
     private Subscriber<String, ManagedObjectDeleteAwareNotification> createSubscriber(PlatformParameters parameters) {
         // @formatter:off
         return SubscriberBuilder.<String, ManagedObjectDeleteAwareNotification>anSubscriber()
@@ -46,7 +46,7 @@ public class InventoryRealtimeDeleteAwareNotificationsSubscriber implements Subs
         // @formatter:on
     }
 
-    public Subscription<String> subscribe(final String channelID, 
+    public Subscription<String> subscribe(final String channelID,
             final SubscriptionListener<String, ManagedObjectDeleteAwareNotification> handler) throws SDKException {
         return subscriber.subscribe(channelPrefix + channelID, handler);
     }

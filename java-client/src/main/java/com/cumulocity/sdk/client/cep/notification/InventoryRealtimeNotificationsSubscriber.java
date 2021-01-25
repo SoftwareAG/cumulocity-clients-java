@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -24,23 +24,23 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
 
 /**
- * This subscriber does not support realtime DELETE actions. 
+ * This subscriber does not support realtime DELETE actions.
  * Please use instead InventoryRealtimeDeleteAwareNotificationsSubscriber.java
  *
  */
 @Deprecated
 public class InventoryRealtimeNotificationsSubscriber implements Subscriber<String, ManagedObjectNotification> {
-    
-    private static final String REALTIME_NOTIFICATIONS_URL = "cep/realtime";
+
+    private static final String REALTIME_NOTIFICATIONS_URL = "notification/realtime";
 
     private final Subscriber<String, ManagedObjectNotification> subscriber;
-    
+
     private static final String channelPrefix = "/managedobjects/";
 
     public InventoryRealtimeNotificationsSubscriber(PlatformParameters parameters) {
         subscriber = createSubscriber(parameters);
     }
-    
+
     private Subscriber<String, ManagedObjectNotification> createSubscriber(PlatformParameters parameters) {
         // @formatter:off
         return SubscriberBuilder.<String, ManagedObjectNotification>anSubscriber()
@@ -65,7 +65,7 @@ public class InventoryRealtimeNotificationsSubscriber implements Subscriber<Stri
                                        boolean autoRetry) throws SDKException {
         return subscriber.subscribe(channelID, subscribeOperationListener, handler, autoRetry);
     }
-    
+
     public void disconnect() {
         subscriber.disconnect();
     }
