@@ -14,12 +14,15 @@ while [ "$1" != "" ]; do
         -d | --development )    shift
                                 next_version=$1
                                 ;;
+        -b | --build_type )     shift
+                                build_type=$1
+                                ;;
         *)                      ;;
     esac
     shift
 done
 
-call-mvn clean -T 4
+call-mvn -s $MVN_SETTINGS clean -T 4
 #if it is a release on develop branch, hg branch (git symbolic-ref --short HEAD) will return release/rX.X.X as it is the branch created in previous step.
 # If it is a release/hotfix on release branch it should just push the branch it was on
 branch_name=$(git symbolic-ref --short HEAD)
@@ -40,8 +43,8 @@ git pull $repository_sdk ${branch_name}
 cd -
 
 echo "Update version to ${version}"
-call-mvn versions:set -DnewVersion=${version} 
-call-mvn clean deploy -Dmaven.javadoc.skip=true -s $MVN_SETTINGS
+call-mvn -s $MVN_SETTINGS versions:set -DnewVersion=${version}
+call-mvn -s $MVN_SETTINGS clean deploy -Dmaven.javadoc.skip=true
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
@@ -58,7 +61,7 @@ tag-version "sdk-${version}"
 cd -
 
 echo "Update version to ${next_version}"
-call-mvn versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
+call-mvn -s $MVN_SETTINGS versions:set -DnewVersion=${next_version} -DgenerateBackupPoms=false
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty

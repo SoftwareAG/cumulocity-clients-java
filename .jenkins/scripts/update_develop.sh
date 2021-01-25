@@ -11,7 +11,7 @@ git checkout develop
 cd -
 
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
-# update-dependencies ${development_version}
+.jenkins/scripts/update_dependencies.sh ${development_version}
 
 git commit -am 'Update dependencies to next SNAPSHOT version' --allow-empty
 git push --follow-tags https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/cumulocity-clients-java develop
