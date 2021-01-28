@@ -39,6 +39,8 @@ function tag-version {
 }
 
 function update-property {
-    echo "update property ${1} to value ${2}"
-    find . -name 'pom.xml' | xargs sed -i "s/<${1}>.*<\/${1}>/<${1}>${2}<\/${1}>/g"
+    property=$1
+    property_value=$2
+    echo "update property ${property} to value ${property_value}"
+    find . -name 'pom.xml' | xargs sed -i "s/<${property}>.*<\/${property}>/<${property}>${property_value}<\/${property}>/g"
 }
