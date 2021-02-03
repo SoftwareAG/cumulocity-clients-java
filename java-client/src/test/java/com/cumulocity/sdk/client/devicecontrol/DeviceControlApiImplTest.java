@@ -29,6 +29,7 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import org.hamcrest.CoreMatchers;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
@@ -36,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class DeviceControlApiImplTest {
 
     private static final String DEVICE_ID = "123ABC";
 
-    private static final int DEAFAULT_PAGE_SIZE = 7;
+    private static final int DEFAULT_PAGE_SIZE = 7;
 
     private DeviceControlApi deviceControlApi;
 
@@ -77,7 +77,7 @@ public class DeviceControlApiImplTest {
         ocr.setOperations(opList);
         deviceControlApiRepresentation.setOperations(ocr);
 
-        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, deviceControlApiRepresentation, DEAFAULT_PAGE_SIZE);
+        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, deviceControlApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class DeviceControlApiImplTest {
         OperationRepresentation op = new OperationRepresentation();
         op.setStatus(OperationStatus.EXECUTING.toString());
         op.setId(new GId("myId"));
-        op.setCreationTime(new Date());
+        op.setCreationDateTime(new DateTime());
         OperationRepresentation updated = new OperationRepresentation();
         when(restConnector.put(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
                 argThat(hasOnlyUpdateFields(op)))).thenReturn(updated);
@@ -132,7 +132,7 @@ public class DeviceControlApiImplTest {
     public void shouldGetOperations() throws Exception {
         //Given
         OperationCollection expected = new OperationCollectionImpl(restConnector,
-                DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
+                DEVICE_CONTROL_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
         OperationCollection result = deviceControlApi.getOperations();
@@ -146,7 +146,7 @@ public class DeviceControlApiImplTest {
         //Given
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(DEVICE_CONTROL_COLLECTION_URL);
         OperationCollection expected = new OperationCollectionImpl(restConnector,
-                DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
+                DEVICE_CONTROL_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
         // When
         OperationFilter filter = new OperationFilter();
@@ -165,7 +165,7 @@ public class DeviceControlApiImplTest {
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, filter.getQueryParams())).thenReturn(operationsByDeviceIdUrl);
 
         OperationCollection expected = new OperationCollectionImpl(restConnector, operationsByDeviceIdUrl,
-                DEAFAULT_PAGE_SIZE);
+                DEFAULT_PAGE_SIZE);
 
         // When
         OperationCollection result = deviceControlApi.getOperationsByFilter(filter);
@@ -187,7 +187,7 @@ public class DeviceControlApiImplTest {
                 CoreMatchers.nullValue().matches(item.getDeviceExternalIDs());
                 return item.getDeviceExternalIDs() == null &&
                         item.getId() == null &&
-                        item.getCreationTime() == null &&
+                        item.getCreationDateTime() == null &&
                         item.getStatus().equals(op.getStatus()) &&
                         (OperationStatus.FAILED.name().equals(item.getStatus()) ? item.getFailureReason().equals(op.getFailureReason()) : item.getFailureReason() == null) &&
                         item.getAttrs().equals(op.getAttrs());
