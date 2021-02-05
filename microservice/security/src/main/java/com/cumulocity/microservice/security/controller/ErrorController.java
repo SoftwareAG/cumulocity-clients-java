@@ -1,7 +1,6 @@
 package com.cumulocity.microservice.security.controller;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
@@ -20,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ErrorController extends BasicErrorController {
-    @Autowired
+
     public ErrorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, ObjectProvider<ErrorViewResolver> errorViewResolvers) {
         super(errorAttributes, serverProperties.getError(), errorViewResolvers.orderedStream().collect(Collectors.toList()));
     }

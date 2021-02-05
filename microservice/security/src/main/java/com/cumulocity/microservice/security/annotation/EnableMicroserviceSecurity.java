@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * Indicates that all the exposed endpoints other than /metadata requires 
+ * Indicates that all the exposed endpoints other than /metadata requires
  * base64 authorization and authentication.
  */
 @Target(ElementType.TYPE)
@@ -14,7 +14,8 @@ import java.lang.annotation.*;
 @Import({
         EnableWebSecurityConfiguration.class,
         EnableGlobalMethodSecurityConfiguration.class,
-        TokenCacheConfiguration.class
+        TokenCacheConfiguration.class,
+        ErrorControllerConfiguration.class
 })
 public @interface EnableMicroserviceSecurity {
 }

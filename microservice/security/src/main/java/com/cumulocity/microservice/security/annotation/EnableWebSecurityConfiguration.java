@@ -1,18 +1,13 @@
 package com.cumulocity.microservice.security.annotation;
 
 
-import com.cumulocity.microservice.security.controller.ErrorController;
 import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.config.FilterRegistrationConfiguration;
 import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
 import com.cumulocity.microservice.security.token.JwtTokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
-import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.Order;
@@ -68,11 +63,6 @@ public class EnableWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Bean
     public static NoOpPasswordEncoder passwordEncoder() {
         return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
-    }
-
-    @Bean
-    public ErrorController errorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, ObjectProvider<ErrorViewResolver> errorViewResolvers) {
-        return new ErrorController(errorAttributes, serverProperties, errorViewResolvers);
     }
 
     @Override
