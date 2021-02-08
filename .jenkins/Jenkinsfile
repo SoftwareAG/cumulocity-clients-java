@@ -6,6 +6,9 @@ pipeline {
             defaultContainer 'default'
         }
     }
+    triggers{
+        bitbucketPush()
+    }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
