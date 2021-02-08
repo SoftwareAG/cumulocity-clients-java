@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'jdk8'
+            inheritFrom 'jdk8'
             defaultContainer 'default'
         }
     }
