@@ -183,7 +183,7 @@ public class InventoryIT extends JavaSdkITBase {
 
         GId id = result.getId();
         result.setId(null);
-        result.setLastUpdated(null);
+        result.setLastUpdatedDateTime(null);
 
         ManagedObjectRepresentation updated = inventory.getManagedObject(id).update(result);
 
@@ -202,7 +202,7 @@ public class InventoryIT extends JavaSdkITBase {
         created.set(null, Coordinate.class);
         GId id = created.getId();
         created.setId(null);
-        created.setLastUpdated(null);
+        created.setLastUpdatedDateTime(null);
         ManagedObjectRepresentation updated = inventory.getManagedObject(id).update(created);
 
         // Then

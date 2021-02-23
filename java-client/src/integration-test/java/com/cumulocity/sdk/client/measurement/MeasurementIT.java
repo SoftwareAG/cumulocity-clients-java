@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -516,7 +517,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private MeasurementRepresentation aSampleMeasurement(ManagedObjectRepresentation source) {
         MeasurementRepresentation rep = new MeasurementRepresentation();
-        rep.setTime(new Date());
+        rep.setDateTime(new DateTime());
         rep.setType("com.type1");
         rep.setSource(source);
 
@@ -551,7 +552,7 @@ public class MeasurementIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setSource(managedObjects.get(0));
             input.add(rep);
         }
@@ -562,7 +563,7 @@ public class MeasurementIT extends JavaSdkITBase {
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setType("com.type1");
             rep.setSource(managedObjects.get(0));
 
@@ -579,7 +580,7 @@ public class MeasurementIT extends JavaSdkITBase {
     public void iHaveMeasurementsForSource(int n, int index) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         for (int i = 0; i < n; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setType("com.type1");
             rep.setSource(managedObjects.get(index));
             input.add(rep);
@@ -599,7 +600,7 @@ public class MeasurementIT extends JavaSdkITBase {
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         MeasurementRepresentation rep = new MeasurementRepresentation();
         rep.setType("com.type1");
-        rep.setTime(DateConverter.string2Date(time));
+        rep.setDateTime(DateTime.parse(time));
         rep.setSource(managedObjects.get(index));
 
         // Set fragment
