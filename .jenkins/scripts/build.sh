@@ -5,5 +5,5 @@ source ${BASH_SOURCE%/*}/common.sh
 cd microservice
 ../mvnw install javadoc:aggregate-jar -Pci -s $MVN_SETTINGS -U
 cd lpwan-backend
-../mvnw install javadoc:aggregate-jar -Pci -s $MVN_SETTINGS -U
+../../mvnw install javadoc:aggregate-jar -Pci -s $MVN_SETTINGS -U
 cd ../..
