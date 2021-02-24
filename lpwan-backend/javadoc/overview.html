@@ -1,0 +1,143 @@
+<html>
+<style>
+p.indent{ padding-left: 1.8em }
+</style>
+<body>
+
+<p>LPWAN backend is a common library that contains </p>
+<ul>
+    <li>The common models for:
+        <ul>
+            <li>Device registrants</li>
+            <li>Device types</li>
+            <li>Uplink payload mapper</li>
+            <li>Cumulocity mapping models for event, measurement and fragmented inventory managed objects</li>
+        </ul>
+    </li>
+    <li>
+        The interface that defines how to fire a new device registrant request.
+    </li>
+    <li>
+        Common services for payload mapping/decoding.
+    </li>
+    <li>
+        Common services for persisting device data into Cumulocity platform.
+    </li>
+</ul>
+
+<p>
+    To use the lpwan-backend library, include the following dependency into your maven pom.xml
+</p>
+<pre>
+    &lt;dependency&gt;
+        &lt;groupId&gt;c8y.agents.lpwan.backend&lt;/groupId&gt;
+        &lt;artifactId&gt;lpwan-backend&lt;/artifactId&gt;
+        &lt;version&gt;${lpwan-backend.version}&lt;/version&gt;
+    &lt;/dependency&gt;
+</pre>
+
+<p>
+Example usage of lpwan-backend library:
+</p>
+<ul>
+    <li>
+        <p> Device Registrant Service </p>
+        In order to make use of LPWAN device registration service, it is required to implement following interface provided by the lpwan-backend library:
+        <pre>
+        public class YourDeviceRegistrant implements DeviceRegistrant&lt;DeviceRegisterProperties, RegisterResponse&gt; {
+
+            &#064;Override
+            ManagedObjectRepresentation registerDeviceInC8Y(RegisterResponse registerResponse, DeviceRegisterProperties deviceRegisterProperties) {
+                // your implementation to
+                // build managed object representation,
+                // create and return the inventory object
+            }
+
+            &#064;Override
+            RegisterResponse registerDeviceInProvider(DeviceRegisterProperties deviceRegisterProperties) {
+                // your implementation to
+                // send request to register device in provider
+                // and return response
+            }
+        }
+        </pre>
+        <p>
+            DeviceRegistrant uses generic types for DeviceRegisterProperties and RegisterResponse which can be extended in your implementation and used instead according to your integration.
+        </p>
+        <p>
+            Afterwards you can use the DeviceRegistrantService to trigger the registration process.
+            Example:
+        </p>
+        <pre>
+        // initialize
+        DeviceRegistrantService yourDeviceRegistrantService = new DeviceRegistrantService(new YourDeviceRegistrantService());
+        ...
+        // register new device
+        yourDeviceRegistrantService.newRegisterRequest(deviceRegisterProperties);
+        </pre>
+    </li>
+    <li>
+        <p>Uplink Payload Decoder Service</p>
+
+        In order to use uplink payload decoder service, it is required to implement MessageIdReader interface provided by the lpwan-backend library:
+        <pre>
+        public static final class YourMessageIdReader implements PayloadDecoderService.MessageIdReader&lt;UplinkMessage&gt; {
+
+            &#064;Override
+            public Integer read(UplinkMessage uplinkMessage, MessageIdConfiguration messageIdConfiguration) {
+                String messageIdSource = messageIdConfiguration.getSource();
+
+                // your implementation
+                // to find message id from uplink message
+                // and return the message id in decimal
+                // you can make use of static method messageIdFromPayload(uplinkMessage, messageIdConfiguration) if source is from the hex payload
+
+                if (source.equals("PAYLOAD")) {
+                    return messageIdFromPayload(uplinkMessage, messageIdConfiguration);
+                } else {
+                    throw new RuntimeException("Message id configuration is not valid.");
+                }
+            }
+        }
+        </pre>
+
+        <p>
+            MessageIdReader uses generic type for UplinkMessage which can be extended in your implementation and used instead according to your integration.
+        </p>
+        <p>
+            Afterwards, you can initialize the services. Below example make use of spring annotations.
+        </p>
+        <pre>
+        &#064;Bean
+        public PayloadMappingService payloadMappingService(EventApi eventApi,
+                                                           InventoryApi inventoryApi,
+                                                           AlarmApi alarmApi,
+                                                           MeasurementApi measurementApi) {
+            return new PayloadMappingService(measurementApi, alarmApi, eventApi, inventoryApi);
+        }
+
+        &#064;Bean
+        public DeviceTypePayloadConfigurer deviceTypePayloadConfigurer(InventoryApi inventoryApi, DeviceTypeMapper deviceTypeMapper) {
+            return new DeviceTypePayloadConfigurer(inventoryApi, deviceTypeMapper);
+        }
+
+        &#064;Bean
+        public PayloadDecoderService&lt;UplinkMessage&gt; payloadDecoderService(PayloadMappingService payloadMappingService) {
+            return new PayloadDecoderService&lt;&gt;(payloadMappingService, new YourMessageIdReader());
+        }
+        </pre>
+        <p>
+            PayloadDecoderService uses generic type for UplinkMessage which can be extended in your implementation and used instead according to your integration.
+        </p>
+    </li>
+
+</ul>
+
+
+
+
+
+
+
+</body>
+</html>
