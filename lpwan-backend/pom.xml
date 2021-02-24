@@ -5,7 +5,7 @@
 		<artifactId>clients-java</artifactId>
 		<version>1009.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>com.cumulocity.lpwan.backend</groupId>
+	<groupId>c8y.agents.lpwan.backend</groupId>
 	<artifactId>lpwan-backend</artifactId>
 	<name>Cumulocity :: LPWAN Backend</name>
 	<packaging>jar</packaging>
