@@ -28,7 +28,7 @@ node("jdk8")
     }
     finally
     {
-        finsh_job()
+        finish_job()
     }
 }
 
@@ -61,8 +61,6 @@ def scm_checkout()
 
 def run_sdk_tests()
 {
-    //timeout(30)
-    //{
     try
     {
         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
@@ -76,7 +74,7 @@ def run_sdk_tests()
         println err
         currentBuild.result = "FAILURE"
     }
-    //}
+
 }
 // Publish the HTML report pass in the dir location, the name of the report file and the display name of the actual report
 def publish_results()
@@ -95,11 +93,11 @@ def publish_results()
     }
 }
 
-def finsh_job()
+def finish_job()
 {
     if (currentBuild.result != "SUCCESS")
     {
-        chat 'AAAAvnc5o90'
+        chat roomid: 'AAAAvnc5o90'
     }
     //Add badge to show test branch
     manager.addInfoBadge("Test branch is ${TEST_BRANCH}")
