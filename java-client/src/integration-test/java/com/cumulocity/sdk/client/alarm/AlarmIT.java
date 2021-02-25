@@ -84,7 +84,7 @@ public class AlarmIT extends JavaSdkITBase {
     public void createAlarmWithoutTime() throws Exception {
         // Given
         AlarmRepresentation alarm = anAlarmRepresentationLike(ALARM_REPRESENTATION)
-                .withSource(mo1).withTime(null).build();
+                .withSource(mo1).withDateTime(null).build();
 
         // Then
         exception.expect(sdkException(UNPROCESSABLE));

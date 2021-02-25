@@ -28,13 +28,13 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -398,7 +398,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);
@@ -412,7 +412,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);
@@ -422,7 +422,7 @@ public class EventIT extends JavaSdkITBase {
     @Given("I have a Event with no type value for the managed object$")
     public void iHaveAEventWithNoType() {
         EventRepresentation rep = new EventRepresentation();
-        rep.setTime(new Date());
+        rep.setDateTime(new DateTime());
         rep.setText(" Event of Managed Object : " + 0);
         rep.setSource(managedObject);
         input.add(rep);
@@ -432,7 +432,7 @@ public class EventIT extends JavaSdkITBase {
     public void iHaveAEventWithNoText() {
         EventRepresentation rep = new EventRepresentation();
         rep.setType("type");
-        rep.setTime(new Date());
+        rep.setDateTime(new DateTime());
         rep.setSource(managedObject);
         input.add(rep);
     }
@@ -451,7 +451,7 @@ public class EventIT extends JavaSdkITBase {
         for (int i = 0; i < n; i++) {
             EventRepresentation rep = new EventRepresentation();
             rep.setType("type");
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setText(" Event of Managed Object : " + i);
             rep.setSource(managedObject);
             input.add(rep);
@@ -464,7 +464,7 @@ public class EventIT extends JavaSdkITBase {
         EventRepresentation rep = new EventRepresentation();
         rep.setType(type);
         rep.setText(" Event of Managed Object : ");
-        rep.setTime(DateConverter.string2Date(time));
+        rep.setDateTime(DateTime.parse(time));
         rep.setSource(managedObject);
         input.add(rep);
     }

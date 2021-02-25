@@ -31,6 +31,7 @@ import com.cumulocity.sdk.client.common.TenantCreator;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -381,7 +382,7 @@ public class AuditRecordIT {
         for (int i = 0; i < n; i++) {
             AuditRecordRepresentation rep = new AuditRecordRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setSource(managedObjects.get(0));
             rep.setActivity("Some Activity");
             rep.setApplication(application);
