@@ -3,8 +3,10 @@ package com.cumulocity.sdk.client.rest.providers;
 import com.cumulocity.model.CumulocityCharset;
 import com.cumulocity.model.JSONBase;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
+import lombok.extern.slf4j.Slf4j;
 import org.svenson.JSONParseException;
 import org.svenson.JSONParser;
+import org.svenson.SvensonRuntimeException;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -15,9 +17,11 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Scanner;
 
 @Provider
+@Slf4j
 public class CumulocityJSONMessageBodyReader implements MessageBodyReader<BaseResourceRepresentation> {
 
     private final JSONParserAdapter unmarshaller;
@@ -54,6 +58,13 @@ public class CumulocityJSONMessageBodyReader implements MessageBodyReader<BaseRe
 
         try {
             return unmarshaller.parse(type, content);
+        } catch (SvensonRuntimeException e) {
+            //Svenson leaks class and fields names inside its message
+            log.debug("Could not parse JSON request", e);
+            String cause = Optional.ofNullable(e.getCause())
+                    .map(Throwable::getMessage)
+                    .orElse("");
+            throw new JSONParseException("Could not parse JSON request: " + cause);
         } catch (IllegalArgumentException e) {
             throw new JSONParseException("Could not parse JSON request: " + e.getMessage());
         }
