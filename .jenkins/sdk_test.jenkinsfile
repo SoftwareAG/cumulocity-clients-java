@@ -38,6 +38,7 @@ node("jdk8")
 def job_options()
 {
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
+                copyArtifactPermission('/*/**'),
                 parameters([string(defaultValue: 'develop', description: 'tests branch/revison', name: 'TEST_BRANCH'),
                             string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'TEST_ENV')])])
 
