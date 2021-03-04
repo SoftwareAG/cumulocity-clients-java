@@ -46,9 +46,6 @@ pipeline {
         }
         stage('Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                    sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
-                }
                 sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
             }
         }
@@ -189,20 +186,11 @@ pipeline {
             archiveArtifacts artifacts:"**"
             sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
         }
-        success {
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
-            }
-        }
         failure {
             script {
                 if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
 //                     chat 'AAAAvnc5o90'
                 }
-            }
-
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
         }
     }
