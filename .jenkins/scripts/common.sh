@@ -21,11 +21,11 @@ function call-mvn {
     else
         echo "Skipping microservice"
     fi
-    if [ -f microservice/lpwan-backend/pom.xml ] ;
+    if [ -f lpwan-backend/pom.xml ] ;
     then
-        cd microservice/lpwan-backend
-        ../../mvnw ${@}
-        cd ../..
+        cd lpwan-backend
+        ../mvnw ${@}
+        cd -
     else
         echo "Skipping lpwan-backend"
     fi

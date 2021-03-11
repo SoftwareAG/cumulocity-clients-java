@@ -48,9 +48,10 @@ call-mvn -s $MVN_SETTINGS clean deploy -Dmaven.javadoc.skip=true
 ./mvnw -s $MVN_SETTINGS generate-resources -Pjavadoc
 cd microservice
 ../mvnw -s $MVN_SETTINGS javadoc:aggregate-jar
+cd -
 cd lpwan-backend
-../../mvnw -s $MVN_SETTINGS javadoc:aggregate-jar
-cd ../..
+../mvnw -s $MVN_SETTINGS javadoc:aggregate-jar
+cd -
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources}:/tmp/maven-repository-${version}.tar.gz
@@ -81,7 +82,7 @@ echo "Delete /tmp/microservice-dependencies-${version}-javadoc.jar file"
 ssh ${resources}  "rm -f /tmp/microservice-dependencies-${version}-javadoc.jar"
 
 echo "Publishing lpwan-backend/target/lpwan-backend-${version}-javadoc.jar to resources tmp "
-scp microservice/lpwan-backend/target/lpwan-backend-${version}-javadoc.jar ${resources}:/tmp/lpwan-backend-${version}-javadoc.jar
+scp lpwan-backend/target/lpwan-backend-${version}-javadoc.jar ${resources}:/tmp/lpwan-backend-${version}-javadoc.jar
 ssh ${resources} "mkdir -p /resources/documentation/lpwan-backend/${version} ; unzip -o /tmp/lpwan-backend-${version}-javadoc.jar -d /resources/documentation/lpwan-backend/${version}"
 if [ "RELEASE" == "${build_type}" ]; then
     echo "Update current symbolic link of lpwan-backend javadocs"

@@ -1,14 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.nsn.cumulocity.clients-java</groupId>
-		<artifactId>microservice-dependencies</artifactId>
-		<version>1009.1.0-SNAPSHOT</version>
-	</parent>
 	<groupId>c8y.agents.lpwan.backend</groupId>
 	<artifactId>lpwan-backend</artifactId>
 	<name>Cumulocity :: LPWAN Backend</name>
 	<packaging>jar</packaging>
+	<version>1009.4.0-SNAPSHOT</version>
 
 	<url>http://maven.apache.org</url>
 
@@ -16,6 +12,18 @@
 		<commons-lang3.version>3.11</commons-lang3.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.nsn.cumulocity.clients-java</groupId>
+				<artifactId>microservice-dependencies</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
