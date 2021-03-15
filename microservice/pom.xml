@@ -302,7 +302,6 @@
                             <windowtitle>Cumulocity Microservice SDK</windowtitle>
                             <overview>${project.basedir}/javadoc/overview.html</overview>
                             <source>8</source>
-                            <excludePackageNames>c8y;com.cumulocity.lpwan.*</excludePackageNames>
                     </configuration>
                 </plugin>
             </plugins>
