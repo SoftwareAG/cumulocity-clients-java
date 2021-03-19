@@ -21,6 +21,14 @@ function call-mvn {
     else
         echo "Skipping microservice"
     fi
+    if [ -f lpwan-backend/pom.xml ] ;
+    then
+        cd lpwan-backend
+        ../mvnw ${@}
+        cd -
+    else
+        echo "Skipping lpwan-backend"
+    fi
     if [ -f cumulocity-sdk/pom.xml ] ;
     then
         cd cumulocity-sdk
