@@ -58,7 +58,7 @@ scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${resources
 ssh ${resources}  "mkdir -p  /tmp/maven-repository-${version} ;  tar -xvzf /tmp/maven-repository-${version}.tar.gz -C /tmp/maven-repository-${version}"
 echo "Publish extracted files to maven repository"
 ssh ${resources}  "cp -Rn /tmp/maven-repository-${version}/com/* /var/www/resources/maven/repository/com/ "
-ssh ${resources}  "mkdir -p /var/www/resources/maven/repository/c8y ;  cp -Rn /tmp/maven-repository-${version}/c8y/* /var/www/resources/maven/repository/c8y/ "
+ssh ${resources}  "cp -Rn /tmp/maven-repository-${version}/c8y/* /var/www/resources/maven/repository/c8y/ "
 echo "Cleanup tmp files"
 ssh ${resources}  "rm -R /tmp/maven-repository-${version}*"
 
