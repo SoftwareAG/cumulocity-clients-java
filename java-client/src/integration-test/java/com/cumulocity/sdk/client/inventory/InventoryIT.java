@@ -165,6 +165,9 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObject mo = inventory.getManagedObject(result.getId());
         mo.delete();
 
+        // mo delete is asynchronous
+        Thread.sleep(3000);
+
         // Then
         exception.expect(sdkException(NOT_FOUND));
         ManagedObject deletedMo = inventory.getManagedObject(result.getId());
