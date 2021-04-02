@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import static com.cumulocity.model.CumulocityCharset.CHARSET;
 
 @Provider
-
 public class CumulocityJSONMessageBodyWriter implements MessageBodyWriter<BaseResourceRepresentation> {
     private final Logger log = LoggerFactory.getLogger(CumulocityJSONMessageBodyWriter.class);
     private static final Charset DEFAULT_CHARSET = Charset.forName(CHARSET);

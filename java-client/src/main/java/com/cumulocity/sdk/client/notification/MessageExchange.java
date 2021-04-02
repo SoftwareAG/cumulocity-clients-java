@@ -19,24 +19,22 @@
  */
 package com.cumulocity.sdk.client.notification;
 
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.client.async.FutureListener;
 import lombok.Synchronized;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
+import javax.ws.rs.core.Response;
+
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.InvocationCallback;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +43,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 class MessageExchange {
@@ -62,7 +61,7 @@ class MessageExchange {
 
     private final List<Mutable> messages;
 
-    private volatile Future<ClientResponse> request;
+    private volatile Future<Response> request;
 
     private final ConnectionHeartBeatWatcher watcher;
 
@@ -90,8 +89,10 @@ class MessageExchange {
 
     public void execute(String url, String content) {
         startWatcher();
-        final AsyncWebResource endpoint = client.asyncResource(url);
-        request = endpoint.handle(createRequest(endpoint.getURI(), content), new ResponseHandler());
+        request = client.target(url)
+                .request(APPLICATION_JSON_TYPE)
+                .async()
+                .post(Entity.entity(content, APPLICATION_JSON), new ResponseHandler());
     }
 
     private void startWatcher() {
@@ -112,7 +113,7 @@ class MessageExchange {
             }
 
             try {
-                final ClientResponse response = request.get();
+                final Response response = request.get();
                 if (response != null) {
                     response.close();
                 }
@@ -121,14 +122,6 @@ class MessageExchange {
             }
         }
         onFinish();
-    }
-
-    private ClientRequest createRequest(URI uri, final String content) {
-        return request(uri).type(APPLICATION_JSON_TYPE).build(content);
-    }
-
-    private BayeuxRequestBuilder request(URI uri) {
-        return new BayeuxRequestBuilder(uri);
     }
 
     private void onFinish() {
@@ -150,9 +143,9 @@ class MessageExchange {
 
     final class ResponseConsumer implements Runnable {
 
-        private final ClientResponse response;
+        private final Response response;
 
-        public ResponseConsumer(ClientResponse response) {
+        public ResponseConsumer(Response response) {
             this.response = response;
         }
 
@@ -172,26 +165,19 @@ class MessageExchange {
             }
         }
 
-        private void heartBeatWatch(ClientResponse clientResponse) throws IOException {
+        private void heartBeatWatch(Response clientResponse) throws IOException {
             if (isOk(clientResponse)) {
-                if (!isCanGetHeatBeats(clientResponse)) {
-                    clientResponse.setEntityInputStream(new BufferedInputStream(response.getEntityInputStream()));
-                }
-                getHeartBeats(clientResponse);
+                InputStream responseStream = (InputStream)clientResponse.getEntity();
+                log.debug("getting heartbeats  {}", clientResponse);
+                getHeartBeats(responseStream);
             }
         }
 
-        private boolean isOk(ClientResponse clientResponse) {
-            return clientResponse.getClientResponseStatus() == Status.OK;
+        private boolean isOk(Response clientResponse) {
+            return clientResponse.getStatusInfo().toEnum() == Response.Status.OK;
         }
 
-        private boolean isCanGetHeatBeats(final ClientResponse response) {
-            return response.getEntityInputStream().markSupported();
-        }
-
-        private void getHeartBeats(final ClientResponse response) throws IOException {
-            log.debug("getting heartbeats  {}", response);
-            InputStream entityInputStream = response.getEntityInputStream();
+        private void getHeartBeats(final InputStream entityInputStream) throws IOException {
             entityInputStream.mark(MAX_VALUE);
             int value = -1;
             while ((value = entityInputStream.read()) >= 0) {
@@ -215,9 +201,9 @@ class MessageExchange {
             return value == ASCII_SPACE;
         }
 
-        private void getMessagesFromResponse(ClientResponse clientResponse) {
+        private void getMessagesFromResponse(Response clientResponse) {
             if (isOk(clientResponse)) {
-                String content = clientResponse.getEntity(String.class);
+                String content = clientResponse.readEntity(String.class);
                 if (!isNullOrEmpty(content)) {
                     try {
                         handleContent(content);
@@ -303,27 +289,30 @@ class MessageExchange {
         }
     }
 
-    final class ResponseHandler implements FutureListener<ClientResponse> {
+    final class ResponseHandler implements InvocationCallback<Response> {
 
         @Override
-        public void onComplete(Future<ClientResponse> f) throws InterruptedException {
+        public void completed(Response clientResponse) {
             try {
                 synchronized (messages) {
-                    if (!f.isCancelled()) {
-                        log.debug("wait for response headers {}", messages);
-                        ClientResponse response = f.get();
-                        log.debug("received response headers {} ", messages);
-                        consumer = executorService.submit(new ResponseConsumer(response));
-                    } else {
-                        throw new ExecutionException(new RuntimeException("Request canceled"));
-                    }
+                    log.debug("received response headers {} ", messages);
+                    consumer = executorService.submit(new ResponseConsumer(clientResponse));
                 }
             } catch (Exception e) {
-                log.debug("connection failed", e);
-                unauthorizedConnectionWatcher.resetCounter();
-                listener.onFailure(e, messages);
-                onFinish();
+                handleException(e);
             }
+        }
+
+        @Override
+        public void failed(Throwable throwable) {
+            handleException(throwable);
+        }
+
+        private void handleException(Throwable e) {
+            log.debug("connection failed", e);
+            unauthorizedConnectionWatcher.resetCounter();
+            listener.onFailure(e, messages);
+            onFinish();
         }
     }
 

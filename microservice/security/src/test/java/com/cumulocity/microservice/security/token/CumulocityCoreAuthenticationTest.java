@@ -4,8 +4,7 @@ import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandler;
+import com.google.common.collect.Iterables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import javax.ws.rs.client.Client;
+
+import java.util.Set;
 
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.mockedJwtImpl;
@@ -49,9 +52,10 @@ public class CumulocityCoreAuthenticationTest {
     }
 
     private CumulocityOAuthCredentials retrieveOAuthCredentialsFromFilter(Client client) {
-        ClientHandler clientHandler = client.getHeadHandler();
-        assertThat(clientHandler).isInstanceOf(CumulocityAuthenticationFilter.class);
-        CumulocityAuthenticationFilter filterForXsrf = (CumulocityAuthenticationFilter) clientHandler;
+        Set<Object> providers = client.getConfiguration().getInstances();
+        Object provider =  Iterables.getOnlyElement(providers);
+        assertThat(provider).isInstanceOf(CumulocityAuthenticationFilter.class);
+        CumulocityAuthenticationFilter filterForXsrf = (CumulocityAuthenticationFilter) provider;
         Object object = ReflectionTestUtils.getField(filterForXsrf, "credentials");
         return (CumulocityOAuthCredentials)object;
     }

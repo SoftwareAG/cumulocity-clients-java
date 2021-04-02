@@ -10,17 +10,15 @@ import com.cumulocity.rest.representation.application.ApplicationUserCollectionR
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static lombok.AccessLevel.PRIVATE;
-import static org.apache.commons.httpclient.HttpStatus.*;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * works with platform API &gt;= 8.18

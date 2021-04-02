@@ -24,11 +24,9 @@ import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import com.google.common.net.HttpHeaders;
+import org.glassfish.jersey.client.ClientProperties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,13 +34,19 @@ import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -50,16 +54,16 @@ public class RestConnectorTest {
 
     private static final String PATH = "path";
 
-    private CumulocityMediaType mediaType;
+    private CumulocityMediaType mediaType = CumulocityMediaType.ERROR_MESSAGE;
 
     @Mock
-    private WebResource webResource;
+    private WebTarget webResource;
 
     @Mock
-    private ClientResponse response;
+    private Response response;
 
     @Mock
-    private Builder typeBuilder;
+    private Invocation.Builder typeBuilder;
 
     private PlatformParameters clientParameters = new PlatformParameters();
 
@@ -72,15 +76,10 @@ public class RestConnectorTest {
     private RestConnector restConnector;
 
     @Before
-    public void initializingMediaTypeAtDeclarationCausesPowerMockAndJerseyToThrowALinkageError() {
-        mediaType = CumulocityMediaType.ERROR_MESSAGE;
-    }
-
-    @Before
     public void setup() {
         restConnector = new RestConnector(clientParameters, parser, client);
 
-        when(client.resource(PATH)).thenReturn(webResource);
+        when(client.target(PATH)).thenReturn(webResource);
 
         when(parser.write(anyObject())).thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
@@ -88,8 +87,9 @@ public class RestConnectorTest {
     @Test
     public void shouldRetrieveResource() throws Exception {
         // Given
-        when(webResource.accept(mediaType)).thenReturn(typeBuilder);
-        when(typeBuilder.get(ClientResponse.class)).thenReturn(response);
+        Response response = Response.accepted().build();
+        when(webResource.request(mediaType)).thenReturn(typeBuilder);
+        when(typeBuilder.get()).thenReturn(response);
 
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         when(parser.parse(response, BaseResourceRepresentation.class, 200)).thenReturn(representation);
@@ -133,7 +133,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingIdWithNoResponseBody() throws Exception {
+    public void shouldPostRepresentationSupportingIdWithNoResponseBody() throws URISyntaxException {
         // Given
         clientParameters.setRequireResponseBody(false);
 
@@ -159,6 +159,7 @@ public class RestConnectorTest {
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
+
         when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(null);
         when(response.getLocation()).thenReturn(null);
 
@@ -174,19 +175,26 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPosting(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(typeBuilder.post(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.post(Entity.entity(representation, mediaType))).thenReturn(response);
     }
 
     private void returnResponseWhenSending() {
-        when(webResource.type(mediaType)).thenReturn(typeBuilder);
+        when(webResource.request(mediaType)).thenReturn(typeBuilder);
         when(typeBuilder.accept(mediaType)).thenReturn(typeBuilder);
+        mockDefaultAcceptHeader();
+    }
+
+    private void mockDefaultAcceptHeader() {
+        when(typeBuilder.accept(CumulocityMediaType.WILDCARD)).thenReturn(typeBuilder);
+        when(typeBuilder.header(eq(HttpHeaders.ACCEPT), any())).thenReturn(typeBuilder);
     }
 
     @Test
     public void shouldDelete() throws Exception {
         // Given
-        when(webResource.getRequestBuilder()).thenReturn(typeBuilder);
-        when(typeBuilder.delete(ClientResponse.class)).thenReturn(response);
+        when(webResource.request()).thenReturn(typeBuilder);
+        when(typeBuilder.delete()).thenReturn(response);
+        mockDefaultAcceptHeader();
 
         // When
         restConnector.delete(PATH);
@@ -212,7 +220,7 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPut(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(typeBuilder.put(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.put(Entity.entity(representation, mediaType))).thenReturn(response);
     }
 
     @Test
@@ -274,7 +282,7 @@ public class RestConnectorTest {
         // Given
         clientParameters.registerInterceptor(new HttpClientInterceptor() {
             @Override
-            public Builder apply(Builder builder) {
+            public Invocation.Builder apply(Invocation.Builder builder) {
                 builder.header("fake", "fake");
                 return builder;
             }
@@ -298,7 +306,7 @@ public class RestConnectorTest {
         // given
         HttpClientInterceptor addHeaderFake = new HttpClientInterceptor() {
             @Override
-            public Builder apply(Builder builder) {
+            public Invocation.Builder apply(Invocation.Builder builder) {
                 builder.header("fake", "fake");
                 return builder;
             }
@@ -314,6 +322,7 @@ public class RestConnectorTest {
             restConnector.post(PATH, mediaType, representation);
             verify(typeBuilder).header(eq("fake"), eq("fake"));
             reset(typeBuilder);
+            returnResponseWhenPosting(representation);
         }
 
         clientParameters.unregisterInterceptor(addHeaderFake);
@@ -332,7 +341,8 @@ public class RestConnectorTest {
         Client client = RestConnector.createURLConnectionClient(clientParameters);
 
         //then
-        assertThat("Should be default 180000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 180000);
+        Integer readTimeout = (Integer) client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT);
+        assertThat("Should be default 180000", readTimeout == 180000);
     }
 
     @Test
@@ -345,7 +355,7 @@ public class RestConnectorTest {
         Client client = RestConnector.createURLConnectionClient(clientParameters);
 
         //then
-        assertThat("Should be default 360000", (Integer)client.getProperties().get(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT) == 360000);
+        Integer readTimeout = (Integer) client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT);
+        assertThat("Should be default 360000", readTimeout == 360000);
     }
-
 }

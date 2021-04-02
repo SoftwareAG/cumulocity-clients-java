@@ -4,13 +4,12 @@ import com.cumulocity.model.realtime.ClientSvensonJSONContext;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.async.FutureListener;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
+
+import javax.ws.rs.client.*;
+import javax.ws.rs.core.Response;
+
 import org.cometd.common.TransportException;
 import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.After;
@@ -32,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +58,7 @@ public class MessageExchangeTest {
     private TransportListener listener;
 
     @Mock
-    private ClientResponse response;
+    private Response response;
 
     @Mock
     private ScheduledExecutorService executorService;
@@ -67,13 +67,19 @@ public class MessageExchangeTest {
     private Client client;
 
     @Mock
-    private AsyncWebResource resource;
+    private WebTarget resource;
 
     @Mock
-    private Future<ClientResponse> request;
+    private AsyncInvoker asyncInvoker;
+
+    @Mock
+    private Invocation.Builder builder;
+
+    @Mock
+    private Future<Response> request;
 
     @Captor
-    private ArgumentCaptor<FutureListener<ClientResponse>> responseHandler;
+    private ArgumentCaptor<InvocationCallback<Response>> responseHandler;
 
     @Captor
     private ArgumentCaptor<Runnable> task;
@@ -84,8 +90,10 @@ public class MessageExchangeTest {
     public void setup() {
         exchange = new MessageExchange(transport, client, executorService, listener, watcher, unauthorizedConnectionWatcher, Arrays.asList(message));
         exchange.reconnectionWaitingTime = SECONDS.toMillis(1);
-        when(client.asyncResource(any(String.class))).thenReturn(resource);
-        when(resource.handle(any(ClientRequest.class), responseHandler.capture())).thenReturn(request);
+        when(client.target(any(String.class))).thenReturn(resource);
+        when(resource.request(APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.async()).thenReturn(asyncInvoker);
+        when(asyncInvoker.post(any(Entity.class), responseHandler.capture())).thenReturn(request);
     }
 
     @After
@@ -94,7 +102,7 @@ public class MessageExchangeTest {
     }
 
     @Test
-    public void shouldStopWatcherAndNotifyWhenCancel() throws InterruptedException, ExecutionException {
+    public void shouldStopWatcherAndNotifyWhenCancel() {
         //Given
         when(request.cancel(anyBoolean())).thenReturn(true);
         //When
@@ -107,39 +115,30 @@ public class MessageExchangeTest {
     }
 
     @Test
-    public void shouldScheduleTaskWhenReciveReponse() throws InterruptedException, ExecutionException {
-        //Given
-        when(request.get()).thenReturn(response);
+    public void shouldScheduleTaskWhenReceiveResponse() throws InterruptedException, ExecutionException {
+
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         //Then
         verify(executorService).submit(any(Runnable.class));
     }
 
-    private void recivedResponse() throws InterruptedException {
-        exchange.execute(URL, MESSAGES);
-        verify(resource).handle(any(ClientRequest.class), responseHandler.capture());
-        responseHandler.getValue().onComplete(request);
-    }
-
     @Test
-    public void shouldNotfyAboutFailWhenRequestFailed() throws InterruptedException, ExecutionException {
-        //Given
-        when(request.get()).thenThrow(ExecutionException.class);
+    public void shouldNotifyAboutFailWhenRequestFailed() {
+
         //When
-        recivedResponse();
+        receivedErrorResponse();
         //Then
-        verify(listener).onFailure(any(ExecutionException.class), eq(Arrays.asList(message)));
+        verify(listener).onFailure(any(Exception.class), eq(Arrays.asList(message)));
         verify(watcher).stop();
     }
 
     @Test
-    public void shouldNotfyAboutFailWhenResponseStatusIsNotOk() throws InterruptedException, ExecutionException {
+    public void shouldNotifyAboutFailWhenResponseStatusIsNotOk() throws InterruptedException, ExecutionException {
         //Given
-        when(request.get()).thenReturn(response);
-        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.FORBIDDEN);
+        when(response.getStatusInfo()).thenReturn(Response.Status.FORBIDDEN);
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         responseConsumed();
         //Then
         verify(listener).onFailure(any(TransportException.class), eq(Arrays.asList(message)));
@@ -148,13 +147,12 @@ public class MessageExchangeTest {
     }
 
     @Test
-    public void shouldNotifyAboutHeartBeatsWhenRecivedFromServer() throws InterruptedException, ExecutionException {
+    public void shouldNotifyAboutHeartBeatsWhenReceivedFromServer() throws InterruptedException, ExecutionException {
         //Given
-        when(request.get()).thenReturn(response);
-        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
-        when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
+        when(response.getStatusInfo()).thenReturn(Response.Status.OK);
+        when(response.getEntity()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         responseConsumed();
         //Then
         verify(watcher, times(2)).heartBeat();
@@ -162,15 +160,13 @@ public class MessageExchangeTest {
     }
 
     @Test
-    public void shouldNotPassRecivedContentAsMessagesToListnerWhenResponseIsEmptyString() throws InterruptedException, ExecutionException {
+    public void shouldNotPassReceivedContentAsMessagesToListenerWhenResponseIsEmptyString() throws InterruptedException, ExecutionException {
         //Given
-        //Given
-        when(request.get()).thenReturn(response);
-        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
-        when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
-        when(response.getEntity(String.class)).thenReturn("");
+        when(response.getStatusInfo()).thenReturn(Response.Status.OK);
+        when(response.getEntity()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
+        when(response.readEntity(String.class)).thenReturn("");
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         responseConsumed();
         //Then
         verify(listener, never()).onMessages(ArgumentMatchers.anyListOf(Mutable.class));
@@ -179,23 +175,16 @@ public class MessageExchangeTest {
         verify(watcher).stop();
     }
 
-    private void responseConsumed() {
-        verify(executorService).submit(task.capture());
-        task.getValue().run();
-    }
-
     @Test
-    public void shouldPassRecivedContentAsMessagesToListnerWhenResponseIsNotEmptyString() throws InterruptedException, ExecutionException,
-            ParseException {
+    public void shouldPassReceivedContentAsMessagesToListenerWhenResponseIsNotEmptyString() throws InterruptedException, ExecutionException, ParseException {
         //Given
-        when(request.get()).thenReturn(response);
-        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
-        when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
-        when(response.getEntity(String.class)).thenReturn("non_empty_content");
+        when(response.getStatusInfo()).thenReturn(Response.Status.OK);
+        when(response.getEntity()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
+        when(response.readEntity(String.class)).thenReturn("non_empty_content");
         final ImmutableList<Mutable> messages = ImmutableList.of(mock(Mutable.class));
         when(transport.parseMessages("non_empty_content")).thenReturn(messages);
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         responseConsumed();
         //Then
         verify(listener).onMessages(messages);
@@ -206,13 +195,12 @@ public class MessageExchangeTest {
     @Test
     public void shouldRetryParsingMessageWhenSingleJsonElementIsBroken() throws ExecutionException, InterruptedException, ParseException {
         //Given
-        when(request.get()).thenReturn(response);
-        when(response.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
-        when(response.getEntityInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
+        when(response.getStatusInfo()).thenReturn(Response.Status.OK);
+        when(response.getEntity()).thenReturn(new ByteArrayInputStream(new byte[] { Ascii.SPACE, Ascii.SPACE, Ascii.BEL }));
         String invalidMessage = "[{\"data\":{\"creationTime\":\"2019-11-07T10:44:07.287Z\",\"deviceId\":\"564\",\"deviceName\":\"Linux MAC CA55B6FBB6F5\",\"self\":\"http://cumulocity.default.svc.cluster.local/devicecontrol/operations/713\",\"id\":\"713\",\n" +
                 "\"status\":\"PENDING\",\"description\":\"Opening remote access tunnel to 'SSH1'\",\"c8y_Availability\": { \"status\": \"xxx\"}},\n" +
                 "\"channel\":\"/564\",\"id\":\"462\"},{\"ext\":{\"ack\":3},\"channel\":\"/meta/connect\",\"id\":\"5\",\"successful\":true}]";
-        when(response.getEntity(String.class)).thenReturn(invalidMessage);
+        when(response.readEntity(String.class)).thenReturn(invalidMessage);
         when(transport.parseMessages(any(String.class))).thenAnswer(new Answer<List<Mutable>>() {
             @Override
             public List<Mutable> answer(InvocationOnMock invocation) throws Throwable {
@@ -221,13 +209,31 @@ public class MessageExchangeTest {
             }
         });
         //When
-        recivedResponse();
+        receivedSuccessfulResponse();
         responseConsumed();
         //Then
-        verify(listener).onMessages((List<Mutable>)MockitoHamcrest.argThat(IsIterableWithSize.<Mutable>iterableWithSize(1)));
+        verify(listener).onMessages((List<Mutable>) MockitoHamcrest.argThat(IsIterableWithSize.<Mutable>iterableWithSize(1)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
     }
 
+    private void responseConsumed() {
+        verify(executorService).submit(task.capture());
+        task.getValue().run();
+    }
 
+    private void receivedResponse() {
+        exchange.execute(URL, MESSAGES);
+        verify(asyncInvoker).post(any(Entity.class), responseHandler.capture());
+    }
+
+    private void receivedSuccessfulResponse() {
+        receivedResponse();
+        responseHandler.getValue().completed(response);
+    }
+
+    private void receivedErrorResponse() {
+        receivedResponse();
+        responseHandler.getValue().failed(new RuntimeException());
+    }
 }

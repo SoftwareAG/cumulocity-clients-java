@@ -3,46 +3,41 @@ package com.cumulocity.sdk.client.notification;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.sdk.client.notification.MessageExchange.ResponseHandler;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.async.FutureListener;
-import com.sun.jersey.core.header.InBoundHeaders;
-import com.sun.jersey.spi.MessageBodyWorkers;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.client.*;
+import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.util.concurrent.Callables.returning;
-import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+
 
 public class MessageExchangeBlockingThreadsTest {
 
-    private ScheduledExecutorService executorService = newScheduledThreadPool(1);
+    private final ScheduledExecutorService executorService = newScheduledThreadPool(1);
 
     @Test(timeout = 2000)
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
@@ -64,7 +59,9 @@ public class MessageExchangeBlockingThreadsTest {
     }
 
     private void givenUnfinishedClientResponse(final Client client) {
-        final AsyncWebResource asyncWebResource = mock(AsyncWebResource.class);
+        final WebTarget resource = mock(WebTarget.class);
+        final Invocation.Builder builder = mock(Invocation.Builder.class);
+        final AsyncInvoker asyncInvoker = mock(AsyncInvoker.class);
         final InputStream blockOnRead = new InputStream() {
             @Override
             public synchronized int read() throws IOException {
@@ -82,30 +79,26 @@ public class MessageExchangeBlockingThreadsTest {
             }
         };
 
-        given(client.asyncResource(anyString())).willReturn(asyncWebResource);
-        given(asyncWebResource.handle(any(ClientRequest.class), any(FutureListener.class))).will(new Answer<Future<ClientResponse>>() {
+        given(client.target(any(String.class))).willReturn(resource);
+        given(resource.request(APPLICATION_JSON_TYPE)).willReturn(builder);
+        given(builder.async()).willReturn(asyncInvoker);
+        given(asyncInvoker.post(any(Entity.class), any(InvocationCallback.class))).will(new Answer<Future<Response>>() {
             @Override
-            public Future<ClientResponse> answer(final InvocationOnMock invocationOnMock) throws Throwable {
-                final MessageBodyWorkers workers = mock(MessageBodyWorkers.class);
-                final MessageBodyReader messageBodyReader = mock(MessageBodyReader.class);
+            public Future<Response> answer(final InvocationOnMock invocationOnMock) throws Throwable {
+                final Response response = spy(Response.ok().build());
 
-                given(messageBodyReader.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).willAnswer(new Answer<Object>() {
-                    @Override
-                    public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
-                        final CumulocityJSONMessageBodyReader reader = new CumulocityJSONMessageBodyReader();
-                        return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null,blockOnRead);
-                    }
-                });
-                given(workers.getMessageBodyReader(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class))).willReturn(messageBodyReader);
+                doAnswer(invocation -> {
+                    final CumulocityJSONMessageBodyReader reader = new CumulocityJSONMessageBodyReader();
+                    return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null,blockOnRead);
+                    }).when(response)
+                        .readEntity(ArgumentMatchers.<Class<?>>any());
 
-                final ClientResponse response = new ClientResponse(OK.getStatusCode(), new InBoundHeaders(), blockOnRead, workers);
-
-                final FutureTask<ClientResponse> futureTask = new FutureTask<ClientResponse>(returning(response)) {
+                final FutureTask<Response> futureTask = new FutureTask<Response>(returning(response)) {
                     protected void done() {
                         try {
                             final ResponseHandler responseHandler = (ResponseHandler) invocationOnMock.getArguments()[1];
-                            responseHandler.onComplete(this);
-                        } catch (InterruptedException e) {
+                            responseHandler.completed(this.get());
+                        } catch (InterruptedException | ExecutionException e) {
                             propagate(e);
                         }
                     }
@@ -120,5 +113,4 @@ public class MessageExchangeBlockingThreadsTest {
         final Future<String> task = executorService.submit(() -> "OK");
         Assertions.assertThat(task.get(500, MILLISECONDS)).isEqualTo("OK");
     }
-
 }

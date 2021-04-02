@@ -18,10 +18,10 @@ import java.util.Optional;
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
 import static com.cumulocity.rest.representation.application.ApplicationRepresentation.MICROSERVICE;
 import static com.google.common.base.Preconditions.checkState;
-import static org.apache.commons.httpclient.HttpStatus.*;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * works OK with platform API older than 8.18

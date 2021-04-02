@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -28,6 +28,7 @@ import java.net.URI;
 
 import javax.ws.rs.core.MediaType;
 
+import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +40,6 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParserTest {
 
@@ -48,7 +48,7 @@ public class ResponseParserTest {
     private static final int ERROR_STATUS = 500;
 
     @Mock
-    private ClientResponse response;
+    private Response response;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -67,7 +67,7 @@ public class ResponseParserTest {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
-        when(response.getEntity(BaseResourceRepresentation.class)).thenReturn(representation);
+        when(response.readEntity(BaseResourceRepresentation.class)).thenReturn(representation);
 
         // When
         BaseResourceRepresentation result = parser.parse(response,
@@ -82,7 +82,7 @@ public class ResponseParserTest {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
         InventoryRepresentation representation = new InventoryRepresentation();
-        when(response.getEntity(InventoryRepresentation.class)).thenReturn(representation);
+        when(response.readEntity(InventoryRepresentation.class)).thenReturn(representation);
 
         // When
         InventoryRepresentation result = parser.parse(response, InventoryRepresentation.class, EXPECTED_STATUS);
@@ -97,8 +97,8 @@ public class ResponseParserTest {
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         ErrorMessageRepresentation errorRepresentation = new ErrorMessageRepresentation();
         when(response.hasEntity()).thenReturn(true);
-        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-        when(response.getEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
+        when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+        when(response.readEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
 
         // Then
         thrown.expect(SDKException.class);
@@ -113,8 +113,8 @@ public class ResponseParserTest {
         // Given
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         when(response.hasEntity()).thenReturn(false);
-        when(response.getEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
-        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+        when(response.readEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
+        when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
 
         // Then
         thrown.expect(SDKException.class);

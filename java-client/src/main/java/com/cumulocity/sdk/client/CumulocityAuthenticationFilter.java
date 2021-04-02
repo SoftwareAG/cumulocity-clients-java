@@ -3,27 +3,26 @@ package com.cumulocity.sdk.client;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import lombok.RequiredArgsConstructor;
 
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
+import java.io.IOException;
 
 @RequiredArgsConstructor
-public class CumulocityAuthenticationFilter extends ClientFilter {
+public class CumulocityAuthenticationFilter implements ClientRequestFilter {
 
     private final CumulocityCredentials credentials;
 
     @Override
-    public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
+    public void filter(ClientRequestContext ctx) throws IOException {
 
         CumulocityCredentials.CumulocityCredentialsVisitor<Void> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<Void>() {
             @Override
             public Void visit(CumulocityBasicCredentials credentials) {
-                if (!cr.getMetadata().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    cr.getMetadata().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
+                if (!ctx.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    ctx.getHeaders().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
                 }
                 return null;
             }
@@ -32,19 +31,16 @@ public class CumulocityAuthenticationFilter extends ClientFilter {
             public Void visit(CumulocityOAuthCredentials credentials) {
                 switch (credentials.getAuthenticationMethod()) {
                     case COOKIE:
-                        cr.getMetadata().remove(HttpHeaders.AUTHORIZATION);
-                        cr.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
-                        cr.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
+                        ctx.getHeaders().remove(HttpHeaders.AUTHORIZATION);
+                        ctx.getHeaders().putSingle("Cookie", "authorization=" + credentials.getAuthenticationString());
+                        ctx.getHeaders().putSingle("X-XSRF-TOKEN", credentials.getXsrfToken());
                         return null;
                     case HEADER:
-                        cr.getMetadata().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
+                        ctx.getHeaders().add(HttpHeaders.AUTHORIZATION, credentials.getAuthenticationString());
                 }
                 return null;
             }
         };
         credentials.accept(visitor);
-
-        return getNext().handle(cr);
     }
-
 }
