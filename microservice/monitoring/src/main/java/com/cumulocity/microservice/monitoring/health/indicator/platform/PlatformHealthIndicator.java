@@ -8,7 +8,6 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
 import com.cumulocity.sdk.client.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.api.client.ClientResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +15,14 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static org.apache.commons.httpclient.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_OK;
 
 @Slf4j
 @Component
@@ -38,7 +38,7 @@ public class PlatformHealthIndicator extends AbstractHealthIndicator {
     protected void doHealthCheck(Health.Builder builder) {
         try {
             final RestConnector rest = new RestConnector(platformParameters(), new ResponseParser(new JacksonResponseMapper()));
-            final ClientResponse response = rest.get(configuration.getPath(), APPLICATION_JSON_TYPE);
+            final Response response = rest.get(configuration.getPath(), APPLICATION_JSON_TYPE);
             if (response.getStatus() == SC_OK) {
                 builder.up();
             } else {

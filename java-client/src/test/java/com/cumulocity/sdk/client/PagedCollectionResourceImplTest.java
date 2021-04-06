@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -24,7 +24,7 @@ import com.cumulocity.rest.representation.PageStatisticsRepresentation;
 import com.cumulocity.rest.representation.TestCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.sdk.client.common.UriMatcher;
-import com.sun.jersey.api.client.ClientResponse;
+import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,7 +58,7 @@ public class PagedCollectionResourceImplTest {
     PagedCollectionResource<Object, TestCollectionRepresentation<Object>> target;
 
     @Mock
-    ClientResponse clientResponse;
+    Response clientResponse;
 
     @Mock
     private RestConnector restConnector;
@@ -71,7 +71,7 @@ public class PagedCollectionResourceImplTest {
 
         MeasurementCollectionRepresentation measurementCollectionRepresentation = new MeasurementCollectionRepresentation();
         when(clientResponse.getStatus()).thenReturn(200);
-        when(clientResponse.getEntity(MeasurementCollectionRepresentation.class)).thenReturn(measurementCollectionRepresentation);
+        when(clientResponse.readEntity(MeasurementCollectionRepresentation.class)).thenReturn(measurementCollectionRepresentation);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.get();
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRepresentation));
     }
 
@@ -100,7 +100,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.get();
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRepresentation));
     }
 
@@ -117,7 +117,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.get();
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRepresentation));
     }
 
@@ -135,7 +135,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.getPage(input, 5);
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRep));
     }
 
@@ -171,7 +171,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.getPage(input, 5);
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRep));
     }
 
@@ -190,7 +190,7 @@ public class PagedCollectionResourceImplTest {
         // When
         TestCollectionRepresentation page = target.getPage(input, 6);
 
-        // Then        
+        // Then
         assertThat(page, sameInstance(expectedRep));
     }
 
@@ -202,7 +202,7 @@ public class PagedCollectionResourceImplTest {
         // When
         target.getPage(input, 5);
 
-        // Then 
+        // Then
         fail();
     }
 
@@ -322,7 +322,7 @@ public class PagedCollectionResourceImplTest {
         //Then
         assertThat(hashCode, is(expectedHashCode));
     }
-    
+
     private PagedCollectionResource<Object, TestCollectionRepresentation<Object>> createPagedCollectionResource(RestConnector restConnector,
             String url, int pageSize, final CumulocityMediaType mediaType, final Class<TestCollectionRepresentation<Object>> clazz) {
         return new PagedCollectionResourceImpl<Object, TestCollectionRepresentation<Object>, TestCollectionRepresentation<Object>>(restConnector, url, pageSize) {

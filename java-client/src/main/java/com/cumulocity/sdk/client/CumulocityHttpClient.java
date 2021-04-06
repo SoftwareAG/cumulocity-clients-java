@@ -1,28 +1,37 @@
 package com.cumulocity.sdk.client;
 
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.core.spi.component.ioc.IoCComponentProviderFactory;
 
+import com.cumulocity.sdk.client.rest.WebTargetDecorator;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.client.JerseyInvocation;
+import org.glassfish.jersey.client.JerseyWebTarget;
+import org.glassfish.jersey.internal.util.collection.UnsafeValue;
+
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CumulocityHttpClient extends ApacheHttpClient {
+public class CumulocityHttpClient extends JerseyClient {
 
     private final Pattern hostPattern = Pattern.compile("((http|https):\\/\\/.+?)(\\/|\\?|$)");
 
     private PlatformParameters platformParameters;
 
-    CumulocityHttpClient(ApacheHttpClientHandler createDefaultClientHander, IoCComponentProviderFactory provider) {
-        super(createDefaultClientHander, provider);
+    CumulocityHttpClient(ClientConfig clientConfig) {
+        super(clientConfig, (UnsafeValue<SSLContext, IllegalStateException>) null,null);
     }
 
     @Override
-    public WebResource resource(String path) {
-        WebResource resource;
+    public JerseyWebTarget target(String path) {
+        JerseyWebTarget resource;
         try {
-            resource = super.resource(resolvePath(path));
+            resource = super.target(resolvePath(path));
+            resource = WebTargetDecorator.decorate(resource);
         } catch (IllegalArgumentException ex) {
             throw new SDKException(400, "Illegal characters used in URL.");
         }

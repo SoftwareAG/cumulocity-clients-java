@@ -1,6 +1,6 @@
 package com.cumulocity.microservice.security.filter.util;
 
-import com.sun.jersey.core.util.Base64;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -163,7 +163,6 @@ public class HttpRequestUtils {
 
     public static String[] decode(String authorization) {
         try {
-
             return new String(Base64.decode(authorization.substring(AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(AUTH_SEPARATOR, 2);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

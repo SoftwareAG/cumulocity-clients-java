@@ -8,13 +8,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.ProcessingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.sun.jersey.api.client.ClientHandlerException;
 
 public class BufferProcessor {
 
@@ -82,17 +82,17 @@ public class BufferProcessor {
                         //platform is down
                         LOG.warn("Couldn't connect to platform. Waiting..." + e.getMessage());
                         waitForPlatform();
-                    } catch (ClientHandlerException e) {
+                    } catch (ProcessingException e) {
                         if (e.getCause() != null && e.getCause() instanceof ConnectException) {
                             //lack of connection
                             LOG.warn("Couldn't connect to platform. Waiting..." + e.getMessage());
                             waitForConnection();
                         } else {
-                            result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
+                            result.setException(new RuntimeException("Exception occurred while processing buffered request: ", e));
                             return result;
                         }
                     } catch (Exception e) {
-                        result.setException(new RuntimeException("Exception occured while processing buffered request: ", e));
+                        result.setException(new RuntimeException("Exception occurred while processing buffered request: ", e));
                         return result;
                     }
                 }
@@ -116,9 +116,9 @@ public class BufferProcessor {
 
             private Object doSendRequest(BufferedRequest httpPostRequest) {
                 String method = httpPostRequest.getMethod();
-                if (method == HttpMethod.POST) {
+                if (HttpMethod.POST.equals(method)) {
                     return restConnector.post(httpPostRequest.getPath(), httpPostRequest.getMediaType(), httpPostRequest.getRepresentation());
-                } else if (method == HttpMethod.PUT) {
+                } else if (HttpMethod.PUT.equals(method)) {
                     return restConnector.put(httpPostRequest.getPath(), httpPostRequest.getMediaType(), httpPostRequest.getRepresentation());
                 } else {
                     throw new IllegalArgumentException("This method is not supported in buffering processor: " + method);

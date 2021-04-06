@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.is;
 import java.util.LinkedList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +57,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
+@Slf4j
 public class DeviceControlIT extends JavaSdkITBase {
 
     private List<ManagedObjectRepresentation> managedObjects = new LinkedList<ManagedObjectRepresentation>();
@@ -275,6 +277,7 @@ public class DeviceControlIT extends JavaSdkITBase {
 
             @Override
             public void onError(Subscription<GId> subscription, Throwable ex) {
+                log.error("an error occurred", ex);
             }
         });
         try {

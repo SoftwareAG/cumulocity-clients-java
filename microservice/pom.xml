@@ -25,6 +25,7 @@
         <guava.version>29.0-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
         <jackson.version>2.11.2</jackson.version>
+        <jersey.version>2.33</jersey.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
@@ -63,6 +64,16 @@
                 <scope>import</scope>
                 <type>pom</type>
                 <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- jersey -->
+            <!-- remove when spring boot is upgraded: jersey 2.30 is required -->
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>${jersey.version}</version>
             </dependency>
 
             <!-- spring boot -->

@@ -36,7 +36,9 @@ import org.cometd.client.transport.ClientTransport;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.sun.jersey.api.client.Client;
+import org.glassfish.jersey.client.ClientProperties;
+
+import javax.ws.rs.client.Client;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
@@ -63,16 +65,16 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     private static Provider<Client> createDefaultHttpProvider(final PlatformParameters parameters) {
         return () -> {
             final Client client = RestConnector.createURLConnectionClient(parameters);
-            client.setConnectTimeout(0);
-            client.setReadTimeout(0);
+            client.property(ClientProperties.CONNECT_TIMEOUT, 0);
+            client.property(ClientProperties.READ_TIMEOUT, 0);
             return client;
         };
     }
 
-    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
+    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters parameters,
                                                        Class<?> endpointDataType, final Provider<Client> httpClient,
                                                        UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, Extension... extensions) {
-        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, unauthorizedConnectionWatcher, extensions);
+        return new DefaultBayeuxClientProvider(endpoint, parameters, endpointDataType, httpClient, unauthorizedConnectionWatcher, extensions);
     }
 
     public DefaultBayeuxClientProvider(String endpoint, PlatformParameters parameters, Class<?> endpointDataType,

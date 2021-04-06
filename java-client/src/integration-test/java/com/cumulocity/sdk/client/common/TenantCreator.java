@@ -24,12 +24,14 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
 import com.cumulocity.sdk.client.PlatformImpl;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 import gherkin.deps.com.google.gson.Gson;
+import javax.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,12 +53,12 @@ public class TenantCreator {
         try {
             createTenant(httpClient);
         } finally {
-            httpClient.destroy();
+            httpClient.close();
         }
     }
 
     private void createTenant(Client httpClient) {
-        ClientResponse tr = postNewTenant(httpClient);
+        Response tr = postNewTenant(httpClient);
         assertThat(tr.getStatus(), is(201));
     }
 
@@ -65,21 +67,21 @@ public class TenantCreator {
         try {
             removeTenant(httpClient);
         } finally {
-            httpClient.destroy();
+            httpClient.close();
         }
     }
 
     private void removeTenant(Client httpClient) {
-        ClientResponse tenantResponse = deleteTenant(httpClient);
+        Response tenantResponse = deleteTenant(httpClient);
         assertThat(tenantResponse.getStatus(), is(204));
     }
 
-    private ClientResponse postNewTenant(Client httpClient) {
+    private Response postNewTenant(Client httpClient) {
         String host = platform.getHost();
-        final WebResource.Builder resource = httpClient.resource(host + TENANT_URI).type(TenantMediaType.TENANT_TYPE).accept(TenantMediaType.TENANT_TYPE);
-        CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<ClientResponse>() {
+        final Invocation.Builder resource = httpClient.target(host + TENANT_URI).request(TenantMediaType.TENANT_TYPE).accept(TenantMediaType.TENANT_TYPE);
+        CumulocityCredentials.CumulocityCredentialsVisitor<Response> visitor = new CumulocityCredentials.CumulocityCredentialsVisitor<Response>() {
             @Override
-            public ClientResponse visit(CumulocityBasicCredentials credentials) {
+            public Response visit(CumulocityBasicCredentials credentials) {
                 String tenantJson = "{ " +
                         "\"id\": \"" + platform.getTenantId() + "\", " +
                         "\"domain\": \"sample-tenant.cumulocity.com\", " +
@@ -87,8 +89,8 @@ public class TenantCreator {
                         "\"adminName\": \"" + credentials.getUsername() + "\", " +
                         "\"adminPass\": \"" + credentials.getPassword() + "\" " +
                         "}";
-                ClientResponse result = resource.post(ClientResponse.class, tenantJson);
-                String newTenant = result.getEntity(String.class);
+                Response result = resource.post(Entity.json(tenantJson));
+                String newTenant = result.readEntity(String.class);
                 Gson gson = new Gson();
                 HashMap map = gson.fromJson(newTenant, HashMap.class);
                 String newTenantId = (String)map.get("id");
@@ -97,16 +99,16 @@ public class TenantCreator {
             }
 
             @Override
-            public ClientResponse visit(CumulocityOAuthCredentials credentials) {
+            public Response visit(CumulocityOAuthCredentials credentials) {
                 throw new IllegalStateException("Cannot use credentials other than oauth yet");
             }
         };
         return platform.getCumulocityCredentials().accept(visitor);
     }
 
-    private ClientResponse deleteTenant(Client httpClient) {
+    private Response deleteTenant(Client httpClient) {
         String host = platform.getHost();
-        WebResource tenantResource = httpClient.resource(host + TENANT_URI + "/" + platform.getTenantId()).queryParam("synchronous", "true");
-        return tenantResource.delete(ClientResponse.class);
+        WebTarget tenantResource = httpClient.target(host + TENANT_URI + "/" + platform.getTenantId()).queryParam("synchronous", "true");
+        return tenantResource.request().delete();
     }
 }

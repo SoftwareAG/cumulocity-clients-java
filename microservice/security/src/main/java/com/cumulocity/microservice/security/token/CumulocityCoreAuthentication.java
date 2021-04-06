@@ -7,10 +7,13 @@ import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.UserMediaType;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.client.apache.ApacheHttpClient;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 
 class CumulocityCoreAuthentication {
+
     private CumulocityCoreAuthentication() {
     }
 
@@ -20,7 +23,7 @@ class CumulocityCoreAuthentication {
         String tenantName = getTenantName(client, baseUrl);
         jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
         JwtTokenAuthentication updatedToken = updateUserCredentials(tenantName, jwtTokenAuthentication);
-        client.destroy();
+        client.close();
         return updatedToken;
     }
 
@@ -28,12 +31,12 @@ class CumulocityCoreAuthentication {
      * Remember to release resources when client is not needed
      */
     static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
-        ApacheHttpClient client = new ApacheHttpClient();
+        Client client = ClientBuilder.newClient();
         if (jwtTokenAuthentication != null) {
             JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
             if (jwtCredentials instanceof JwtAndXsrfTokenCredentials) {
                 JwtAndXsrfTokenCredentials jwtAndXsrfCred = (JwtAndXsrfTokenCredentials) jwtCredentials;
-                client.addFilter(new CumulocityAuthenticationFilter(
+                client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.COOKIE)
                                 .oAuthAccessToken(jwtAndXsrfCred.getJwt().getEncoded())
@@ -41,7 +44,7 @@ class CumulocityCoreAuthentication {
                                 .build()
                 ));
             } else {
-                client.addFilter(new CumulocityAuthenticationFilter(
+                client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.HEADER)
                                 .oAuthAccessToken(jwtCredentials.getJwt().getEncoded())
@@ -53,14 +56,14 @@ class CumulocityCoreAuthentication {
     }
 
     private static CurrentUserRepresentation getCurrentUser(Client client, String baseUrl) {
-        return client.resource(baseUrl + "/user/currentUser")
-                .accept(UserMediaType.CURRENT_USER)
+        return client.target(baseUrl + "/user/currentUser")
+                .request(UserMediaType.CURRENT_USER)
                 .get(CurrentUserRepresentation.class);
     }
 
     private static String getTenantName(Client client, String baseUrl) {
-        SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.resource(baseUrl + "/tenant/currentTenant")
-                .accept(UserMediaType.CURRENT_TENANT)
+        SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.target(baseUrl + "/tenant/currentTenant")
+                .request(UserMediaType.CURRENT_TENANT)
                 .get(SimplifiedCurrentTenantRepresentation.class);
         return currentTenantRepresentation.name;
     }

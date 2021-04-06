@@ -9,20 +9,22 @@ import com.cumulocity.rest.representation.user.UserMediaType;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 
 class CumulocityCoreAuthenticationClient {
+
     private static final int CONNECTION_TIMEOUT = 30000;
 
-    private CumulocityCoreAuthenticationClient() {
-    }
+    private CumulocityCoreAuthenticationClient() { }
 
     static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
         Client client = createClientWithAuthenticationFilter(jwtTokenAuthentication);
@@ -32,7 +34,7 @@ class CumulocityCoreAuthenticationClient {
             jwtTokenAuthentication.setCurrentUserRepresentation(currUserRepresentation);
             return updateUserCredentials(tenantName, jwtTokenAuthentication);
         } finally {
-            client.destroy();
+            client.close();
         }
     }
 
@@ -40,18 +42,19 @@ class CumulocityCoreAuthenticationClient {
      * Remember to release resources when client is not needed
      */
     static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
-        final HttpClient httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
-        DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-        clientConfig.getClasses().add(CumulocityJSONMessageBodyReader.class);
-        clientConfig.getClasses().add(ErrorMessageRepresentationReader.class);
-        ApacheHttpClientHandler apacheHttpClientHandler = new ApacheHttpClientHandler(httpClient, clientConfig);
-        ApacheHttpClient client = new ApacheHttpClient(apacheHttpClientHandler);
-        client.setConnectTimeout(CONNECTION_TIMEOUT);
+
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(CumulocityJSONMessageBodyReader.class);
+        clientConfig.register(ErrorMessageRepresentationReader.class);
+        clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
+        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
+
+        Client client = ClientBuilder.newClient(clientConfig);
         if (jwtTokenAuthentication != null) {
             JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
             if (jwtCredentials instanceof JwtAndXsrfTokenCredentials) {
                 JwtAndXsrfTokenCredentials jwtAndXsrfCred = (JwtAndXsrfTokenCredentials) jwtCredentials;
-                client.addFilter(new CumulocityAuthenticationFilter(
+                client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.COOKIE)
                                 .oAuthAccessToken(jwtAndXsrfCred.getJwt().getEncoded())
@@ -59,7 +62,7 @@ class CumulocityCoreAuthenticationClient {
                                 .build()
                 ));
             } else {
-                client.addFilter(new CumulocityAuthenticationFilter(
+                client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.HEADER)
                                 .oAuthAccessToken(jwtCredentials.getJwt().getEncoded())
@@ -71,14 +74,14 @@ class CumulocityCoreAuthenticationClient {
     }
 
     private static CurrentUserRepresentation getCurrentUser(Client client, String baseUrl) {
-        return client.resource(baseUrl + "/user/currentUser")
-                .accept(UserMediaType.CURRENT_USER)
+        return client.target(baseUrl + "/user/currentUser")
+                .request(UserMediaType.CURRENT_USER)
                 .get(CurrentUserRepresentation.class);
     }
 
     private static String getTenantName(Client client, String baseUrl) {
-        SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.resource(baseUrl + "/tenant/currentTenant")
-                .accept(UserMediaType.CURRENT_TENANT)
+        SimplifiedCurrentTenantRepresentation currentTenantRepresentation = client.target(baseUrl + "/tenant/currentTenant")
+                .request(UserMediaType.CURRENT_TENANT)
                 .get(SimplifiedCurrentTenantRepresentation.class);
         return currentTenantRepresentation.name;
     }
