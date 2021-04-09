@@ -141,19 +141,19 @@ public class RestConnector implements RestOperations {
     }
 
     private Response getClientResponse(String path, MediaType mediaType) {
-        Builder builder = client.target(path).request(mediaType);
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
+        builder = addAcceptHeader(builder, mediaType);
         return builder.get();
     }
 
     @Override
     public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
                                                            Class<T> responseClass) throws SDKException {
-
-        Builder builder = client.target(path).request(MULTIPART_FORM_DATA);
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
@@ -166,7 +166,7 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
-        Builder builder = client.target(path).request(MediaType.TEXT_PLAIN);
+        Builder builder = client.target(path).request();
         builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -175,7 +175,7 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentation> T putText(String path, String content, Class<T> responseClass) {
-        Builder builder = client.target(path).request(MediaType.TEXT_PLAIN);
+        Builder builder = client.target(path).request();
         builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -185,7 +185,7 @@ public class RestConnector implements RestOperations {
     @Override
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
                                                           Class<T> responseClass) {
-        Builder builder = client.target(path).request(contentType);
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
@@ -199,6 +199,7 @@ public class RestConnector implements RestOperations {
     public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
                                                           Class<T> responseClass) {
         Builder builder = getResourceBuilder(path);
+        builder = addAcceptHeader(builder, mediaType);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         Entity<MultiPart> stream = Entity.entity(form, form.getMediaType());
@@ -282,7 +283,7 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException {
-        Builder builder = client.target(path).request(mediaType);
+        Builder builder = client.target(path).request();
         builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
@@ -364,7 +365,7 @@ public class RestConnector implements RestOperations {
     }
 
     private <T extends ResourceRepresentation> Response httpPost(String path, MediaType contentType, MediaType accept, T representation) {
-        Builder builder = client.target(path).request(contentType);
+        Builder builder = client.target(path).request();
 
         builder = addAcceptHeader(builder, accept);
         builder = addApplicationKeyHeader(builder);
@@ -376,7 +377,7 @@ public class RestConnector implements RestOperations {
     }
 
     private <T extends ResourceRepresentation> Response httpPut(String path, MediaType mediaType, T representation) {
-        Invocation.Builder builder = client.target(path).request(mediaType);
+        Invocation.Builder builder = client.target(path).request();
 
         builder = addAcceptHeader(builder, mediaType);
         builder = addApplicationKeyHeader(builder);
@@ -486,7 +487,6 @@ public class RestConnector implements RestOperations {
                 .build();
     }
 
-
     private static HttpUrlConnectorProvider resolveHttpUrlConnectorProvider(final PlatformParameters platformParameters) {
         return isProxyRequired(platformParameters)
                 ? new HttpUrlConnectorProvider().connectionFactory(new ProxyHttpURLConnectionFactory(platformParameters))
@@ -510,13 +510,12 @@ public class RestConnector implements RestOperations {
     }
 
     private Invocation.Builder getResourceBuilder(String path){
-        Invocation.Builder builder = client.target(path).request(MULTIPART_FORM_DATA);
+        Invocation.Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
         builder = addAcceptHeader(builder, MediaType.APPLICATION_JSON_TYPE);
-
         return builder;
     }
 
