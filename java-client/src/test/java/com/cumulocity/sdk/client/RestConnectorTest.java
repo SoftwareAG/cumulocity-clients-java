@@ -88,8 +88,9 @@ public class RestConnectorTest {
     public void shouldRetrieveResource() throws Exception {
         // Given
         Response response = Response.accepted().build();
-        when(webResource.request(mediaType)).thenReturn(typeBuilder);
+        when(webResource.request()).thenReturn(typeBuilder);
         when(typeBuilder.get()).thenReturn(response);
+        returnResponseWhenSending();
 
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         when(parser.parse(response, BaseResourceRepresentation.class, 200)).thenReturn(representation);
@@ -179,7 +180,7 @@ public class RestConnectorTest {
     }
 
     private void returnResponseWhenSending() {
-        when(webResource.request(mediaType)).thenReturn(typeBuilder);
+        when(webResource.request()).thenReturn(typeBuilder);
         when(typeBuilder.accept(mediaType)).thenReturn(typeBuilder);
         mockDefaultAcceptHeader();
     }
