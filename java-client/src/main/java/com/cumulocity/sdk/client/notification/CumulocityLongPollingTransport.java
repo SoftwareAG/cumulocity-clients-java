@@ -26,7 +26,6 @@ import org.cometd.client.transport.HttpClientTransport;
 import org.cometd.client.transport.TransportListener;
 import org.glassfish.jersey.client.ClientProperties;
 import javax.ws.rs.core.Response;
-import org.glassfish.jersey.spi.ExecutorServiceProvider;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
@@ -39,7 +38,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -211,16 +209,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         @Override
         public Client get() {
             final Client client = httpClient.get();
-            client.register(new ExecutorServiceProvider() {
-                @Override
-                public ExecutorService getExecutorService() {
-                    return executorService;
-                }
-                @Override
-                public void dispose(ExecutorService executorService) {
-                    executorService.shutdown();
-                }
-            });
+            client.register(new LongPollingExecutorServiceProvider(executorService));
             client.register((ClientRequestFilter) cr -> {
                 addCookieHeader(cr);
                 addApplicationKeyHeader(cr);
