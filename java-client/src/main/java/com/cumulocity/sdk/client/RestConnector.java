@@ -44,6 +44,7 @@ import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.*;
@@ -494,6 +495,7 @@ public class RestConnector implements RestOperations {
     }
 
     private static void registerClasses(ClientConfig config) {
+        config.register(new MultiPartFeature());
         config.register(new CumulocityJSONMessageBodyWriter());
         config.register(new CumulocityJSONMessageBodyReader());
         config.register(new ErrorMessageRepresentationReader());
