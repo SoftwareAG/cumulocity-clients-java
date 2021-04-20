@@ -24,7 +24,7 @@ public class BinariesApiIT extends JavaSdkITBase {
         container.setType("sag_Binary");
         container.set("iot.cumulocity.com", "domain");
 
-        InputStream file = Resources.getInputStream("cep/test-module.epl");
+        InputStream file = Resources.getInputStream("binaries/sampleTestFile.txt");
         // when
         ManagedObjectRepresentation uploaded = binariesApi.uploadFile(container, file);
         // then
