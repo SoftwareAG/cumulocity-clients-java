@@ -13,6 +13,6 @@ public class SmsMessagingApiTest {
 
         final MessagingClient messagingClient = messaging.getMessagingClient();
 
-        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/service/messaging/smsmessaging/v1");
+        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/service/messaging/smsmessaging");
     }
 }
