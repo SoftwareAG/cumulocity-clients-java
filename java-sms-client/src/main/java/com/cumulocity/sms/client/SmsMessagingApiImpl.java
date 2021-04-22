@@ -32,7 +32,7 @@ public class SmsMessagingApiImpl implements SmsMessagingApi {
     private final MessagingClient messagingClient;
 
     public SmsMessagingApiImpl(final String host, Executor executor) {
-        final String url = concat(host, "service/messaging/smsmessaging/v1");
+        final String url = concat(host, "service/messaging/smsmessaging");
         messagingClient = new MessagingClient(url, executor);
     }
 
