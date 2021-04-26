@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
+import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
@@ -191,7 +192,7 @@ public class RestConnector implements RestOperations {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        builder = addAcceptHeader(builder, MediaType.valueOf(contentType));
+        builder = addAcceptHeader(builder, MediaType.valueOf(InventoryMediaType.MANAGED_OBJECT_TYPE));
         Entity<?> stream = Entity.entity(content, contentType);
         return parseResponseWithoutId(responseClass, builder.put(stream), CREATED.getStatusCode());
     }
