@@ -4,17 +4,15 @@ import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
+import com.cumulocity.sdk.client.SDKException;
 import lombok.RequiredArgsConstructor;
-import org.svenson.JSONParser;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.core.Response;
-import java.util.Map;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-
+@Slf4j
 @RequiredArgsConstructor
 public class TokenApiImpl implements TokenApi {
     public static final CumulocityMediaType TOKEN_MEDIA_TYPE = new CumulocityMediaType("application", "json");
+    public static final CumulocityMediaType TOKEN_VERIFICATION_MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
     public static final String TOKEN_REQUEST_URI = "reliablenotification/token";
 
@@ -22,7 +20,7 @@ public class TokenApiImpl implements TokenApi {
     private final RestConnector restConnector;
 
     @Override
-    public String create(NotificationTokenClaimsRepresentation tokenClaim) {
+    public String create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException  {
         if (tokenClaim == null) {
             throw new IllegalArgumentException("Token claim is null");
         }
@@ -38,12 +36,12 @@ public class TokenApiImpl implements TokenApi {
     }
 
     @Override
-    public Map<String, Object> verify(String token) {
-        Response response = restConnector.get(getTokenRequestUri() + "?token=" + token, APPLICATION_JSON_TYPE);
-        Map<String, Object> responseJson = null;
-        JSONParser parser = new JSONParser();
-        responseJson = (Map<String, Object>) parser.parse(response.readEntity(String.class));
-        return responseJson;
+    public TokenVerification verify(String token) throws SDKException {
+        TokenVerification tokenVerification = restConnector
+                .get(getTokenRequestUri() + "?token=" + token,
+                        TOKEN_VERIFICATION_MEDIA_TYPE,
+                        TokenVerification.class);
+        return tokenVerification;
     }
 
     private String getTokenRequestUri() {

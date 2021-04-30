@@ -9,17 +9,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static com.cumulocity.sdk.client.reliable.TokenApiImpl.TOKEN_MEDIA_TYPE;
+import static com.cumulocity.sdk.client.reliable.TokenApiImpl.TOKEN_VERIFICATION_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TokenApiImplTest {
-    private static final String HOST = "core-0.platform.default.svc.cluster.local:8181";
-
+    private static final String HOST = "core-0.platform.default.svc.cluster.local/";
     private static final String TOKEN_REQUEST_URI = "reliablenotification/token";
+    private static final String JWT_TOKEN = "f4k3_jwt_t0k3n";
 
-    private static final String JWT_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJzYWIiLCJ0b3BpYyI6Im1hbmFnZW1lbnQvcmVsbm90aWYvc3ViIiwianRpIjoiZTNkMzE1Y2MtYTE0NC00ZWNhLTk2OGItNmIzNTJjNWYwOWYyIiwiaWF0IjoxNjE5Njk0Mjc3LCJleHAiOjE2MTk3ODA2Nzd9.tjX1WxjFdoissHvQc0Y88Ase6muJFi9xIWC4WmRRHtsc_IkxcPCPyfDzOVW30SqMDqc3PzxEkN9l21D1LfVg06xhFc7o-Ita6a3C3BbuuP0kM5KQCQBXHHcaZsphmZgWXvV-q9SLrQ_3ir3I7OLdipkrJ4QJV9MTWfM-pIAoyTSOr4Eik5osnkPsEJ8P4ZFjCgvB5k1DrwfcOOz19q__dKhftIkhOT7YxxXm20brdUrlb8ZEdwu_PDk5AfoOYYp97pjMO0bTRSgQVf7qFdyMEcU-BuedY45j58qV6-YDWJ6Ep_feVquUUAvVmYH-4JDdYndokb3vk3uLRwHuQwg6Uw";
-
-    TokenApi tokenApi;
+    private TokenApi tokenApi;
 
     @Mock
     private RestConnector restConnector;
@@ -32,6 +34,7 @@ public class TokenApiImplTest {
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         tokenApi = new TokenApiImpl(platformParameters, restConnector);
+        when(platformParameters.getHost()).thenReturn(HOST);
     }
 
     @Test
@@ -50,6 +53,49 @@ public class TokenApiImplTest {
         when(platformParameters.getHost()).thenReturn(HOST);
 
         assertThat(tokenApi.create(tokenClaim)).isEqualTo(JWT_TOKEN);
+    }
+
+    @Test
+    public void shouldBuildCreateTokenUri() {
+        NotificationTokenClaimsRepresentation tokenClaim =
+                new NotificationTokenClaimsRepresentation("sub", "sup", 1L);
+        final String uri = getUri(TOKEN_REQUEST_URI);
+
+        when(restConnector.post(any(),any(),any(),any(),any())).thenReturn(new Token());
+
+        tokenApi.create(tokenClaim);
+
+        verify(restConnector).post(
+                eq(uri),
+                eq(TOKEN_MEDIA_TYPE),
+                eq(TOKEN_MEDIA_TYPE),
+                eq(tokenClaim),
+                eq(Token.class));
+    }
+
+    @Test
+    public void shouldVerifyToken() {
+        TokenVerification tokenVerification = new TokenVerification("sub", "topic", "jti", 1L, 1L);
+        final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
+
+        when(restConnector.get(
+                uri,
+                TOKEN_VERIFICATION_MEDIA_TYPE,
+                TokenVerification.class))
+                .thenReturn(tokenVerification);
+
+        TokenVerification verificationResult = tokenApi.verify(JWT_TOKEN);
+
+        assertThat(verificationResult).isEqualTo(tokenVerification);
+    }
+
+    @Test
+    public void shouldBuildVerifyUri() {
+        final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
+
+        tokenApi.verify(JWT_TOKEN);
+
+        verify(restConnector).get(eq(uri), eq(TOKEN_VERIFICATION_MEDIA_TYPE), eq(TokenVerification.class));
     }
 
     private String getUri(String endpoint) {
