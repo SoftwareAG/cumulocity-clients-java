@@ -48,6 +48,7 @@ public class BinariesApiIT extends JavaSdkITBase {
         ManagedObjectRepresentation uploaded = binariesApi.uploadFile(container, binaryData);
         // then
         assertThat(uploaded).isNotNull();
+        assertThat(uploaded.getId()).isNotNull();
         assertThat(uploaded.getType()).isEqualTo(container.getType());
         assertThat(uploaded.getName()).isEqualTo(container.getName());
         assertThat(uploaded.get("length")).isEqualTo((long) binaryData.length);
@@ -60,7 +61,7 @@ public class BinariesApiIT extends JavaSdkITBase {
         // given
         InputStream inputStream = getFileInputStream("sampleTestFile.txt");
         InputStream replaceStream = getFileInputStream("sampleTestFileSecond.txt");
-        GId gId = uploadFile(inputStream);
+        GId gId = uploadBinaryFile(inputStream);
         // when
         ManagedObjectRepresentation replaced = binariesApi.replaceFile(gId, MediaType.APPLICATION_OCTET_STREAM, replaceStream);
         // then
@@ -84,7 +85,7 @@ public class BinariesApiIT extends JavaSdkITBase {
     public void shouldDeleteFile() {
         // given
         InputStream inputStream = getFileInputStream("sampleTestFile.txt");
-        GId gId = uploadFile(inputStream);
+        GId gId = uploadBinaryFile(inputStream);
         // when
         binariesApi.deleteFile(gId);
         //then
@@ -106,7 +107,7 @@ public class BinariesApiIT extends JavaSdkITBase {
     public void shouldDownloadFile() {
         // given
         InputStream inputStream = getFileInputStream("sampleTestFile.txt");
-        GId gId = uploadFile(inputStream);
+        GId gId = uploadBinaryFile(inputStream);
         // when
         InputStream downloaded = binariesApi.downloadFile(gId);
         // then
@@ -123,7 +124,7 @@ public class BinariesApiIT extends JavaSdkITBase {
         assertThat(sdkException.getHttpStatus()).isEqualTo(404);
     }
 
-    private GId uploadFile(InputStream inputStream) {
+    private GId uploadBinaryFile(InputStream inputStream) {
         ManagedObjectRepresentation container = new ManagedObjectRepresentation();
         container.setName("java-sdk_sample_binary");
         container.setType("sag_Binary");
