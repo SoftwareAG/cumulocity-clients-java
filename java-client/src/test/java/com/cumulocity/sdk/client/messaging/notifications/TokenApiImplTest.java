@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.client.reliable;
+package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
@@ -8,8 +8,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static com.cumulocity.sdk.client.reliable.TokenApiImpl.TOKEN_MEDIA_TYPE;
-import static com.cumulocity.sdk.client.reliable.TokenApiImpl.TOKEN_VERIFICATION_MEDIA_TYPE;
+import static com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl.TOKEN_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,32 +38,36 @@ public class TokenApiImplTest {
 
     @Test
     public void shouldCreateToken() {
+        //given
         NotificationTokenClaimsRepresentation tokenClaim =
                 new NotificationTokenClaimsRepresentation("sub", "sup", 1L);
         Token token = new Token(JWT_TOKEN);
-
         when(restConnector.post(
                 getUri(TOKEN_REQUEST_URI),
                 TOKEN_MEDIA_TYPE,
                 TOKEN_MEDIA_TYPE,
                 tokenClaim,
-                Token.class))
-                .thenReturn(token);
+                Token.class)).thenReturn(token);
+
+        //when
         when(platformParameters.getHost()).thenReturn(HOST);
 
-        assertThat(tokenApi.create(tokenClaim)).isEqualTo(JWT_TOKEN);
+        //then
+        assertThat(tokenApi.create(tokenClaim).getTokenString()).isEqualTo(JWT_TOKEN);
     }
 
     @Test
     public void shouldBuildCreateTokenUri() {
+        //given
         NotificationTokenClaimsRepresentation tokenClaim =
                 new NotificationTokenClaimsRepresentation("sub", "sup", 1L);
         final String uri = getUri(TOKEN_REQUEST_URI);
-
         when(restConnector.post(any(),any(),any(),any(),any())).thenReturn(new Token());
 
+        //when
         tokenApi.create(tokenClaim);
 
+        //then
         verify(restConnector).post(
                 eq(uri),
                 eq(TOKEN_MEDIA_TYPE),
@@ -75,27 +78,31 @@ public class TokenApiImplTest {
 
     @Test
     public void shouldVerifyToken() {
-        TokenVerification tokenVerification = new TokenVerification("sub", "topic", "jti", 1L, 1L);
+        //given
+        TokenDetails tokenDetails = new TokenDetails("sub", "topic", "jti", 1L, 1L);
         final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
-
         when(restConnector.get(
                 uri,
-                TOKEN_VERIFICATION_MEDIA_TYPE,
-                TokenVerification.class))
-                .thenReturn(tokenVerification);
+                TOKEN_MEDIA_TYPE,
+                TokenDetails.class)).thenReturn(tokenDetails);
 
-        TokenVerification verificationResult = tokenApi.verify(JWT_TOKEN);
+        //when
+        TokenDetails verificationResult = tokenApi.verify(JWT_TOKEN);
 
-        assertThat(verificationResult).isEqualTo(tokenVerification);
+        //then
+        assertThat(verificationResult).isEqualTo(tokenDetails);
     }
 
     @Test
     public void shouldBuildVerifyUri() {
+        //given
         final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
 
+        //when
         tokenApi.verify(JWT_TOKEN);
 
-        verify(restConnector).get(eq(uri), eq(TOKEN_VERIFICATION_MEDIA_TYPE), eq(TokenVerification.class));
+        //then
+        verify(restConnector).get(eq(uri), eq(TOKEN_MEDIA_TYPE), eq(TokenDetails.class));
     }
 
     private String getUri(String endpoint) {

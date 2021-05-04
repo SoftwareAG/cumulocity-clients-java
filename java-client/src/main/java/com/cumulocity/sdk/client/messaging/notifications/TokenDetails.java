@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.client.reliable;
+package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import org.svenson.JSONProperty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
-public class TokenVerification extends BaseResourceRepresentation {
+public class TokenDetails extends BaseResourceRepresentation {
 
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String sub;

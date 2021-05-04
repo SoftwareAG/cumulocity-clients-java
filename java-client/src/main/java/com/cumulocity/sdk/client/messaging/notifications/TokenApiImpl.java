@@ -1,4 +1,4 @@
-package com.cumulocity.sdk.client.reliable;
+package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TokenApiImpl implements TokenApi {
     public static final CumulocityMediaType TOKEN_MEDIA_TYPE = new CumulocityMediaType("application", "json");
-    public static final CumulocityMediaType TOKEN_VERIFICATION_MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
     public static final String TOKEN_REQUEST_URI = "reliablenotification/token";
 
@@ -20,7 +19,7 @@ public class TokenApiImpl implements TokenApi {
     private final RestConnector restConnector;
 
     @Override
-    public String create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException  {
+    public Token create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException  {
         if (tokenClaim == null) {
             throw new IllegalArgumentException("Token claim is null");
         }
@@ -32,16 +31,16 @@ public class TokenApiImpl implements TokenApi {
                 tokenClaim,
                 Token.class
         );
-        return result.getToken();
+        return result;
     }
 
     @Override
-    public TokenVerification verify(String token) throws SDKException {
-        TokenVerification tokenVerification = restConnector
+    public TokenDetails verify(String token) throws SDKException {
+        TokenDetails tokenDetails = restConnector
                 .get(getTokenRequestUri() + "?token=" + token,
-                        TOKEN_VERIFICATION_MEDIA_TYPE,
-                        TokenVerification.class);
-        return tokenVerification;
+                        TOKEN_MEDIA_TYPE,
+                        TokenDetails.class);
+        return tokenDetails;
     }
 
     private String getTokenRequestUri() {

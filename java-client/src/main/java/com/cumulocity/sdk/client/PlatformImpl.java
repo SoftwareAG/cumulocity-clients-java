@@ -48,8 +48,8 @@ import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.SystemOptionApiImpl;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApiImpl;
-import com.cumulocity.sdk.client.reliable.TokenApi;
-import com.cumulocity.sdk.client.reliable.TokenApiImpl;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl;
 import com.cumulocity.sdk.client.user.UserApi;
 import com.cumulocity.sdk.client.user.UserApiImpl;
 
