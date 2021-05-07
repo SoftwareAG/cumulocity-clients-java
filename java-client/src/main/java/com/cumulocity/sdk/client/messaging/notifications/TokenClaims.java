@@ -10,10 +10,10 @@ import org.svenson.JSONProperty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
-public class TokenDetails extends BaseResourceRepresentation {
+public class TokenClaims extends BaseResourceRepresentation {
 
-    @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
-    private String sub;
+    @Getter(onMethod_ = @JSONProperty(value = "sub", ignoreIfNull = true))
+    private String subscription;
 
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String topic;

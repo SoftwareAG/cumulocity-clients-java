@@ -7,5 +7,7 @@ public interface TokenApi {
 
     Token create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException;
 
-    TokenDetails verify(String token) throws SDKException ;
+    TokenClaims verify(Token token) throws SDKException ;
+
+    Token refresh(Token token) throws IllegalArgumentException, SDKException;
 }
