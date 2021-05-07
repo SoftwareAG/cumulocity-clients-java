@@ -127,16 +127,10 @@
 			<artifactId>docker-client</artifactId>
 			<version>${docker-client.version}</version>
 		</dependency>
-		<!--two jersey dependencies below are required by docker-client-->
+		<!-- jersey-hk2 dependency below is required by docker-client-->
 		<dependency>
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
-			<version>2.29.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.bundles.repackaged</groupId>
-			<artifactId>jersey-guava</artifactId>
-			<version>2.25.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
