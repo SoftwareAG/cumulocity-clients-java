@@ -2,12 +2,11 @@ package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import com.cumulocity.sdk.client.common.SubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
-import org.junit.After;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
 import org.junit.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -21,26 +20,22 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
     private static final String MANAGEDOBJECTS = "/managedobjects/";
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
-    boolean receivedNotification;
-    Object notification;
-
-    @After
-    public void setUp() {
-        notification = null;
-        receivedNotification = false;
-    }
 
     @Test
     public void shouldReceiveCreateMONotification() {
         // given
         Subscriber<String, RealtimeManagedObjectMessage> subscriber = getSubscriberForType(RealtimeManagedObjectMessage.class, platform);
-        subscriber.subscribe(MANAGEDOBJECTS + "*", new Listener<>());
+        SubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new SubscriptionListener<>();
+
         // when
+        subscriber.subscribe(MANAGEDOBJECTS + "*", subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         ManagedObjectRepresentation managedObjectRep = inventoryApi.create(aSampleMo().build());
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
-        assertManagedObjectNotification((RealtimeManagedObjectMessage) notification, managedObjectRep, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
+        assertManagedObjectNotification(subscriptionListener.getNotification(), managedObjectRep, "CREATE");
     }
 
     @Test
@@ -51,13 +46,17 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         managedObjectRepresentation.setName("New Name");
         managedObjectRepresentation.setId(mo.getId());
-        subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), new Listener<>());
+        SubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new SubscriptionListener<>();
+
         // when
+        subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         ManagedObjectRepresentation updatedMO = inventoryApi.update(managedObjectRepresentation);
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
-        assertManagedObjectNotification((RealtimeManagedObjectMessage) notification, updatedMO, "UPDATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
+        assertManagedObjectNotification(subscriptionListener.getNotification(), updatedMO, "UPDATE");
     }
 
     @Test
@@ -65,13 +64,17 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         // given
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), new Listener<>());
+        SubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new SubscriptionListener<>();
+
         // when
+        subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         inventoryApi.delete(mo.getId());
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
-        assertDeleteManagedObjectNotification((RealtimeDeleteRepresentationWrapper) notification, mo);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertDeleteManagedObjectNotification(subscriptionListener.getNotification(), mo);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -87,18 +90,5 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
     private void assertDeleteManagedObjectNotification(RealtimeDeleteRepresentationWrapper notification, ManagedObjectRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
-    }
-
-    private class Listener<T> implements SubscriptionListener<String, T> {
-        @Override
-        public void onError(Subscription<String> subscription, Throwable ex) {
-            throw new SDKException("Error occurred");
-        }
-
-        @Override
-        public void onNotification(Subscription<String> subscription, T received) {
-            receivedNotification = true;
-            notification = received;
-        }
     }
 }
