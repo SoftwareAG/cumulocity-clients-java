@@ -68,6 +68,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                                 .username(bootstrapUser.getUsername())
                                 .password(bootstrapUser.getPassword())
                                 .tenantId(bootstrapUser.getTenant())
+                                .applicationKey(bootstrapUser.getAppKey())
                                 .build()))
                 .applicationName(applicationName)
                 .build();
