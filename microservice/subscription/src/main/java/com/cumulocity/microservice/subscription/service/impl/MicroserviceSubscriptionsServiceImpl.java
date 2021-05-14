@@ -157,7 +157,7 @@ public class MicroserviceSubscriptionsServiceImpl implements MicroserviceSubscri
                     .username(properties.getMicroserviceUser().getUsername())
                     .tenant(properties.getMicroserviceUser().getTenant())
                     .password(properties.getMicroserviceUser().getPassword())
-                    .appKey(application.getKey())
+                    .appKey(properties.getMicroserviceUser().getAppKey())
                     .build();
 
             return repository.diffWithCurrentSubscriptions(singletonList(microserviceCredentials));
