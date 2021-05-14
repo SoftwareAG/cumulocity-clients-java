@@ -4,7 +4,7 @@ import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBui
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.cumulocity.sdk.client.common.SubscriptionListener;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
@@ -30,7 +30,7 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
         // given
         Subscriber<String, RealtimeMeasurementMessage> subscriber = getSubscriberForType(RealtimeMeasurementMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        SubscriptionListener<RealtimeMeasurementMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeMeasurementMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -49,7 +49,7 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         MeasurementRepresentation measurement = measurementApi.create(createMeasurementRep(mo));
-        SubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);

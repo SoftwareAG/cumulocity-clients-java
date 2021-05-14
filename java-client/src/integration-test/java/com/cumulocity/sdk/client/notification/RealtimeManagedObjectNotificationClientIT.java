@@ -3,7 +3,7 @@ package com.cumulocity.sdk.client.notification;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.cumulocity.sdk.client.common.SubscriptionListener;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
@@ -25,7 +25,7 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
     public void shouldReceiveCreateMONotification() {
         // given
         Subscriber<String, RealtimeManagedObjectMessage> subscriber = getSubscriberForType(RealtimeManagedObjectMessage.class, platform);
-        SubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MANAGEDOBJECTS + "*", subscriptionListener, subscriptionListener, true);
@@ -46,7 +46,7 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         managedObjectRepresentation.setName("New Name");
         managedObjectRepresentation.setId(mo.getId());
-        SubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -64,7 +64,7 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         // given
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        SubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);

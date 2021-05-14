@@ -17,7 +17,6 @@ import java.util.Base64;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 public class ProxyServer {
-    private int port;
     private String basicAuthUsername;
     private String basicAuthPassword;
 
@@ -26,7 +25,7 @@ public class ProxyServer {
     private void initialize() {
         server = new Server();
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(port);
+        connector.setPort(0);
         server.addConnector(connector);
 
         HandlerCollection handlers = new HandlerCollection();
@@ -39,11 +38,11 @@ public class ProxyServer {
         handlers.addHandler(new AuthenticatedConnectHandler());
     }
 
-    public void setPort(int port) {
-        if (isRunning()) {
-            throw new IllegalStateException("Server is already running");
+    public int getPort() {
+        if (!isRunning()) {
+            throw new IllegalStateException("Server is not running");
         }
-        this.port = port;
+        return server.getURI().getPort();
     }
 
     public void setBasicAuthUsername(String basicAuthUsername) {
@@ -64,7 +63,7 @@ public class ProxyServer {
     }
 
     public void stop() throws Exception {
-        if (isInitialized() && server.isRunning()) {
+        if (isRunning()) {
             server.stop();
         }
     }

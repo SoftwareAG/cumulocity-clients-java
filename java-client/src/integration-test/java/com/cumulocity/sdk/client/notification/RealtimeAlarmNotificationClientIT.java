@@ -6,7 +6,7 @@ import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBui
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.cumulocity.sdk.client.common.SubscriptionListener;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
 import org.joda.time.DateTime;
@@ -34,7 +34,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
         // given
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(ALARMS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -56,7 +56,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(mo));
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(ALARMS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -75,7 +75,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -98,7 +98,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(childMo));
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);

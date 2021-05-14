@@ -4,7 +4,7 @@ import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.common.SubscriptionListener;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
 import org.junit.Test;
@@ -15,6 +15,7 @@ import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentati
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.Subscribers.getSubscriberForType;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
 import static org.junit.Assert.*;
@@ -26,7 +27,7 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         givenAuthenticatedProxyAndProxiedPlatform(null, null);
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, proxiedPlatform);
         ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().build());
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // When
         subscriber.subscribe("/alarms/" + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -45,7 +46,7 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         givenAuthenticatedProxyAndProxiedPlatform(PROXY_AUTH_USERNAME, PROXY_AUTH_PASSWORD);
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, proxiedPlatform);
         ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().build());
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // When
         subscriber.subscribe("/alarms/" + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -65,17 +66,13 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         givenAuthenticatedProxiedPlatform("invalid-username", "invalid-password");
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, proxiedPlatform);
         ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().build());
-        SubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // When
-        try {
-            subscriber.subscribe("/alarms/" + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
-            fail("Should throw exception");
-        } catch (Exception e) {
-            // Then
-            assertTrue(e instanceof SDKException);
-            assertFalse(subscriptionListener.isSubscribed());
-        }
+        assertThatThrownBy(() -> subscriber.subscribe("/alarms/" + mo.getId().getValue(), subscriptionListener, subscriptionListener, true))
+                // Then
+                .isInstanceOf(SDKException.class);
+        assertFalse(subscriptionListener.isSubscribed());
     }
 
     private AlarmRepresentation createAlarmRep(ManagedObjectRepresentation source) {

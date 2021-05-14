@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 public abstract class BaseProxyIT extends JavaSdkITBase {
-    private static final int PROXY_PORT = 8888;
     protected static final String PROXY_AUTH_USERNAME = "c8y-user";
     protected static final String PROXY_AUTH_PASSWORD = "c8y-password";
 
@@ -19,7 +18,6 @@ public abstract class BaseProxyIT extends JavaSdkITBase {
     @BeforeClass
     public static void setUpBeforeAll() throws Exception {
         proxyServer = new ProxyServer();
-        proxyServer.setPort(PROXY_PORT);
         proxyServer.start();
     }
 
@@ -32,12 +30,9 @@ public abstract class BaseProxyIT extends JavaSdkITBase {
     public void setUp() {
         proxiedPlatform = new PlatformImpl(platform.getHost(), platform.getCumulocityCredentials());
         proxiedPlatform.setProxyHost("127.0.0.1");
-        proxiedPlatform.setProxyPort(PROXY_PORT);
+        proxiedPlatform.setProxyPort(proxyServer.getPort());
         proxiedPlatform.setRequireResponseBody(true);
-    }
 
-    @After
-    public void tearDown() {
         proxyServer.setBasicAuthUsername(null);
         proxyServer.setBasicAuthPassword(null);
     }

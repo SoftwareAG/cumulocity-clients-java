@@ -6,7 +6,7 @@ import com.cumulocity.sdk.client.notification.Subscription;
 import lombok.Getter;
 
 @Getter
-public class SubscriptionListener<T> implements SubscribeOperationListener, com.cumulocity.sdk.client.notification.SubscriptionListener<String, T> {
+public class TestSubscriptionListener<T> implements SubscribeOperationListener, com.cumulocity.sdk.client.notification.SubscriptionListener<String, T> {
     private boolean subscribed = false;
     private T notification;
 

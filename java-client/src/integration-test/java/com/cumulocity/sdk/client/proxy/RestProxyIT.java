@@ -2,10 +2,13 @@ package com.cumulocity.sdk.client.proxy;
 
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import org.assertj.core.condition.Join;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 public class RestProxyIT extends BaseProxyIT {
@@ -48,16 +51,18 @@ public class RestProxyIT extends BaseProxyIT {
         givenAuthenticatedProxiedPlatform("invalid-user", "invalid-password");
 
         // When
-        try {
-            List<ManagedObjectRepresentation> managedObjects = proxiedPlatform.getInventoryApi()
-                    .getManagedObjects()
-                    .get(5)
-                    .getManagedObjects();
-            fail("Should throw exception");
-        } catch (Exception e) {
-            // Then
-            assertTrue(e instanceof SDKException);
-            assertEquals(((SDKException) e).getHttpStatus(), 407);
-        }
+        assertThatThrownBy(() -> proxiedPlatform.getInventoryApi()
+                .getManagedObjects()
+                .get(5)
+                .getManagedObjects())
+                // Then
+                .isInstanceOf(SDKException.class)
+                .extracting(new Function<Throwable, Integer>() {
+                    @Override
+                    public Integer apply(Throwable throwable) {
+                        return ((SDKException) throwable).getHttpStatus();
+                    }
+                })
+                .isEqualTo(407);
     }
 }

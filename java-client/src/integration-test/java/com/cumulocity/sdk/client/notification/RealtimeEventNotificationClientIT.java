@@ -5,7 +5,7 @@ import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBui
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.cumulocity.sdk.client.common.SubscriptionListener;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
@@ -32,7 +32,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         // given
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        SubscriptionListener<RealtimeEventMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -51,7 +51,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
-        SubscriptionListener<RealtimeEventMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -70,7 +70,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
-        SubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -89,7 +89,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
-        SubscriptionListener<RealtimeEventMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -109,7 +109,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
-        SubscriptionListener<RealtimeEventMessage> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -129,7 +129,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
-        SubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new SubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
