@@ -92,7 +92,7 @@ public class ProxyServer {
         @SneakyThrows
         @Override
         protected void sendProxyRequest(HttpServletRequest clientRequest, HttpServletResponse proxyResponse, Request proxyRequest) {
-            if (handleAuthentication(clientRequest)) {
+            if (!handleAuthentication(clientRequest)) {
                 proxyResponse.setHeader("Proxy-Authenticate", "Basic realm=\"proxy\"");
                 proxyResponse.sendError(407);
                 return;

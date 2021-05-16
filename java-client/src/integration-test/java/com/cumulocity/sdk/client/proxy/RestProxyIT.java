@@ -2,14 +2,14 @@ package com.cumulocity.sdk.client.proxy;
 
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import org.assertj.core.condition.Join;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class RestProxyIT extends BaseProxyIT {
     @Test

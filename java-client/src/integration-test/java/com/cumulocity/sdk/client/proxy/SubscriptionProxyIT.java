@@ -37,7 +37,7 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         // Then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) subscriptionListener.getNotification(), alarm, "CREATE");
+        assertAlarmNotification(subscriptionListener.getNotification(), alarm, "CREATE");
     }
 
     @Test
@@ -56,7 +56,7 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         // Then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) subscriptionListener.getNotification(), alarm, "CREATE");
+        assertAlarmNotification(subscriptionListener.getNotification(), alarm, "CREATE");
     }
 
     @Test

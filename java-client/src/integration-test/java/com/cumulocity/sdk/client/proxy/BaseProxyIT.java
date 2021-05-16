@@ -2,7 +2,6 @@ package com.cumulocity.sdk.client.proxy;
 
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
