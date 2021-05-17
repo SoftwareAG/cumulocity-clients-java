@@ -57,6 +57,7 @@ import java.net.URL;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
+import static org.eclipse.jetty.util.StringUtil.isNotBlank;
 
 public class RestConnector implements RestOperations {
 
@@ -309,21 +310,21 @@ public class RestConnector implements RestOperations {
     }
 
     private Builder addApplicationKeyHeader(Builder builder) {
-        if (platformParameters.getApplicationKey() != null) {
+        if (isNotBlank(platformParameters.getApplicationKey())) {
             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
         }
         return builder;
     }
 
     private Builder addTfaHeader(Builder builder) {
-        if (platformParameters.getTfaToken() != null) {
+        if (isNotBlank(platformParameters.getTfaToken())) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
 
     private Builder addRequestOriginHeader(Builder builder) {
-        if (platformParameters.getRequestOrigin() != null) {
+        if (isNotBlank(platformParameters.getRequestOrigin())) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
         }
         return builder;
