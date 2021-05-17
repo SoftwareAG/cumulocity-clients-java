@@ -52,23 +52,241 @@ import com.cumulocity.sdk.client.notification.Subscription;
 import com.cumulocity.sdk.client.notification.SubscriptionListener;
 import com.cumulocity.sdk.client.polling.FixedRatePoller;
 
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-
 //TODO inline step definitions (see AlarmIT or InventoryIT)
 @Slf4j
 public class DeviceControlIT extends JavaSdkITBase {
 
     private List<ManagedObjectRepresentation> managedObjects = new LinkedList<ManagedObjectRepresentation>();
-
     private DeviceControlApi deviceControlResource;
-
     private InventoryApi inventoryApi;
-
     private OperationNotificationSubscriber subscriber;
+    private OperationRepresentation operation1;
+    private SimpleOperationProcessor operationProcessor = new SimpleOperationProcessor();
+    private FixedRatePoller poller = null;
+    private OperationCollectionRepresentation allOperations;
 
-    public void createManagedObjects() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        createManagedObjects();
+
+        deviceControlResource = platform.getDeviceControlApi();
+        operation1 = null;
+        allOperations = null;
+    }
+
+    @After
+    public void cleanup() {
+        if (poller != null) {
+            poller.stop();
+        }
+        if (subscriber != null) {
+            subscriber.disconnect();
+            subscriber = null;
+        }
+    }
+
+    @Test
+    public void createOperationAndPollIt() {
+        // given
+        iHaveAPollerForAgent(0);
+        // when
+        iCreateAnOperationForDevice(1);
+        // then
+        pollerShouldReceiveOperation();
+    }
+
+    @Test
+    public void addingOperationToQueue() {
+        // given
+        iGetAllOperationsForAgent(1);
+        // then
+        iShouldReceiveXOperations(0);
+        // when
+        iCreateAnOperationForDevice(1);
+        iGetAllOperationsForDeviceX(1);
+        // then
+        iShouldReceiveXOperations(1);
+    }
+
+    @Test
+    public void getNotificationAboutNewOperation() {
+        // given
+        iHaveAOperationSubscriberForAgent(0);
+        // when
+        iCreateAnOperationForDevice(1);
+        // then
+        subscriberShouldReceiveOperation();
+    }
+
+    @Test
+    public void operationCRUD() {
+        // given
+        iCreateAnOperationForDevice(1);
+        // when
+        iCallGetOnCreatedOperation();
+        // then
+        iShouldReceiveOperationWithStatusX("PENDING");
+        // when
+        iUpdateCreatedOperationWithStatusX("EXECUTING");
+        iCallGetOnCreatedOperation();
+        // then
+        iShouldReceiveOperationWithStatusX("EXECUTING");
+    }
+
+    @Test
+    public void queryOperationByStatus() {
+        // given
+        iQueryOperationsWithStatusX("EXECUTING");
+        int numOfExecuting = allOperations.getOperations().size();
+        iQueryOperationsWithStatusX("PENDING");
+        int numOfPending = allOperations.getOperations().size();
+        // when
+        iCreateAnOperationForDevice(1);
+        iUpdateCreatedOperationWithStatusX("EXECUTING");
+        iCreateAnOperationForDevice(1);
+        iQueryOperationsWithStatusX("PENDING");
+        // then
+        iShouldReceiveXOperations(numOfPending + 1);
+        allReceivedOperationsShouldHaveStatusX("PENDING");
+        // when
+        iQueryOperationsWithStatusX("EXECUTING");
+        // then
+        iShouldReceiveXOperations(numOfExecuting + 1);
+        allReceivedOperationsShouldHaveStatusX("EXECUTING");
+    }
+
+    @Test
+    public void queryOperationsByDevice() {
+        // given
+        iCreateAnOperationForDevice(1);
+        iCreateAnOperationForDevice(1);
+        iCreateAnOperationForDevice(3);
+        // when
+        iGetAllOperationsForDeviceX(1);
+        // then
+        iShouldReceiveXOperations(2);
+        // when
+        iGetAllOperationsForDeviceX(3);
+        // then
+        iShouldReceiveXOperations(1);
+    }
+
+
+    @Test
+    public void queryOperationsByAgent() {
+        // given
+        iCreateAnOperationForDevice(1);
+        iCreateAnOperationForDevice(1);
+        iCreateAnOperationForDevice(3);
+        // when
+        iGetAllOperationsForAgent(0);
+        // then
+        iShouldReceiveXOperations(2);
+        // when
+        iGetAllOperationsForAgent(2);
+        // then
+        iShouldReceiveXOperations(1);
+    }
+
+    private void iHaveAPollerForAgent(int arg1) {
+        GId agentId = getMoId(arg1);
+        poller = new OperationsByAgentAndStatusPollerImpl(deviceControlResource, agentId.getValue(), OperationStatus.PENDING,
+                operationProcessor);
+        poller.start();
+    }
+
+    private void iHaveAOperationSubscriberForAgent(int arg1) {
+        GId agentId = getMoId(arg1);
+        subscriber = new OperationNotificationSubscriber(platform);
+        subscriber.subscribe(agentId, new SubscriptionListener<GId, OperationRepresentation>() {
+            @Override
+            public void onNotification(Subscription<GId> subscription, OperationRepresentation notification) {
+                operationProcessor.process(notification);
+            }
+
+            @Override
+            public void onError(Subscription<GId> subscription, Throwable ex) {
+                log.error("an error occurred", ex);
+            }
+        });
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void iCreateAnOperationForDevice(int deviceNum) {
+        GId deviceId = getMoId(deviceNum);
+        OperationRepresentation operationRepresentation = new OperationRepresentation();
+        operationRepresentation.setDeviceId(deviceId);
+        operationRepresentation.set("smaple_value", "sample_operation_type");
+        operation1 = deviceControlResource.create(operationRepresentation);
+    }
+
+    private void pollerShouldReceiveOperation() {
+        try {
+            Thread.sleep(11000);
+            assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void subscriberShouldReceiveOperation() {
+        try {
+            Thread.sleep(11000);
+            assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void iGetAllOperationsForDeviceX(int deviceNum) {
+        OperationFilter filter = new OperationFilter().byDevice(getMoId(deviceNum).getValue());
+        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
+    }
+
+    private void iShouldReceiveXOperations(int amount) {
+        assertThat(allOperations.getOperations().size(), is(equalTo(amount)));
+    }
+
+    private void iCallGetOnCreatedOperation() {
+        GId operationId = operation1.getId();
+        operation1 = deviceControlResource.getOperation(operationId);
+    }
+
+    private void iShouldReceiveOperationWithStatusX(String status) {
+        assertThat(operation1.getStatus(), is(equalTo(status)));
+    }
+
+    private void iUpdateCreatedOperationWithStatusX(String status) {
+        operation1.setStatus(status);
+        operation1 = deviceControlResource.update(operation1);
+    }
+
+    private void iQueryOperationsWithStatusX(String status) {
+        OperationFilter filter = new OperationFilter().byStatus(OperationStatus.valueOf(status));
+        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
+    }
+
+    private void allReceivedOperationsShouldHaveStatusX(String status) {
+        for (OperationRepresentation operation : allOperations.getOperations()) {
+            assertThat(operation.getStatus(), is(equalTo(status)));
+        }
+    }
+
+    private void iGetAllOperationsForAgent(int agentNum) throws SDKException {
+        OperationFilter filter = new OperationFilter().byAgent(getMoId(agentNum).getValue());
+        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
+    }
+
+    private GId getMoId(int arg1) {
+        GId deviceId = managedObjects.get(arg1).getId();
+        return deviceId;
+    }
+
+    private void createManagedObjects() {
         ManagedObjectRepresentation agent = aSampleMo().withName("Agent").withType("com.type").with(new Agent()).build();
         ManagedObjectRepresentation device = aSampleMo().withName("Device").withType("com.type").build();
         ManagedObjectRepresentation agent2 = aSampleMo().withName("Agent2").withType("com.type").with(new Agent()).build();
@@ -88,11 +306,9 @@ public class DeviceControlIT extends JavaSdkITBase {
 
         addChildDevice(agent, device);
         addChildDevice(agent2, device2);
-
     }
 
     private void addChildDevice(ManagedObjectRepresentation parent, ManagedObjectRepresentation child) throws SDKException {
-
         ManagedObjectReferenceRepresentation deviceRef = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(child).build();
         inventoryApi.getManagedObject(parent.getId()).addChildDevice(deviceRef);
     }
@@ -100,277 +316,4 @@ public class DeviceControlIT extends JavaSdkITBase {
     private static ManagedObjectRepresentationBuilder aSampleMo() {
         return anMoRepresentationLike(MO_REPRESENTATION);
     }
-
-    @Before
-    public void setUp() throws Exception {
-        createManagedObjects();
-
-        deviceControlResource = platform.getDeviceControlApi();
-        operation1 = null;
-        allOperations = null;
-    }
-
-    @After
-    public void cleanup() throws Exception {
-        if (poller != null) {
-            poller.stop();
-        }
-        if (subscriber != null) {
-            subscriber.disconnect();
-            subscriber = null;
-        }
-    }
-
-    //    Scenario: Create Operation and poll it
-    @Test
-    public void createOperationAndPollIt() throws Exception {
-        //    Given I have a poller for agent '0'
-        iHaveAPollerForAgent(0);
-        //    When I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    Then poller should receive operation
-        pollerShouldRecieveOperation();
-    }
-
-    //
-    //    Scenario: adding operations to queue
-    @Test
-    public void addingOperationToQueue() throws Exception {
-        //    When I get all operations for device '1'
-        iGetAllOperationsForAgent(1);
-        //    Then I should receive '0' operations
-        iShouldReceiveXOperations(0);
-        //    When I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I get all operations for device '1'
-        iGetAllOperationsForDeviceX(1);
-        //    Then I should receive '1' operations
-        iShouldReceiveXOperations(1);
-    }
-
-    //  Scenario: get notification about new operation
-    @Test
-    public void getNotificationAboutNewOperation() throws Exception {
-        //      Given I have a operation subscriber for agent '0'
-        iHaveAOperationSubscriberForAgent(0);
-        //    When I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    Then subscriber should receive operation
-        subscriberShouldReceiveOperation();
-    }
-
-    //
-    //    Scenario: Operation CRUD
-
-    @Test
-    public void operationCRUD() throws Exception {
-        //    When I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I call get on created operation
-        iCallGetOnCreatedOperation();
-        //    Then I should receive operation with status 'PENDING'
-        iShouldReceiveOperationWithStatusX("PENDING");
-        //    When I update created operation with status 'EXECUTING'
-        iUpdateCreatedOperationWithStatusX("EXECUTING");
-        //    And I call get on created operation
-        iCallGetOnCreatedOperation();
-        //    Then I should receive operation with status 'EXECUTING'
-        iShouldReceiveOperationWithStatusX("EXECUTING");
-    }
-
-    //
-    //    Scenario: query operations by status
-    @Test
-    public void queryOperationByStatus() throws Exception {
-        iQueryOperationsWithStatusX("EXECUTING");
-        int numOfExecuting = allOperations.getOperations().size();
-        iQueryOperationsWithStatusX("PENDING");
-        int numOfPending = allOperations.getOperations().size();
-        //    When I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I update created operation with status 'EXECUTING'
-        iUpdateCreatedOperationWithStatusX("EXECUTING");
-        //    And I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    When I query operations with status 'PENDING'
-        iQueryOperationsWithStatusX("PENDING");
-        //    Then I should receive '1' operations
-        iShouldReceiveXOperations(numOfPending + 1);
-        //    And all received operations should have status 'PENDING'
-        allRecievedOperationsShouldHaveStatusX("PENDING");
-        //    When I query operations with status 'EXECUTING'
-        iQueryOperationsWithStatusX("EXECUTING");
-        //    Then I should receive '1' operations
-        iShouldReceiveXOperations(numOfExecuting + 1);
-        //    And all received operations should have status 'EXECUTING'
-        allRecievedOperationsShouldHaveStatusX("EXECUTING");
-    }
-
-    //
-    //    Scenario: query operations by device
-
-    @Test
-    public void queryOperationsByDevice() throws Exception {
-        //    And I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I create an operation for device '3'
-        iCreateAnOperationForDevice(3);
-        //    When I get all operations for device '1'
-        iGetAllOperationsForDeviceX(1);
-        //    Then I should receive '2' operations
-        iShouldReceiveXOperations(2);
-        //    When I get all operations for device '3'
-        iGetAllOperationsForDeviceX(3);
-        //    Then I should receive '1' operations
-        iShouldReceiveXOperations(1);
-    }
-
-    //
-    //    Scenario: query operations by agent
-
-    @Test
-    public void queryOperationsByAgent() throws Exception {
-        //    And I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I create an operation for device '1'
-        iCreateAnOperationForDevice(1);
-        //    And I create an operation for device '3'
-        iCreateAnOperationForDevice(3);
-        //    When I get all operations for agent '0'
-        iGetAllOperationsForAgent(0);
-        //    Then I should receive '2' operations
-        iShouldReceiveXOperations(2);
-        //    When I get all operations for agent '2'
-        iGetAllOperationsForAgent(2);
-        //    Then I should receive '1' operations
-        iShouldReceiveXOperations(1);
-    }
-
-    private OperationRepresentation operation1;
-
-    SimpleOperationProcessor operationProcessor = new SimpleOperationProcessor();
-
-    FixedRatePoller poller = null;
-
-    OperationCollectionRepresentation allOperations;
-
-    @Given("^I have a poller for agent '([^']*)'$")
-    public void iHaveAPollerForAgent(int arg1) throws Exception {
-        GId agentId = getMoId(arg1);
-        poller = new OperationsByAgentAndStatusPollerImpl(deviceControlResource, agentId.getValue(), OperationStatus.PENDING,
-                operationProcessor);
-        poller.start();
-    }
-
-    @Given("^I have a operation subscriber for agent '([^']*)'$")
-    public void iHaveAOperationSubscriberForAgent(int arg1) throws Exception {
-        GId agentId = getMoId(arg1);
-        subscriber = new OperationNotificationSubscriber(platform);
-        subscriber.subscribe(agentId, new SubscriptionListener<GId, OperationRepresentation>() {
-
-            @Override
-            public void onNotification(Subscription<GId> subscription, OperationRepresentation notification) {
-                operationProcessor.process(notification);
-            }
-
-            @Override
-            public void onError(Subscription<GId> subscription, Throwable ex) {
-                log.error("an error occurred", ex);
-            }
-        });
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @When("^I create an operation for device '([^']*)'$")
-    public void iCreateAnOperationForDevice(int deviceNum) throws Exception {
-        GId deviceId = getMoId(deviceNum);
-        OperationRepresentation operationRepresentation = new OperationRepresentation();
-        operationRepresentation.setDeviceId(deviceId);
-        operationRepresentation.set("smaple_value", "sample_operation_type");
-        operation1 = deviceControlResource.create(operationRepresentation);
-    }
-
-    @Then("^poller should receive operation$")
-    public void pollerShouldRecieveOperation() {
-        try {
-            Thread.sleep(11000);
-            assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Then("^subscriber should receive operation$")
-    public void subscriberShouldReceiveOperation() {
-        try {
-            Thread.sleep(11000);
-            assertThat(operationProcessor.getOperations().size(), is(equalTo(1)));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @When("^I get all operations for device '([^']*)'$")
-    public void iGetAllOperationsForDeviceX(int deviceNum) throws Exception {
-        OperationFilter filter = new OperationFilter().byDevice(getMoId(deviceNum).getValue());
-        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
-    }
-
-    @Then("^I should receive '([^']*)' operations$")
-    public void iShouldReceiveXOperations(int amount) {
-        assertThat(allOperations.getOperations().size(), is(equalTo(amount)));
-    }
-
-    @When("^I call get on created operation$")
-    public void iCallGetOnCreatedOperation() throws Exception {
-        GId operationId = operation1.getId();
-        operation1 = deviceControlResource.getOperation(operationId);
-    }
-
-    @Then("^I should receive operation with status '([^']*)'$")
-    public void iShouldReceiveOperationWithStatusX(String status) {
-        assertThat(operation1.getStatus(), is(equalTo(status)));
-    }
-
-    @When("^I update created operation with status '([^']*)'$")
-    public void iUpdateCreatedOperationWithStatusX(String status) throws Exception {
-        operation1.setStatus(status);
-        operation1 = deviceControlResource.update(operation1);
-    }
-
-    @When("^I get all operations$")
-    public void iGetAllOperations() throws Exception {
-        allOperations = deviceControlResource.getOperations().get();
-    }
-
-    @When("^I query operations with status '([^']*)'$")
-    public void iQueryOperationsWithStatusX(String status) throws Exception {
-        OperationFilter filter = new OperationFilter().byStatus(OperationStatus.valueOf(status));
-        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
-    }
-
-    @Then("^all received operations should have status '([^']*)'$")
-    public void allRecievedOperationsShouldHaveStatusX(String status) {
-        for (OperationRepresentation operation : allOperations.getOperations()) {
-            assertThat(operation.getStatus(), is(equalTo(status)));
-        }
-    }
-
-    @When("^I get all operations for agent '([^']*)'$")
-    public void iGetAllOperationsForAgent(int agentNum) throws SDKException {
-        OperationFilter filter = new OperationFilter().byAgent(getMoId(agentNum).getValue());
-        allOperations = deviceControlResource.getOperationsByFilter(filter).get();
-    }
-
-    private GId getMoId(int arg1) {
-        GId deviceId = managedObjects.get(arg1).getId();
-        return deviceId;
-    }
-
 }
