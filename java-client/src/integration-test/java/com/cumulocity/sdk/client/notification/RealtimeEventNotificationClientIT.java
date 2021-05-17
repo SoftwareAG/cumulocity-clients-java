@@ -4,14 +4,13 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeEventMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeEventMessage;
 import org.joda.time.DateTime;
-import org.junit.After;
 import org.junit.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -27,110 +26,120 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final EventApi eventApi = platform.getEventApi();
-    boolean receivedNotification;
-    Object notification;
-
-    @After
-    public void setUp() {
-        notification = null;
-        receivedNotification = false;
-    }
 
     @Test
-    public void shouldReceiveCreateEventNotification() {
+    public void shouldReceiveCreateEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS + mo.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         EventRepresentation event = eventApi.create(createEventRep(mo));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeEventMessage.class);
-        assertEventNotification((RealtimeEventMessage) notification, event, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeEventMessage.class);
+        assertEventNotification(subscriptionListener.getNotification(), event, "CREATE");
     }
 
     @Test
-    public void shouldReceiveUpdateEventNotification() {
+    public void shouldReceiveUpdateEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS + mo.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         EventRepresentation updatedEvent = eventApi.update(updateEventRep(event.getId()));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeEventMessage.class);
-        assertEventNotification((RealtimeEventMessage) notification, updatedEvent, "UPDATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeEventMessage.class);
+        assertEventNotification(subscriptionListener.getNotification(), updatedEvent, "UPDATE");
     }
 
     @Test
-    public void shouldReceiveDeleteEventNotification() {
+    public void shouldReceiveDeleteEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS + mo.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         eventApi.delete(event);
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
-        assertDeleteEventNotification((RealtimeDeleteRepresentationWrapper) notification, event);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertDeleteEventNotification(subscriptionListener.getNotification(), event);
     }
 
     @Test
-    public void shouldReceiveCreateChildEventNotification() {
+    public void shouldReceiveCreateChildEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         EventRepresentation event = eventApi.create(createEventRep(childMo));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeEventMessage.class);
-        assertEventNotification((RealtimeEventMessage) notification, event, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeEventMessage.class);
+        assertEventNotification(subscriptionListener.getNotification(), event, "CREATE");
     }
 
     @Test
-    public void shouldReceiveUpdateChildEventNotification() {
+    public void shouldReceiveUpdateChildEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
+        TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         EventRepresentation updatedEvent = eventApi.update(updateEventRep(event.getId()));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeEventMessage.class);
-        assertEventNotification((RealtimeEventMessage) notification, updatedEvent, "UPDATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeEventMessage.class);
+        assertEventNotification(subscriptionListener.getNotification(), updatedEvent, "UPDATE");
     }
 
     @Test
-    public void shouldReceiveDeleteChildEventNotification() {
+    public void shouldReceiveDeleteChildEventNotification() throws Exception {
         // given
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), new RealtimeEventNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         eventApi.delete(event);
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
-        assertDeleteEventNotification((RealtimeDeleteRepresentationWrapper) notification, event);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertDeleteEventNotification(subscriptionListener.getNotification(), event);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -168,18 +177,5 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
     private void assertDeleteEventNotification(RealtimeDeleteRepresentationWrapper notification, EventRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
-    }
-
-    private class Listener<T> implements SubscriptionListener<String, T> {
-        @Override
-        public void onError(Subscription<String> subscription, Throwable ex) {
-            throw new SDKException("Error occurred");
-        }
-
-        @Override
-        public void onNotification(Subscription<String> subscription, T received) {
-            receivedNotification = true;
-            notification = received;
-        }
     }
 }

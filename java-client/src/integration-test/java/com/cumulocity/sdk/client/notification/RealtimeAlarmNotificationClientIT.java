@@ -4,13 +4,12 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
 import org.joda.time.DateTime;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,83 +28,87 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final AlarmApi alarmApi = platform.getAlarmApi();
-    boolean receivedNotification;
-    Object notification;
-
-    @After
-    public void setUp() {
-        notification = null;
-        receivedNotification = false;
-    }
 
     @Test
-    public void shouldReceiveCreateAlarmNotification() {
+    public void shouldReceiveCreateAlarmNotification() throws Exception {
         // given
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(ALARMS + mo.getId().getValue(), new RealtimeAlarmNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(ALARMS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(mo));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) notification, alarm, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
+        assertAlarmNotification(subscriptionListener.getNotification(), alarm, "CREATE");
     }
 
     // Test is failing because source fields in received notification are not the same as in updated alarm
     // https://cumulocity.atlassian.net/browse/MTM-38784
     @Ignore
     @Test
-    public void shouldReceiveUpdateAlarmNotification() {
+    public void shouldReceiveUpdateAlarmNotification() throws Exception {
         // given
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(mo));
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(ALARMS + mo.getId().getValue(), new RealtimeAlarmNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(ALARMS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         AlarmRepresentation updatedAlarm = alarmApi.update(updateAlarmRep(alarm.getId()));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) notification, updatedAlarm, "UPDATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
+        assertAlarmNotification(subscriptionListener.getNotification(), updatedAlarm, "UPDATE");
     }
 
     @Test
-    public void shouldReceiveCreateChildAlarmNotification() {
+    public void shouldReceiveCreateChildAlarmNotification() throws Exception {
         // given
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), new RealtimeAlarmNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(childMo));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) notification, alarm, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
+        assertAlarmNotification(subscriptionListener.getNotification(), alarm, "CREATE");
     }
 
     // Test is failing because source fields in received notification are not the same as in updated alarm
     // https://cumulocity.atlassian.net/browse/MTM-38784
     @Ignore
     @Test
-    public void shouldReceiveUpdateChildAlarmNotification() {
+    public void shouldReceiveUpdateChildAlarmNotification() throws Exception {
         // given
         Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(childMo));
+        TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), new RealtimeAlarmNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(ALARMS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         AlarmRepresentation updatedAlarm = alarmApi.update(updateAlarmRep(alarm.getId()));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeAlarmMessage.class);
-        assertAlarmNotification((RealtimeAlarmMessage) notification, updatedAlarm, "UPDATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeAlarmMessage.class);
+        assertAlarmNotification(subscriptionListener.getNotification(), updatedAlarm, "UPDATE");
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -140,18 +143,5 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
         assertThat(notification.getData().getType()).isEqualTo(source.getType());
         assertThat(notification.getData().getSource()).isEqualToComparingFieldByField(source.getSource());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo(realtimeAction);
-    }
-
-    private class Listener<T> implements SubscriptionListener<String, T> {
-        @Override
-        public void onError(Subscription<String> subscription, Throwable ex) {
-            throw new SDKException("Error occurred");
-        }
-
-        @Override
-        public void onNotification(Subscription<String> subscription, T received) {
-            receivedNotification = true;
-            notification = received;
-        }
     }
 }

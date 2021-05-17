@@ -3,14 +3,13 @@ package com.cumulocity.sdk.client.notification;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
-import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeMeasurementMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeMeasurementMessage;
 import org.joda.time.DateTime;
-import org.junit.After;
 import org.junit.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -25,44 +24,42 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final MeasurementApi measurementApi = platform.getMeasurementApi();
-    boolean receivedNotification;
-    Object notification;
-
-    @After
-    public void setUp() {
-        notification = null;
-        receivedNotification = false;
-    }
 
     @Test
-    public void shouldReceiveCreateMeasurementNotification() {
+    public void shouldReceiveCreateMeasurementNotification() throws Exception {
         // given
         Subscriber<String, RealtimeMeasurementMessage> subscriber = getSubscriberForType(RealtimeMeasurementMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
+        TestSubscriptionListener<RealtimeMeasurementMessage> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), new RealtimeMeasurementNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         MeasurementRepresentation measurement = measurementApi.create(createMeasurementRep(mo));
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeMeasurementMessage.class);
-        assertMeasurementNotification((RealtimeMeasurementMessage) notification, measurement, "CREATE");
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeMeasurementMessage.class);
+        assertMeasurementNotification(subscriptionListener.getNotification(), measurement, "CREATE");
     }
 
     @Test
-    public void shouldReceiveDeleteMeasurementNotification() {
+    public void shouldReceiveDeleteMeasurementNotification() throws Exception {
         // given
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         MeasurementRepresentation measurement = measurementApi.create(createMeasurementRep(mo));
+        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
 
-        subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), new RealtimeMeasurementNotificationClientIT.Listener<>());
         // when
+        subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
         measurementApi.delete(measurement);
+
         // then
-        await().atMost(TEN_SECONDS).until(() -> receivedNotification);
-        assertThat(notification).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
-        assertDeleteMeasurementNotification((RealtimeDeleteRepresentationWrapper) notification, measurement);
+        await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertDeleteMeasurementNotification(subscriptionListener.getNotification(), measurement);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -87,18 +84,5 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
     private void assertDeleteMeasurementNotification(RealtimeDeleteRepresentationWrapper notification, MeasurementRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
-    }
-
-    private class Listener<T> implements SubscriptionListener<String, T> {
-        @Override
-        public void onError(Subscription<String> subscription, Throwable ex) {
-            throw new SDKException("Error occurred");
-        }
-
-        @Override
-        public void onNotification(Subscription<String> subscription, T received) {
-            receivedNotification = true;
-            notification = received;
-        }
     }
 }
