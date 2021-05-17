@@ -32,18 +32,9 @@ import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReade
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HttpContext;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
@@ -59,12 +50,12 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 import static javax.ws.rs.core.Response.Status.*;
+import static org.eclipse.jetty.util.StringUtil.isNotBlank;
 
 @Slf4j
 public class RestConnector implements RestOperations {
@@ -306,21 +297,21 @@ public class RestConnector implements RestOperations {
     }
 
     private Builder addApplicationKeyHeader(Builder builder) {
-        if (platformParameters.getApplicationKey() != null) {
+        if (isNotBlank(platformParameters.getApplicationKey())) {
             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
         }
         return builder;
     }
 
     private Builder addTfaHeader(Builder builder) {
-        if (platformParameters.getTfaToken() != null) {
+        if (isNotBlank(platformParameters.getTfaToken())) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
 
     private Builder addRequestOriginHeader(Builder builder) {
-        if (platformParameters.getRequestOrigin() != null) {
+        if (isNotBlank(platformParameters.getRequestOrigin())) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
         }
         return builder;
