@@ -15,6 +15,8 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,7 +30,8 @@ import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class MicroserviceSubscriptionsServiceTest {
@@ -86,6 +89,35 @@ public class MicroserviceSubscriptionsServiceTest {
         verify(repository).updateCurrentSubscriptions(anyCollection());
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    public void shouldUpdateCurrentSubscriptionBasedOnPropertiesWhenPerTenantMicroservice() {
+        //given
+        given(repository.register(anyString(), any(MicroserviceMetadataRepresentation.class))).willReturn(of(application("mockId2")));
+        MicroserviceCredentials microserviceUser = MicroserviceCredentials.builder()
+                .username("app_service")
+                .password("app_service_password")
+                .appKey("app-key")
+                .tenant("tenant")
+                .build();
+        given(properties.getIsolation()).willReturn(PlatformProperties.IsolationLevel.PER_TENANT);
+        given(properties.getMicroserviceUser()).willReturn(microserviceUser);
+        given(repository.diffWithCurrentSubscriptions(anyList())).willAnswer(i -> Subscriptions.builder()
+                .added(new ArrayList<>((Collection<MicroserviceCredentials>) i.getArguments()[0]))
+                .all(new ArrayList<>((Collection<MicroserviceCredentials>) i.getArguments()[0]))
+                .removed(new ArrayList<>())
+                .build());
+        ArgumentCaptor<Collection<MicroserviceCredentials>> subscriptionsCaptor = ArgumentCaptor.forClass((Class) Collection.class);
+
+        //when
+        subscriptionsService.subscribe();
+
+        //then
+        verify(repository).updateCurrentSubscriptions(subscriptionsCaptor.capture());
+        assertThat(subscriptionsCaptor.getValue().size()).isEqualTo(1);
+        assertThat(subscriptionsCaptor.getValue().iterator().next()).isEqualTo(microserviceUser);
+    }
+
     @Test
     public void getCredentialsMethodShouldReturnAllSubscribingCredentialsInListener() {
         // given
@@ -113,8 +145,8 @@ public class MicroserviceSubscriptionsServiceTest {
     }
 
     private Subscriptions givenSubscriptions() {
-        final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withTenant("tenant1");
-        final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withTenant("tenant2");
+        final MicroserviceCredentials credentials1 = new MicroserviceCredentials().withUsername("name1").withPassword("pass1").withAppKey("app-key").withTenant("tenant1");
+        final MicroserviceCredentials credentials2 = new MicroserviceCredentials().withUsername("name2").withPassword("pass2").withAppKey("app-key").withTenant("tenant2");
         return Subscriptions.builder()
                 .added(Arrays.asList(credentials1, credentials2))
                 .removed(Collections.emptyList())
@@ -125,6 +157,7 @@ public class MicroserviceSubscriptionsServiceTest {
     private ApplicationRepresentation application(String id) {
         ApplicationRepresentation applicationRepresentation = new ApplicationRepresentation();
         applicationRepresentation.setId(id);
+        applicationRepresentation.setKey("app-key");
         return applicationRepresentation;
     }
 }

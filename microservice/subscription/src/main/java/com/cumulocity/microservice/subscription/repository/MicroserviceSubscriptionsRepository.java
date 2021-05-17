@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
@@ -9,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -18,10 +22,11 @@ import static java.util.Optional.ofNullable;
 
 @Repository
 public class MicroserviceSubscriptionsRepository {
-    @ConstructorProperties({"repository"})
+    @ConstructorProperties({"repository", "platformProperties"})
     @Autowired
-    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository) {
+    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository, PlatformProperties platformProperties) {
         this.repository = repository;
+        this.platformProperties = platformProperties;
     }
 
     public Collection<MicroserviceCredentials> getCurrentSubscriptions() {
@@ -87,6 +92,7 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     private final MicroserviceRepository repository;
+    private final PlatformProperties platformProperties;
 
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
@@ -106,6 +112,7 @@ public class MicroserviceSubscriptionsRepository {
                 .password(representation.getPassword())
                 .oAuthAccessToken(null)
                 .xsrfToken(null)
+                .appKey(platformProperties.getApplicationKey())
                 .build()).collect(Collectors.toCollection(ArrayList::new));
         moveManagementToFront(subscriptions);
         return diffWithCurrentSubscriptions(subscriptions);

@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,11 +23,15 @@ class MicroserviceSubscriptionsRepositoryTest {
     @Mock
     private MicroserviceRepository repository;
 
+    @Mock
+    private PlatformProperties platformProperties;
+
     @InjectMocks
     private MicroserviceSubscriptionsRepository microserviceSubscriptionsRepository;
 
     @BeforeEach
     public void beforeEach() {
+        Mockito.when(platformProperties.getApplicationKey()).thenReturn("application-key");
         microserviceSubscriptionsRepository.updateCurrentSubscriptions(new ArrayList<>());
     }
 
@@ -44,9 +49,9 @@ class MicroserviceSubscriptionsRepositoryTest {
 
         //then
         Assertions.assertThat(subscriptions.getAll()).containsExactly(
-                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").build(),
-                MicroserviceCredentials.builder().tenant("t234").username("service_myapp").password("secret2").build(),
-                MicroserviceCredentials.builder().tenant("t345").username("service_myapp").password("secret3").build()
+                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").appKey("application-key").build(),
+                MicroserviceCredentials.builder().tenant("t234").username("service_myapp").password("secret2").appKey("application-key").build(),
+                MicroserviceCredentials.builder().tenant("t345").username("service_myapp").password("secret3").appKey("application-key").build()
         );
     }
 
@@ -64,9 +69,9 @@ class MicroserviceSubscriptionsRepositoryTest {
 
         //then
         Assertions.assertThat(subscriptions.getAll()).containsExactly(
-                MicroserviceCredentials.builder().tenant("management").username("service_myapp").password("secret3").build(),
-                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").build(),
-                MicroserviceCredentials.builder().tenant("t234").username("service_myapp").password("secret2").build()
+                MicroserviceCredentials.builder().tenant("management").username("service_myapp").password("secret3").appKey("application-key").build(),
+                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").appKey("application-key").build(),
+                MicroserviceCredentials.builder().tenant("t234").username("service_myapp").password("secret2").appKey("application-key").build()
         );
     }
 
@@ -82,7 +87,7 @@ class MicroserviceSubscriptionsRepositoryTest {
 
         //then
         Assertions.assertThat(subscriptions.getAll()).containsExactly(
-                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").build()
+                MicroserviceCredentials.builder().tenant("t123").username("service_myapp").password("secret1").appKey("application-key").build()
 
         );
     }
