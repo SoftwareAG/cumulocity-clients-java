@@ -46,7 +46,6 @@
         <aspectj.version>1.8.13</aspectj.version>
         <assertj.version>3.16.1</assertj.version>
         <awaitility.version>4.0.2</awaitility.version>
-        <cucumber.version>1.2.5</cucumber.version>
         <cometd.version>3.0.10</cometd.version>
         <commons-configuration.version>1.7</commons-configuration.version>
         <osgi.commons-configuration.version>${commons-configuration.version}-${cumulocity.core.version}</osgi.commons-configuration.version>
@@ -622,18 +621,6 @@
                         <artifactId>javax.ws.rs-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>info.cukes</groupId>
-                <artifactId>cucumber-junit</artifactId>
-                <version>${cucumber.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>info.cukes</groupId>
-                <artifactId>cucumber-spring</artifactId>
-                <version>${cucumber.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
