@@ -57,10 +57,10 @@ public class TokenApiImpl implements TokenApi {
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
 
         long expiry = parsedToken.getExp() - parsedToken.getIat();
-        long expiresInMinutes = expiry / 60;
+        long validityPeriodMinutes = expiry / 60;
 
         return create(new NotificationTokenClaimsRepresentation(
-                parsedToken.getSubscription(), parsedToken.getTopic().split(TOPIC_SPLIT)[2], expiresInMinutes));
+                parsedToken.getSubscription(), parsedToken.getTopic().split(TOPIC_SPLIT)[2], validityPeriodMinutes));
     }
 
 
