@@ -2,6 +2,7 @@ package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,11 @@ import static java.util.Optional.ofNullable;
 
 @Repository
 public class MicroserviceSubscriptionsRepository {
-    @ConstructorProperties({"repository"})
+    @ConstructorProperties({"repository", "platformProperties"})
     @Autowired
-    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository) {
+    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository, PlatformProperties platformProperties) {
         this.repository = repository;
+        this.platformProperties = platformProperties;
     }
 
     public Collection<MicroserviceCredentials> getCurrentSubscriptions() {
@@ -88,6 +90,7 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     private final MicroserviceRepository repository;
+    private final PlatformProperties platformProperties;
 
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
@@ -107,6 +110,7 @@ public class MicroserviceSubscriptionsRepository {
                 .password(representation.getPassword())
                 .oAuthAccessToken(null)
                 .xsrfToken(null)
+                .appKey(platformProperties.getApplicationKey())
                 .build()).collect(Collectors.toList());
         return diffWithCurrentSubscriptions(subscriptions);
     }
