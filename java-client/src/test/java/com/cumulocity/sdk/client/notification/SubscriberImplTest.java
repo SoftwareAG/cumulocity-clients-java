@@ -11,14 +11,12 @@ import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -26,21 +24,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SubscriberImplTest {
 
-    @Mock
+    @Mock(lenient = true)
     ClientSession client;
 
-    @Mock
+    @Mock(lenient = true)
     ClientSessionChannel metaSubscribeChannel;
 
     @Mock
     ClientSessionChannel metaHandshakeChannel;
 
-    @Mock
+    @Mock(lenient = true)
     ClientSessionChannel metaUnsubscribeChannel;
 
     @Mock
@@ -49,7 +48,7 @@ public class SubscriberImplTest {
     @Mock
     SubscriptionNameResolver<Object> subscriptionNameResolver;
 
-    @Mock
+    @Mock(lenient = true)
     BayeuxSessionProvider bayeuxSessionProvider;
 
     @Mock
@@ -62,10 +61,11 @@ public class SubscriberImplTest {
 
     final ArgumentCaptor<MessageListener> listenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
 
-    @Before
+    @BeforeEach
     public void setup() throws SDKException {
         subscriber = new SubscriberImpl<>(subscriptionNameResolver, bayeuxSessionProvider, unauthorizedConnectionWatcher);
         mockClientProvider();
+
         when(metaSubscribeChannel.getId()).thenReturn(Channel.META_SUBSCRIBE);
         when(metaUnsubscribeChannel.getId()).thenReturn(Channel.META_UNSUBSCRIBE);
         when(client.getChannel(ClientSessionChannel.META_SUBSCRIBE)).thenReturn(metaSubscribeChannel);
@@ -76,25 +76,29 @@ public class SubscriberImplTest {
         Mockito.when(bayeuxSessionProvider.get()).thenReturn(client);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public final void shouldFailSubscribeWhenSubscriptionObjectIsNull() throws SDKException {
         //Given
         //When
-        subscriber.subscribe(null, listener);
+        Throwable thrown = catchThrowable(() -> subscriber.subscribe(null, listener));
+        //Then
+        assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public final void shouldFailSubscribeWhenNotificationListenerIsNull() throws SDKException {
-        //Given
         //When
-        subscriber.subscribe(new Object(), null);
+        Throwable thrown = catchThrowable(() -> subscriber.subscribe(new Object(), null));
+        //Then
+        assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public final void shouldFailSubscribeWhenNotConnected() throws SDKException {
-        //Given
         //When
-        subscriber.subscribe(new Object(), listener);
+        Throwable thrown = catchThrowable(() -> subscriber.subscribe(new Object(), listener));
+        //Then
+        assertThat(thrown).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -106,13 +110,6 @@ public class SubscriberImplTest {
         subscriber.subscribe(channelId, listener);
         //Then
         verify(channel).subscribe(Mockito.any(MessageListener.class));
-    }
-
-    public final void shouldFailDisconnectNotThrowExcpetionWhenNotConnected() {
-        //Given
-        //When
-        subscriber.disconnect();
-        //Then
     }
 
     @Test
@@ -376,7 +373,7 @@ public class SubscriberImplTest {
     }
 
     private Message mockSubscribeMessage(String channelID, boolean successful) {
-        Message message = mock(Message.class);
+        Message message = mock(Message.class, withSettings().lenient());
         when(message.get(Message.SUBSCRIPTION_FIELD)).thenReturn(channelID);
         when(message.isSuccessful()).thenReturn(successful);
         return message;

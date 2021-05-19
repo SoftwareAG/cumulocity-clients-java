@@ -10,8 +10,8 @@ import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
 import org.joda.time.DateTime;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -49,7 +49,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
 
     // Test is failing because source fields in received notification are not the same as in updated alarm
     // https://cumulocity.atlassian.net/browse/MTM-38784
-    @Ignore
+    @Disabled
     @Test
     public void shouldReceiveUpdateAlarmNotification() throws Exception {
         // given
@@ -90,7 +90,7 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
 
     // Test is failing because source fields in received notification are not the same as in updated alarm
     // https://cumulocity.atlassian.net/browse/MTM-38784
-    @Ignore
+    @Disabled
     @Test
     public void shouldReceiveUpdateChildAlarmNotification() throws Exception {
         // given

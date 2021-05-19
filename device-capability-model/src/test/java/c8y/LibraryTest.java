@@ -6,16 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.ConversionException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.svenson.JSONParseException;
 import org.svenson.tokenize.InputStreamSource;
 
 import com.cumulocity.model.ManagedObject;
-import com.cumulocity.model.idtype.GId;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LibraryTest {
 
@@ -24,7 +23,7 @@ public class LibraryTest {
     private ManagedObject incorrectFragmentLib;
     private ManagedObject incorrectFragmentLib2;
 
-    @Before
+    @BeforeEach
     public void setup() {
         sensorLib = readFile("/sensor-library");
         deviceMgmtLib = readFile("/device-management-library.json");

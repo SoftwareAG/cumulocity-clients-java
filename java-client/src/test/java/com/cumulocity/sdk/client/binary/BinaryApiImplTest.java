@@ -1,6 +1,4 @@
-
 package com.cumulocity.sdk.client.binary;
-
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
@@ -11,17 +9,17 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.BinariesApiImpl;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 public class BinaryApiImplTest {
@@ -38,7 +36,7 @@ public class BinaryApiImplTest {
     private RestConnector restConnector;
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -49,10 +47,9 @@ public class BinaryApiImplTest {
         binariesApi = new BinariesApiImpl(restConnector, inventoryRepresentation);
     }
 
-
     @Test
     public void shouldUploadFileAsByteArray() throws SDKException {
-        //Given
+        // Given
         byte[] binaryData = {1,2,4,6,6};
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         ManagedObjectRepresentation created = new ManagedObjectRepresentation();
@@ -67,7 +64,7 @@ public class BinaryApiImplTest {
 
     @Test
     public void shouldUploadFileAsStream() throws SDKException {
-        //Given
+        // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         ManagedObjectRepresentation created = new ManagedObjectRepresentation();
@@ -82,7 +79,7 @@ public class BinaryApiImplTest {
 
     @Test
     public void shouldReplaceFile() throws SDKException {
-        //Given
+        // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         GId binaryId = GId.asGId(123);
         ManagedObjectRepresentation updated = new ManagedObjectRepresentation();
@@ -97,7 +94,7 @@ public class BinaryApiImplTest {
 
     @Test
     public void shouldDownloadFile() throws SDKException {
-        //Given
+        // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         GId binaryId = GId.asGId(123);
         when(restConnector.get(INVENTORY_BINARY_URL  + "/" +binaryId.getValue(), MediaType.APPLICATION_OCTET_STREAM_TYPE,InputStream.class)).thenReturn(inputStream);
@@ -111,7 +108,7 @@ public class BinaryApiImplTest {
 
     @Test
     public void shouldDeleteFile() throws SDKException {
-        //Given
+        // Given
         GId binaryId = GId.asGId(123);
 
         // When
@@ -121,98 +118,91 @@ public class BinaryApiImplTest {
         verify(restConnector, times(1)).delete(INVENTORY_BINARY_URL+ "/" +binaryId.getValue());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowExceptionOnDeleteFileIfBinaryIDIsNull() throws SDKException {
-        //Given
-
         // When
-        binariesApi.deleteFile(null);
+        Throwable thrown = catchThrowable(() -> binariesApi.deleteFile(null));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(NullPointerException.class)));
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowExceptionOnDownloadFileIfBinaryIDIsNull() throws SDKException {
-        //Given
-
         // When
-        binariesApi.downloadFile(null);
+        Throwable thrown = catchThrowable(() -> binariesApi.downloadFile(null));
 
         // Then
-        fail();
-
+        assertThat(thrown, is(instanceOf(NullPointerException.class)));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowExceptionOnReplaceFileIfBinaryIDIsNull() throws SDKException {
-         //Given
+         // Given
          InputStream inputStream = IOUtils.toInputStream("hello");
 
         // When
-        binariesApi.replaceFile(null,MediaType.APPLICATION_OCTET_STREAM,inputStream);
+        Throwable thrown = catchThrowable(() -> binariesApi.replaceFile(null,MediaType.APPLICATION_OCTET_STREAM,inputStream));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(NullPointerException.class)));
 
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowSDKExceptionIfAnyIssueWhileRestCallOnUploadFileAsByteArray() throws SDKException {
-        //Given
+        // Given
         byte[] binaryData = {1,2,4,6,6};
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation,binaryData,ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
 
         // When
-        binariesApi.uploadFile(managedObjectRepresentation,binaryData);
+        Throwable thrown = catchThrowable(() -> binariesApi.uploadFile(managedObjectRepresentation,binaryData));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowExceptionIfAnyIssueWhileRestCallOnUploadFileAsStream() throws SDKException {
-        //Given
+        // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation,inputStream,ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
 
         // When
-        binariesApi.uploadFile(managedObjectRepresentation,inputStream);
+        Throwable thrown = catchThrowable(() -> binariesApi.uploadFile(managedObjectRepresentation,inputStream));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowSDKExceptionIfAnyIssueWhileRestCallOnDownloadFile() throws SDKException {
-        //Given
+        // Given
         GId binaryId = GId.asGId(123);
         when(restConnector.get(INVENTORY_BINARY_URL  + "/" +binaryId.getValue(), MediaType.APPLICATION_OCTET_STREAM_TYPE,InputStream.class)).thenThrow(SDKException.class);
 
         // When
-        InputStream mor = binariesApi.downloadFile(binaryId);
+        Throwable thrown = catchThrowable(() -> binariesApi.downloadFile(binaryId));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowSDKExceptionIfAnyIssueWhileRestCallOnReplaceFile() throws SDKException {
-        //Given
+        // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         GId binaryId = GId.asGId(123);
         ManagedObjectRepresentation updated = new ManagedObjectRepresentation();
         when(restConnector.putStream(INVENTORY_BINARY_URL  + "/" +binaryId.getValue(), MediaType.APPLICATION_OCTET_STREAM,inputStream,ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
 
         // When
-        binariesApi.replaceFile(binaryId,MediaType.APPLICATION_OCTET_STREAM,inputStream);
+        Throwable thrown = catchThrowable(() -> binariesApi.replaceFile(binaryId,MediaType.APPLICATION_OCTET_STREAM,inputStream));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
-
-
 }

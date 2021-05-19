@@ -28,10 +28,10 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepr
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-//TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
+//TODO speed up execution time by creating tenant and alarms only once in @BeforeAll
 public class AuditRecordIT {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<ManagedObjectRepresentation>();
@@ -58,12 +58,12 @@ public class AuditRecordIT {
 
     private int status;
 
-    @BeforeClass
+    @BeforeAll
     public static void createTenantWithApplication() throws Exception {
         platform = JavaSdkITBase.createPlatform(false);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
@@ -80,7 +80,7 @@ public class AuditRecordIT {
         }
     }
 
-    @After
+    @AfterEach
     public void removeTenantAndApplication() {
         tenantCreator.removeTenant();
     }

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,17 +20,17 @@
 package com.cumulocity.sdk.client.identity;
 
 import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -62,7 +62,7 @@ public class IdentityApiImplTest {
 
     private IdentityRepresentation identityApiRep;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -89,7 +89,7 @@ public class IdentityApiImplTest {
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, params)).thenReturn(EXACT_URL);
         when(restConnector.get(EXACT_URL, IdentityMediaType.EXTERNAL_ID, ExternalIDRepresentation.class)).thenReturn(extIdRep);
 
-        
+
         // When
         ExternalIDRepresentation result = identityApiImpl.getExternalId(extID);
 
@@ -120,32 +120,42 @@ public class IdentityApiImplTest {
         verify(restConnector).delete(EXACT_URL);
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowExceptionWhenExtIdWithoutValueAndType() throws SDKException {
         // Given
         XtId extID = new XtId();
 
         // When
-        identityApiImpl.getExternalId(extID);
+        Throwable thrown = catchThrowable(() -> identityApiImpl.getExternalId(extID));
+
+        // Then
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowExceptionWhenGidWithoutValue() throws SDKException {
         // Given
         GId gid = new GId();
 
         // When
-        identityApiImpl.getExternalIdsOfGlobalId(gid);
-    }
+        Throwable thrown = catchThrowable(() -> identityApiImpl.getExternalIdsOfGlobalId(gid));
 
-    @Test(expected = SDKException.class)
-    public void shouldThrowExceptionWhenGlobalIdWithNullValue() throws SDKException {
-        identityApiImpl.getExternalIdsOfGlobalId(new GId(null));
+        // Then
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
     @Test
-    public void testGetExternalIdsForGId() throws Exception {
-        // Given 
+    public void shouldThrowExceptionWhenGlobalIdWithNullValue() throws SDKException {
+        // When
+        Throwable thrown = catchThrowable(() -> identityApiImpl.getExternalIdsOfGlobalId(new GId(null)));
+
+        // Then
+        assertThat(thrown, is(instanceOf(SDKException.class)));
+    }
+
+    @Test
+    public void testGetExternalIdsForGId() {
+        // Given
         GId gid = new GId("10");
         identityApiRep.setExternalIdsOfGlobalId(TEMPLATE_URL);
         when(templateUrlParser.replacePlaceholdersWithParams(TEMPLATE_URL, singletonMap("globalId", "10"))).thenReturn(EXACT_URL);
@@ -153,15 +163,15 @@ public class IdentityApiImplTest {
         ExternalIDCollection expected = new ExternalIDCollectionImpl(restConnector, EXACT_URL,
                 DEFAULT_PAGE_SIZE);
 
-        // when
+        // When
         ExternalIDCollection result = identityApiImpl.getExternalIdsOfGlobalId(gid);
 
-        // then
+        // Then
         assertThat(result, is(expected));
     }
 
     @Test
-    public void shouldCreate() throws Exception {
+    public void shouldCreate() {
         // Given
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         String globalIdValue = "myGlobalIdValue";

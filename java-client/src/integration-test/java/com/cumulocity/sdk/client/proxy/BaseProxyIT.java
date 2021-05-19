@@ -2,9 +2,9 @@ package com.cumulocity.sdk.client.proxy;
 
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 
 public abstract class BaseProxyIT extends JavaSdkITBase {
     protected static final String PROXY_AUTH_USERNAME = "c8y-user";
@@ -14,23 +14,24 @@ public abstract class BaseProxyIT extends JavaSdkITBase {
 
     protected PlatformImpl proxiedPlatform;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeAll() throws Exception {
         proxyServer = new ProxyServer();
         proxyServer.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterAll() throws Exception {
         proxyServer.stop();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         proxiedPlatform = new PlatformImpl(platform.getHost(), platform.getCumulocityCredentials());
         proxiedPlatform.setProxyHost("127.0.0.1");
         proxiedPlatform.setProxyPort(proxyServer.getPort());
         proxiedPlatform.setRequireResponseBody(true);
+        proxiedPlatform.setForceInitialHost(true);
 
         proxyServer.setBasicAuthUsername(null);
         proxyServer.setBasicAuthPassword(null);

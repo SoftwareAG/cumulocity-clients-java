@@ -3,7 +3,7 @@ package com.cumulocity.sdk.client;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UrlProcessorTest {
 	

@@ -3,8 +3,8 @@ package com.cumulocity.sdk.client.option;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ public class SystemOptionIT extends JavaSdkITBase {
 
     private final String VERSION_REGEX = "(?!\\.)(\\d+(\\.\\d+)+)([-.][A-Z]+)?(?![\\d.])$";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         systemOptionApi = platform.getSystemOptionApi();
     }

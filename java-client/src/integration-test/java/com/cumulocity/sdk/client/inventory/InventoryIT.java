@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -25,19 +25,16 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRefe
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static com.cumulocity.sdk.client.common.SdkExceptionMatcher.sdkException;
 import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import c8y.ThreePhaseElectricitySensor;
 
@@ -53,6 +50,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.assertj.core.api.HamcrestCondition.matching;
 
 public class InventoryIT extends JavaSdkITBase {
 
@@ -60,17 +58,14 @@ public class InventoryIT extends JavaSdkITBase {
 
     private InventoryApi inventory;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         inventory = platform.getInventoryApi();
         platform.setRequireResponseBody(true);
     }
 
     @Test
-    public void createManagedObject() throws Exception {
+    public void createManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().build();
 
@@ -78,13 +73,13 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation created = inventory.create(rep);
 
         // Then
-        assertNotNull(created.getId());
-        assertNotNull(created.getSelf());
-        assertThat(created, not(sameInstance(rep)));
+        assertThat(created.getId()).isNotNull();
+        assertThat(created.getSelf()).isNotNull();
+        assertThat(created).isNotSameAs(rep);
     }
 
     @Test
-    public void createManagedObjectWithoutResponseBody() throws Exception {
+    public void createManagedObjectWithoutResponseBody() {
         // Given
         platform.setRequireResponseBody(false);
         ManagedObjectRepresentation rep = aSampleMo().build();
@@ -93,13 +88,13 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation created = inventory.create(rep);
 
         // Then
-        assertNotNull(created.getId());
-        assertNull(created.getSelf());
-        assertThat(created, sameInstance(rep));
+        assertThat(created.getId()).isNotNull();
+        assertThat(created.getSelf()).isNull();
+        assertThat(created).isSameAs(rep);
     }
 
     @Test
-    public void createManagedObjectWithCoordinateFragment() throws Exception {
+    public void createManagedObjectWithCoordinateFragment() {
         // Given
         Coordinate coordinate = new Coordinate(100.0, 10.0);
         ManagedObjectRepresentation rep = aSampleMo().with(coordinate).build();
@@ -108,13 +103,13 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation result = inventory.create(rep);
 
         // Then
-        assertThat(result.getId(), not(nullValue()));
+        assertThat(result.getId()).isNotNull();
         Coordinate fragment = result.get(Coordinate.class);
-        assertThat(fragment, is(coordinate));
+        assertThat(fragment).isEqualTo(coordinate);
     }
 
     @Test
-    public void createManagedObjectWithThreePhaseElectricitySensor() throws Exception {
+    public void createManagedObjectWithThreePhaseElectricitySensor() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().with(new ThreePhaseElectricitySensor()).build();
 
@@ -122,12 +117,12 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation result = inventory.create(rep);
 
         // Then
-        assertNotNull(result.getId());
-        assertNotNull(result.get(ThreePhaseElectricitySensor.class));
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.get(ThreePhaseElectricitySensor.class)).isNotNull();
     }
 
     @Test
-    public void createManagedObjectWith2ThreePhaseElectricityFragments() throws Exception {
+    public void createManagedObjectWith2ThreePhaseElectricityFragments() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().with(new ThreePhaseElectricitySensor()).with(
                 new ThreePhaseElectricitySensor()).build();
@@ -136,12 +131,12 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation result = inventory.create(rep);
 
         // Then
-        assertNotNull(result.getId());
-        assertNotNull(result.get(ThreePhaseElectricitySensor.class));
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.get(ThreePhaseElectricitySensor.class)).isNotNull();
     }
 
     @Test
-    public void createAndGetManagedObject() throws Exception {
+    public void createAndGetManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().build();
         ManagedObjectRepresentation created = inventory.create(rep);
@@ -150,9 +145,9 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation result = inventory.getManagedObject(created.getId()).get();
 
         // Then
-        assertEquals(result.getId(), created.getId());
-        assertEquals(result.getName(), created.getName());
-        assertEquals(result.getType(), created.getType());
+        assertThat(created.getId()).isEqualTo(result.getId());
+        assertThat(created.getName()).isEqualTo(result.getName());
+        assertThat(created.getType()).isEqualTo(result.getType());
     }
 
     @Test
@@ -164,18 +159,21 @@ public class InventoryIT extends JavaSdkITBase {
         // When
         ManagedObject mo = inventory.getManagedObject(result.getId());
         mo.delete();
-
         // mo delete is asynchronous
         Thread.sleep(3000);
 
+        Throwable thrown = catchThrowable(() -> {
+            ManagedObject deletedMo = inventory.getManagedObject(result.getId());
+            deletedMo.get();
+        });
+
         // Then
-        exception.expect(sdkException(NOT_FOUND));
-        ManagedObject deletedMo = inventory.getManagedObject(result.getId());
-        deletedMo.get();
+        assertThat(thrown).isInstanceOf(SDKException.class)
+                .is(matching(sdkException(NOT_FOUND)));
     }
 
     @Test
-    public void createAndUpdateManagedObject() throws Exception {
+    public void createAndUpdateManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().build();
         ManagedObjectRepresentation result = inventory.create(rep);
@@ -191,12 +189,12 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation updated = inventory.getManagedObject(id).update(result);
 
         //Then
-        assertNotNull(updated.getId());
-        assertEquals(coordinate, updated.get(Coordinate.class));
+        assertThat(updated.getId()).isNotNull();
+        assertThat(updated.get(Coordinate.class)).isEqualTo(coordinate);
     }
 
     @Test
-    public void createAndUpdateManagedObjectByRemovingFragment() throws Exception {
+    public void createAndUpdateManagedObjectByRemovingFragment() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().with(new Coordinate()).build();
         ManagedObjectRepresentation created = inventory.create(rep);
@@ -209,12 +207,12 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation updated = inventory.getManagedObject(id).update(created);
 
         // Then
-        assertNotNull(updated.getId());
-        assertNull(updated.get(Coordinate.class));
+        assertThat(updated.getId()).isNotNull();
+        assertThat(updated.get(Coordinate.class)).isNull();
     }
-    
+
     @Test
-    @Ignore
+    @Disabled
     public void updatingManagedObjectByMultipleThreads() throws Exception {
         // Given
         int threads = 30;
@@ -223,10 +221,10 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectRepresentation created = inventory.create(rep);
         final GId id = created.getId();
         List<Callable<Void>> tasks = buildUpdateTasks(threads, id);
-        
+
         // When
         executor.invokeAll(tasks);
-        
+
         // Then
         ManagedObjectRepresentation updated = checkNotDuplicated(id);
         checkUpdatedFragments(threads, updated);
@@ -236,80 +234,77 @@ public class InventoryIT extends JavaSdkITBase {
         InventoryFilter byIdFilter = new InventoryFilter().byIds(asList(id));
         ManagedObjectCollectionRepresentation moCollection = inventory.getManagedObjectsByFilter(byIdFilter).get();
         List<ManagedObjectRepresentation> devices = moCollection.getManagedObjects();
-        assertThat(devices.size(), is(1));
+        assertThat(devices).hasSize(1);
         return devices.get(0);
     }
 
     private void checkUpdatedFragments(int numberOfFragments, ManagedObjectRepresentation updated) {
         for(int i = 0; i < numberOfFragments; i++) {
-            assertThat(updated.get(String.valueOf(i)), is(notNullValue()));
+            assertThat(updated.get(String.valueOf(i))).isNotNull();
         }
     }
 
-    private List<Callable<Void>> buildUpdateTasks(int numerOfTasks, final GId id) {
+    private List<Callable<Void>> buildUpdateTasks(int numberOfTasks, final GId id) {
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-        for(int i = 0; i < numerOfTasks; i++) {
+        for(int i = 0; i < numberOfTasks; i++) {
             final String fragmentName = String.valueOf(i);
-            tasks.add(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    ManagedObjectRepresentation toUpdate = aSampleMo().build();
-                    toUpdate.set("test", fragmentName);
-                    inventory.getManagedObject(id).update(toUpdate);
-                    return null;
-                }
+            tasks.add(() -> {
+                ManagedObjectRepresentation toUpdate = aSampleMo().build();
+                toUpdate.set("test", fragmentName);
+                inventory.getManagedObject(id).update(toUpdate);
+                return null;
             });
         }
         return tasks;
     }
 
     @Test
-    public void tryToGetNonExistentManagedObject() throws Exception {
+    public void tryToGetNonExistentManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().withID(new GId("1")).build();
 
         // Then
-        exception.expect(sdkException(NOT_FOUND));
+        Throwable thrown = catchThrowable(() -> inventory.getManagedObject(rep.getId()).get());
 
         // When
-        inventory.getManagedObject(rep.getId()).get();
+        assertThat(thrown).is(matching(sdkException(NOT_FOUND)));
     }
 
     @Test
-    public void tryToDeleteNonExistentManagedObject() throws Exception {
+    public void tryToDeleteNonExistentManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().withID(new GId("1")).build();
 
         // Then
-        exception.expect(sdkException(NOT_FOUND));
+        Throwable thrown = catchThrowable(() -> inventory.getManagedObject(rep.getId()).delete());
 
         // When
-        inventory.getManagedObject(rep.getId()).delete();
+        assertThat(thrown).is(matching(sdkException(NOT_FOUND)));
     }
 
     @Test
-    public void tryToUpdateNonExistentManagedObject() throws Exception {
+    public void tryToUpdateNonExistentManagedObject() {
         // Given
         ManagedObjectRepresentation rep = aSampleMo().build();
 
         // Then
-        exception.expect(sdkException(NOT_FOUND));
+        Throwable thrown = catchThrowable(() -> inventory.getManagedObject(new GId("1")).update(rep));
 
         // When
-        inventory.getManagedObject(new GId("1")).update(rep);
+        assertThat(thrown).is(matching(sdkException(NOT_FOUND)));
     }
 
     @Test
-    public void getAllWhenNoManagedObjectPresent() throws Exception {
+    public void getAllWhenNoManagedObjectPresent() {
         // When
         ManagedObjectCollectionRepresentation mos = inventory.getManagedObjectsByFilter(new InventoryFilter().byType("not_existing_mo_type")).get();
 
         // Then
-        assertThat(mos.getManagedObjects(), is(Collections.<ManagedObjectRepresentation>emptyList()));
+        assertThat(mos.getManagedObjects()).isEmpty();
     }
 
     @Test
-    public void getAllWhen2ManagedObjectArePresent() throws Exception {
+    public void getAllWhen2ManagedObjectArePresent() {
         // Given
         ManagedObjectRepresentation rep1 = aSampleMo().withType("type1").build();
         ManagedObjectRepresentation rep2 = aSampleMo().withType("type1").build();
@@ -320,11 +315,11 @@ public class InventoryIT extends JavaSdkITBase {
 
         // Then
         ManagedObjectCollectionRepresentation mos = inventory.getManagedObjectsByFilter(new InventoryFilter().byType("type1")).get();
-        assertThat(mos.getManagedObjects().size(), is(2));
+        assertThat(mos.getManagedObjects()).hasSize(2);
     }
 
     @Test
-    public void addGetAndRemoveChildDevices() throws Exception {
+    public void addGetAndRemoveChildDevices() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent1").build());
         ManagedObjectRepresentation child1 = inventory.create(aSampleMo().withName("child11").build());
@@ -344,8 +339,9 @@ public class InventoryIT extends JavaSdkITBase {
 
         List<ManagedObjectReferenceRepresentation> refs = refCollection.getReferences();
         Set<GId> childDeviceIDs = asSet(refs.get(0).getManagedObject().getId(), refs.get(1).getManagedObject().getId());
-        assertThat(childDeviceIDs, is(asSet(child1.getId(), child2.getId())));
-        
+
+        assertThat(childDeviceIDs).containsExactlyInAnyOrder(child1.getId(), child2.getId());
+
         // When
         parentMo.deleteChildDevice(child1.getId());
         parentMo.deleteChildDevice(child2.getId());
@@ -353,16 +349,16 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         ManagedObjectReferenceCollectionRepresentation allChildDevices = inventory.getManagedObject(
                 parent.getId()).getChildDevices().get();
-        assertEquals(0, allChildDevices.getReferences().size());
+        assertThat(allChildDevices.getReferences()).hasSize(0);
     }
 
     @Test
-    public void getPagedChildDevices() throws Exception {
+    public void getPagedChildDevices() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
         ManagedObject parentMo = inventory.getManagedObject(parent.getId());
 
-        for (int i=0; i<platform.getPageSize()+1; i++){
+        for (int i = 0; i < platform.getPageSize() + 1; i++){
             ManagedObjectRepresentation child = inventory.create(aSampleMo().withName("child"+i).build());
             ManagedObjectReferenceRepresentation childRef = anMoRefRepresentationLike(MO_REF_REPRESENTATION).withMo(
                     child).build();
@@ -378,19 +374,20 @@ public class InventoryIT extends JavaSdkITBase {
     }
 
     private void assertCollectionPaged(ManagedObjectReferenceCollection refCollection) throws SDKException {
-        assertThat(refCollection.get().getReferences().size(), is(platform.getPageSize()));
-        assertThat(refCollection.get().getPageStatistics().getPageSize(), is(platform.getPageSize()));
-        assertThat(refCollection.get().getPageStatistics().getCurrentPage(), is(1));
-        assertThat(refCollection.get().getSelf(), containsString("pageSize=" + platform.getPageSize() + "&currentPage=1"));
-        assertThat(refCollection.get().getNext(), containsString("pageSize=" + platform.getPageSize() + "&currentPage=2"));
-        assertThat(refCollection.get().getPrev(), is(nullValue()));
+        assertThat(refCollection.get().getReferences()).hasSize(platform.getPageSize());
+        assertThat(refCollection.get().getPageStatistics().getPageSize()).isEqualTo(platform.getPageSize());
+        assertThat(refCollection.get().getPageStatistics().getCurrentPage()).isEqualTo(1);
+
+        assertThat(refCollection.get().getSelf()).contains("pageSize=" + platform.getPageSize() + "&currentPage=1");
+        assertThat(refCollection.get().getNext()).contains("pageSize=" + platform.getPageSize() + "&currentPage=2");
+        assertThat(refCollection.get().getPrev()).isNull();
 
         ManagedObjectReferenceCollectionRepresentation secondPage = refCollection.getPage(refCollection.get(), 2);
-        assertThat(secondPage.getReferences().size(), is(1));
+        assertThat(secondPage.getReferences()).hasSize(1);
     }
 
     @Test
-    public void addGetAndRemoveChildAssets() throws Exception {
+    public void addGetAndRemoveChildAssets() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
         ManagedObjectRepresentation child1 = inventory.create(aSampleMo().withName("child1").build());
@@ -409,7 +406,7 @@ public class InventoryIT extends JavaSdkITBase {
                 parent.getId()).getChildAssets().get();
         List<ManagedObjectReferenceRepresentation> refs = refCollection.getReferences();
         Set<GId> childDeviceIDs = asSet(refs.get(0).getManagedObject().getId(), refs.get(1).getManagedObject().getId());
-        assertThat(childDeviceIDs, is(asSet(child1.getId(), child2.getId())));
+        assertThat(childDeviceIDs).containsExactlyInAnyOrder(child1.getId(), child2.getId());
 
         // When
         parentMo.deleteChildAsset(child1.getId());
@@ -418,11 +415,11 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         ManagedObjectReferenceCollectionRepresentation allChildDevices = inventory.getManagedObject(
                 parent.getId()).getChildAssets().get();
-        assertEquals(0, allChildDevices.getReferences().size());
+        assertThat(allChildDevices.getReferences()).hasSize(0);
     }
 
-@Test
-    public void addGetAndRemoveChildAdditions() throws Exception {
+    @Test
+    public void addGetAndRemoveChildAdditions() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
         ManagedObjectRepresentation child1 = inventory.create(aSampleMo().withName("child1").build());
@@ -441,7 +438,7 @@ public class InventoryIT extends JavaSdkITBase {
                 parent.getId()).getChildAdditions().get();
         List<ManagedObjectReferenceRepresentation> refs = refCollection.getReferences();
         Set<GId> childDeviceIDs = asSet(refs.get(0).getManagedObject().getId(), refs.get(1).getManagedObject().getId());
-        assertThat(childDeviceIDs, is(asSet(child1.getId(), child2.getId())));
+        assertThat(childDeviceIDs).containsExactlyInAnyOrder(child1.getId(), child2.getId());
 
         // When
         parentMo.deleteChildAddition(child1.getId());
@@ -450,11 +447,11 @@ public class InventoryIT extends JavaSdkITBase {
         // Then
         ManagedObjectReferenceCollectionRepresentation allChildAdditions = inventory.getManagedObject(
                 parent.getId()).getChildAdditions().get();
-        assertEquals(0, allChildAdditions.getReferences().size());
+        assertThat(allChildAdditions.getReferences()).hasSize(0);
     }
 
     @Test
-    public void getPagedChildAssets() throws Exception {
+    public void getPagedChildAssets() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
         ManagedObject parentMo = inventory.getManagedObject(parent.getId());
@@ -475,7 +472,7 @@ public class InventoryIT extends JavaSdkITBase {
     }
 
     @Test
-    public void getPagedChildAdditions() throws Exception {
+    public void getPagedChildAdditions() {
         // Given
         ManagedObjectRepresentation parent = inventory.create(aSampleMo().withName("parent").build());
         ManagedObject parentMo = inventory.getManagedObject(parent.getId());
@@ -496,7 +493,7 @@ public class InventoryIT extends JavaSdkITBase {
     }
 
     @Test
-    public void queryWithManagedObjectType() throws Exception {
+    public void queryWithManagedObjectType() {
         // Given
         inventory.create(aSampleMo().withType("typeA").withName("A1").build());
         inventory.create(aSampleMo().withType("typeA").withName("A2").build());
@@ -507,18 +504,18 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectCollectionRepresentation typeAMos = inventory.getManagedObjectsByFilter(filterA).get();
 
         // Then
-        assertThat(typeAMos.getManagedObjects().size(), is(2));
+        assertThat(typeAMos.getManagedObjects()).hasSize(2);
 
         // When
         InventoryFilter filterB = new InventoryFilter().byType("typeB");
         ManagedObjectCollectionRepresentation typeBMos = inventory.getManagedObjectsByFilter(filterB).get();
 
         // Then
-        assertThat(typeBMos.getManagedObjects().size(), is(1));
+        assertThat(typeBMos.getManagedObjects()).hasSize(1);
     }
 
     @Test
-    public void bulkQuery() throws Exception {
+    public void bulkQuery() {
         // Given
         ManagedObjectRepresentation mo1 = inventory.create(aSampleMo().withName("MO1").build());
         ManagedObjectRepresentation mo3 = inventory.create(aSampleMo().withName("MO3").build());
@@ -529,15 +526,12 @@ public class InventoryIT extends JavaSdkITBase {
 
         // Then
         List<ManagedObjectRepresentation> mos = moCollection.getManagedObjects();
-        assertThat(mos.size(), is(2));
-      //TODO: Fix ordering when fixed on mongo
-        assertThat(mos.get(0).getName(), isOneOf("MO1", "MO3")); 
-        assertThat(mos.get(1).getName(), isOneOf("MO1", "MO3"));
-
+        assertThat(mos).hasSize(2);
+        assertThat(mos).extracting(ManagedObjectRepresentation::getName).containsExactlyInAnyOrder("MO1", "MO3");
     }
 
     @Test
-    public void queryWithFragmentType() throws Exception {
+    public void queryWithFragmentType() {
         // Given
         inventory.create(aSampleMo().withName("MO1").with(new Coordinate()).build());
         inventory.create(aSampleMo().withName("MO2").with(new SecondFragment()).build());
@@ -547,11 +541,11 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectCollectionRepresentation coordinates = inventory.getManagedObjectsByFilter(filter).get();
 
         // Then
-        assertThat(coordinates.getManagedObjects().size(), is(1));
+        assertThat(coordinates.getManagedObjects()).hasSize(1);
     }
 
     @Test
-    public void getAllWhen20ManagedObjectsPresent() throws Exception {
+    public void getAllWhen20ManagedObjectsPresent() {
         // Given
         int numOfMos = 20;
         for (int i = 0; i < numOfMos; i++) {
@@ -562,33 +556,23 @@ public class InventoryIT extends JavaSdkITBase {
         ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get();
 
         // Then
-        assertThat(mos.getPageStatistics().getTotalPages(),  is(greaterThanOrEqualTo(4)));
+        assertThat(mos.getPageStatistics().getTotalPages()).isGreaterThanOrEqualTo(4);
 
         // When
         ManagedObjectCollectionRepresentation secondPage = inventory.getManagedObjects().getPage(mos, 2);
 
         // Then
-        assertThat(secondPage.getPageStatistics().getCurrentPage(), is(2));
+        assertThat(secondPage.getPageStatistics().getCurrentPage()).isEqualTo(2);
 
         // When
         ManagedObjectCollectionRepresentation thirdPage = inventory.getManagedObjects().getNextPage(secondPage);
 
         // Then
-        assertThat(thirdPage.getPageStatistics().getCurrentPage(), is(3));
+        assertThat(thirdPage.getPageStatistics().getCurrentPage()).isEqualTo(3);
 
         // When
         ManagedObjectCollectionRepresentation firstPage = inventory.getManagedObjects().getPreviousPage(secondPage);
-        assertThat(firstPage.getPageStatistics().getCurrentPage(), is(1));
-    }
-
-    private void deleteMOs(List<ManagedObjectRepresentation> mosOn1stPage) throws SDKException {
-        for (ManagedObjectRepresentation mo : mosOn1stPage) {
-            inventory.getManagedObject(mo.getId()).delete();
-        }
-    }
-
-    private List<ManagedObjectRepresentation> getMOsFrom1stPage() throws SDKException {
-        return inventory.getManagedObjects().get().getManagedObjects();
+        assertThat(firstPage.getPageStatistics().getCurrentPage()).isEqualTo(1);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {

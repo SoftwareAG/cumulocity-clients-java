@@ -26,10 +26,10 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,14 +55,14 @@ public class EventIT extends JavaSdkITBase {
 
     private int status;
 
-    @BeforeClass
+    @BeforeAll
     public static void createManagedObject() {
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         mo.setName("MO");
         managedObject = platform.getInventoryApi().create(mo);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         eventApi = platform.getEventApi();
         input = new ArrayList<>();
@@ -71,7 +71,7 @@ public class EventIT extends JavaSdkITBase {
         status = OK;
     }
 
-    @After
+    @AfterEach
     public void deleteEvents() {
         List<EventRepresentation> eventsOn1stPage = getEventsFrom1stPage();
         while (!eventsOn1stPage.isEmpty()) {

@@ -2,16 +2,16 @@ package com.cumulocity.sdk.client.proxy;
 
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 public class RestProxyIT extends BaseProxyIT {
+
     @Test
     public void shouldSendRequestThroughNotAuthenticatedProxy() {
         // Given
@@ -24,8 +24,8 @@ public class RestProxyIT extends BaseProxyIT {
                 .getManagedObjects();
 
         // Then
-        assertNotNull(managedObjects);
-        assertFalse(managedObjects.isEmpty());
+        assertThat(managedObjects).isNotNull();
+        assertThat(managedObjects).isNotEmpty();
     }
 
     @Test
@@ -40,8 +40,8 @@ public class RestProxyIT extends BaseProxyIT {
                 .getManagedObjects();
 
         // Then
-        assertNotNull(managedObjects);
-        assertFalse(managedObjects.isEmpty());
+        assertThat(managedObjects).isNotNull();
+        assertThat(managedObjects).isNotEmpty();
     }
 
     @Test

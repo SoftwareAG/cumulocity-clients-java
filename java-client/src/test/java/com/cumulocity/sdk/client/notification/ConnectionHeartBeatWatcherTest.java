@@ -1,6 +1,6 @@
 package com.cumulocity.sdk.client.notification;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 

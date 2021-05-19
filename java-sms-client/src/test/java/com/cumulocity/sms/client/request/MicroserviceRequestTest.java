@@ -13,8 +13,8 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
@@ -116,7 +116,7 @@ public class MicroserviceRequestTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldUseSecureEndpoint() throws IOException {
         client.sendMessage(new Address(), new OutgoingMessageRequest());
         client.getMessage(new Address(), "");

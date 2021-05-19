@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.ws.rs.HttpMethod;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;

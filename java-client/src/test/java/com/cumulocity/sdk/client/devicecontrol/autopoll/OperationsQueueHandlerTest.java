@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -23,8 +23,8 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.operation.OperationStatus;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
@@ -35,10 +35,7 @@ import java.util.List;
 
 import static org.awaitility.Awaitility.*;
 import static org.awaitility.Durations.TWO_SECONDS;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +55,7 @@ public class OperationsQueueHandlerTest {
 
     private List<String> statusesRecordedOnDeviceControlApiMock = new LinkedList<String>();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         operationProcessor = mock(OperationProcessor.class);
         deviceControlApi = mock(DeviceControlApi.class);
@@ -79,7 +76,7 @@ public class OperationsQueueHandlerTest {
     }
 
     @Test
-    public void testOperationProcessingSuccessful() throws Exception {
+    public void testOperationProcessingSuccessful() {
         //GIVEN
         GId id = new GId("op");
 
@@ -101,12 +98,12 @@ public class OperationsQueueHandlerTest {
         inOrder.verify(deviceControlApi).update(argThat(hasId(id)));
 
         // checking that correct statuses were set
-        assertThat(statusesRecordedOnDeviceControlApiMock,
-                is(asList(OperationStatus.EXECUTING.toString(), OperationStatus.SUCCESSFUL.toString())));
+        assertThat(statusesRecordedOnDeviceControlApiMock)
+                .contains(OperationStatus.EXECUTING.toString(), OperationStatus.SUCCESSFUL.toString());
     }
 
     @Test
-    public void testOperationProcessingFailed() throws Exception {
+    public void testOperationProcessingFailed() {
         //GIVEN
         GId id = new GId("op");
         OperationRepresentation op = new OperationRepresentation();
@@ -127,12 +124,12 @@ public class OperationsQueueHandlerTest {
         inOrder.verify(deviceControlApi).update(argThat(hasId(id)));
 
         // checking that correct statuses were set
-        assertThat(statusesRecordedOnDeviceControlApiMock,
-                is(asList(OperationStatus.EXECUTING.toString(), OperationStatus.FAILED.toString())));
+        assertThat(statusesRecordedOnDeviceControlApiMock)
+                .contains(OperationStatus.EXECUTING.toString(), OperationStatus.FAILED.toString());
     }
 
     @Test
-    public void testStartStop() throws Exception {
+    public void testStartStop() {
         // Given
         OperationRepresentation op = new OperationRepresentation();
         op.setId(new GId("op"));
@@ -141,7 +138,7 @@ public class OperationsQueueHandlerTest {
         queue.add(op);
 
         // Then
-        assertThat(queue.size(), equalTo(1));
+        assertThat(queue).hasSize(1);
 
         // When
         testObj.start();

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,10 +19,9 @@
  */
 package com.cumulocity.sdk.client.inventory;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.util.ExtensibilityConverter;
 
@@ -38,12 +37,12 @@ public class InventoryFilterTest {
         InventoryFilter filter = new InventoryFilter().byFragmentType(fragmentType).byType(type);
 
         // Then
-        assertThat(filter.getFragmentType(), is(fragmentType));
-        assertThat(filter.getType(), is(type));
+        assertThat(filter.getFragmentType()).isEqualTo(fragmentType);
+        assertThat(filter.getType()).isEqualTo(type);
     }
 
     @Test
-    public void shouldSupportFragmentTypeWhichIsClass() throws Exception {
+    public void shouldSupportFragmentTypeWhichIsClass() {
         // Given
         Class<?> fragmentClass = Object.class;
 
@@ -52,6 +51,6 @@ public class InventoryFilterTest {
 
         // Then
         String expectedFragmentType = ExtensibilityConverter.classToStringRepresentation(fragmentClass);
-        assertThat(filter.getFragmentType(), is(expectedFragmentType));
+        assertThat(filter.getFragmentType()).isEqualTo(expectedFragmentType);
     }
 }
