@@ -5,8 +5,8 @@ import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.tenant.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -16,21 +16,18 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 public class TenantOptionApiImplTest {
+
     private static final String TENANT_OPTION_COLLECTION_URL = "/tenant/options";
     private static final String TENANT_OPTION_FOR_CATEGORY = TENANT_OPTION_COLLECTION_URL + "/{category}";
     private static final String TENANT_OPTION_FOR_CATEGORY_AND_KEY = TENANT_OPTION_COLLECTION_URL + "/{category}/{key}";
 
-
     private static final String CATEGORY = "test.category";
     private static final String KEY = "test.key";
     private static final String KEY2 = "test.key2";
-
 
     private static final int DEFAULT_PAGE_SIZE = 555;
 
@@ -41,7 +38,7 @@ public class TenantOptionApiImplTest {
     @Mock
     private RestConnector restConnector;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -97,7 +94,7 @@ public class TenantOptionApiImplTest {
         List<OptionRepresentation> returnedOptions = optionApi.getAllOptionsForCategory(CATEGORY);
 
         // then
-        assertEquals(expectedOptions, returnedOptions);
+        assertThat(returnedOptions, is(equalTo(expectedOptions)));
     }
 
     private List<OptionRepresentation> getExpectedOptions() {
@@ -139,5 +136,4 @@ public class TenantOptionApiImplTest {
         // Then
         verify(restConnector, times(1)).delete(TENANT_OPTION_COLLECTION_URL + "/" + CATEGORY + "/" + KEY);
     }
-
 }

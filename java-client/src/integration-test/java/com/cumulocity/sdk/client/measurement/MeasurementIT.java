@@ -29,10 +29,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
@@ -60,7 +60,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private int status;
 
-    @BeforeClass
+    @BeforeAll
     public static void createManagedObjects() {
         for (int i = 0; i < 3; ++i) {
             ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().withName("MO" + i).build());
@@ -68,7 +68,7 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         measurementApi = platform.getMeasurementApi();
         input = new ArrayList<>();
@@ -77,7 +77,7 @@ public class MeasurementIT extends JavaSdkITBase {
         status = OK;
     }
 
-    @After
+    @AfterEach
     public void deleteManagedObjects() {
         List<MeasurementRepresentation> measOn1stPage = getMeasurementsFrom1stPage();
         while (!measOn1stPage.isEmpty()) {

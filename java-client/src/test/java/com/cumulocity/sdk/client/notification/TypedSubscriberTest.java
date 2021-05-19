@@ -3,16 +3,17 @@ package com.cumulocity.sdk.client.notification;
 import static org.mockito.Mockito.verify;
 
 import org.cometd.bayeux.Message;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.cumulocity.sdk.client.SDKException;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TypedSubscriberTest {
 
     @Mock
@@ -23,9 +24,9 @@ public class TypedSubscriberTest {
 
     TypedSubscriber<Object, Object> subscriber;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        subscriber = new TypedSubscriber<Object, Object>(subscriberMock, Object.class);
+        subscriber = new TypedSubscriber<>(subscriberMock, Object.class);
     }
 
     @Test
@@ -40,20 +41,10 @@ public class TypedSubscriberTest {
 
     @Test
     public final void shouldDelegateDisconnect() {
-        //Given
+
         //When
         subscriber.disconnect();
         //Then
         verify(subscriberMock).disconnect();
     }
-    
-    @Test 
-    public void shouldCastDataFieldFromNotificationMessage(){
-        
-    }
-    
-    
-    
-    
-
-}
+ }

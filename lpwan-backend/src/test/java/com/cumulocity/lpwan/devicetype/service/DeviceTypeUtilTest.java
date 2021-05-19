@@ -1,8 +1,8 @@
 package com.cumulocity.lpwan.devicetype.service;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
 
@@ -25,9 +25,9 @@ public class DeviceTypeUtilTest {
     public void shouldReturnIdFromLpwanTypePath() {
         LpwanDevice lpwanDevice = new LpwanDevice();
         LpwanDeviceTypeUtil.setTypePath(lpwanDevice, "11805");
-        
+
         GId gId = LpwanDeviceTypeUtil.getTypeId(lpwanDevice);
-        
+
         assertEquals("11805", gId.getValue());
     }
 }

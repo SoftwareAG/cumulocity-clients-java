@@ -7,7 +7,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.notification.Subscriber;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -18,9 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
-import static org.junit.Assert.*;
 
 public class SubscriptionProxyIT extends BaseProxyIT {
+
     @Test
     public void shouldReceiveNotificationThroughNonAuthenticatedProxy() {
         // Given
@@ -72,7 +72,7 @@ public class SubscriptionProxyIT extends BaseProxyIT {
         assertThatThrownBy(() -> subscriber.subscribe("/alarms/" + mo.getId().getValue(), subscriptionListener, subscriptionListener, true))
                 // Then
                 .isInstanceOf(SDKException.class);
-        assertFalse(subscriptionListener.isSubscribed());
+        assertThat(subscriptionListener.isSubscribed()).isFalse();
     }
 
     private AlarmRepresentation createAlarmRep(ManagedObjectRepresentation source) {

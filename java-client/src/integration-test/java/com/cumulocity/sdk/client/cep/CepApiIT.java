@@ -7,8 +7,8 @@ import java.net.URL;
 
 import com.google.common.io.Resources;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
@@ -20,7 +20,7 @@ public class CepApiIT  extends JavaSdkITBase {
 
     final CepApi cepApi = platform.getCepApi();
 
-    @After
+    @AfterEach
     public void cleanup() {
         final PagedCepModuleCollectionRepresentation cep = cepApi.getModules().get();
         final Iterable<CepModuleRepresentation> it = cep.allPages();

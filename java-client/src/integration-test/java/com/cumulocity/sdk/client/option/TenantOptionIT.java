@@ -4,9 +4,9 @@ import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,12 +25,12 @@ public class TenantOptionIT extends JavaSdkITBase {
 
     private TenantOptionApi tenantOptionApi;
 
-    @Before
+    @BeforeEach
     public void setup() {
         tenantOptionApi = platform.getTenantOptionApi();
     }
 
-    @After
+    @AfterEach
     public void cleanup(){
         for(OptionRepresentation option: tenantOptionApi.getAllOptionsForCategory(CATEGORY)){
             tenantOptionApi.delete(new OptionPK(option.getCategory(), option.getKey()));

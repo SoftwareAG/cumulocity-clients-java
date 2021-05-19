@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.client.rest.providers;
 
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.svenson.JSONParseException;
 import org.svenson.SvensonRuntimeException;

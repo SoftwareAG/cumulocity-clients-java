@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,25 +19,22 @@
  */
 package com.cumulocity.sdk.client.devicecontrol.autopoll;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationsQueue;
 
 public class OperationsQueueTest {
+
     OperationsQueue testObj;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         testObj = new OperationsQueue();
         OperationRepresentation op1 = new OperationRepresentation();
@@ -47,23 +44,29 @@ public class OperationsQueueTest {
         testObj.add(op1);
         testObj.add(op2);
     }
-    
+
     @Test
     public void testAddUnique() {
         OperationRepresentation op3 = new OperationRepresentation();
         op3.setId(new GId("op3"));
-        assertTrue(testObj.add(op3));
-        assertThat(testObj.size(), equalTo(3));
+
+        boolean added = testObj.add(op3);
+
+        assertThat(added).isTrue();
+        assertThat(testObj).hasSize(3);
     }
 
     @Test
     public void testAddNonUnique() {
         OperationRepresentation opNonUnique = new OperationRepresentation();
         opNonUnique.setId(new GId("op2"));
-        assertFalse(testObj.add(opNonUnique));
-        assertThat(testObj.size(), equalTo(2));
+
+        boolean added = testObj.add(opNonUnique);
+
+        assertThat(added).isFalse();
+        assertThat(testObj).hasSize(2);
     }
-    
+
     @Test
     public void testAddNonUniqueList() {
         OperationRepresentation opNonUnique1 = new OperationRepresentation();
@@ -73,11 +76,13 @@ public class OperationsQueueTest {
         List<OperationRepresentation> list = new LinkedList<OperationRepresentation>();
         list.add(opNonUnique1);
         list.add(opNonUnique2);
-        
-        assertFalse(testObj.addAll(list));
-        assertThat(testObj.size(), equalTo(2));
+
+        boolean added = testObj.addAll(list);
+
+        assertThat(added).isFalse();
+        assertThat(testObj).hasSize(2);
     }
-    
+
     @Test
     public void testAddUniqueList() {
         OperationRepresentation opUnique1 = new OperationRepresentation();
@@ -87,11 +92,13 @@ public class OperationsQueueTest {
         List<OperationRepresentation> list = new LinkedList<OperationRepresentation>();
         list.add(opUnique1);
         list.add(opUnique2);
-        
-        assertTrue(testObj.addAll(list));
-        assertThat(testObj.size(), equalTo(4));
+
+        boolean added = testObj.addAll(list);
+
+        assertThat(added).isTrue();
+        assertThat(testObj).hasSize(4);
     }
-    
+
     @Test
     public void testAddMixedList() {
         OperationRepresentation opUnique1 = new OperationRepresentation();
@@ -101,9 +108,11 @@ public class OperationsQueueTest {
         List<OperationRepresentation> list = new LinkedList<OperationRepresentation>();
         list.add(opUnique1);
         list.add(opNonUnique2);
-        
-        assertTrue(testObj.addAll(list)); //queue was changed, even if not all elements were added
-        assertThat(testObj.size(), equalTo(3));
+
+        boolean added = testObj.addAll(list);
+
+        assertThat(added).isTrue(); //queue was changed, even if not all elements were added
+        assertThat(testObj).hasSize(3);
     }
 
 }

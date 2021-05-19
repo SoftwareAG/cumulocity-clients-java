@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,17 +19,17 @@
  */
 package com.cumulocity.sdk.client.event;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -44,27 +44,23 @@ import com.cumulocity.sdk.client.UrlProcessor;
 
 public class EventApiImplTest {
 
-    private static final String SOURCE_GID = "1";
-
     private static final String EVENTS_COLLECTION_URL = "event_collection_url";
-
-    EventApi eventApi;
-
-    EventsApiRepresentation eventsApiRepresentation = new EventsApiRepresentation();
-
-    GId source = new GId(SOURCE_GID);
-
-    @Mock
-    private RestConnector restConnector;
 
     private static final String TYPE = "type1";
 
     private static final int DEFAULT_PAGE_SIZE = 11;
 
     @Mock
+    private RestConnector restConnector;
+
+    @Mock
     private UrlProcessor urlProcessor;
 
-    @Before
+    EventApi eventApi;
+
+    EventsApiRepresentation eventsApiRepresentation = new EventsApiRepresentation();
+
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         EventCollectionRepresentation eventCollectionRepresentation = new EventCollectionRepresentation();
@@ -75,8 +71,8 @@ public class EventApiImplTest {
     }
 
     @Test
-    public void shouldGet() throws Exception {
-        // Given 
+    public void shouldGet() {
+        // Given
         String gidValue = "10";
         GId gid = new GId(gidValue);
         EventRepresentation retrieved = new EventRepresentation();
@@ -86,19 +82,19 @@ public class EventApiImplTest {
         // When
         EventRepresentation event = eventApi.getEvent(gid);
 
-        // Then 
+        // Then
         assertThat(event, sameInstance(retrieved));
     }
 
     @Test
-    public void shouldDelete() throws Exception {
-        // Given 
+    public void shouldDelete() {
+        // Given
         String gidValue = "10";
         GId gid = new GId(gidValue);
         EventRepresentation eventToDelete = new EventRepresentation();
         eventToDelete.setId(gid);
 
-        // When 
+        // When
         eventApi.delete(eventToDelete);
 
         // Then
@@ -106,7 +102,7 @@ public class EventApiImplTest {
     }
 
     @Test
-    public void shouldDeleteByTypeFilter() throws Exception {
+    public void shouldDeleteByTypeFilter() {
         // Given
         EventFilter filter = new EventFilter().byType(TYPE);
         String eventsByTypeUrl = EVENTS_COLLECTION_URL + "?type=" + TYPE;
@@ -121,7 +117,7 @@ public class EventApiImplTest {
     }
 
     @Test
-    public void shouldDeleteByEmptyFilter() throws Exception {
+    public void shouldDeleteByEmptyFilter() {
         // Given
         EventFilter emptyFilter = new EventFilter();
         String eventsUrl = EVENTS_COLLECTION_URL;
@@ -135,14 +131,18 @@ public class EventApiImplTest {
         verify(restConnector, times(1)).delete(eventsUrl);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testDeleteByNullFilter() {
-        eventApi.deleteEventsByFilter(null);
+        // When
+        Throwable thrown = catchThrowable(() -> eventApi.deleteEventsByFilter(null));
+
+        // Then
+        assertThat(thrown, is(instanceOf(IllegalArgumentException.class)));
     }
 
     @Test
     public void shouldRetrieveEventCollection() throws SDKException {
-        //Given
+        // Given
         EventCollection expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
 
@@ -155,7 +155,7 @@ public class EventApiImplTest {
 
     @Test
     public void shouldRetrieveEventCollectionByEmptyFilter() throws SDKException {
-        //Given
+        // Given
         when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(EVENTS_COLLECTION_URL);
         EventCollection expected = new EventCollectionImpl(restConnector, EVENTS_COLLECTION_URL,
                 DEFAULT_PAGE_SIZE);
@@ -169,8 +169,8 @@ public class EventApiImplTest {
     }
 
     @Test
-    public void shouldRetrieveEventsByTypeFilter() throws Exception {
-        // Given 
+    public void shouldRetrieveEventsByTypeFilter() {
+        // Given
         EventFilter filter = new EventFilter().byType(TYPE);
         String eventsByTypeUrl = EVENTS_COLLECTION_URL + "?type=" + TYPE;
         when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, filter.getQueryParams())).thenReturn(eventsByTypeUrl);
@@ -195,6 +195,5 @@ public class EventApiImplTest {
 
         // Then
         assertThat(result, sameInstance(created));
-
     }
 }

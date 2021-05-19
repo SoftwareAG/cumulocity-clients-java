@@ -19,16 +19,14 @@
  */
 package com.cumulocity.sdk.client.identity;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.idtype.XtId;
@@ -37,6 +35,8 @@ import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
 public class IdentityIT extends JavaSdkITBase {
@@ -51,7 +51,7 @@ public class IdentityIT extends JavaSdkITBase {
 
     private boolean notFound;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         identity = platform.getIdentityApi();
         input = new ArrayList<>();
@@ -59,7 +59,7 @@ public class IdentityIT extends JavaSdkITBase {
         notFound = false;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SDKException {
         for (ExternalIDRepresentation e : input) {
             try {
@@ -168,16 +168,16 @@ public class IdentityIT extends JavaSdkITBase {
     // ------------------------------------------------------------------------
     private void shouldGetBackTheExternalId() throws SDKException {
         collection1 = identity.getExternalIdsOfGlobalId(input.get(0).getManagedObject().getId()).get();
-        assertEquals(1, collection1.getExternalIds().size());
-        assertEquals(input.get(0).getExternalId(), collection1.getExternalIds().get(0).getExternalId());
-        assertEquals(input.get(0).getType(), collection1.getExternalIds().get(0).getType());
-        assertEquals(input.get(0).getManagedObject().getId().getValue(), collection1.getExternalIds().get(0).getManagedObject().getId()
-                .getValue());
+        assertThat(collection1.getExternalIds()).hasSize(1);
+        assertThat(collection1.getExternalIds().get(0).getExternalId()).isEqualTo(input.get(0).getExternalId());
+        assertThat(collection1.getExternalIds().get(0).getType()).isEqualTo(input.get(0).getType());
+        assertThat(collection1.getExternalIds().get(0).getManagedObject().getId().getValue())
+                .isEqualTo(input.get(0).getManagedObject().getId().getValue());
     }
 
     private void shouldGetBackAllTheIds() throws SDKException {
         collection1 = identity.getExternalIdsOfGlobalId(input.get(0).getManagedObject().getId()).get();
-        assertEquals(input.size(), collection1.getExternalIds().size());
+        assertThat(collection1.getExternalIds()).hasSameSizeAs(input);
 
         Map<String, ExternalIDRepresentation> result = new HashMap<String, ExternalIDRepresentation>();
 
@@ -187,14 +187,14 @@ public class IdentityIT extends JavaSdkITBase {
 
         for (int index = 0; index < input.size(); index++) {
             ExternalIDRepresentation rep = result.get(input.get(index).getExternalId());
-            assertNotNull(rep);
-            assertEquals(input.get(index).getType(), rep.getType());
-            assertEquals(input.get(index).getManagedObject().getId().getValue(), rep.getManagedObject().getId().getValue());
+            assertThat(rep).isNotNull();
+            assertThat(rep.getType()).isEqualTo(input.get(index).getType());
+            assertThat(rep.getManagedObject().getId().getValue()).isEqualTo(input.get(index).getManagedObject().getId().getValue());
         }
     }
 
     private void shouldNotBeFound() {
-        assertTrue(notFound);
+        assertThat(notFound).isTrue();
     }
 
 }

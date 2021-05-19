@@ -23,18 +23,19 @@ import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.util.Properties;
 
 public class JavaSdkITBase {
+
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
     protected static PlatformImpl bootstrapPlatform;
 
-    @BeforeClass
+    @BeforeAll
     public static void createTenantWithApplication() throws Exception {
         platform = createPlatform(false);
         bootstrapPlatform = createPlatform(true);
@@ -46,7 +47,7 @@ public class JavaSdkITBase {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTenantAndApplication() throws Exception {
         tenantCreator = new TenantCreator(platform);
         tenantCreator.removeTenant();

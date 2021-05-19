@@ -1,9 +1,11 @@
 package com.cumulocity.lpwan.payload.service;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 
@@ -17,7 +19,7 @@ public class DecoderUtilTest {
         Double actualResult = DecoderUtil.offset(value, offset);
         assertEquals(expectedResult, actualResult);
     }
-    
+
     @Test
     public void addNegativeMultiplier() {
         Double value = (double) -19999;
@@ -26,7 +28,7 @@ public class DecoderUtilTest {
         Double actualResult = DecoderUtil.multiply(value, multiplier);
         assertEquals(expectedResult, actualResult);
     }
-    
+
     @Test
     public void bcdToNumber() {
         String hex = "45";
@@ -53,19 +55,25 @@ public class DecoderUtilTest {
         }
     }
 
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfPayloadLengthNotSufficientInExtractDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractDecimalFromHex("0103A1DE79C1", 16, 40);
+    @Test
+    public void shouldThrowExceptionIfPayloadLengthNotSufficientInExtractDecimalFromHex() {
+        Throwable thrown = catchThrowable(() -> DecoderUtil.extractDecimalFromHex("0103A1DE79C1", 16, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
     }
 
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfPayloadPartExceeds32bitsInExtractDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractDecimalFromHex("0103A1DE79C1", 8, 40);
+    @Test
+    public void shouldThrowExceptionIfPayloadPartExceeds32bitsInExtractDecimalFromHex() {
+        Throwable thrown = catchThrowable(() -> DecoderUtil.extractDecimalFromHex("0103A1DE79C1", 8, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
     }
 
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfUndefinedPayloadInExtractDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractDecimalFromHex(null, 16, 40);
+    @Test
+    public void shouldThrowExceptionIfUndefinedPayloadInExtractDecimalFromHex() {
+        Throwable thrown = catchThrowable(() -> DecoderUtil.extractDecimalFromHex(null, 16, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
     }
 
     @Test
@@ -118,75 +126,81 @@ public class DecoderUtilTest {
         }
     }
 
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfPayloadLengthNotSufficientInExtractSignedDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractSignedDecimalFromHex("0103A1DE79C1", 16, 40);
-    }
-
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfPayloadPartExceeds32bitsInExtractSignedDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractSignedDecimalFromHex("0103A1DE79C1", 8, 40);
-    }
-
-    @Test(expected = PayloadDecodingFailedException.class)
-    public void shouldThrowExceptionIfUndefinedPayloadInExtractSignedDecimalFromHex() throws PayloadDecodingFailedException {
-        DecoderUtil.extractSignedDecimalFromHex(null, 16, 40);
-    }
-    
     @Test
-    public void signedBcdToNumber() {        
+    public void shouldThrowExceptionIfPayloadLengthNotSufficientInExtractSignedDecimalFromHex() {
+        Throwable thrown = catchThrowable(() -> DecoderUtil.extractSignedDecimalFromHex("0103A1DE79C1", 16, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionIfPayloadPartExceeds32bitsInExtractSignedDecimalFromHex() {
+        Throwable thrown = catchThrowable(() -> DecoderUtil.extractSignedDecimalFromHex("0103A1DE79C1", 8, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionIfUndefinedPayloadInExtractSignedDecimalFromHex() {
+        Throwable thrown = catchThrowable(() ->  DecoderUtil.extractSignedDecimalFromHex(null, 16, 40));
+
+        Assertions.assertThat(thrown).isInstanceOf(PayloadDecodingFailedException.class);
+    }
+
+    @Test
+    public void signedBcdToNumber() {
         String hex = "00";
         Integer expectedResult = 0;
-        
+
         String hex1 = "72";
         Integer expectedResult1 = -28;
-        
+
         String hex2 = "499";
         Integer expectedResult2 = 499;
-        
+
         String hex3 = "501";
         Integer expectedResult3 = -499;
-        
+
         String hex4 = "500";
         Integer expectedResult4 = -500;
-        
+
         String hex5 = "9999";
         Integer expectedResult5 = -1;
-        
+
         try {
             Integer actualResult = DecoderUtil.extractSignedBCDFromHex(hex, 0, 8);
             assertEquals(expectedResult, actualResult);
-            
+
             Integer actualResult1 = DecoderUtil.extractSignedBCDFromHex(hex1, 0, 8);
             assertEquals(expectedResult1, actualResult1);
-            
+
             Integer actualResult2 = DecoderUtil.extractSignedBCDFromHex(hex2, 0, 12);
             assertEquals(expectedResult2, actualResult2);
-            
+
             Integer actualResult3 = DecoderUtil.extractSignedBCDFromHex(hex3, 0, 12);
             assertEquals(expectedResult3, actualResult3);
-            
+
             Integer actualResult4 = DecoderUtil.extractSignedBCDFromHex(hex4, 0, 12);
             assertEquals(expectedResult4, actualResult4);
-            
+
             Integer actualResult5 = DecoderUtil.extractSignedBCDFromHex(hex5, 0, 16);
             assertEquals(expectedResult5, actualResult5);
         } catch (PayloadDecodingFailedException e) {
             fail();
         }
     }
-    
+
     @Test
     public void convertingLittleEndianToBigEndian() {
         try {
             String actualResult = DecoderUtil.convertHexToBigEndianOrdering("5A109061", 0, 32);
             String expectedResult = "6190105A";
             assertEquals(expectedResult, actualResult);
-            
+
             String actualResult2 = DecoderUtil.convertHexToBigEndianOrdering("5A109061", 8, 24);
             String expectedResult2 = "619010";
             assertEquals(expectedResult2, actualResult2);
-            
+
         } catch (PayloadDecodingFailedException e) {
             fail();
         }

@@ -27,12 +27,12 @@ import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.google.common.net.HttpHeaders;
 import org.glassfish.jersey.client.ClientProperties;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -49,7 +49,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
 public class RestConnectorTest {
 
     private static final String PATH = "path";
@@ -62,20 +62,20 @@ public class RestConnectorTest {
     @Mock
     private Response response;
 
-    @Mock
+    @Mock(lenient = true)
     private Invocation.Builder typeBuilder;
 
     private PlatformParameters clientParameters = new PlatformParameters();
 
-    @Mock
+    @Mock(lenient = true)
     private Client client;
 
-    @Mock
+    @Mock(lenient = true)
     private ResponseParser parser;
 
     private RestConnector restConnector;
 
-    @Before
+    @BeforeEach
     public void setup() {
         restConnector = new RestConnector(clientParameters, parser, client);
 
@@ -85,7 +85,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldRetrieveResource() throws Exception {
+    public void shouldRetrieveResource() {
         // Given
         Response response = Response.accepted().build();
         when(webResource.request()).thenReturn(typeBuilder);
@@ -104,7 +104,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostBaseRepresentation() throws Exception {
+    public void shouldPostBaseRepresentation() {
         // Given
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
@@ -119,7 +119,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingId() throws Exception {
+    public void shouldPostRepresentationSupportingId() {
         // Given
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
@@ -154,7 +154,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingIdWithNoResponseBodyAndNoLocation() throws Exception {
+    public void shouldPostRepresentationSupportingIdWithNoResponseBodyAndNoLocation() {
         // Given
         clientParameters.setRequireResponseBody(false);
 
@@ -182,20 +182,20 @@ public class RestConnectorTest {
     private void returnResponseWhenSending() {
         when(webResource.request()).thenReturn(typeBuilder);
         when(typeBuilder.accept(mediaType)).thenReturn(typeBuilder);
-        mockDefaultAcceptHeader();
+        acceptDefaultMediaType();
     }
 
-    private void mockDefaultAcceptHeader() {
+    private void acceptDefaultMediaType() {
         when(typeBuilder.accept(CumulocityMediaType.WILDCARD)).thenReturn(typeBuilder);
         when(typeBuilder.header(eq(HttpHeaders.ACCEPT), any())).thenReturn(typeBuilder);
     }
 
     @Test
-    public void shouldDelete() throws Exception {
+    public void shouldDelete() {
         // Given
         when(webResource.request()).thenReturn(typeBuilder);
         when(typeBuilder.delete()).thenReturn(response);
-        mockDefaultAcceptHeader();
+        acceptDefaultMediaType();
 
         // When
         restConnector.delete(PATH);
@@ -205,7 +205,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPutBaseRepresentation() throws Exception {
+    public void shouldPutBaseRepresentation() {
         // Given
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
@@ -225,7 +225,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPutRepresentationSupportingId() throws Exception {
+    public void shouldPutRepresentationSupportingId() {
         // Given
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPut(representation);
@@ -260,7 +260,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPutRepresentationSupportingIdWithNoResponseBodyAndNoLocation() throws Exception {
+    public void shouldPutRepresentationSupportingIdWithNoResponseBodyAndNoLocation() {
         // Given
         clientParameters.setRequireResponseBody(false);
 
@@ -279,7 +279,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldAddHeaderFormInterceptor() throws Exception {
+    public void shouldAddHeaderFormInterceptor() {
         // Given
         clientParameters.registerInterceptor(new HttpClientInterceptor() {
             @Override
@@ -303,7 +303,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldNotAddHeaderFormInterceptorAfterRemovingInterceptor() throws Exception {
+    public void shouldNotAddHeaderFormInterceptorAfterRemovingInterceptor() {
         // given
         HttpClientInterceptor addHeaderFake = new HttpClientInterceptor() {
             @Override

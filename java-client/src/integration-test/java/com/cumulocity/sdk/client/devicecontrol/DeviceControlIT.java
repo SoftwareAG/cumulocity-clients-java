@@ -31,9 +31,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.Agent;
 import com.cumulocity.model.idtype.GId;
@@ -65,7 +65,7 @@ public class DeviceControlIT extends JavaSdkITBase {
     private FixedRatePoller poller = null;
     private OperationCollectionRepresentation allOperations;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         createManagedObjects();
 
@@ -74,7 +74,7 @@ public class DeviceControlIT extends JavaSdkITBase {
         allOperations = null;
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         if (poller != null) {
             poller.stop();

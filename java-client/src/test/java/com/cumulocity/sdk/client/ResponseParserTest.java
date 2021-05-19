@@ -19,8 +19,10 @@
  */
 package com.cumulocity.sdk.client;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.when;
 
@@ -29,10 +31,10 @@ import java.net.URI;
 import javax.ws.rs.core.MediaType;
 
 import javax.ws.rs.core.Response;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -50,12 +52,9 @@ public class ResponseParserTest {
     @Mock
     private Response response;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private ResponseParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         MockitoAnnotations.initMocks(this);
 
@@ -63,7 +62,7 @@ public class ResponseParserTest {
     }
 
     @Test
-    public void shouldParse() throws Exception {
+    public void shouldParse() {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
@@ -100,12 +99,12 @@ public class ResponseParserTest {
         when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
         when(response.readEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
 
-        // Then
-        thrown.expect(SDKException.class);
-        thrown.expectMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation.toString());
-
         // When
-        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
+        Throwable thrown = catchThrowable(() -> parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS));
+
+        // Then
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
+                .hasMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation);
     }
 
     @Test
@@ -116,12 +115,12 @@ public class ResponseParserTest {
         when(response.readEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
         when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
 
-        // Then
-        thrown.expect(SDKException.class);
-        thrown.expectMessage("Http status code: " + ERROR_STATUS);
-
         // When
-        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
+        Throwable thrown = catchThrowable(() -> parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS));
+
+        // Then
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
+                .hasMessage("Http status code: %s", ERROR_STATUS);
     }
 
     @Test
