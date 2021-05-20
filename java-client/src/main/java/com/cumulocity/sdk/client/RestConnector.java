@@ -53,9 +53,9 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 import static javax.ws.rs.core.Response.Status.*;
-import static org.eclipse.jetty.util.StringUtil.isNotBlank;
 
 @Slf4j
 public class RestConnector implements RestOperations {
@@ -64,7 +64,7 @@ public class RestConnector implements RestOperations {
 
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
-    private static final String TFA_TOKEN_HEADER = "TFAToken";
+    protected static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final PlatformParameters platformParameters;
 
