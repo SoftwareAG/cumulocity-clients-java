@@ -64,7 +64,7 @@ public class RestConnector implements RestOperations {
 
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
-    private static final String TFA_TOKEN_HEADER = "TFAToken";
+    protected static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final PlatformParameters platformParameters;
 

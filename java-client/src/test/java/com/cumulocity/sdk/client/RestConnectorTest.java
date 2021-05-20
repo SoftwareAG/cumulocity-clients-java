@@ -26,10 +26,11 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.google.common.net.HttpHeaders;
 import org.glassfish.jersey.client.ClientProperties;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -65,7 +66,7 @@ public class RestConnectorTest {
     @Mock(lenient = true)
     private Invocation.Builder typeBuilder;
 
-    private PlatformParameters clientParameters = new PlatformParameters();
+    private PlatformParameters clientParameters = spy(new PlatformParameters());
 
     @Mock(lenient = true)
     private Client client;
@@ -358,5 +359,59 @@ public class RestConnectorTest {
         //then
         Integer readTimeout = (Integer) client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT);
         assertThat("Should be default 360000", readTimeout == 360000);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'app-key',1"})
+    public void shouldIncludeApplicationKeyHeader(String applicationKey, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getApplicationKey()).thenReturn(applicationKey);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.X_CUMULOCITY_APPLICATION_KEY), invocations > 0 ? eq(applicationKey) : any());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'request-origin',1"})
+    public void shouldIncludeTfaTokenHeader(String tfaToken, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getTfaToken()).thenReturn(tfaToken);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.TFA_TOKEN_HEADER), invocations > 0 ? eq(tfaToken) : any());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'request-origin',1"})
+    public void shouldIncludeRequestOriginHeader(String requestOrigin, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getRequestOrigin()).thenReturn(requestOrigin);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.X_CUMULOCITY_REQUEST_ORIGIN), invocations > 0 ? eq(requestOrigin) : any());
     }
 }
