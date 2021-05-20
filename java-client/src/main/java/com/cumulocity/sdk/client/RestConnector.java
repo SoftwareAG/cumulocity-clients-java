@@ -53,9 +53,9 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 import static javax.ws.rs.core.Response.Status.*;
-import static org.eclipse.jetty.util.StringUtil.isNotBlank;
 
 @Slf4j
 public class RestConnector implements RestOperations {
