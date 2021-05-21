@@ -56,8 +56,8 @@ import java.net.Proxy;
 import java.net.URL;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.*;
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
-import static org.eclipse.jetty.util.StringUtil.isNotBlank;
 
 public class RestConnector implements RestOperations {
 
