@@ -183,7 +183,11 @@ public class PlatformProperties {
                             .password(microserviceBootstrapPassword)
                             .oAuthAccessToken(null)
                             .xsrfToken(null)
-                            .appKey(applicationKey)
+// We should not set the key for the bootstrap user (which causes attaching the `X-Cumulocity-Application-Key` header to every request
+// sent by the bootstrap user) as we don't have the guarantee that the application exists. See the LegacyMicroserviceRepository.register(..)
+// methods where in case of a missing application a new one is created.
+// Bootstrap user only uses requests on `/application/*` endpoints so it should not affect the billing.
+                            //.appKey(applicationKey)
                             .build())
                     .microserviceUser(PER_TENANT.equals(isolationLevel) ? MicroserviceCredentials.builder()
                             .tenant(microserviceTenant)
