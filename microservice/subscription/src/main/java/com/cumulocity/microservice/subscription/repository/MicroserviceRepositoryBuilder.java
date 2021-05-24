@@ -5,7 +5,6 @@ import com.cumulocity.microservice.subscription.repository.impl.CurrentMicroserv
 import com.cumulocity.microservice.subscription.repository.impl.LegacyMicroserviceRepository;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -21,6 +20,7 @@ public class MicroserviceRepositoryBuilder {
     private CredentialsSwitchingPlatform connector;
     private Environment environment;
     private String applicationName;
+    private String applicationKey;
 
     /**
      * creates MicroserviceRepository implementation according to microservice isolation env variable:
@@ -42,7 +42,7 @@ public class MicroserviceRepositoryBuilder {
         if (notNullEnvironment.containsProperty(MICROSERVICE_ISOLATION_ENV_NAME)) {
             return new CurrentMicroserviceRepository(nonNullConnector, api);
         } else {
-            return new LegacyMicroserviceRepository(applicationName, nonNullConnector, api);
+            return new LegacyMicroserviceRepository(applicationName, applicationKey, nonNullConnector, api);
         }
     }
 
@@ -70,6 +70,11 @@ public class MicroserviceRepositoryBuilder {
 
     public MicroserviceRepositoryBuilder applicationName(String applicationName){
         this.applicationName = applicationName;
+        return this;
+    }
+
+    public MicroserviceRepositoryBuilder applicationKey(String applicationKey){
+        this.applicationKey = applicationKey;
         return this;
     }
 
