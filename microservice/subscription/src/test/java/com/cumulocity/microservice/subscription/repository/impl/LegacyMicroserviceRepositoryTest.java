@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -32,6 +34,7 @@ public class LegacyMicroserviceRepositoryTest {
 
     private static final String BASE_URL = "http://c8y.com";
     private static final String CURRENT_APPLICATION_NAME = "current-application-name";
+    private static final String CURRENT_APPLICATION_KEY = "current-application-key";
 
     private final FakeCredentialsSwitchingPlatform platform = new FakeCredentialsSwitchingPlatform();
 
@@ -39,22 +42,13 @@ public class LegacyMicroserviceRepositoryTest {
 
     @BeforeEach
     public void setup() {
-        MockEnvironment environment = new MockEnvironment();
-
-        MicroserviceRepositoryBuilder builder = microserviceRepositoryBuilder()
-                .baseUrl(Suppliers.ofInstance(BASE_URL))
-                .connector(platform)
-                .environment(environment)
-                .username("test")
-                .password("test")
-                .applicationName(CURRENT_APPLICATION_NAME);
-        repository = (LegacyMicroserviceRepository) builder.build();
+        repository = givenRepository(CURRENT_APPLICATION_NAME, CURRENT_APPLICATION_KEY);
     }
 
     @Test
     public void shouldNotRequireCurrentApplicationName(){
         //when
-        MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
+        MicroserviceRepository repository = givenRepository(null, null);
 
         //then
         assertThat(repository).isNotNull();
@@ -63,7 +57,7 @@ public class LegacyMicroserviceRepositoryTest {
     @Test
     public void shouldNotRegisterApplicationWhenApplicationNameWasNotProvidedToConstructor(){
         //given
-        final MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
+        final MicroserviceRepository repository = givenRepository(null, null);
 
         //when
         Throwable throwable = catchThrowable(() -> repository.register(microserviceMetadataRepresentation().build()));
@@ -77,7 +71,7 @@ public class LegacyMicroserviceRepositoryTest {
     @Test
     public void shouldNotGetCurrentApplicationWhenApplicationNameWasNotProvidedToConstructor(){
         //given
-        final MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
+        final MicroserviceRepository repository = givenRepository(null, null);
 
         //when
         Throwable throwable = catchThrowable(() -> repository.getCurrentApplication());
@@ -95,6 +89,7 @@ public class LegacyMicroserviceRepositoryTest {
                 .id("3")
                 .type(MICROSERVICE)
                 .name(CURRENT_APPLICATION_NAME)
+                .key(CURRENT_APPLICATION_KEY)
                 .build();
         givenApplications(existing);
 
@@ -114,6 +109,7 @@ public class LegacyMicroserviceRepositoryTest {
                 .id("3")
                 .type(MICROSERVICE)
                 .name("cep")
+                .key("cep-key")
                 .build();
         givenApplications(existing);
 
@@ -146,6 +142,7 @@ public class LegacyMicroserviceRepositoryTest {
                 .id("3")
                 .type(MICROSERVICE)
                 .name(CURRENT_APPLICATION_NAME)
+                .key(CURRENT_APPLICATION_KEY)
                 .build();
         givenApplications(existing);
 
@@ -171,9 +168,16 @@ public class LegacyMicroserviceRepositoryTest {
         assertThat(platform.take(byMethod(POST))).isEmpty();
     }
 
-    @Test
-    public void shouldRegisterApplicationWhenThereIsNoExistingWhenOneArgumentRegisterMethodIsUsed() {
+    @ParameterizedTest
+    @CsvSource({
+            "'notExistingApp', , 'notExistingApp-application-key'",
+            "'notExistingApp', '', 'notExistingApp-application-key'",
+            "'notExistingApp', 'notExistingApp-key', 'notExistingApp-key'",
+    })
+    public void shouldRegisterApplicationWhenThereIsNoExistingWhenOneArgumentRegisterMethodIsUsed(String appName, String configuredAppKey, String resultAppKey) {
         givenApplications();
+        MicroserviceRepository repository = givenRepository(appName, configuredAppKey);
+
         repository.register(microserviceMetadataRepresentation().build());
 
         Collection<FakeCredentialsSwitchingPlatform.Request> posts = platform.take(byMethod(POST));
@@ -183,18 +187,25 @@ public class LegacyMicroserviceRepositoryTest {
                 .extracting("body")
                 .containsExactly(applicationRepresentation()
                         .id("0")
-                        .name(CURRENT_APPLICATION_NAME)
+                        .name(appName)
                         .type("MICROSERVICE")
-                        .key(String.format("%s-application-key", CURRENT_APPLICATION_NAME))
+                        .key(resultAppKey)
                         .requiredRoles(ImmutableList.<String>of())
                         .roles(ImmutableList.<String>of())
                         .build());
     }
 
-    @Test
-    public void shouldRegisterApplicationWhenThereIsNoExistingWhenDeprecatedRegisterMethodIsUsed() {
+    @ParameterizedTest
+    @CsvSource({
+            "'notExistingApp', , 'notExistingApp-application-key'",
+            "'notExistingApp', '', 'notExistingApp-application-key'",
+            "'notExistingApp', 'notExistingApp-key', 'notExistingApp-key'",
+    })
+    public void shouldRegisterApplicationWhenThereIsNoExistingWhenDeprecatedRegisterMethodIsUsed(String appName, String configuredAppKey, String resultAppKey) {
         givenApplications();
-        repository.register("notExistingApp", microserviceMetadataRepresentation().build());
+        MicroserviceRepository repository = givenRepository(CURRENT_APPLICATION_NAME, configuredAppKey);
+
+        repository.register(appName, microserviceMetadataRepresentation().build());
 
         Collection<FakeCredentialsSwitchingPlatform.Request> posts = platform.take(byMethod(POST));
         assertThat(posts).isNotEmpty();
@@ -203,21 +214,26 @@ public class LegacyMicroserviceRepositoryTest {
                 .extracting("body")
                 .containsExactly(applicationRepresentation()
                         .id("0")
-                        .name("notExistingApp")
+                        .name(appName)
                         .type("MICROSERVICE")
-                        .key("notExistingApp-application-key")
+                        .key(resultAppKey)
                         .requiredRoles(ImmutableList.<String>of())
                         .roles(ImmutableList.<String>of())
                         .build());
     }
 
-    @Test
-    public void shouldRegisterApplicationWithDeprecatedMethodWhenApplicationNameWasNotPassedToConstructor() {
+    @ParameterizedTest
+    @CsvSource({
+            "'notExistingApp', , 'notExistingApp-application-key'",
+            "'notExistingApp', '', 'notExistingApp-application-key'",
+            "'notExistingApp', 'notExistingApp-key', 'notExistingApp-key'",
+    })
+    public void shouldRegisterApplicationWithDeprecatedMethodWhenApplicationNameWasNotPassedToConstructor(String appName, String configuredAppKey, String resultAppKey) {
         //given
         givenApplications();
-        MicroserviceRepository repository = repositoryWithoutCurrentApplicationName();
+        MicroserviceRepository repository = givenRepository(null, configuredAppKey);
 
-        repository.register("notExistingApp", microserviceMetadataRepresentation().build());
+        repository.register(appName, microserviceMetadataRepresentation().build());
 
         Collection<FakeCredentialsSwitchingPlatform.Request> posts = platform.take(byMethod(POST));
         assertThat(posts).isNotEmpty();
@@ -226,9 +242,9 @@ public class LegacyMicroserviceRepositoryTest {
                 .extracting("body")
                 .containsExactly(applicationRepresentation()
                         .id("0")
-                        .name("notExistingApp")
+                        .name(appName)
                         .type("MICROSERVICE")
-                        .key("notExistingApp-application-key")
+                        .key(resultAppKey)
                         .requiredRoles(ImmutableList.<String>of())
                         .roles(ImmutableList.<String>of())
                         .build());
@@ -327,15 +343,16 @@ public class LegacyMicroserviceRepositoryTest {
         return user;
     }
 
-    private MicroserviceRepository repositoryWithoutCurrentApplicationName() {
-        MockEnvironment environment = new MockEnvironment();
-        return microserviceRepositoryBuilder()
+    private LegacyMicroserviceRepository givenRepository(String applicationName, String applicationKey) {
+        MicroserviceRepositoryBuilder builder = microserviceRepositoryBuilder()
                 .baseUrl(Suppliers.ofInstance(BASE_URL))
                 .connector(platform)
-                .environment(environment)
+                .environment(new MockEnvironment())
                 .username("test")
                 .password("test")
-                .build();
+                .applicationName(applicationName)
+                .applicationKey(applicationKey);
+        return (LegacyMicroserviceRepository) builder.build();
     }
 
 }
