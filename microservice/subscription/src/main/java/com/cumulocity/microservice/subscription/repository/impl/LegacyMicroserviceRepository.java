@@ -32,19 +32,21 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     private final CredentialsSwitchingPlatform platform;
     private final ApplicationApiRepresentation api;
     private final String applicationName;
+    private String applicationKey;
 
-    public LegacyMicroserviceRepository(String applicationName, CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
-        if(isBlank(applicationName)){
+    public LegacyMicroserviceRepository(String applicationName, String applicationKey, CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
+        if (isBlank(applicationName)) {
             log.warn("Current application name was not provided to LegacyMicroserviceRepository. Please correct LegacyMicroserviceRepository usage in your code.");
         }
         this.applicationName = applicationName;
+        this.applicationKey = applicationKey;
         this.platform = platform;
         this.api = api;
     }
 
     @Deprecated
     public LegacyMicroserviceRepository(CredentialsSwitchingPlatform platform, ApplicationApiRepresentation api) {
-        this(null, platform, api);
+        this(null, null, platform, api);
     }
 
     @Override
@@ -78,7 +80,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
     @Override
     public Iterable<ApplicationUserRepresentation> getSubscriptions() {
         ApplicationRepresentation currentApplication = getCurrentApplication();
-        Preconditions.checkState(currentApplication != null,"Cannot get subscriptions. Current application not found.");
+        Preconditions.checkState(currentApplication != null, "Cannot get subscriptions. Current application not found.");
         return getSubscriptions(currentApplication.getId());
     }
 
@@ -105,7 +107,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
         try {
             final ApplicationRepresentation application = new ApplicationRepresentation();
             application.setName(applicationName);
-            application.setKey(applicationName + "-application-key");
+            application.setKey(isNotBlank(applicationKey) ? applicationKey :  applicationName + "-application-key");
             application.setType(MICROSERVICE);
             application.setRequiredRoles(representation.getRequiredRoles());
             application.setRoles(representation.getRoles());
