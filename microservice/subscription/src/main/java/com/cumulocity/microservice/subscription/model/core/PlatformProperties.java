@@ -76,6 +76,9 @@ public class PlatformProperties {
 
     public void setApplicationKey(String applicationKey) {
         this.applicationKey = applicationKey;
+        if (microserviceUser instanceof MicroserviceCredentials) {
+            ((MicroserviceCredentials) microserviceUser).setAppKey(applicationKey);
+        }
     }
 
     public void setUrl(Supplier<String> url) {
@@ -288,7 +291,7 @@ public class PlatformProperties {
         }
 
         public String toString() {
-            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", applicationKey=" + this.applicationKey +", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", microserviceUser=" + this.microserviceUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
+            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", applicationKey=" + this.applicationKey + ", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", microserviceUser=" + this.microserviceUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
         }
     }
 }
