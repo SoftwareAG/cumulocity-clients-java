@@ -5,6 +5,7 @@ import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepres
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,7 @@ import java.util.stream.StreamSupport;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 
+@Slf4j
 @Repository
 public class MicroserviceSubscriptionsRepository {
     @ConstructorProperties({"repository", "platformProperties"})
@@ -95,12 +97,23 @@ public class MicroserviceSubscriptionsRepository {
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
     public Optional<ApplicationRepresentation> register(MicroserviceMetadataRepresentation metadata) {
-        return ofNullable(repository.register(metadata));
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
     }
 
     @Deprecated
     public Optional<ApplicationRepresentation> register(String applicationName, MicroserviceMetadataRepresentation metadata) {
-        return ofNullable(repository.register(applicationName, metadata));
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(applicationName, metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
+    }
+
+    private void checkRegisteredApplicationKey(Optional<ApplicationRepresentation> application) {
+        if (application.isPresent() && !application.get().getKey().equals(platformProperties.getApplicationKey())) {
+            log.warn("Configured application key '{}' differs from the registered application key: '{}'. Updating configuration.", platformProperties.getApplicationKey(), application.get().getKey());
+            platformProperties.setApplicationKey(application.get().getKey());
+        }
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
