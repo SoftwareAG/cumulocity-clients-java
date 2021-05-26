@@ -44,6 +44,8 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryApiImpl;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
+import com.cumulocity.sdk.client.messaging.notifications.SubscriptionsApi;
+import com.cumulocity.sdk.client.messaging.notifications.SubscriptionsApiImpl;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.SystemOptionApiImpl;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
@@ -275,6 +277,12 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public SystemOptionApi getSystemOptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new SystemOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant());
+    }
+
+    @Override
+    public SubscriptionsApi getSubscriptionsApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new SubscriptionsApiImpl(this, restConnector);
     }
 
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
