@@ -1,15 +1,12 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import static java.util.Objects.requireNonNull;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,14 +19,6 @@ public class SubscriptionsApiImpl implements SubscriptionsApi {
     private final RestConnector restConnector;
     private final static String DEVICE_ID_MARKER = "DEVICE_ID";
     private final static String SUBSCRIPTION_NAME_MARKER = "SUBSCRIPTION_NAME";
-    private final static String SUBSCRIPTION_REQUEST = "{\"source\": { \"id\": \"" + DEVICE_ID_MARKER + "\" }, \"context\": \"mo\", " +
-            "\"subscription\": \"" + SUBSCRIPTION_NAME_MARKER + "\", \"filter\": \"measurements\", " +
-            "\"fragments\": \"test-fragment\", \"isVolatile\": false}";
-//
-//    public SubscriptionsApiImpl(PlatformParameters platformParameters,
-//                                         RestConnector restConnector) {
-//        this.restConnector = restConnector;
-//    }
 
     @Override
     public Subscription subscribeToDevice(SubscriptionDescription description) {
