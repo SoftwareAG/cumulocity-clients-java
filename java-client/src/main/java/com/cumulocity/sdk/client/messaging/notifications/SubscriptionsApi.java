@@ -1,16 +1,19 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
+import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionRepresentation;
+import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionCollectionRepresentation;
+
 public interface SubscriptionsApi {
 
-    Subscription subscribeToDevice(SubscriptionDescription description);
+    NotificationSubscriptionRepresentation subscribe(NotificationSubscriptionRepresentation description);
     
-    Subscription getSubscriptionById(String id);
+    NotificationSubscriptionRepresentation getById(String id);
     
-    SubscriptionPage getSubscriptionsBySource(String deviceId);
+    NotificationSubscriptionCollectionRepresentation getBySource(String deviceId);
 
-    SubscriptionPage getSubscriptionsBySource(String deviceId, int page, int pageSize);
+    NotificationSubscriptionCollectionRepresentation getBySource(String deviceId, int page, int pageSize);
     
-    void deleteSubscriptionById(String subscriptionId);
+    void deleteById(String subscriptionId);
     
-    void deleteSubscriptionBySource(String deviceId);
+    void deleteBySource(String deviceId);
 }
