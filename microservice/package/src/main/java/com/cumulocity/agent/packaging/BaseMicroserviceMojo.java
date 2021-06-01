@@ -167,8 +167,6 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         if (jvmArgs == null || jvmArgs.isEmpty()) {
             return ImmutableList.<String>builder()
                     .add("-XX:+UseG1GC",
-                         "-XX:+DisableExplicitGC",
-                         "-XX:+ParallelRefProcEnabled",
                          "-XX:+UseStringDeduplication",
                          "-XX:MinHeapFreeRatio=25",
                          "-XX:MaxHeapFreeRatio=75"
