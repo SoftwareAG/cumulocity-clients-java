@@ -26,6 +26,7 @@ import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
+import com.cumulocity.sdk.client.rest.ProcessingMode;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -51,6 +52,11 @@ public class InventoryApiImpl implements InventoryApi {
     @Override
     public ManagedObjectRepresentation create(ManagedObjectRepresentation representation) throws SDKException {
         return restConnector.post(getMOCollectionUrl(), InventoryMediaType.MANAGED_OBJECT, representation);
+    }
+
+    @Override
+    public ManagedObjectRepresentation create(ManagedObjectRepresentation managedObject, ProcessingMode processingMode) throws SDKException {
+        return restConnector.post(getMOCollectionUrl(), InventoryMediaType.MANAGED_OBJECT, managedObject, processingMode.toHeader());
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.cumulocity.sdk.client.buffering.Future;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Map;
 
 public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException;
@@ -47,6 +48,8 @@ public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException;
 
     <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException;
+
+    <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation, Map<String, Object> headers) throws SDKException;
 
     <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException;
 

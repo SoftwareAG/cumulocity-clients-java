@@ -31,6 +31,7 @@ import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReader;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyWriter;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -51,6 +52,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
@@ -254,13 +257,19 @@ public class RestConnector implements RestOperations {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
-        Response response = httpPost(path, mediaType, mediaType, representation);
+        Response response = httpPost(path, mediaType, mediaType, representation, ImmutableMap.of());
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode(), OK.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
-        Response response = httpPost(path, mediaType, mediaType, representation);
+        Response response = httpPost(path, mediaType, mediaType, representation, ImmutableMap.of());
+        return parseResponseWithId(representation, response, CREATED.getStatusCode());
+    }
+
+    @Override
+    public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation, Map<String, Object> headers) throws SDKException {
+        Response response = httpPost(path, mediaType, mediaType, representation, headers);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
 
@@ -284,7 +293,7 @@ public class RestConnector implements RestOperations {
             final CumulocityMediaType accept,
             final Param representation,
             final Class<Result> clazz) {
-        Response response = httpPost(path, contentType, accept, representation);
+        Response response = httpPost(path, contentType, accept, representation, ImmutableMap.of());
         return parseResponseWithoutId(clazz, response, OK.getStatusCode(), CREATED.getStatusCode());
     }
 
@@ -347,8 +356,13 @@ public class RestConnector implements RestOperations {
         return responseParser.parse(response, type, responseCodes);
     }
 
-    private <T extends ResourceRepresentation> Response httpPost(String path, MediaType contentType, MediaType accept, T representation) {
+    private <T extends ResourceRepresentation> Response httpPost(String path,
+                                                                 MediaType contentType,
+                                                                 MediaType accept,
+                                                                 T representation,
+                                                                 Map<String, Object> headers) {
         Builder builder = client.target(path).request();
+        headers.forEach(builder::header);
 
         builder = addAcceptHeader(builder, accept);
         builder = addApplicationKeyHeader(builder);
