@@ -44,6 +44,7 @@ public class EnableContextSupportConfiguration {
                     protected String getContextId() {
                         final UserCredentials context = userContextService.getContext();
                         return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," +
+                                context.getAppKey() + "," +
                                 context.getOAuthAccessToken() + ":" + context.getXsrfToken() + "," +
                                 context.getTfaToken();
                     }
@@ -52,6 +53,7 @@ public class EnableContextSupportConfiguration {
                     protected String getContextId() {
                         final MicroserviceCredentials context = microserviceContextService.getContext();
                         return context.getTenant() + "/" + context.getUsername() + ":" + context.getPassword() + "," +
+                                context.getAppKey() + "," +
                                 context.getOAuthAccessToken() + ":" + context.getXsrfToken() + "," +
                                 context.getTfaToken();
                     }
