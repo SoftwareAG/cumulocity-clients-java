@@ -1,12 +1,13 @@
 package com.cumulocity.model.control;
 
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.svenson.JSONParser;
 
 import c8y.Relay;
 import c8y.Relay.RelayState;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class RelayTest {
 
@@ -15,17 +16,20 @@ public class RelayTest {
     private String relayRepresentationWithInvalidState = "{\"relayState\":\"MEH\"}";
 
     @Test
-    public final void testThatTheRepresentationOfTheEnumerationSerializesCorrectlyIfStateIsValid() {
+    final void testThatTheRepresentationOfTheEnumerationSerializesCorrectlyIfStateIsValid() {
         Relay relay = new Relay();
         relay.setRelayState(RelayState.OPEN);
         Relay newRelay = JSONParser.defaultJSONParser().parse(Relay.class, relayRepresentationWithValidState);
-        assertTrue(newRelay.getRelayState().equals(relay.getRelayState()));
+        assertThat(newRelay.getRelayState()).isEqualTo(relay.getRelayState());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public final void testThatTheRepresentationOfTheEnumerationDoesNotSerializeCorrectlyIfStateIsInvalid() {
-        JSONParser.defaultJSONParser().parse(Relay.class, relayRepresentationWithInvalidState);
-        // IllegalArgumentException should be thrown.
+    @Test
+    final void testThatTheRepresentationOfTheEnumerationDoesNotSerializeCorrectlyIfStateIsInvalid() {
+        // when
+        Throwable thrown = catchThrowable(() -> JSONParser.defaultJSONParser().parse(Relay.class, relayRepresentationWithInvalidState));
+
+        // then
+        assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
     }
 
 }

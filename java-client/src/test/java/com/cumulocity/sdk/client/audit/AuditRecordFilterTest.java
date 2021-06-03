@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.audit;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AuditRecordFilterTest {
 

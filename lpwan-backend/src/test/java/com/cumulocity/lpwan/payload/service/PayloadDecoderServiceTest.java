@@ -4,10 +4,10 @@ import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class PayloadDecoderServiceTest {
 

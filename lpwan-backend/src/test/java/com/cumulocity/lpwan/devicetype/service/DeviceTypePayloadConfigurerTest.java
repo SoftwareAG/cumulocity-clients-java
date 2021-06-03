@@ -6,15 +6,17 @@ import com.cumulocity.lpwan.payload.exception.DeviceTypeObjectNotFoundException;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DeviceTypePayloadConfigurerTest {
 
     @Mock
@@ -24,49 +26,56 @@ public class DeviceTypePayloadConfigurerTest {
     private DeviceTypeMapper deviceTypeMapper;
 
     private DeviceTypePayloadConfigurer deviceTypePayloadConfigurer;
-    
+
     private String tenantId = "tenantA";
 
-    @Before
+    @BeforeEach
     public void setup() {
         deviceTypePayloadConfigurer = new DeviceTypePayloadConfigurer(inventoryApi, deviceTypeMapper);
     }
 
-    @Test(expected = DeviceTypeObjectNotFoundException.class)
-    public void shouldThrowExceptionWhenLpwanFragmentNotFound() throws DeviceTypeObjectNotFoundException {
+    @Test
+    public void shouldThrowExceptionWhenLpwanFragmentNotFound() {
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
 
-        deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject);
+        Throwable thrown = catchThrowable(() -> deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject));
+
+        assertThat(thrown).isInstanceOf(DeviceTypeObjectNotFoundException.class);
     }
 
-    @Test(expected = DeviceTypeObjectNotFoundException.class)
-    public void shouldThrowExceptionWhenLpwanTypeNotFound() throws DeviceTypeObjectNotFoundException {
+    @Test
+    public void shouldThrowExceptionWhenLpwanTypeNotFound() {
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
         LpwanDevice lpwanDevice = new LpwanDevice();
         managedObject.set(lpwanDevice);
 
-        deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject);
+        Throwable thrown = catchThrowable(() -> deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject));
+
+        assertThat(thrown).isInstanceOf(DeviceTypeObjectNotFoundException.class);
     }
 
-    @Test(expected = DeviceTypeObjectNotFoundException.class)
-    public void shouldThrowExceptionWhenLpwanTypeNotCorrect() throws DeviceTypeObjectNotFoundException {
+    @Test
+    public void shouldThrowExceptionWhenLpwanTypeNotCorrect() {
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
         LpwanDevice lpwanDevice = new LpwanDevice();
         lpwanDevice.setType("wrong-syntax-for-device-type-path");
         managedObject.set(lpwanDevice);
 
-        deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject);
+        Throwable thrown = catchThrowable(() -> deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject));
+
+        assertThat(thrown).isInstanceOf(DeviceTypeObjectNotFoundException.class);
     }
 
-    @Test(expected = DeviceTypeObjectNotFoundException.class)
-    public void shouldThrowExceptionWhenTypeInventoryObjectNotFound() throws DeviceTypeObjectNotFoundException {
+    @Test
+    public void shouldThrowExceptionWhenTypeInventoryObjectNotFound() {
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
         LpwanDevice lpwanDevice = new LpwanDevice();
         lpwanDevice.setType("inventory/managedObjects/18002");
         managedObject.set(lpwanDevice);
 
-        deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject);
+        Throwable thrown = catchThrowable(() -> deviceTypePayloadConfigurer.getDeviceTypeObject(tenantId, managedObject));
 
+        assertThat(thrown).isInstanceOf(DeviceTypeObjectNotFoundException.class);
         verify(inventoryApi).get(eq(new GId("18002")));
     }
 
@@ -127,4 +136,4 @@ public class DeviceTypePayloadConfigurerTest {
         verify(deviceTypeMapper, times(1)).convertManagedObjectToDeviceType(dummyDeviceTypeObject);
 
     }
-} 
+}

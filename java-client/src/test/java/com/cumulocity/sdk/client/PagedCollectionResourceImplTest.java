@@ -25,18 +25,14 @@ import com.cumulocity.rest.representation.TestCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.sdk.client.common.UriMatcher;
 import javax.ws.rs.core.Response;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -52,8 +48,6 @@ public class PagedCollectionResourceImplTest {
 
     private static final int PAGE_SIZE = 333;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     PagedCollectionResource<Object, TestCollectionRepresentation<Object>> target;
 
@@ -63,7 +57,7 @@ public class PagedCollectionResourceImplTest {
     @Mock
     private RestConnector restConnector;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
@@ -194,16 +188,16 @@ public class PagedCollectionResourceImplTest {
         assertThat(page, sameInstance(expectedRep));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldGetPageValidInput() throws SDKException {
         // Given
         TestCollectionRepresentation input = null;
 
         // When
-        target.getPage(input, 5);
+        Throwable thrown = catchThrowable(() -> target.getPage(input, 5));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
     @Test
@@ -232,7 +226,7 @@ public class PagedCollectionResourceImplTest {
         TestCollectionRepresentation nextPage = target.getNextPage(input);
 
         // Then
-        assertNull(nextPage);
+        assertThat(nextPage, is(nullValue()));
     }
 
     @Test
@@ -261,7 +255,7 @@ public class PagedCollectionResourceImplTest {
         TestCollectionRepresentation prevPage = target.getPreviousPage(input);
 
         // Then
-        assertNull(prevPage);
+        assertThat(prevPage, is(nullValue()));
     }
 
     @Test

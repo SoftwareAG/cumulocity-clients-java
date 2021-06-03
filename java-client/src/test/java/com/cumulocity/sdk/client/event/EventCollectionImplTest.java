@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,11 +19,10 @@
  */
 package com.cumulocity.sdk.client.event;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.event.EventCollectionRepresentation;
@@ -33,19 +32,19 @@ public class EventCollectionImplTest {
 
     EventCollectionImpl target;
 
-    @Before
+    @BeforeEach
     public void setup() {
         target = new EventCollectionImpl(null, null, 0);
     }
 
     @Test
-    public void shouldHaveEventCollectionMediaType() throws Exception {
+    public void shouldHaveEventCollectionMediaType() {
         CumulocityMediaType mediaType = EventMediaType.EVENT_COLLECTION;
-        assertThat(target.getMediaType(), equalTo(mediaType));
+        assertThat(target.getMediaType()).isEqualTo(mediaType);
     }
 
     @Test
-    public void shouldHaveEventCollectionRepresentationResponseClass() throws Exception {
-        assertThat(target.getResponseClass(), equalTo(EventCollectionRepresentation.class));
+    public void shouldHaveEventCollectionRepresentationResponseClass() {
+        assertThat(target.getResponseClass()).isEqualTo(EventCollectionRepresentation.class);
     }
 }

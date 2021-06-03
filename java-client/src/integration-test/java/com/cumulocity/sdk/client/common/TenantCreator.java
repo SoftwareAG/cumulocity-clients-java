@@ -24,8 +24,9 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
 import com.cumulocity.sdk.client.PlatformImpl;
-import gherkin.deps.com.google.gson.Gson;
 import javax.ws.rs.core.Response;
+
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.client.Client;

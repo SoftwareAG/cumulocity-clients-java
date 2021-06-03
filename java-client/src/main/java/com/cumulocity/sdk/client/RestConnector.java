@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
+import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
@@ -35,12 +36,9 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -49,40 +47,24 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.*;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 import static javax.ws.rs.core.Response.Status.*;
 
 @Slf4j
 public class RestConnector implements RestOperations {
 
-    public static final class ProxyHttpURLConnectionFactory implements HttpUrlConnectorProvider.ConnectionFactory {
-
-        Proxy proxy;
-
-        public ProxyHttpURLConnectionFactory(PlatformParameters platformParameters) {
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(platformParameters.getProxyHost(), platformParameters.getProxyPort()));
-        }
-
-        @Override
-        public HttpURLConnection getConnection(URL url) throws IOException {
-            return (HttpURLConnection) url.openConnection(proxy);
-        }
-    }
-
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
 
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
-    private static final String TFA_TOKEN_HEADER = "TFAToken";
+    protected static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final PlatformParameters platformParameters;
 
@@ -191,7 +173,7 @@ public class RestConnector implements RestOperations {
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        builder = addAcceptHeader(builder, MediaType.valueOf(contentType));
+        builder = addAcceptHeader(builder, MediaType.valueOf(InventoryMediaType.MANAGED_OBJECT_TYPE));
         Entity<?> stream = Entity.entity(content, contentType);
         return parseResponseWithoutId(responseClass, builder.put(stream), CREATED.getStatusCode());
     }
@@ -315,21 +297,21 @@ public class RestConnector implements RestOperations {
     }
 
     private Builder addApplicationKeyHeader(Builder builder) {
-        if (platformParameters.getApplicationKey() != null) {
+        if (isNotBlank(platformParameters.getApplicationKey())) {
             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
         }
         return builder;
     }
 
     private Builder addTfaHeader(Builder builder) {
-        if (platformParameters.getTfaToken() != null) {
+        if (isNotBlank(platformParameters.getTfaToken())) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
 
     private Builder addRequestOriginHeader(Builder builder) {
-        if (platformParameters.getRequestOrigin() != null) {
+        if (isNotBlank(platformParameters.getRequestOrigin())) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
         }
         return builder;
@@ -405,6 +387,7 @@ public class RestConnector implements RestOperations {
     public static Client createClient(PlatformParameters platformParameters) {
 
         ClientConfig config = new ClientConfig();
+        config.connectorProvider(new ApacheConnectorProvider());
 
         if (isProxyRequired(platformParameters)) {
             config.property(ClientProperties.PROXY_URI, "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
@@ -470,8 +453,16 @@ public class RestConnector implements RestOperations {
     public static Client createURLConnectionClient(final PlatformParameters platformParameters) {
 
         ClientConfig config = new ClientConfig()
-            .property(ClientProperties.FOLLOW_REDIRECTS, true)
-            .connectorProvider(resolveHttpUrlConnectorProvider(platformParameters));
+                .property(ClientProperties.FOLLOW_REDIRECTS, true)
+                .connectorProvider(new ApacheConnectorProvider());
+
+        if (isProxyRequired(platformParameters)) {
+            config.property(ClientProperties.PROXY_URI, "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
+            if (isProxyAuthenticationRequired(platformParameters)) {
+                config.property(ClientProperties.PROXY_USERNAME, platformParameters.getProxyUserId());
+                config.property(ClientProperties.PROXY_PASSWORD, platformParameters.getProxyPassword());
+            }
+        }
 
         registerClasses(config);
 
@@ -486,12 +477,6 @@ public class RestConnector implements RestOperations {
                 .withConfig(config)
                 .readTimeout(platformParameters.getHttpClientConfig().getHttpReadTimeout(), TimeUnit.MILLISECONDS)
                 .build();
-    }
-
-    private static HttpUrlConnectorProvider resolveHttpUrlConnectorProvider(final PlatformParameters platformParameters) {
-        return isProxyRequired(platformParameters)
-                ? new HttpUrlConnectorProvider().connectionFactory(new ProxyHttpURLConnectionFactory(platformParameters))
-                : new HttpUrlConnectorProvider();
     }
 
     private static void registerClasses(ClientConfig config) {
@@ -511,7 +496,7 @@ public class RestConnector implements RestOperations {
         return true;
     }
 
-    private Invocation.Builder getResourceBuilder(String path){
+    private Invocation.Builder getResourceBuilder(String path) {
         Invocation.Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);

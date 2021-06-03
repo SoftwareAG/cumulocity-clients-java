@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.idtype.GId;

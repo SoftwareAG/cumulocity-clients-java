@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -26,8 +26,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -59,7 +59,7 @@ public class AuditRecordApiImplTest {
     @Mock
     private UrlProcessor urlProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -73,7 +73,7 @@ public class AuditRecordApiImplTest {
 
     @Test
     public void shouldGetAuditRecord() throws SDKException {
-        // Given 
+        // Given
         GId gid = new GId("123");
         AuditRecordRepresentation auditRep = new AuditRecordRepresentation();
         when(restConnector.get(AUDIT_RECORDS_URL + "/123", AuditMediaType.AUDIT_RECORD, AuditRecordRepresentation.class)).thenReturn(
@@ -88,7 +88,7 @@ public class AuditRecordApiImplTest {
 
     @Test
     public void shouldCreateAuditRecord() throws SDKException {
-        // Given 
+        // Given
         AuditRecordRepresentation input = new AuditRecordRepresentation();
         AuditRecordRepresentation created = new AuditRecordRepresentation();
         when(restConnector.post(AUDIT_RECORDS_URL, AuditMediaType.AUDIT_RECORD, input)).thenReturn(created);

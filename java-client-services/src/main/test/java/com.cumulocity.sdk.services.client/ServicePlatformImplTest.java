@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.services.client;
 
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class ServicePlatformImplTest {

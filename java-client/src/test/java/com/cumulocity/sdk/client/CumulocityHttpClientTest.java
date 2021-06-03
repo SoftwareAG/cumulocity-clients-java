@@ -1,30 +1,20 @@
 package com.cumulocity.sdk.client;
 
-import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import javax.ws.rs.client.Client;
-import java.util.Arrays;
-import java.util.Collection;
+import javax.ws.rs.client.Client;;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-
-@RunWith(Enclosed.class)
 
 public class CumulocityHttpClientTest {
 
-    abstract public static class CumulocityHttpClientTestSetup {
         protected final String HOST = "http://management.cumulocity.com:8080";
 
         protected CumulocityHttpClient client;
@@ -39,7 +29,7 @@ public class CumulocityHttpClientTest {
 
         protected RestConnector restConnector;
 
-        @Before
+        @BeforeEach
         public void setUp() {
             PlatformParameters platformParameters = new PlatformParameters();
             platformParameters.setForceInitialHost(true);
@@ -50,20 +40,6 @@ public class CumulocityHttpClientTest {
             client = createClient(platformParameters);
         }
 
-        protected void verifyResolvedPath(String expected, String initial) {
-            String resolved = client.resolvePath(initial);
-            assertThat(expected, is(resolved));
-        }
-
-        protected CumulocityHttpClient createClient(PlatformParameters platformParameters) {
-            CumulocityHttpClient client = new CumulocityHttpClient(clientConfig);
-            client.setPlatformParameters(platformParameters);
-            return client;
-        }
-    }
-
-    @Ignore
-    public static class UnparameterizedCumulocityHttpClientTest extends CumulocityHttpClientTestSetup {
         @Test
         public void shouldChangeHostToPlatformHostIfThisIsForcedInParameters() {
             String queryParams = "?test=1&a=1";
@@ -80,35 +56,30 @@ public class CumulocityHttpClientTest {
         @Test
         public void shouldEnableChunkedEncoding() {
             Integer chunkedProperty = (Integer) jerseyClient.getConfiguration().getProperty(ClientProperties.CHUNKED_ENCODING_SIZE);
-            assertEquals(chunkedProperty, Integer.valueOf(chunkedEncodingSize));
-        }
-    }
 
-    @RunWith(Parameterized.class)
-    @Ignore
-    public static class ParameterizedCumulocityHttpClientTest extends CumulocityHttpClientTestSetup {
-
-        @Parameterized.Parameters
-        public static Collection<Character> invalidUrlCharacters() {
-            return Arrays.asList(
-                    '{', '}', '<', '>', '[', ']', '^', '`', '|'
-            );
+            assertThat(chunkedProperty).isEqualTo(chunkedEncodingSize);
         }
 
-        private final Character character;
-
-        public ParameterizedCumulocityHttpClientTest(Character character) {
-            this.character = character;
-        }
-
-        @Test
-        public void shouldThrowExceptionWithCode400WhenIllegalCharactersInPath() {
+        @ParameterizedTest
+        @ValueSource(strings = { "{", "}" })
+        public void shouldThrowExceptionWithCode400WhenIllegalCharactersInPath(String character) {
             String path = "http://example.com/" + character;
             Throwable thrown = catchThrowable(() -> client.target(path).request());
 
-            Assertions.assertThat(thrown).isInstanceOf(SDKException.class);
-            Assertions.assertThat(thrown).hasMessageContaining("Illegal characters used in URL.");
-            Assertions.assertThat(((SDKException) thrown).getHttpStatus()).isEqualTo(400);
+            assertThat(thrown).isInstanceOf(SDKException.class);
+            assertThat(thrown).hasMessageContaining("Illegal characters used in URL.");
+            assertThat(((SDKException) thrown).getHttpStatus()).isEqualTo(400);
         }
+
+    protected void verifyResolvedPath(String expected, String initial) {
+        String resolved = client.resolvePath(initial);
+        assertThat(expected).isEqualTo(resolved);
     }
+
+    protected CumulocityHttpClient createClient(PlatformParameters platformParameters) {
+        CumulocityHttpClient client = new CumulocityHttpClient(clientConfig);
+        client.setPlatformParameters(platformParameters);
+        return client;
+    }
+
 }

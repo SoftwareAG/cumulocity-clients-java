@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,16 +19,14 @@
  */
 package com.cumulocity.sdk.client.identity;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
@@ -55,7 +53,7 @@ import com.cumulocity.sdk.client.inventory.ManagedObject;
  *    Get MO by its external ID (85783456893) – this operation FAILS !
  *    sometimes it returns the correct MO and sometimes just 404 (doesn't find)
  */
-public class ReassignExternaIDIT extends JavaSdkITBase {
+public class ReassignExternalIDIT extends JavaSdkITBase {
 
     private static final String XT_ID = "extId";
     private static final String XT_TYPE = "type";
@@ -65,14 +63,14 @@ public class ReassignExternaIDIT extends JavaSdkITBase {
     private List<ExternalIDRepresentation> xtCollection = new ArrayList<ExternalIDRepresentation>();
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         identity = platform.getIdentityApi();
         inventory = platform.getInventoryApi();
         platform.setRequireResponseBody(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SDKException {
         for (ExternalIDRepresentation e : xtCollection) {
             try {
@@ -99,8 +97,8 @@ public class ReassignExternaIDIT extends JavaSdkITBase {
         ManagedObject retrievedMO2 = getManageObjectByExternalID(getExternalIDBoundToGId(moRep2.getId()));
 
         //Then
-        assertThat(retrievedMO2, is(notNullValue()));
-        assertThat(retrievedMO2.get().getName(), is("object2"));
+        assertThat(retrievedMO2).isNotNull();
+        assertThat(retrievedMO2.get().getName()).isEqualTo("object2");
 
         //cleanup
         retrievedMO2.delete();

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -29,11 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cumulocity.sdk.client.UrlProcessor;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -57,9 +54,6 @@ public class ManagedObjectImplTest {
 
     private static final int DEFAULT_PAGE_SIZE = 9;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private ManagedObjectImpl managedObject;
 
     @Mock
@@ -67,7 +61,7 @@ public class ManagedObjectImplTest {
 
     private ManagedObjectRepresentation managedObjectRep;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         managedObject = new ManagedObjectImpl(restConnector, new UrlProcessor(), MANAGED_OBJECT_URL, DEFAULT_PAGE_SIZE);
@@ -83,7 +77,7 @@ public class ManagedObjectImplTest {
         //when
         ManagedObjectRepresentation mor = managedObject.get();
 
-        // then 
+        // then
         assertThat(mor, sameInstance(managedObjectRep));
     }
 
@@ -103,15 +97,15 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testAddChildDevice() throws SDKException {
-        //Given 
+        //Given
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
         ManagedObjectReferenceRepresentation newChildDevice = new ManagedObjectReferenceRepresentation();
         when(restConnector.post(CHILD_DEVICES_URL, MANAGED_OBJECT_REFERENCE, newChildDevice)).thenReturn(created);
 
-        // when 
+        // when
         ManagedObjectReferenceRepresentation result = managedObject.addChildDevice(newChildDevice);
 
-        // then 
+        // then
         assertThat(result, sameInstance(created));
     }
 
@@ -137,7 +131,7 @@ public class ManagedObjectImplTest {
         when(restConnector.get(CHILD_DEVICES_URL + "/deviceId", MANAGED_OBJECT_REFERENCE,
                 ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
 
-        // when 
+        // when
         ManagedObjectReferenceRepresentation result = managedObject.getChildDevice(gid);
 
         // then
@@ -146,7 +140,7 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testDelete() throws SDKException {
-        // when 
+        // when
         managedObject.delete();
 
         // then
@@ -155,15 +149,15 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testUpdate() throws SDKException {
-        //Given 
+        //Given
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         ManagedObjectRepresentation updated = new ManagedObjectRepresentation();
         when(restConnector.put(MANAGED_OBJECT_URL, InventoryMediaType.MANAGED_OBJECT, mo)).thenReturn(updated);
 
-        // when 
+        // when
         ManagedObjectRepresentation result = managedObject.update(mo);
 
-        // then 
+        // then
         assertThat(result, sameInstance(updated));
 
     }
@@ -176,7 +170,7 @@ public class ManagedObjectImplTest {
         when(restConnector.get(CHILD_DEVICES_URL+ "?pageSize=" + DEFAULT_PAGE_SIZE, MANAGED_OBJECT_REFERENCE_COLLECTION,
                 ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
-        // when 
+        // when
         ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildDevices().get();
 
         // then
@@ -185,24 +179,24 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testDeleteChildDevice() throws Exception {
-        //Given 
+        //Given
         GId gid = new GId("deviceId");
 
-        // when 
+        // when
         managedObject.deleteChildDevice(gid);
 
-        // then 
+        // then
         verify(restConnector).delete(CHILD_DEVICES_URL + "/deviceId");
     }
 
     @Test
     public void testGetAllChildAssets() throws Exception {
-        //Given 
+        //Given
         ManagedObjectReferenceCollectionRepresentation retrieved = new ManagedObjectReferenceCollectionRepresentation();
         when(restConnector.get(CHILD_ASSETS_URL+ "?pageSize=" +DEFAULT_PAGE_SIZE, MANAGED_OBJECT_REFERENCE_COLLECTION,
                 ManagedObjectReferenceCollectionRepresentation.class)).thenReturn(retrieved);
 
-        // when 
+        // when
         ManagedObjectReferenceCollectionRepresentation result = managedObject.getChildAssets().get();
 
         // then
@@ -231,7 +225,7 @@ public class ManagedObjectImplTest {
         when(restConnector.get(CHILD_ASSETS_URL + "/assetId", MANAGED_OBJECT_REFERENCE,
                 ManagedObjectReferenceRepresentation.class)).thenReturn(retrieved);
 
-        // when 
+        // when
         ManagedObjectReferenceRepresentation result = managedObject.getChildAsset(gid);
 
         // then
@@ -255,13 +249,13 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testDeleteChildAsset() throws Exception {
-        //Given 
+        //Given
         GId gid = new GId("assetId");
 
-        // when 
+        // when
         managedObject.deleteChildAsset(gid);
 
-        // then 
+        // then
         verify(restConnector).delete(CHILD_ASSETS_URL + "/assetId");
     }
 
@@ -279,15 +273,15 @@ public class ManagedObjectImplTest {
 
     @Test
     public void testAddChildAsset() throws Exception {
-        //Given 
+        //Given
         ManagedObjectReferenceRepresentation created = new ManagedObjectReferenceRepresentation();
         ManagedObjectReferenceRepresentation newChildAsset = new ManagedObjectReferenceRepresentation();
         when(restConnector.post(CHILD_ASSETS_URL, MANAGED_OBJECT_REFERENCE, newChildAsset)).thenReturn(created);
 
-        // when 
+        // when
         ManagedObjectReferenceRepresentation result = managedObject.addChildAssets(newChildAsset);
 
-        // then 
+        // then
         assertThat(result, sameInstance(created));
     }
 

@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.svenson.JSON;
 import org.svenson.JSONParser;
 
@@ -17,14 +17,14 @@ import c8y.SoftwareListEntry;
 public class SoftwareListTest {
 
     private SoftwareList list;
-    
-    @Before
+
+    @BeforeEach
     public void init() {
         list = new SoftwareList();
         list.add(new SoftwareListEntry("1", "2", "3"));
         list.add(new SoftwareListEntry("4", "5", "6"));
     }
-    
+
     @Test
     public void deserialize() throws Exception {
         String jsonString = JSON.defaultJSON().forValue(list);
