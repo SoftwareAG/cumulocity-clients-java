@@ -1,0 +1,8 @@
+package com.cumulocity.sdk.client.messaging.notifications;
+
+import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionRepresentation;
+import com.cumulocity.sdk.client.PagedCollectionResource;
+
+public interface NotificationSubscriptionCollection extends PagedCollectionResource<NotificationSubscriptionRepresentation, PagedNotificationSubscriptionCollectionRepresentation> {
+
+}
