@@ -7,6 +7,7 @@ import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -32,6 +33,7 @@ import static com.google.common.io.Files.asByteSource;
 import static com.google.common.io.Resources.asByteSource;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.lang3.StringUtils.firstNonEmpty;
 
 public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
@@ -107,8 +109,12 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "agent-package.heap")
     private Memory heap;
 
+    @Deprecated
     @Parameter(property = "agent-package.perm")
     private Memory perm;
+
+    @Parameter(property = "agent-package.metaspace")
+    private Memory metaspace;
 
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
@@ -126,7 +132,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         props.put("package.directory", directory);
         props.put("package.description", firstNonNull(description, name + " Service"));
         props.put("package.jvm-heap", Joiner.on(' ').join(getJvmHeap()));
-        props.put("package.jvm-perm", Joiner.on(' ').join(getJvmPerm()));
+        props.put("package.jvm-meta", Joiner.on(' ').join(getJvmMeta()));
         props.put("package.jvm-mem", Joiner.on(' ').join(getJvmMem()));
         props.put("package.jvm-gc", Joiner.on(' ').join(getJvmGc()));
         props.put("package.arguments", Joiner.on(' ').join(arguments));
@@ -137,7 +143,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     private List<String> getJvmMem() {
-        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmPerm()));
+        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmMeta()));
     }
 
     private List<String> getJvmHeap() {
@@ -147,28 +153,24 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         );
     }
 
-    private List<String> getJvmPerm() {
-        if (perm.isEmpty()) {
+    private List<String> getJvmMeta() {
+        if (metaspace.isEmpty() && perm.isEmpty()) {
             return Collections.emptyList();
         }
-
-        if (isJava7()) {
-            return ImmutableList.of(
-                    "-XX:PermSize=" + perm.getMin(),
-                    "-XX:MaxPermSize=" + perm.getMax()
-            );
-        }
-
         return ImmutableList.of(
-                "-XX:MetaspaceSize=" + perm.getMin(),
-                "-XX:MaxMetaspaceSize=" + perm.getMax()
-        );
+                "-XX:MetaspaceSize=" + firstNonEmpty(metaspace.getMin(), perm.getMin()),
+                "-XX:MaxMetaspaceSize=" + firstNonEmpty(metaspace.getMax(), perm.getMax())
+                );
     }
 
     private List<String> getJvmGc() {
         if (jvmArgs == null || jvmArgs.isEmpty()) {
-            return ImmutableList.<String>builder().add("-XX:+UseConcMarkSweepGC", "-XX:+CMSParallelRemarkEnabled",
-                    "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark").build();
+            return ImmutableList.<String>builder()
+                    .add("-XX:+UseG1GC",
+                         "-XX:+UseStringDeduplication",
+                         "-XX:MinHeapFreeRatio=25",
+                         "-XX:MaxHeapFreeRatio=75"
+                        ).build();
         } else
             return jvmArgs;
     }
@@ -191,7 +193,6 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
                 asByteSource(url).copyTo(asByteSink(destination));
             }
         }
-
     }
 
     protected void copyArtifact(@NonNull File destination) throws IOException {
@@ -253,9 +254,5 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return javaRuntime.substring(2);
         }
         return javaRuntime;
-    }
-
-    private boolean isJava7() {
-        return "7".equals(getJavaVersion());
     }
 }

@@ -49,6 +49,8 @@ import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.SystemOptionApiImpl;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApiImpl;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl;
 import com.cumulocity.sdk.client.user.UserApi;
 import com.cumulocity.sdk.client.user.UserApiImpl;
 import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
@@ -277,6 +279,12 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public SystemOptionApi getSystemOptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new SystemOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant());
+    }
+
+    @Override
+    public TokenApi getTokenApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new TokenApiImpl(this, restConnector);
     }
 
     @Override
