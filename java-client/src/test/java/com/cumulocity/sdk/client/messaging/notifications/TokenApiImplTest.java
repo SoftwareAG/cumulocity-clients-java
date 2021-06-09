@@ -3,8 +3,8 @@ package com.cumulocity.sdk.client.messaging.notifications;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import static com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl.TOKEN_MEDIA_TYPE;
@@ -27,7 +27,7 @@ public class TokenApiImplTest {
     @Mock
     private PlatformParameters platformParameters;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         tokenApi = Mockito.spy(new TokenApiImpl(platformParameters, restConnector));
