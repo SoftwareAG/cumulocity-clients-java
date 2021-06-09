@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -28,16 +28,16 @@ import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentat
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 public class MeasurementApiImplTest {
@@ -70,7 +70,7 @@ public class MeasurementApiImplTest {
     @Mock
     private UrlProcessor urlProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         measurementApi = new MeasurementApiImpl(restConnector, urlProcessor, measurementsApiRepresentation, DEAFAULT_PAGE_SIZE);
@@ -90,10 +90,10 @@ public class MeasurementApiImplTest {
                 restConnector.get(MEASUREMENT_COLLECTION_URL + "/" + gidValue, MeasurementMediaType.MEASUREMENT,
                         MeasurementRepresentation.class)).thenReturn(meas);
 
-        //when
+        // When
         MeasurementRepresentation result = measurementApi.getMeasurement(gid);
 
-        //then
+        // Then
         assertThat(result, sameInstance(meas));
     }
 
@@ -105,10 +105,10 @@ public class MeasurementApiImplTest {
         MeasurementRepresentation meas = new MeasurementRepresentation();
         meas.setId(gid);
 
-        //when
+        // When
         measurementApi.deleteMeasurement(meas);
 
-        //then
+        // Then
         verify(restConnector).delete(MEASUREMENT_COLLECTION_URL + "/" + gidValue);
     }
 
@@ -142,9 +142,12 @@ public class MeasurementApiImplTest {
         verify(restConnector, times(1)).delete(measurementsUrl);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testDeleteByNullFilter() {
-        measurementApi.deleteMeasurementsByFilter(null);
+        // When
+        Throwable thrown = catchThrowable(() -> measurementApi.deleteMeasurementsByFilter(null));
+        // Then
+        assertThat(thrown, is(instanceOf(IllegalArgumentException.class)));
     }
 
     @Test
@@ -177,7 +180,7 @@ public class MeasurementApiImplTest {
 
     @Test
     public void shouldReturnMeasurementsByTypeFilter() throws Exception {
-        // Given 
+        // Given
         MeasurementFilter filter = new MeasurementFilter().byType(TYPE);
         measurementsApiRepresentation.setMeasurementsForType(TEMPLATE_URL);
         String measurementsByTypeUrl = MEASUREMENT_COLLECTION_URL + "?type=" + TYPE;
@@ -232,7 +235,7 @@ public class MeasurementApiImplTest {
 
     @Test
     public void testCreate() throws SDKException {
-        //Given
+        // Given
         MeasurementRepresentation measurement = new MeasurementRepresentation();
         MeasurementRepresentation created = new MeasurementRepresentation();
         when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT, measurement)).thenReturn(created);
@@ -240,13 +243,13 @@ public class MeasurementApiImplTest {
         // When
         MeasurementRepresentation result = measurementApi.create(measurement);
 
-        //then
+        // Then
         assertThat(result, sameInstance(created));
     }
 
     @Test
     public void shouldCreateBulk() throws SDKException {
-        //Given
+        // Given
         MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
         MeasurementCollectionRepresentation created = new MeasurementCollectionRepresentation();
         when(restConnector.post(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate)).thenReturn(created);
@@ -254,23 +257,20 @@ public class MeasurementApiImplTest {
         // When
         MeasurementCollectionRepresentation result = measurementApi.createBulk(toCreate);
 
-        //then
+        // Then
         assertThat(result, sameInstance(created));
     }
 
     @Test
     public void shouldCreateBulkWithoutResponse() throws SDKException {
-        //Given
+        // Given
         MeasurementCollectionRepresentation toCreate = new MeasurementCollectionRepresentation();
 
         // When
         measurementApi.createBulkWithoutResponse(toCreate);
 
-        //then
+        // Then
         verify(restConnector).postWithoutResponse(MEASUREMENT_COLLECTION_URL, MeasurementMediaType.MEASUREMENT_COLLECTION, toCreate);
-    }
-
-    public static class NonRelevantFragmentType {
     }
 
 }

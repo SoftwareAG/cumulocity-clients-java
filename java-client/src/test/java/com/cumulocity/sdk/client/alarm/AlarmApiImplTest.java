@@ -28,17 +28,17 @@ import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -60,7 +60,7 @@ public class AlarmApiImplTest {
     private UrlProcessor urlProcessor;
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -73,21 +73,21 @@ public class AlarmApiImplTest {
 
     @Test
     public void shouldRetrieveAlarmRep() throws SDKException {
-        //Given 
+        // Given
         GId gid = new GId("global_id");
         AlarmRepresentation alarmRep = new AlarmRepresentation();
         when(restConnector.get(ALARM_COLLECTION_URL + "/global_id", AlarmMediaType.ALARM, AlarmRepresentation.class)).thenReturn(alarmRep);
 
-        //When
+        // When
         AlarmRepresentation retrieved = alarmApi.getAlarm(gid);
 
-        //Then
+        // Then
         assertThat(retrieved, sameInstance(alarmRep));
     }
 
     @Test
     public void shouldUpdateAlarmRep() throws SDKException {
-        //Given
+        // Given
         AlarmRepresentation alarmToUpdate = new AlarmRepresentation();
         alarmToUpdate.setId(new GId("global_id"));
         alarmToUpdate.setStatus("STATUS");
@@ -96,10 +96,10 @@ public class AlarmApiImplTest {
                 restConnector.put(eq(ALARM_COLLECTION_URL + "/global_id"), eq(AlarmMediaType.ALARM),
                         argThat(hasOnlyUpdatableFields(alarmToUpdate)))).thenReturn(alarmRep);
 
-        //When
+        // When
         AlarmRepresentation updated = alarmApi.updateAlarm(alarmToUpdate);
 
-        //Then
+        // Then
         assertThat(updated, sameInstance(alarmRep));
     }
 
@@ -121,7 +121,6 @@ public class AlarmApiImplTest {
             public String toString() {
                 return "an alarm representation having only updatable fields, as " + alarm;
             }
-
 
         };
     }
@@ -146,7 +145,7 @@ public class AlarmApiImplTest {
         AlarmRepresentation created = new AlarmRepresentation();
         when(restConnector.post(ALARM_COLLECTION_URL, AlarmMediaType.ALARM, alarmRepresentation)).thenReturn(created);
 
-        // When 
+        // When
         AlarmRepresentation result = alarmApi.create(alarmRepresentation);
 
         // Then
@@ -214,9 +213,13 @@ public class AlarmApiImplTest {
         verify(restConnector, times(1)).delete(alarmsUrl);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDeleteByNullFilter() {
-        alarmApi.deleteAlarmsByFilter(null);
+        // When
+        Throwable thrown = catchThrowable(() -> alarmApi.deleteAlarmsByFilter(null));
+
+        // Then
+        assertThat(thrown, is(instanceOf(IllegalArgumentException.class)));
     }
 
 }

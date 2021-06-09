@@ -160,7 +160,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
      */
 
     public static Platform createPlatform() throws SDKException {
-        PlatformImpl platform = null;
+        PlatformImpl platform;
         try {
             String host = System.getProperty(CUMOLOCITY_HOST);
             int port = Integer.parseInt(System.getProperty(CUMULOCITY_PORT));
@@ -276,7 +276,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     @Override
     public SystemOptionApi getSystemOptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
-        return new SystemOptionApiImpl(restConnector,getPlatformApi(restConnector).getTenant());
+        return new SystemOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant());
     }
 
     @Override

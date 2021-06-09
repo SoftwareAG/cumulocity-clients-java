@@ -9,8 +9,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -20,7 +20,7 @@ public class AlteringRateResultPollerTest {
     
     private GetResultTask<String> task = mock(GetResultTask.class);
 
-    @Ignore
+    @Disabled
     @Test
     public void shouldExecuteAllPlannedCallsThenExpire() throws Exception {
         final AtomicInteger counter = new AtomicInteger(3);

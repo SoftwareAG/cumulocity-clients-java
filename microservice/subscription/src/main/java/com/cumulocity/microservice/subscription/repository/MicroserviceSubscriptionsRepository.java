@@ -2,26 +2,34 @@ package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.compare;
 
+@Slf4j
 @Repository
 public class MicroserviceSubscriptionsRepository {
-    @ConstructorProperties({"repository"})
+    @ConstructorProperties({"repository", "platformProperties"})
     @Autowired
-    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository) {
+    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository, PlatformProperties platformProperties) {
         this.repository = repository;
+        this.platformProperties = platformProperties;
     }
 
     public Collection<MicroserviceCredentials> getCurrentSubscriptions() {
@@ -87,16 +95,28 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     private final MicroserviceRepository repository;
+    private final PlatformProperties platformProperties;
 
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
     public Optional<ApplicationRepresentation> register(MicroserviceMetadataRepresentation metadata) {
-        return ofNullable(repository.register(metadata));
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
     }
 
     @Deprecated
     public Optional<ApplicationRepresentation> register(String applicationName, MicroserviceMetadataRepresentation metadata) {
-        return ofNullable(repository.register(applicationName, metadata));
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(applicationName, metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
+    }
+
+    private void checkRegisteredApplicationKey(Optional<ApplicationRepresentation> application) {
+        if (application.isPresent() && !application.get().getKey().equals(platformProperties.getApplicationKey())) {
+            log.warn("Configured application key '{}' differs from the registered application key: '{}'. Updating configuration.", platformProperties.getApplicationKey(), application.get().getKey());
+            platformProperties.setApplicationKey(application.get().getKey());
+        }
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
@@ -106,6 +126,7 @@ public class MicroserviceSubscriptionsRepository {
                 .password(representation.getPassword())
                 .oAuthAccessToken(null)
                 .xsrfToken(null)
+                .appKey(platformProperties.getApplicationKey())
                 .build()).collect(Collectors.toCollection(ArrayList::new));
         moveManagementToFront(subscriptions);
         return diffWithCurrentSubscriptions(subscriptions);

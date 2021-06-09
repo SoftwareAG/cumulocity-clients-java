@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.alarm;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.idtype.GId;

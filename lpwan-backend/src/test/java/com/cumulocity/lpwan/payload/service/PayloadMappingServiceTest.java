@@ -22,34 +22,34 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.google.common.collect.ImmutableMap;
 import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PayloadMappingServiceTest {
-    
+
     @Mock
     private MeasurementApi measurementApi;
-    
+
     @Mock
     private AlarmApi alarmApi;
-    
+
     @Mock
     private AlarmCollection alarmCollection;
 
@@ -61,37 +61,37 @@ public class PayloadMappingServiceTest {
 
     @InjectMocks
     private PayloadMappingService payloadMappingService;
-    
+
     private UplinkConfiguration uplinkConfiguration;
-    
+
     private DecodedObject decodedObject;
-    
+
     private ManagedObjectRepresentation source;
-    
-    @Before
-    public void setup() {      
+
+    @BeforeEach
+    public void setup() {
         source = new ManagedObjectRepresentation();
         source.setId(new GId("18001"));
     }
-    
+
     @Test
     public void shouldCreateCumulocityDataWithDecodedValue() {
         uplinkConfiguration = getUplinkConfigurationWithEvent("aType", "aFragment", null);
         decodedObject = new DecodedObject();
         decodedObject.putValue("dummyValue");
         MappingCollections mappingCollections = new MappingCollections();
-        
+
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<EventRepresentation> eventCaptor = ArgumentCaptor.forClass(EventRepresentation.class);
         verify(eventApi).create(eventCaptor.capture());
-        
+
         EventRepresentation actualEvent = eventCaptor.getValue();
         assertNotNull(actualEvent.getProperty("aFragment"));
         assertEquals("dummyValue", (String) actualEvent.getProperty("aFragment"));
     }
-    
+
     @Test
     public void shouldCreateCumulocityDataWithDecodedObject() {
         uplinkConfiguration = getUplinkConfigurationWithEvent("aType", "aFragment", null);
@@ -99,38 +99,38 @@ public class PayloadMappingServiceTest {
         decodedObject.putValue("dummyValue");
         decodedObject.putUnit("dummyUnit");
         MappingCollections mappingCollections = new MappingCollections();
-        
+
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<EventRepresentation> eventCaptor = ArgumentCaptor.forClass(EventRepresentation.class);
         verify(eventApi).create(eventCaptor.capture());
-        
+
         EventRepresentation actualEvent = eventCaptor.getValue();
         assertNotNull(actualEvent.getProperty("aFragment"));
         Map<String, Object> actualFragment = (Map<String, Object>) actualEvent.getProperty("aFragment");
         assertEquals("dummyValue", actualFragment.get("value"));
         assertEquals("dummyUnit", actualFragment.get("unit"));
     }
-    
+
     @Test
     public void shouldCreateCumulocityDataWithInnerFragment() {
         uplinkConfiguration = getUplinkConfigurationWithEvent("aType", "aFragment", "aProperty");
         decodedObject = new DecodedObject();
         decodedObject.putValue("dummyValue");
         MappingCollections mappingCollections = new MappingCollections();
-        
+
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<EventRepresentation> eventCaptor = ArgumentCaptor.forClass(EventRepresentation.class);
         verify(eventApi).create(eventCaptor.capture());
-        
+
         EventRepresentation actualEvent = eventCaptor.getValue();
         Map<String, Object> fragment = (Map<String, Object>) actualEvent.getProperty("aFragment");
         assertNotNull(fragment.get("aProperty"));
     }
-    
+
     @Test
     public void shouldCreateCumulocityDataWithMultInnerFragment() {
         uplinkConfiguration = getUplinkConfigurationWithEvent("aType", "aFragment", "aProperty");
@@ -138,33 +138,33 @@ public class PayloadMappingServiceTest {
         decodedObject.putValue("dummyValue");
         MappingCollections mappingCollections = new MappingCollections();
         UplinkConfiguration uplinkConfiguration2 = getUplinkConfigurationWithEvent("aType", "aFragment", "aProperty2");
-        
+
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration2);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<EventRepresentation> eventCaptor = ArgumentCaptor.forClass(EventRepresentation.class);
         verify(eventApi, times(1)).create(eventCaptor.capture());
-        
+
         EventRepresentation actualEvent = eventCaptor.getValue();
         Map<String, Object> actualFragment = (Map<String, Object>) actualEvent.getProperty("aFragment");
         assertNotNull(actualFragment.get("aProperty"));
         assertNotNull(actualFragment.get("aProperty2"));
         assertEquals("dummyValue", (String) actualFragment.get("aProperty"));
     }
-    
+
     @Test
     public void shouldCreateAlarmWhenValueIdNonZero() {
         UplinkConfiguration uplinkConfiguration = new UplinkConfiguration();
         uplinkConfiguration.setAlarmMapping(new AlarmMapping());
-        
+
         decodedObject = new DecodedObject();
         decodedObject.putValue((double) 9);
-        
+
         MappingCollections mappingCollections = new MappingCollections();
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<AlarmRepresentation> alarmCaptor = ArgumentCaptor.forClass(AlarmRepresentation.class);
         verify(alarmApi).create(alarmCaptor.capture());
         AlarmRepresentation alarm = alarmCaptor.getValue();
@@ -175,20 +175,20 @@ public class PayloadMappingServiceTest {
     public void shouldClearAlarmsWhenValueIsZero() {
         UplinkConfiguration uplinkConfiguration = new UplinkConfiguration();
         uplinkConfiguration.setAlarmMapping(new AlarmMapping());
-        
+
         decodedObject = new DecodedObject();
         decodedObject.putValue((double) 0);
-        
+
         AlarmCollectionRepresentation alarmCollectionRepr = new AlarmCollectionRepresentation();
         alarmCollectionRepr.setAlarms(Arrays.asList(new AlarmRepresentation()));
         PagedAlarmCollectionRepresentation pagedCollection = new PagedAlarmCollectionRepresentation(alarmCollectionRepr, null);
         when(alarmCollection.get(any(Integer.class))).thenReturn(pagedCollection);
         when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
-        
+
         MappingCollections mappingCollections = new MappingCollections();
         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
         payloadMappingService.executeMappings(mappingCollections, source, new DateTime());
-        
+
         ArgumentCaptor<AlarmRepresentation> alarmCaptor = ArgumentCaptor.forClass(AlarmRepresentation.class);
         verify(alarmApi).update(alarmCaptor.capture());
         AlarmRepresentation alarm = alarmCaptor.getValue();
@@ -245,7 +245,6 @@ public class PayloadMappingServiceTest {
         };
     }
 
-    
     private UplinkConfiguration getUplinkConfigurationWithEvent(String type, String fragment, String innerType) {
         UplinkConfiguration uplinkConfiguration = new UplinkConfiguration();
         EventMapping eventMapping = new EventMapping();

@@ -24,12 +24,9 @@ import com.cumulocity.rest.representation.inventory.*;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentMatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -40,9 +37,9 @@ import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MA
 import static com.cumulocity.sdk.client.inventory.InventoryFilter.searchInventory;
 import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildren;
 import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutParents;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,15 +56,12 @@ public class InventoryApiImplTest {
 
     InventoryRepresentation inventoryRepresentation = new InventoryRepresentation();
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
     private RestConnector restConnector;
 
     private UrlProcessor urlProcessor = new UrlProcessor();
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -79,23 +73,23 @@ public class InventoryApiImplTest {
     }
 
     @Test
-    public void shouldCreateMo() throws Exception {
-        //Given 
+    public void shouldCreateMo() {
+        // Given
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         ManagedObjectRepresentation created = new ManagedObjectRepresentation();
         when(restConnector.post(INVENTORY_COLLECTION_URL, InventoryMediaType.MANAGED_OBJECT, managedObjectRepresentation)).thenReturn(
                 created);
 
-        // When 
+        // When
         ManagedObjectRepresentation mor = inventoryApiResource.create(managedObjectRepresentation);
 
-        // Then 
+        // Then
         assertThat(mor, sameInstance(created));
     }
 
     @Test
-    public void shouldGetMo() throws Exception {
-        //Given 
+    public void shouldGetMo() {
+        // Given
         String gidValue = "gid_value";
         GId gid = new GId(gidValue);
 
@@ -106,27 +100,25 @@ public class InventoryApiImplTest {
         assertThat(mo.url, is(INVENTORY_COLLECTION_URL + "/" + gidValue));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowExceptionWhenGetWithNullInput() throws SDKException {
-        // Given 
-
         // When
-        inventoryApiResource.getManagedObject(null);
+        Throwable thrown = catchThrowable(() -> inventoryApiResource.getManagedObject(null));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void shouldThrowExceptionWhenGetWithIncorrectGid() throws SDKException {
-        // Given 
+        // Given
         GId gid = new GId();
 
         // When
-        inventoryApiResource.getManagedObject(gid);
+        Throwable thrown = catchThrowable(() -> inventoryApiResource.getManagedObject(gid));
 
         // Then
-        fail();
+        assertThat(thrown, is(instanceOf(SDKException.class)));
     }
 
     @Test
@@ -138,7 +130,7 @@ public class InventoryApiImplTest {
         // When
         ManagedObjectCollection result = inventoryApiResource.getManagedObjects();
 
-        // Then 
+        // Then
         assertThat(result, is(expected));
     }
 
@@ -153,13 +145,13 @@ public class InventoryApiImplTest {
         InventoryFilter filter = new InventoryFilter();
         ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
-        // Then 
+        // Then
         assertThat(result, is(expected));
     }
 
     @Test
     public void shouldGetMosByTypeFilter() throws SDKException {
-        // Given 
+        // Given
         String myType = "myType";
         InventoryFilter filter = new InventoryFilter().byType(myType);
         inventoryRepresentation.setManagedObjectsForType(TEMPLATE_URL);
@@ -169,49 +161,43 @@ public class InventoryApiImplTest {
         // When
         ManagedObjectCollection result = inventoryApiResource.getManagedObjectsByFilter(filter);
 
-        // Then 
+        // Then
         assertThat(result, is(expected));
     }
 
     @Test
     public void shouldAddQueryParamWithoutChildrenWhenFetchingManagedObject() {
-        //Given
+        // Given
         GId id = GId.asGId(1l);
         givenRespondManagedObject(id);
-        //When;
+        // When;
         ManagedObjectRepresentation managedObject = inventoryApiResource.get(id, withoutChildren());
-        //Then
+        // Then
 
         verify(restConnector).get(contains("withChildren=false"), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class));
         assertThat(managedObject, notNullValue());
-
     }
-
 
     @Test
     public void shouldAddQueryParamsWhenFetchingManagedObject() {
-        //Given
+        // Given
         GId id = GId.asGId(1l);
         givenRespondManagedObject(id);
-        //When;
+        // When;
         ManagedObjectRepresentation managedObject = inventoryApiResource.get(id, withoutChildren(), withoutParents());
-        //Then
-
+        // Then
         verify(restConnector).get(argThat(url -> url.contains("withChildren=false") && url.contains("withParents=false")), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class));
         assertThat(managedObject, notNullValue());
-
     }
-
 
     @Test
     public void shouldAddQueryParamsWhenFetchingManagedObjectCollection() {
-        //Given
+        // Given
         InventoryFilter filter = searchInventory();
         givenRespondWithEmptyListOnManagedObjectCollectionQuery();
-        //When
+        // When
         PagedManagedObjectCollectionRepresentation list = inventoryApiResource.getManagedObjectsByFilter(filter).get(withoutChildren());
-        //Then
-
+        // Then
         verify(restConnector).get(contains("withChildren=false"), eq(MANAGED_OBJECT_COLLECTION), eq(ManagedObjectCollectionRepresentation.class));
         assertThat(list, notNullValue());
 

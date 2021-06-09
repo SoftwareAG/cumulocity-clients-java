@@ -12,14 +12,14 @@ import javax.ws.rs.core.Response;
 
 import org.cometd.common.TransportException;
 import org.hamcrest.collection.IsIterableWithSize;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.hamcrest.MockitoHamcrest;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
@@ -35,7 +35,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MessageExchangeTest {
 
     private static final String URL = "";
@@ -86,7 +86,7 @@ public class MessageExchangeTest {
 
     private MessageExchange exchange;
 
-    @Before
+    @BeforeEach
     public void setup() {
         exchange = new MessageExchange(transport, client, executorService, listener, watcher, unauthorizedConnectionWatcher, Arrays.asList(message));
         exchange.reconnectionWaitingTime = SECONDS.toMillis(1);
@@ -96,7 +96,7 @@ public class MessageExchangeTest {
         when(asyncInvoker.post(any(Entity.class), responseHandler.capture())).thenReturn(request);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         executorService.shutdown();
     }

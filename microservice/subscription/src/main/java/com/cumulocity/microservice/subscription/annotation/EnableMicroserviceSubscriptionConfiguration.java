@@ -70,6 +70,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                                 .tenantId(bootstrapUser.getTenant())
                                 .build()))
                 .applicationName(applicationName)
+                .applicationKey(properties.getApplicationKey())
                 .build();
     }
 

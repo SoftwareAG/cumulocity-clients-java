@@ -13,29 +13,23 @@ if [ -n "$MEMORY_LIMIT" ];
     echo "Memory left for application is to small must be at lest 128MB"
     exit 1;
    else
-    perm=$(awk "BEGIN { memory= int($value * 0.1); if (memory >1024) {memory = 1024} else if ( memory < 64 ){ memory = 64 } print memory} ") # take 10% of available memory to perm/metaspace
-    heap=$(($value - $perm))
+    metaspace=$(awk "BEGIN { memory= int($value * 0.1); if (memory >1024) {memory = 1024} else if ( memory < 64 ){ memory = 64 } print memory} ") # take 10% of available memory to metaspace
+    heap=$(($value - $metaspace))
   fi
 
   jvm_heap="@package.jvm-heap@"
-  jvm_perm="@package.jvm-perm@"
+  jvm_metaspace="@package.jvm-meta@"
   jvm_variable_heap="-Xmx${heap}m"
-  case $JAVA_VERSION in
-   7*)
-    echo "Using JDK7 memory settings"
-    jvm_variable_perm="-XX:MaxPermSize=${perm}m"
-   ;;
-   *)
-    echo "Using JDK8+ memory settings"
-    jvm_variable_perm="-XX:MaxMetaspaceSize=${perm}m"
-   ;;
-  esac
-  export JAVA_MEM="${jvm_heap:-`echo $jvm_variable_heap`} ${jvm_perm:-`echo $jvm_variable_perm`}"
+
+  echo "Using JDK8+ memory settings"
+  jvm_variable_metaspace="-XX:MaxMetaspaceSize=${metaspace}m"
+
+  export JAVA_MEM="${jvm_heap:-`echo $jvm_variable_heap`} ${jvm_metaspace:-`echo $jvm_variable_metaspace`}"
   echo "Java Memory Settings: $JAVA_MEM, memory limit: $MEMORY_LIMIT"
 fi
 
 jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
-jvm_mem=${JAVA_MEM:-"@package.jvm-heap@ @package.jvm-perm@"}
+jvm_mem=${JAVA_MEM:-"@package.jvm-heap@ @package.jvm-meta@"}
 jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.directory@/heap-dump-%p.hprof"}
 arguments=${ARGUMENTS:-"@package.arguments@ --package.name=@package.name@ --package.directory=@package.directory@"}
 

@@ -6,7 +6,8 @@ import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -39,7 +40,8 @@ public class MessageExchangeBlockingThreadsTest {
 
     private final ScheduledExecutorService executorService = newScheduledThreadPool(1);
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(value = 2000, unit = MILLISECONDS)
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
         //given
         final Client client = mock(Client.class);
