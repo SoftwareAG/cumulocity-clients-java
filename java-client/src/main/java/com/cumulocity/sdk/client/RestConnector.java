@@ -54,8 +54,9 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
-import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
 import static javax.ws.rs.core.Response.Status.*;
+import static org.glassfish.jersey.media.multipart.Boundary.addBoundary;
 
 @Slf4j
 public class RestConnector implements RestOperations {
@@ -64,7 +65,9 @@ public class RestConnector implements RestOperations {
 
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
-    private static final String TFA_TOKEN_HEADER = "TFAToken";
+    public static final String MIME_VERSION = "MIME-Version";
+
+    protected static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final PlatformParameters platformParameters;
 
@@ -142,9 +145,10 @@ public class RestConnector implements RestOperations {
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
         builder = addAcceptHeader(builder, mediaType);
+        builder = addMimeVersion(builder);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        return parseResponseWithoutId(responseClass, builder.post(Entity.entity(form, MULTIPART_FORM_DATA)), CREATED.getStatusCode());
+        return parseResponseWithoutId(responseClass, builder.post(Entity.entity(form, addBoundary(MULTIPART_FORM_DATA_TYPE))), CREATED.getStatusCode());
     }
 
     @Override
@@ -197,7 +201,7 @@ public class RestConnector implements RestOperations {
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("filesize", String.valueOf(bytes.length)));
         form.bodyPart(new FormDataBodyPart("file", bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        Entity<MultiPart> file = Entity.entity(form, form.getMediaType());
+        Entity<MultiPart> file = Entity.entity(form, addBoundary(form.getMediaType()));
         return parseResponseWithoutId(responseClass, builder.post(file), CREATED.getStatusCode());
     }
 
@@ -208,7 +212,7 @@ public class RestConnector implements RestOperations {
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("file", inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        Entity<MultiPart> stream = Entity.entity(form, form.getMediaType());
+        Entity<MultiPart> stream = Entity.entity(form, addBoundary(form.getMediaType()));
         return parseResponseWithoutId(responseClass, builder.post(stream), CREATED.getStatusCode());
     }
 
@@ -340,6 +344,11 @@ public class RestConnector implements RestOperations {
         // first call to `header()` with null value removes default accept header
         builder = builder.header(HttpHeaders.ACCEPT, null);
         return builder.accept(CumulocityMediaType.WILDCARD);
+    }
+
+    private Builder addMimeVersion(Builder builder) {
+        builder.header(MIME_VERSION, "1.0");
+        return builder;
     }
 
     private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, Response response, int... responseCodes)
@@ -503,6 +512,7 @@ public class RestConnector implements RestOperations {
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
         builder = addAcceptHeader(builder, MediaType.APPLICATION_JSON_TYPE);
+        builder = addMimeVersion(builder);
         return builder;
     }
 
