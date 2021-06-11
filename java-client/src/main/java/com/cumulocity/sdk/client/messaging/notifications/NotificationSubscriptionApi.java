@@ -5,7 +5,7 @@ import com.cumulocity.sdk.client.SDKException;
 
 public interface NotificationSubscriptionApi {
 
-    NotificationSubscriptionRepresentation subscribe(NotificationSubscriptionRepresentation description);
+    NotificationSubscriptionRepresentation subscribe(NotificationSubscriptionRepresentation representation) throws SDKException;
     
     NotificationSubscriptionCollection getSubscriptions() throws SDKException;
 

@@ -1,10 +1,8 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionRepresentation;
 
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
@@ -22,31 +20,28 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
 
     public static final String REQUEST_URI = "reliablenotification/subscriptions";
 
-    private final PlatformParameters platformParameters;
     private final RestConnector restConnector;
 
     private final int pageSize;
 
-    private UrlProcessor urlProcessor;
+    private final UrlProcessor urlProcessor;
 
     public NotificationSubscriptionApiImpl(
-            PlatformParameters platformParameters,
             RestConnector restConnector,
             UrlProcessor urlProcessor,
             int pageSize) {
-        this.restConnector = restConnector;
-        this.urlProcessor = urlProcessor;
+        this.restConnector = requireNonNull(restConnector, "restConnector");
+        this.urlProcessor = requireNonNull(urlProcessor, "urlProcessor");
         this.pageSize = pageSize;
-        this.platformParameters = platformParameters;
     }
     
     @Override
-    public NotificationSubscriptionRepresentation subscribe(NotificationSubscriptionRepresentation description) throws SDKException{
-        requireNonNull(description, "description");
+    public NotificationSubscriptionRepresentation subscribe(NotificationSubscriptionRepresentation representation) throws SDKException {
+        requireNonNull(representation, "representation");
         NotificationSubscriptionRepresentation result = restConnector.post(
                 getSelfUri(),
                 MEDIA_TYPE,
-                description
+                representation
                 );
         return result;
     }
@@ -55,10 +50,6 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     public NotificationSubscriptionCollection getSubscriptions() throws SDKException {
         String url = getSelfUri();
         return new NotificationSubscriptionCollectionImpl(restConnector, url, pageSize);
-    }
-
-    private String getSelfUri() throws SDKException {
-        return platformParameters.getHost() + REQUEST_URI;
     }
 
     @Override
@@ -72,7 +63,12 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
 
     @Override
     public void delete(NotificationSubscriptionRepresentation subscription) throws SDKException {
+        requireNonNull(subscription, "subscription");
         String url = getSelfUri() + "/" + subscription.getId().getValue();
         restConnector.delete(url);
+    }
+
+    private String getSelfUri() throws SDKException {
+        return restConnector.getPlatformParameters().getHost() + REQUEST_URI;
     }
 }

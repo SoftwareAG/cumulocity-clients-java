@@ -283,7 +283,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public NotificationSubscriptionApi getNotificationSubscriptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         UrlProcessor urlProcessor = new UrlProcessor();
-        return new NotificationSubscriptionApiImpl(this, restConnector, urlProcessor, getPageSize());
+        return new NotificationSubscriptionApiImpl(restConnector, urlProcessor, getPageSize());
     }
 
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {
