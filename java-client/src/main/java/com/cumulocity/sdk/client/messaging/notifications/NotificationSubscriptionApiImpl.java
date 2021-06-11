@@ -1,5 +1,6 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionRepresentation;
 
@@ -64,8 +65,28 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     @Override
     public void delete(NotificationSubscriptionRepresentation subscription) throws SDKException {
         requireNonNull(subscription, "subscription");
-        String url = getSelfUri() + "/" + subscription.getId().getValue();
+        delete(subscription.getId().getValue());
+    }
+    
+    @Override
+    public void delete(String subscriptionId) {
+        requireNonNull(subscriptionId, "subscriptionId");
+        String url = getSelfUri() + "/" + subscriptionId;
         restConnector.delete(url);
+    }
+    
+    @Override
+    public void deleteByFilter(NotificationSubscriptionFilter filter) {
+        requireNonNull(filter, "filter");
+        Map<String, String> params= filter.getQueryParams();
+        restConnector.delete(urlProcessor.replaceOrAddQueryParam(getSelfUri(), params));
+     }
+    
+    @Override
+    public void deleteBySource(String source) {
+        requireNonNull(source, "source");
+        NotificationSubscriptionFilter filter = new NotificationSubscriptionFilter().bySource(new GId(source));
+        deleteByFilter(filter);
     }
 
     private String getSelfUri() throws SDKException {
