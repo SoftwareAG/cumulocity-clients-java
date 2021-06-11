@@ -49,7 +49,7 @@ public interface NotificationSubscriptionApi {
      * @param subscriptionId of subscription to delete
      * @throws SDKException 
      */
-    void delete(String subscriptionId) throws SDKException;
+    void deleteById(String subscriptionId) throws SDKException;
     
     /**
      * Deletes all subscriptions matching a filter.

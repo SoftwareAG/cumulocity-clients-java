@@ -65,11 +65,11 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     @Override
     public void delete(NotificationSubscriptionRepresentation subscription) throws SDKException {
         requireNonNull(subscription, "subscription");
-        delete(subscription.getId().getValue());
+        deleteById(subscription.getId().getValue());
     }
     
     @Override
-    public void delete(String subscriptionId) {
+    public void deleteById(String subscriptionId) {
         requireNonNull(subscriptionId, "subscriptionId");
         String url = getSelfUri() + "/" + subscriptionId;
         restConnector.delete(url);
