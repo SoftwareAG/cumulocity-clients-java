@@ -34,6 +34,7 @@ import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.user.UserApi;
+import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
 
 public interface Platform extends AutoCloseable{
     RestOperations rest();
@@ -65,6 +66,8 @@ public interface Platform extends AutoCloseable{
     SystemOptionApi getSystemOptionApi() throws SDKException;
 
     TokenApi getTokenApi() throws SDKException;
+
+    NotificationSubscriptionApi getNotificationSubscriptionApi() throws SDKException;
 
     void close();
 }
