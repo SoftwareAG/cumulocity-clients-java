@@ -19,6 +19,8 @@ import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.user.UserApi;
@@ -209,6 +211,18 @@ public class CumulocityClientFeature {
     @TenantScope
     public SystemOptionApi systemOptionApi(Platform platform) throws SDKException {
         return platform.getSystemOptionApi();
+    }
+
+    @Bean
+    @TenantScope
+    public TokenApi tokenApi(Platform platform) throws SDKException {
+        return platform.getTokenApi();
+    }
+
+    @Bean
+    @TenantScope
+    public NotificationSubscriptionApi notificationSubscriptionApi(Platform platform) throws SDKException {
+        return platform.getNotificationSubscriptionApi();
     }
 
     private void setHttpClientConfig(PlatformImpl platform) {
