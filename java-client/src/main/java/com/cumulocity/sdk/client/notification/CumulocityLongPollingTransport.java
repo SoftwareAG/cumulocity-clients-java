@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static javax.ws.rs.core.HttpHeaders.COOKIE;
 
@@ -193,7 +194,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private void addApplicationKeyHeader(ClientRequestContext request) {
-        if (applicationKey != null) {
+        if (isNotBlank(applicationKey)) {
             request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, applicationKey);
         }
     }
