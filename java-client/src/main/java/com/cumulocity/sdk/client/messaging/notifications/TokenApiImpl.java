@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
+import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -24,7 +24,7 @@ public class TokenApiImpl implements TokenApi {
     private final RestConnector restConnector;
 
     @Override
-    public Token create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException  {
+    public Token create(NotificationTokenRequestRepresentation tokenClaim) throws IllegalArgumentException, SDKException {
         if (tokenClaim == null) {
             throw new IllegalArgumentException("Token claim is null");
         }
@@ -59,8 +59,11 @@ public class TokenApiImpl implements TokenApi {
         long expiry = parsedToken.getExp() - parsedToken.getIat();
         long validityPeriodMinutes = expiry / 60;
 
-        return create(new NotificationTokenClaimsRepresentation(
-                parsedToken.getSubscription(), parsedToken.getTopic().split(TOPIC_SPLIT)[2], validityPeriodMinutes));
+        // TODO follow up with Kacper
+        return create(new NotificationTokenRequestRepresentation(
+                parsedToken.getSubscription(),
+                parsedToken.getTopic().split(TOPIC_SPLIT)[2],
+                validityPeriodMinutes, false));
     }
 
 

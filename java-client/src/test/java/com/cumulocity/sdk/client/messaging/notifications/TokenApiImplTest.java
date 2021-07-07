@@ -1,11 +1,14 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
-import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
+import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import static com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl.TOKEN_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,8 +40,8 @@ public class TokenApiImplTest {
     @Test
     public void shouldCreateToken() {
         //given
-        NotificationTokenClaimsRepresentation tokenClaim =
-                new NotificationTokenClaimsRepresentation("sub", "sup", 1L);
+        NotificationTokenRequestRepresentation tokenClaim =
+                new NotificationTokenRequestRepresentation("sub", "sup", 1L, false);
         Token token = new Token(JWT_TOKEN);
 
         //when
@@ -56,10 +59,10 @@ public class TokenApiImplTest {
     @Test
     public void shouldBuildCreateTokenUri() {
         //given
-        NotificationTokenClaimsRepresentation tokenClaim =
-                new NotificationTokenClaimsRepresentation("sub", "sup", 1L);
+        NotificationTokenRequestRepresentation tokenClaim =
+                new NotificationTokenRequestRepresentation("sub", "sup", 1L, false);
         final String uri = getUri(TOKEN_REQUEST_URI);
-        when(restConnector.post(any(),any(),any(),any(),any())).thenReturn(new Token());
+        when(restConnector.post(any(), any(), any(), any(), any())).thenReturn(new Token());
 
         //when
         tokenApi.create(tokenClaim);
@@ -114,7 +117,7 @@ public class TokenApiImplTest {
                 "kN9l21D1LfVg06xhFc7o-Ita6a3C3BbuuP0kM5KQCQBXHHcaZsphmZgWXvV-q9SLrQ_3ir3I7OLdipkrJ4QJV9MTWfM-pIAoy" +
                 "TSOr4Eik5osnkPsEJ8P4ZFjCgvB5k1DrwfcOOz19q__dKhftIkhOT7YxxXm20brdUrlb8ZEdwu_PDk5AfoOYYp97pjMO0bTRS" +
                 "gQVf7qFdyMEcU-BuedY45j58qV6-YDWJ6Ep_feVquUUAvVmYH-4JDdYndokb3vk3uLRwHuQwg6Uw";
-        ArgumentCaptor<NotificationTokenClaimsRepresentation> argumentCaptor = ArgumentCaptor.forClass(NotificationTokenClaimsRepresentation.class);
+        ArgumentCaptor<NotificationTokenRequestRepresentation> argumentCaptor = ArgumentCaptor.forClass(NotificationTokenRequestRepresentation.class);
 
         //when
         tokenApi.refresh(new Token(expiredJwtToken));
