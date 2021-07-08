@@ -55,14 +55,13 @@ public class TokenApiImpl implements TokenApi {
         String claimsString = new String(Base64.getDecoder().decode(tokenParts[1]));
 
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
-
+        String subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];
         long expiry = parsedToken.getExp() - parsedToken.getIat();
         long validityPeriodMinutes = expiry / 60;
 
-        // TODO follow up with Kacper
         return create(new NotificationTokenRequestRepresentation(
-                parsedToken.getSubscription(),
-                parsedToken.getTopic().split(TOPIC_SPLIT)[2],
+                parsedToken.getSubscriber(),
+                subscription,
                 validityPeriodMinutes, false));
     }
 

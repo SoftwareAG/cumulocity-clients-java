@@ -111,21 +111,21 @@ public class TokenApiImplTest {
     @Test
     public void shouldRefreshToken() {
         //given
-        String expiredJwtToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJzYWIiLCJ0b3BpYyI6Im1hbmFnZW1lbnQvcmV" +
-                "sbm90aWYvc3ViIiwianRpIjoiZTNkMzE1Y2MtYTE0NC00ZWNhLTk2OGItNmIzNTJjNWYwOWYyIiwiaWF0IjoxNjE5Njk0Mjc3" +
-                "LCJleHAiOjE2MTk3ODA2Nzd9.tjX1WxjFdoissHvQc0Y88Ase6muJFi9xIWC4WmRRHtsc_IkxcPCPyfDzOVW30SqMDqc3PzxE" +
-                "kN9l21D1LfVg06xhFc7o-Ita6a3C3BbuuP0kM5KQCQBXHHcaZsphmZgWXvV-q9SLrQ_3ir3I7OLdipkrJ4QJV9MTWfM-pIAoy" +
-                "TSOr4Eik5osnkPsEJ8P4ZFjCgvB5k1DrwfcOOz19q__dKhftIkhOT7YxxXm20brdUrlb8ZEdwu_PDk5AfoOYYp97pjMO0bTRS" +
-                "gQVf7qFdyMEcU-BuedY45j58qV6-YDWJ6Ep_feVquUUAvVmYH-4JDdYndokb3vk3uLRwHuQwg6Uw";
+        String expiredJwtToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0c3Vic2NyaWJlciIsInRvcGljIjoibWFuYWdlbWVudC9yZW" +
+                "xub3RpZi90ZXN0c3Vic2NyaXB0aW9uIiwianRpIjoiMjYwNjY1ZmQtNDI1ZC00NjVlLWJlZTYtZTgzYzI1ZmMxMzYxIiwiaWF0Ij" +
+                "oxNjI1NzY5NzUyLCJleHAiOjE2MjU3Njk4MTJ9.KeFUl0b3EMxnlDsin3i8Y_dxidQJmLsbzNSK2JissnYMBSG9EA-YTDNVRwGqW" +
+                "LjR8OMEoSiYLPgMPBvWTKKYJliIyStdQ8XhaINHZiwV4Jd-_Y7ITHuc5-XRPN8p2ik1omFmpAS5FwxNsVMj-Rx_dMUK4gp5sKbYr" +
+                "R14R1hzFestBZdMnWIT-T5ORywZHd7MtOE7nsSrCHwp6MKmcGvIM7Bhz2e1QC0DU60prpnt_DUoL6M8dpNBPtl40XssGnCIGNruk" +
+                "ukm7QMwhgL8U82AQQ_qefpXFJOLMzyDCYD59fMHTQ8Bdi9svH8f6rswu8yQ326QH0sf_Mrhr5dwCI1EnA";
         ArgumentCaptor<NotificationTokenRequestRepresentation> argumentCaptor = ArgumentCaptor.forClass(NotificationTokenRequestRepresentation.class);
 
         //when
         tokenApi.refresh(new Token(expiredJwtToken));
 
         verify(tokenApi).create(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue().getSubscription()).isEqualTo("sub");
-        assertThat(argumentCaptor.getValue().getSubscriber()).isEqualTo("sab");
-        assertThat(argumentCaptor.getValue().getExpiresInMinutes()).isEqualTo(1440);
+        assertThat(argumentCaptor.getValue().getSubscriber()).isEqualTo("testsubscriber");
+        assertThat(argumentCaptor.getValue().getSubscription()).isEqualTo("testsubscription");
+        assertThat(argumentCaptor.getValue().getExpiresInMinutes()).isEqualTo(1L);
     }
 
     private String getUri(String endpoint) {

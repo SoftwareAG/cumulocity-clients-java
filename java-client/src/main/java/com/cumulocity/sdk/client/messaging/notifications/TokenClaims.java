@@ -13,7 +13,7 @@ import org.svenson.JSONProperty;
 public class TokenClaims extends BaseResourceRepresentation {
 
     @Getter(onMethod_ = @JSONProperty(value = "sub", ignoreIfNull = true))
-    private String subscription;
+    private String subscriber;
 
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String topic;
