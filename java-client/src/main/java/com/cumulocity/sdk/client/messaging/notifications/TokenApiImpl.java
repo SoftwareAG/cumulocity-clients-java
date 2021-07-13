@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.reliable.notification.NotificationTokenClaimsRepresentation;
+import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -24,8 +24,8 @@ public class TokenApiImpl implements TokenApi {
     private final RestConnector restConnector;
 
     @Override
-    public Token create(NotificationTokenClaimsRepresentation tokenClaim) throws IllegalArgumentException, SDKException  {
-        if (tokenClaim == null) {
+    public Token create(NotificationTokenRequestRepresentation tokenRequest) throws IllegalArgumentException, SDKException {
+        if (tokenRequest == null) {
             throw new IllegalArgumentException("Token claim is null");
         }
 
@@ -33,7 +33,7 @@ public class TokenApiImpl implements TokenApi {
                 getTokenRequestUri(),
                 TOKEN_MEDIA_TYPE,
                 TOKEN_MEDIA_TYPE,
-                tokenClaim,
+                tokenRequest,
                 Token.class
         );
     }
@@ -48,19 +48,32 @@ public class TokenApiImpl implements TokenApi {
 
     @Override
     public Token refresh(Token expiredToken) throws IllegalArgumentException, SDKException {
-        if (expiredToken == null) {
+        if (expiredToken == null || expiredToken.getTokenString() == null) {
             throw new IllegalArgumentException("Expired token is null");
         }
-        String[] tokenParts = expiredToken.getTokenString().split(JWT_TOKEN_SPLIT);
-        String claimsString = new String(Base64.getDecoder().decode(tokenParts[1]));
+        String claimsString = null;
+        try {
+            String[] tokenParts = expiredToken.getTokenString().split(JWT_TOKEN_SPLIT);
+            claimsString = new String(Base64.getDecoder().decode(tokenParts[1]));
+        } catch (RuntimeException runtimeException) {
+            throw new IllegalArgumentException("Not a valid token");
+        }
 
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
 
+        String subscription = null;
+        try {
+            subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];
+        } catch (IndexOutOfBoundsException ie) {
+            throw new IllegalArgumentException("Not a valid topic");
+        }
         long expiry = parsedToken.getExp() - parsedToken.getIat();
         long validityPeriodMinutes = expiry / 60;
 
-        return create(new NotificationTokenClaimsRepresentation(
-                parsedToken.getSubscription(), parsedToken.getTopic().split(TOPIC_SPLIT)[2], validityPeriodMinutes));
+        return create(new NotificationTokenRequestRepresentation(
+                parsedToken.getSubscriber(),
+                subscription,
+                validityPeriodMinutes, false));
     }
 
 
