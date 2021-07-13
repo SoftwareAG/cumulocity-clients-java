@@ -11,12 +11,12 @@ public interface TokenApi {
     /**
      * Creates new access Token.
      *
-     * @param tokenClaim containing claim - subscriber, subscription and desired validity duration for the Token.
+     * @param tokenRequest containing claim - subscriber, subscription and desired validity duration for the Token.
      * @return generated Token with JWT Token string
      * @throws IllegalArgumentException if the tokenClaim is null
      * @throws SDKException if the Token could not be created
      */
-    Token create(NotificationTokenRequestRepresentation tokenClaim) throws IllegalArgumentException, SDKException;
+    Token create(NotificationTokenRequestRepresentation tokenRequest) throws IllegalArgumentException, SDKException;
 
     /**
      * Verifies supplied Token.
