@@ -24,8 +24,8 @@ public class TokenApiImpl implements TokenApi {
     private final RestConnector restConnector;
 
     @Override
-    public Token create(NotificationTokenRequestRepresentation tokenClaim) throws IllegalArgumentException, SDKException {
-        if (tokenClaim == null) {
+    public Token create(NotificationTokenRequestRepresentation tokenRequest) throws IllegalArgumentException, SDKException {
+        if (tokenRequest == null) {
             throw new IllegalArgumentException("Token claim is null");
         }
 
@@ -33,7 +33,7 @@ public class TokenApiImpl implements TokenApi {
                 getTokenRequestUri(),
                 TOKEN_MEDIA_TYPE,
                 TOKEN_MEDIA_TYPE,
-                tokenClaim,
+                tokenRequest,
                 Token.class
         );
     }
@@ -48,11 +48,16 @@ public class TokenApiImpl implements TokenApi {
 
     @Override
     public Token refresh(Token expiredToken) throws IllegalArgumentException, SDKException {
-        if (expiredToken == null) {
+        if (expiredToken == null || expiredToken.getTokenString() == null) {
             throw new IllegalArgumentException("Expired token is null");
         }
-        String[] tokenParts = expiredToken.getTokenString().split(JWT_TOKEN_SPLIT);
-        String claimsString = new String(Base64.getDecoder().decode(tokenParts[1]));
+        String claimsString = null;
+        try {
+            String[] tokenParts = expiredToken.getTokenString().split(JWT_TOKEN_SPLIT);
+            claimsString = new String(Base64.getDecoder().decode(tokenParts[1]));
+        } catch (RuntimeException runtimeException) {
+            throw new IllegalArgumentException("Not a valid token");
+        }
 
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
         String subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];

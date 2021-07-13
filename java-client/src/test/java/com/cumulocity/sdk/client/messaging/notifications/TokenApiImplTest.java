@@ -40,7 +40,7 @@ public class TokenApiImplTest {
     @Test
     public void shouldCreateToken() {
         //given
-        NotificationTokenRequestRepresentation tokenClaim =
+        NotificationTokenRequestRepresentation tokenRequest =
                 new NotificationTokenRequestRepresentation("sub", "sup", 1L, false);
         Token token = new Token(JWT_TOKEN);
 
@@ -49,50 +49,50 @@ public class TokenApiImplTest {
                 getUri(TOKEN_REQUEST_URI),
                 TOKEN_MEDIA_TYPE,
                 TOKEN_MEDIA_TYPE,
-                tokenClaim,
+                tokenRequest,
                 Token.class)).thenReturn(token);
 
         //then
-        assertThat(tokenApi.create(tokenClaim).getTokenString()).isEqualTo(JWT_TOKEN);
+        assertThat(tokenApi.create(tokenRequest).getTokenString()).isEqualTo(JWT_TOKEN);
     }
 
     @Test
     public void shouldBuildCreateTokenUri() {
         //given
-        NotificationTokenRequestRepresentation tokenClaim =
+        NotificationTokenRequestRepresentation tokenRequest =
                 new NotificationTokenRequestRepresentation("sub", "sup", 1L, false);
         final String uri = getUri(TOKEN_REQUEST_URI);
         when(restConnector.post(any(), any(), any(), any(), any())).thenReturn(new Token());
 
         //when
-        tokenApi.create(tokenClaim);
+        tokenApi.create(tokenRequest);
 
         //then
         verify(restConnector).post(
                 eq(uri),
                 eq(TOKEN_MEDIA_TYPE),
                 eq(TOKEN_MEDIA_TYPE),
-                eq(tokenClaim),
+                eq(tokenRequest),
                 eq(Token.class));
     }
 
     @Test
     public void shouldVerifyToken() {
         //given
-        TokenClaims TokenClaims = new TokenClaims("sub", "topic", "jti", 1L, 1L);
+        TokenClaims tokenRequest = new TokenClaims("sub", "topic", "jti", 1L, 1L);
         final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
         Token tokenToVerify = new Token(JWT_TOKEN);
 
         when(restConnector.get(
                 uri,
                 TOKEN_MEDIA_TYPE,
-                TokenClaims.class)).thenReturn(TokenClaims);
+                TokenClaims.class)).thenReturn(tokenRequest);
 
         //when
         TokenClaims verificationResult = tokenApi.verify(tokenToVerify);
 
         //then
-        assertThat(verificationResult).isEqualTo(TokenClaims);
+        assertThat(verificationResult).isEqualTo(tokenRequest);
     }
 
     @Test
