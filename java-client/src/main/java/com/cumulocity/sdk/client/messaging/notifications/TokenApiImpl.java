@@ -60,7 +60,13 @@ public class TokenApiImpl implements TokenApi {
         }
 
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
-        String subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];
+
+        String subscription = null;
+        try {
+            subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];
+        } catch (IndexOutOfBoundsException ie) {
+            throw new IllegalArgumentException("Not a valid topic");
+        }
         long expiry = parsedToken.getExp() - parsedToken.getIat();
         long validityPeriodMinutes = expiry / 60;
 
