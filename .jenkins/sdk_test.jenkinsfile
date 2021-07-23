@@ -49,7 +49,7 @@ def scm_checkout()
 {
     try
     {
-        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url:'git@github.com:SoftwareAG/cumulocity-clients-java'
+        git branch: "${params.TEST_BRANCH}", url:'https://github.com/SoftwareAG/cumulocity-clients-java.git'
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
