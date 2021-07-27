@@ -10,13 +10,17 @@ add-key-for-host(){
 add-key-for-host bitbucket.org
 add-key-for-host yum.cumulocity.com
 export resources=hudson@yum.cumulocity.com
-export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
+export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false"
 function call-mvn {
-    ./mvnw ${@}
+
+    MVNW_BIN=$(pwd)/mvnw
+
+    $MVNW_BIN ${@}
     if [ -f microservice/pom.xml ] ;
     then
         cd microservice
-        ../mvnw ${@}
+        echo `pwd`
+        $MVNW_BIN ${@}
         cd -
     else
         echo "Skipping microservice"
@@ -24,7 +28,8 @@ function call-mvn {
     if [ -f lpwan-backend/pom.xml ] ;
     then
         cd lpwan-backend
-        ../mvnw ${@}
+        echo `pwd`
+        $MVNW_BIN ${@}
         cd -
     else
         echo "Skipping lpwan-backend"
@@ -32,7 +37,8 @@ function call-mvn {
     if [ -f cumulocity-sdk/pom.xml ] ;
     then
         cd cumulocity-sdk
-        ../mvnw ${@}
+        echo `pwd`
+        $MVNW_BIN ${@}
         cd -
     else
         echo "Skipping cumulocity-sdk"
