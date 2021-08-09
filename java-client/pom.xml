@@ -135,6 +135,18 @@
 			<artifactId>cucumber-spring</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.6</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<version>5.11.2</version>
+			<scope>test</scope>
+		</dependency>
 
 		<!--Javadoc dependencies-->
 		<dependency>
