@@ -338,9 +338,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                     subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
                     log.debug("Error subscribing channel: {}, {}", this.channel.getId(), message);
-                    if (message.getJSON() != null && message.getJSON().contains("402::Unknown client")) {
-                        log.warn("Resubscribing for channel {} and ClientId" , this.channel.getId(), message.getClientId());
-                        handshakeAndSubscribe();
+                    if(message.containsKey(Message.ERROR_FIELD)) {
+                        String error = (String) message.get(Message.ERROR_FIELD);
+                        if (error.contains("402::Unknown")) {
+                            log.warn("Resubscribing for channel {} and ClientId" , this.channel.getId(), message.getClientId());
+                            handshakeAndSubscribe();
+                        }
                     }
                     handleError(message);
                 }
