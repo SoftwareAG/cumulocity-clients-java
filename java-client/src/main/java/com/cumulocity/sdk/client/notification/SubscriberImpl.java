@@ -363,7 +363,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             session.handshake();
             boolean handshake = ((BayeuxClient) session).waitFor(TimeUnit.SECONDS.toMillis(RETRIES_CONNECTED_STATE_TIMEOUT), BayeuxClient.State.CONNECTED);
             if (handshake) {
-                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, false);
+                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, true);
             } else {
                 log.warn("Not Connected for channel {} and ClientId" , this.channel.getId(), message.getClientId());
             }
