@@ -319,6 +319,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         @Override
         public void onMessage(ClientSessionChannel metaSubscribeChannel, Message message) {
+
             if (!Channel.META_SUBSCRIBE.equals(metaSubscribeChannel.getId())) {
                 // Should never be here
                 log.warn("Unexpected message to wrong channel, to SubscriptionSuccessListener: {}, {}", metaSubscribeChannel, message);
@@ -337,6 +338,10 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                     subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
                     log.debug("Error subscribing channel: {}, {}", this.channel.getId(), message);
+                    if (message.getJSON() != null && message.getJSON().contains("402::Unknown client")) {
+                        log.warn("Resubscribing for channel {} and ClientId" , this.channel.getId(), message.getClientId());
+                        handshakeAndSubscribe();
+                    }
                     handleError(message);
                 }
             } catch (NullPointerException ex) {
@@ -345,6 +350,11 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             } finally {
                 metaSubscribeChannel.removeListener(this);
             }
+        }
+
+        private void handshakeAndSubscribe() {
+            session.handshake();
+            subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry);
         }
 
         private boolean isSubscriptionToChannel(Message message) {
