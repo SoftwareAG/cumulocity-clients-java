@@ -53,7 +53,6 @@ public class RealtimeNotificationConnectionMockServerIT {
         //given
         givenMockWithCallbackResponse(1,".*/meta/handshake.*", MetaHandshakeSuccessfulResponseCallback.class);
         givenMockWithCallbackResponse(1,".*/meta/connect.*", MetaConnectSuccessfulResponseCallback.class);
-        givenMockWithCallbackResponse(2,".*/meta/connect.*", MetaConnectSuccessfulResponseCallback.class);
         givenMockWithCallbackResponse(2, ".*/meta/subscribe.*", MetaSubscribeErrorResponseCallback.class );
         Subscriber<String, AlarmRepresentation> subscriber = givenAlarmSubscriber();
 
