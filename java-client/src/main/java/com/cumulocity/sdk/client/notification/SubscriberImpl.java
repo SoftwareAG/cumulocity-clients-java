@@ -27,18 +27,22 @@ import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
+import org.cometd.client.BayeuxClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberImpl.class);
 
     private static final int RETRIES_ON_SHORT_NETWORK_FAILURES = 5;
+
+    private static final int RETRIES_CONNECTED_STATE_TIMEOUT = 5;
 
     private final SubscriptionNameResolver<T> subscriptionNameResolver;
 
@@ -342,7 +346,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                         String error = (String) message.get(Message.ERROR_FIELD);
                         if (error.contains("402::Unknown")) {
                             log.warn("Resubscribing for channel {} and ClientId" , this.channel.getId(), message.getClientId());
-                            handshakeAndSubscribe();
+                            handshakeAndSubscribe(message);
                         }
                     }
                     handleError(message);
@@ -355,9 +359,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             }
         }
 
-        private void handshakeAndSubscribe() {
+        private void handshakeAndSubscribe( Message message) {
             session.handshake();
-            subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry);
+            boolean handshake = ((BayeuxClient) session).waitFor(TimeUnit.SECONDS.toMillis(RETRIES_CONNECTED_STATE_TIMEOUT), BayeuxClient.State.CONNECTED);
+            if (handshake) {
+                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, false);
+            } else {
+                log.warn("Not Connected for channel {} and ClientId" , this.channel.getId(), message.getClientId());
+            }
         }
 
         private boolean isSubscriptionToChannel(Message message) {
