@@ -85,6 +85,7 @@ def publish_results()
         junit "**/target/surefire-reports/*.xml"
         junit "**/target/failsafe-reports/*.xml"
         archiveArtifacts("**/TEST-*.xml")
+        getTestSummary()
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
@@ -105,7 +106,30 @@ def finish_job()
     cleanWs notFailBuild: true
 }
 
+// capture summary results
+import hudson.tasks.test.AbstractTestResultAction
+import hudson.model.Actionable
+@NonCPS
+def getTestSummary()
+{
+    def testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    if (testResultAction != null)
+    {
+        fail = testResultAction.getFailCount()
+        skip = testResultAction.skipCount
+        //ignore skipped tests as this could be due to tags used
+        run_total = testResultAction.totalCount - skip
+        pass = run_total - fail
+        println "Total ${run_total}"
+        println "Failed ${fail}"
+        println "Passed ${pass}"
+    }
+    else
+    {
+        error "Stopping pipeline. No unit tests found"
+    }
 
+}
 
 
 
