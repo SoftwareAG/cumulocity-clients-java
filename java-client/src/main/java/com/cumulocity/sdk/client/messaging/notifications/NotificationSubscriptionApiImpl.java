@@ -19,7 +19,7 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     
     public static final CumulocityMediaType MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
-    public static final String REQUEST_URI = "reliablenotification/subscriptions";
+    public static final String SUBSCRIPTION_REQUEST_URI = "notification2/subscriptions";
 
     private final RestConnector restConnector;
 
@@ -90,6 +90,6 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     }
 
     private String getSelfUri() throws SDKException {
-        return restConnector.getPlatformParameters().getHost() + REQUEST_URI;
+        return restConnector.getPlatformParameters().getHost() + SUBSCRIPTION_REQUEST_URI;
     }
 }

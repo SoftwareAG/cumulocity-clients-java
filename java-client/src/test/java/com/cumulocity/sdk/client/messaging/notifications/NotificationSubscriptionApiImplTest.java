@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApiImpl.MEDIA_TYPE;
-import static com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApiImpl.REQUEST_URI;
+import static com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApiImpl.SUBSCRIPTION_REQUEST_URI;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,13 +64,13 @@ public class NotificationSubscriptionApiImplTest {
         NotificationSubscriptionRepresentation subscription = new NotificationSubscriptionRepresentation();
         subscription.setId(new GId(DEFAULT_GID_VALUE));
         api.delete(subscription);
-        verify(restConnector).delete(DEFAULT_HOST + REQUEST_URI + "/" + DEFAULT_GID_VALUE);
+        verify(restConnector).delete(DEFAULT_HOST + SUBSCRIPTION_REQUEST_URI + "/" + DEFAULT_GID_VALUE);
     }
     
     @Test
     public void testSubscribe() {
         NotificationSubscriptionRepresentation subscription = new NotificationSubscriptionRepresentation();
         api.subscribe(subscription);
-        verify(restConnector).post(DEFAULT_HOST + REQUEST_URI, MEDIA_TYPE, subscription);
+        verify(restConnector).post(DEFAULT_HOST + SUBSCRIPTION_REQUEST_URI, MEDIA_TYPE, subscription);
     }
 }

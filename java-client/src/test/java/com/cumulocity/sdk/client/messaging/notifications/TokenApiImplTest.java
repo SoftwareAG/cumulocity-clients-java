@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 
 public class TokenApiImplTest {
     private static final String HOST = "core-0.platform.default.svc.cluster.local/";
-    private static final String TOKEN_REQUEST_URI = "reliablenotification/token";
+    private static final String TOKEN_REQUEST_URI = "notification2/token";
     private static final String JWT_TOKEN = "f4k3_jwt_t0k3n";
 
     private TokenApi tokenApi;

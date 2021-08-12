@@ -16,7 +16,7 @@ import java.util.Base64;
 public class TokenApiImpl implements TokenApi {
     public static final CumulocityMediaType TOKEN_MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
-    public static final String TOKEN_REQUEST_URI = "reliablenotification/token";
+    public static final String TOKEN_REQUEST_URI = "notification2/token";
     private static final String JWT_TOKEN_SPLIT = "\\.";
     private static final String TOPIC_SPLIT = "/";
 
