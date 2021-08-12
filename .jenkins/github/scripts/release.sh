@@ -1,10 +1,9 @@
 #!/bin/bash
 set -e
-source ${BASH_SOURCE%/*}/common.sh
+source ${BASH_SOURCE%/*}/../../common/scripts/common.sh
 
-repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
-repository_clients_java=$repository_url/cumulocity-clients-java
-repository_sdk=$repository_url/cumulocity-sdk
+repository_clients_java=https://${GITHUB_USER}:${GITHUB_PASSWORD}@github.com/SoftwareAG/cumulocity-clients-java
+repository_sdk=https://${GHES_USER}:${GHES_PASSWORD}@github.softwareag.com/IOTA/cumulocity-sdk
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -112,4 +111,4 @@ cd cumulocity-sdk
 git push --follow-tags $repository_sdk ${branch_name}
 cd -
 
-.jenkins/scripts/deploy.sh
+.jenkins/common/scripts/deploy.sh
