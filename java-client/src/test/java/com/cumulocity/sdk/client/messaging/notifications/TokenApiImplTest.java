@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 
 public class TokenApiImplTest {
     private static final String HOST = "core-0.platform.default.svc.cluster.local/";
-    private static final String TOKEN_REQUEST_URI = "notification2/token";
     private static final String JWT_TOKEN = "f4k3_jwt_t0k3n";
 
     private TokenApi tokenApi;
@@ -46,7 +45,7 @@ public class TokenApiImplTest {
 
         //when
         when(restConnector.post(
-                getUri(TOKEN_REQUEST_URI),
+                getUri(TokenApiImpl.TOKEN_REQUEST_URI),
                 TOKEN_MEDIA_TYPE,
                 TOKEN_MEDIA_TYPE,
                 tokenRequest,
@@ -61,7 +60,7 @@ public class TokenApiImplTest {
         //given
         NotificationTokenRequestRepresentation tokenRequest =
                 new NotificationTokenRequestRepresentation("sub", "sup", 1L, false);
-        final String uri = getUri(TOKEN_REQUEST_URI);
+        final String uri = getUri(TokenApiImpl.TOKEN_REQUEST_URI);
         when(restConnector.post(any(), any(), any(), any(), any())).thenReturn(new Token());
 
         //when
@@ -80,7 +79,7 @@ public class TokenApiImplTest {
     public void shouldVerifyToken() {
         //given
         TokenClaims tokenRequest = new TokenClaims("sub", "topic", "jti", 1L, 1L);
-        final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
+        final String uri = getUri(TokenApiImpl.TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
         Token tokenToVerify = new Token(JWT_TOKEN);
 
         when(restConnector.get(
@@ -98,7 +97,7 @@ public class TokenApiImplTest {
     @Test
     public void shouldBuildVerifyUri() {
         //given
-        final String uri = getUri(TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
+        final String uri = getUri(TokenApiImpl.TOKEN_REQUEST_URI + "?token=" + JWT_TOKEN);
         Token tokenToVerify = new Token(JWT_TOKEN);
 
         //when
