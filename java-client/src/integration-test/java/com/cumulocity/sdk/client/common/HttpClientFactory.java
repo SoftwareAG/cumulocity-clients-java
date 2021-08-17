@@ -31,7 +31,7 @@ public class HttpClientFactory {
     public Client createClient() {
         Client client = ClientBuilder.newClient();
         client.property(ClientProperties.FOLLOW_REDIRECTS, true);
-        client.register(HttpAuthenticationFeature.basic("management/admin", "Pyi1bo1r"));
+        client.register(HttpAuthenticationFeature.basic("management/admin", "admin"));
         client.register(CumulocityJSONMessageBodyReader.class);
         return client;
     }
