@@ -1,5 +1,6 @@
 package c8y;
 
+import com.cumulocity.model.audit.annotation.SkipFieldInChangeScanner;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,8 @@ public class RemoteAccess extends AbstractDynamicProperties {
 
     private RemoteAccessProtocol protocol;
 
+    // This field needs to be scanned independently because of a bug in ChangeScanner
+    @SkipFieldInChangeScanner
     private RemoteAccessCredentials credentials;
 
     public RemoteAccess(Map<String, Object> map) {
@@ -35,7 +38,26 @@ public class RemoteAccess extends AbstractDynamicProperties {
         this.hostname = getValueAsString(map, "hostname");
         this.port = ((Long) map.get("port")).intValue();
         this.protocol = RemoteAccessProtocol.valueOf(getValueAsString(map, "protocol"));
-        this.credentials = credentialsFromMap(getValueAsMap(map, "credentials"), this.protocol);
+        this.credentials = credentials(map);
+    }
+
+    /**Creates and returns deep copy*/
+    public RemoteAccess copy() {
+        RemoteAccess copy = new RemoteAccess();
+        copy.setId(this.getId());
+        copy.setName(this.getName());
+        copy.setHostname(this.getHostname());
+        copy.setPort(this.getPort());
+        copy.setProtocol(this.getProtocol());
+        copy.setCredentials(this.getCredentials().copy());
+        return copy;
+    }
+
+    private RemoteAccessCredentials credentials(Map<String, Object> configuration) {
+        if (configuration.containsKey("credentials")) {
+            return credentialsFromMap(getValueAsMap(configuration, "credentials"), this.protocol);
+        }
+        return legacyCredentials(configuration);
     }
 
     private RemoteAccessCredentials credentialsFromMap(Map<String, Object> map, RemoteAccessProtocol protocol) {
@@ -44,7 +66,15 @@ public class RemoteAccess extends AbstractDynamicProperties {
                 .password(getValueAsString(map, "password"))
                 .privateKey(getValueAsString(map,"privateKey"))
                 .publicKey(getValueAsString(map,"publicKey"))
+                .certificate(getValueAsString(map,"certificate"))
                 .hostKey(getValueAsString(map,"hostKey"))
+                .build();
+    }
+
+    private RemoteAccessCredentials legacyCredentials(Map<String, Object> configuration) {
+        return new RemoteAccessCredentialsBuilder(null, protocol)
+                .user(getValueAsString(configuration, "username"))
+                .password(getValueAsString(configuration, "password"))
                 .build();
     }
 

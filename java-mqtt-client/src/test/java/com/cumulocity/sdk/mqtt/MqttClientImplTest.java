@@ -4,23 +4,26 @@ import com.cumulocity.sdk.mqtt.exception.MqttDeviceSDKException;
 import com.cumulocity.sdk.mqtt.model.ConnectionDetails;
 import com.cumulocity.sdk.mqtt.model.MqttMessageRequest;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.cumulocity.sdk.mqtt.model.QoS.AT_LEAST_ONCE;
 import static com.cumulocity.sdk.mqtt.model.QoS.EXACTLY_ONCE;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MqttClientImplTest {
 
-    @Mock
+    @Mock(lenient = true)
     private MqttOperationsProvider operationsProvider;
 
     @Mock
@@ -29,9 +32,8 @@ public class MqttClientImplTest {
     @InjectMocks
     private MqttClientImpl pahoMqttClient;
 
-    @Before
-    public void setup() throws Exception {
-
+    @BeforeEach
+    public void setup() {
         final ConnectionDetails connectionDetails = ConnectionDetails.builder().host("test.c8y.io")
                                                                         .clientId("XNPP-EMEA-1234")
                                                                         .userName("tenant/user")
@@ -42,12 +44,19 @@ public class MqttClientImplTest {
         MockitoAnnotations.initMocks(this);
 
         when(operationsProvider.isConnectionEstablished()).thenReturn(true);
-        when(mqttAsyncClient.isConnected()).thenReturn(true);
+    }
+
+    @Test
+    public void cleanSessionIsTrueByDefault() {
+        // When
+        final ConnectionDetails connectionDetails = ConnectionDetails.builder().build();
+
+        // Then
+        assertThat(connectionDetails.isCleanSession()).isTrue();
     }
 
     @Test
     public void testPublishToTopic() throws Exception {
-
         // Given
         String topic = "s/us";
         String payload = "100, My MQTT device, c8y_MQTTDevice";
@@ -61,9 +70,8 @@ public class MqttClientImplTest {
         verify(operationsProvider, times(1)).publish(message);
     }
 
-    @Test(expected = MqttDeviceSDKException.class)
-    public void testPublishToWrongTopic() throws Exception {
-
+    @Test
+    public void testPublishToWrongTopic() {
         // Given
         String topic = "s/usp";
         String payload = "100, My MQTT device, c8y_MQTTDevice";
@@ -71,15 +79,14 @@ public class MqttClientImplTest {
                 .qoS(EXACTLY_ONCE).messageContent(payload).build();
 
         // When
-        pahoMqttClient.publish(message);
+        Throwable thrown = catchThrowable(() -> pahoMqttClient.publish(message));
 
         // Then
-        fail();
+       assertThat(thrown).isInstanceOf(MqttDeviceSDKException.class);
     }
 
     @Test
     public void testSubscribeToTopic() throws Exception {
-
         // Given
         String topic = "s/ds";
         MqttMessageRequest message = MqttMessageRequest.builder().topicName(topic)
@@ -94,7 +101,6 @@ public class MqttClientImplTest {
 
     @Test
     public void testUnsubscribeFromTopic() throws Exception {
-
         // Given
         String topic = "s/ds";
 
@@ -105,31 +111,29 @@ public class MqttClientImplTest {
         verify(operationsProvider, times(1)).unsubscribe(topic);
     }
 
-    @Test(expected = MqttDeviceSDKException.class)
-    public void testSubscribeToWrongTopic() throws Exception {
-
+    @Test
+    public void testSubscribeToWrongTopic() {
         // Given
         String topic = "s/xyz";
         MqttMessageRequest message = MqttMessageRequest.builder().topicName(topic)
                 .qoS(AT_LEAST_ONCE).build();
 
         // When
-        pahoMqttClient.subscribe(message, null);
+        Throwable thrown = catchThrowable(() -> pahoMqttClient.subscribe(message, null));
 
         // Then
-        fail();
+        assertThat(thrown).isInstanceOf(MqttDeviceSDKException.class);
     }
 
-    @Test(expected = MqttDeviceSDKException.class)
-    public void testUnsubscribeFromWrongTopic() throws Exception {
-
+    @Test
+    public void testUnsubscribeFromWrongTopic() {
         // Given
         String topic = "s/xyz";
 
         // When
-        pahoMqttClient.unsubscribe(topic);
+        Throwable thrown = catchThrowable(() -> pahoMqttClient.unsubscribe(topic));
 
         // Then
-        fail();
+        assertThat(thrown).isInstanceOf(MqttDeviceSDKException.class);
     }
 }

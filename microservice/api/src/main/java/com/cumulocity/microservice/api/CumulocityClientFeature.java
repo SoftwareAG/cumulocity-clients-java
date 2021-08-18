@@ -19,11 +19,13 @@ import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.user.UserApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -40,6 +42,16 @@ public class CumulocityClientFeature {
     @Value("${C8Y.proxyPort:0}")
     private Integer proxyPort;
 
+    //in milliseconds, 0 = infinite
+    @Value("${C8Y.httpReadTimeout:}")
+    private Integer httpReadTimeout;
+
+    @Bean
+    @ConfigurationProperties(prefix = "c8y.httpclient")
+    public HttpClientConfig httpClientConfig() {
+        return HttpClientConfig.httpConfig().build();
+    }
+
     @Autowired(required = false)
     private ResponseMapper responseMapper;
 
@@ -55,7 +67,7 @@ public class CumulocityClientFeature {
                 .withXsrfToken(login.getXsrfToken())
                 .withApplicationKey(login.getAppKey())
                 .getCredentials();
-        return (PlatformImpl) PlatformBuilder.platform()
+        PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
@@ -64,6 +76,8 @@ public class CumulocityClientFeature {
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
                 .build();
+        setHttpClientConfig(platform);
+        return platform;
     }
 
     @Bean
@@ -79,8 +93,7 @@ public class CumulocityClientFeature {
                 .withXsrfToken(login.getXsrfToken())
                 .withApplicationKey(login.getAppKey())
                 .getCredentials();
-
-        return (PlatformImpl) PlatformBuilder.platform()
+        PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
                 .withBaseUrl(host)
                 .withProxyHost(proxyHost)
                 .withProxyPort(proxyPort)
@@ -89,6 +102,8 @@ public class CumulocityClientFeature {
                 .withResponseMapper(responseMapper)
                 .withForceInitialHost(true)
                 .build();
+        setHttpClientConfig(platform);
+        return platform;
     }
 
     @Bean
@@ -188,5 +203,19 @@ public class CumulocityClientFeature {
     @Primary
     public TenantOptionApi tenantOptionApi(Platform platform) throws SDKException {
         return platform.getTenantOptionApi();
+    }
+
+    @Bean
+    @TenantScope
+    public SystemOptionApi systemOptionApi(Platform platform) throws SDKException {
+        return platform.getSystemOptionApi();
+    }
+
+    private void setHttpClientConfig(PlatformImpl platform) {
+        HttpClientConfig httpClientConfig = httpClientConfig();
+        if (httpReadTimeout != null) {
+            httpClientConfig.setHttpReadTimeout(httpReadTimeout);
+        }
+        platform.setHttpClientConfig(httpClientConfig);
     }
 }

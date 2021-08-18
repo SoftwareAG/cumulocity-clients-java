@@ -27,6 +27,8 @@ public enum InventoryParam implements Param {
 
     WITH_PARENTS("withParents"),
 
+    WITH_CHILDREN("withChildren"),
+
     SKIP_CHILDREN_NAMES("skipChildrenNames");
 
     private String paramName;
@@ -46,6 +48,16 @@ public enum InventoryParam implements Param {
     public static QueryParam withoutParents() {
         return new QueryParam(WITH_PARENTS, Boolean.FALSE.toString());
     }
+
+
+    public static QueryParam withChildren() {
+        return new QueryParam(WITH_CHILDREN, Boolean.TRUE.toString());
+    }
+
+    public static QueryParam withoutChildren() {
+        return new QueryParam(WITH_CHILDREN, Boolean.FALSE.toString());
+    }
+
 
     public static QueryParam withChildrenNames() {
         return new QueryParam(SKIP_CHILDREN_NAMES, Boolean.FALSE.toString());

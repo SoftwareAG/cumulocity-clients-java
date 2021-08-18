@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -26,23 +26,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.cumulocity.model.realtime.ClientSvensonJSONContext;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.BayeuxClient.State;
 import org.cometd.client.transport.ClientTransport;
 
-import com.cumulocity.common.notification.ClientSvensonJSONContext;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.sun.jersey.api.client.Client;
+import org.glassfish.jersey.client.ClientProperties;
+
+import javax.ws.rs.client.Client;
 
 class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
 
     private static final int CONNECTED_STATE_TIMEOUT = 30;
 
-    private final PlatformParameters paramters;
+    private final PlatformParameters parameters;
 
     private final String endpoint;
 
@@ -60,29 +62,25 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
         return createProvider(endpoint, paramters, endpointDataType, createDefaultHttpProvider(paramters), unauthorizedConnectionWatcher, extensions);
     }
 
-    private static Provider<Client> createDefaultHttpProvider(final PlatformParameters paramters) {
-        return new Provider<Client>() {
-
-            @Override
-            public Client get() throws SDKException {
-                final Client client = RestConnector.createURLConnectionClient(paramters);
-                client.setConnectTimeout(0);
-                client.setReadTimeout(0);
-                return client;
-            }
+    private static Provider<Client> createDefaultHttpProvider(final PlatformParameters parameters) {
+        return () -> {
+            final Client client = RestConnector.createURLConnectionClient(parameters);
+            client.property(ClientProperties.CONNECT_TIMEOUT, 0);
+            client.property(ClientProperties.READ_TIMEOUT, 0);
+            return client;
         };
     }
 
-    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters paramters,
+    public static BayeuxSessionProvider createProvider(final String endpoint, final PlatformParameters parameters,
                                                        Class<?> endpointDataType, final Provider<Client> httpClient,
                                                        UnauthorizedConnectionWatcher unauthorizedConnectionWatcher, Extension... extensions) {
-        return new DefaultBayeuxClientProvider(endpoint, paramters, endpointDataType, httpClient, unauthorizedConnectionWatcher, extensions);
+        return new DefaultBayeuxClientProvider(endpoint, parameters, endpointDataType, httpClient, unauthorizedConnectionWatcher, extensions);
     }
 
-    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters paramters, Class<?> endpointDataType,
+    public DefaultBayeuxClientProvider(String endpoint, PlatformParameters parameters, Class<?> endpointDataType,
                                        Provider<Client> httpClient, UnauthorizedConnectionWatcher unauthorizedConnectionWatcher,
                                        Extension... extensions) {
-        this.paramters = paramters;
+        this.parameters = parameters;
         this.endpoint = endpoint;
         this.httpClient = httpClient;
         this.endpointDataType = endpointDataType;
@@ -113,12 +111,12 @@ class DefaultBayeuxClientProvider implements BayeuxSessionProvider {
     }
 
     private String buildUrl() {
-        final String host = paramters.getHost();
+        final String host = parameters.getHost();
         return (host.endsWith("/") ? host : host + "/") + endpoint;
     }
 
     private ClientTransport createTransport(final Provider<Client> httpClient) {
-        return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, paramters, unauthorizedConnectionWatcher);
+        return new CumulocityLongPollingTransport(createTransportOptions(), httpClient, parameters, unauthorizedConnectionWatcher);
     }
 
     private Map<String, Object> createTransportOptions() {

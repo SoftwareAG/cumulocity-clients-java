@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -23,12 +23,13 @@ package com.cumulocity.sdk.client;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentation;
-import com.sun.jersey.api.client.ClientResponse;
 import lombok.extern.slf4j.Slf4j;
+import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,20 +52,20 @@ public class ResponseParser {
         this(null);
     }
 
-    public <T extends ResourceRepresentation> T parse(ClientResponse response, Class<T> type, int... expectedStatusCodes) throws SDKException {
+    public <T extends ResourceRepresentation> T parse(Response response, Class<T> type, int... expectedStatusCodes) throws SDKException {
 
         checkStatus(response, expectedStatusCodes);
         return read(response, type);
     }
-    
-    public <T extends Object> T parseObject(ClientResponse response, int expectedStatusCode,
+
+    public <T extends Object> T parseObject(Response response, int expectedStatusCode,
             Class<T> type) throws SDKException {
-        
+
         checkStatus(response, expectedStatusCode);
         return read(response, type);
     }
 
-    public void checkStatus(ClientResponse response, int... expectedStatusCodes) throws SDKException {
+    public void checkStatus(Response response, int... expectedStatusCodes) throws SDKException {
         int status = response.getStatus();
         for (int expectedStatusCode : expectedStatusCodes) {
             if (status == expectedStatusCode) {
@@ -74,7 +75,7 @@ public class ResponseParser {
         throw new SDKException(status, getErrorMessage(response, status));
     }
 
-    protected String getErrorMessage(ClientResponse response, int status) {
+    protected String getErrorMessage(Response response, int status) {
         String errorMessage = "Http status code: " + status;
 
         if (response.hasEntity()) {
@@ -87,7 +88,7 @@ public class ResponseParser {
         return errorMessage;
     }
 
-    protected String getErrorRepresentation(ClientResponse response) {
+    protected String getErrorRepresentation(Response response) {
         try {
             if (isJsonResponse(response)) {
                 return read(response, ErrorMessageRepresentation.class).toString();
@@ -101,16 +102,16 @@ public class ResponseParser {
         return null;
     }
 
-    protected boolean isJsonResponse(ClientResponse response){
-        MediaType contentType = response.getType();
+    protected boolean isJsonResponse(Response response){
+        MediaType contentType = response.getMediaType();
         if (contentType == null) {
             return false;
         }
-        return contentType.getType().contains("application") 
+        return contentType.getType().contains("application")
                 && contentType.getSubtype().contains("json");
     }
 
-    public GId parseIdFromLocation(ClientResponse response) {
+    public GId parseIdFromLocation(Response response) {
         String path;
         path = response.getLocation().getPath();
         String[] pathParts = path.split("\\/");
@@ -128,7 +129,7 @@ public class ResponseParser {
         return null;
     }
 
-    private <T> T read(ClientResponse response, Class<T> clazz) {
+    private <T> T read(Response response, Class<T> clazz) {
         for (MapperWrapper mapper : this.mappers) {
             T read = mapper.read(response, clazz);
             if (read != null) {
@@ -142,7 +143,7 @@ public class ResponseParser {
 @Slf4j
 abstract class MapperWrapper {
     abstract Object write(Object object);
-    abstract <T> T read(ClientResponse response, Class<T> clazz);
+    abstract <T> T read(Response response, Class<T> clazz);
 
     static MapperWrapper nullMapper() {
         return new MapperWrapper() {
@@ -150,8 +151,8 @@ abstract class MapperWrapper {
                 return object;
             }
 
-            <T> T read(ClientResponse response, Class<T> clazz) {
-                return response.getEntity(clazz);
+            <T> T read(Response response, Class<T> clazz) {
+                return response.readEntity(clazz);
             }
         };
     }
@@ -170,9 +171,9 @@ abstract class MapperWrapper {
                 return null;
             }
 
-            <T> T read(ClientResponse response, Class<T> clazz) {
+            <T> T read(Response response, Class<T> clazz) {
                 try {
-                    final T result = mapper.read(response.getEntityInputStream(), clazz);
+                    final T result = mapper.read((InputStream) response.getEntity(), clazz);
                     if (result != null) {
                         return result;
                     }

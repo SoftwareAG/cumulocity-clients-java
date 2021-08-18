@@ -1,15 +1,19 @@
 pipeline {
     agent {
-        dockerfile {
-            dir '.jenkins/build'
-            args '--network centos_default'
+        kubernetes {
+            label 'jdk11'
+            inheritFrom 'jdk11'
+            defaultContainer 'default'
         }
     }
-    triggers { pollSCM('H/5 * * * *') }
+    triggers{
+        bitbucketPush()
+    }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 1, unit: 'HOURS')
         disableConcurrentBuilds()
+        copyArtifactPermission('OVAS-scanner-integration');
     }
     parameters {
         choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
@@ -42,28 +46,19 @@ pipeline {
         }
         stage('Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                    sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'INPROGRESS' ${JOB_NAME} ${BUILD_TAG} "
-                }
-                sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
-            }
-        }
-        stage('Compile') {
-            steps {
-                sh "chmod +x .jenkins/scripts/compile.sh && .jenkins/scripts/compile.sh"
+                cleanWs()
+                checkout scm
             }
         }
         stage('Build') {
-            agent {
-                dockerfile {
-                    dir '.jenkins/build'
-                }
-            }
             options {
                 retry(3)
             }
             steps {
-                sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/build.sh && .jenkins/scripts/build.sh"
+                }
             }
             post {
                 always {
@@ -80,24 +75,28 @@ pipeline {
                 }
             }
             steps {
+                sh "mkdir -p ~/.ssh"
+                sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
                 checkout([
-                        $class          : 'MercurialSCM',
-                        clear           : true,
-                        credentialsId   : 'jenkins-hg-key',
-                        installation    : 'Mercurial',
-                        disableChangeLog: true,
-                        revision        : "${env.BRANCH_NAME}",
-                        subdir          : 'cumulocity-sdk',
-                        source          : 'ssh://hg@bitbucket.org/m2m/cumulocity-sdk'
+                    $class: 'GitSCM',
+                    branches: [[name: "develop"]],//[[name: "${env.BRANCH_NAME}"]],
+                    extensions: [
+                        [$class: 'CleanCheckout'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
+                        [$class: 'LocalBranch', localBranch: "**"]
+                    ],
+                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master']]
                 ])
-                sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/repo.sh && .jenkins/scripts/repo.sh"
+                }
             }
         }
         stage('Deploy to Nexus') {
             when {
                 allOf {
                     equals expected: 'DEFAULT', actual: params.build_type
-                    anyOf{
+                    anyOf {
                         branch 'release/**';
                         branch 'develop'
                     }
@@ -105,7 +104,9 @@ pipeline {
 
             }
             steps {
-                sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh "chmod +x .jenkins/scripts/deploy.sh && .jenkins/scripts/deploy.sh"
+                }
             }
         }
         stage('Release') {
@@ -138,9 +139,12 @@ pipeline {
                         }
                     }
                     steps {
-                        sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
-                        sshagent(['jenkins-hg-key']) {
-                            sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version}"
+                        sshagent(['hudson-ssh-resources']) {
+                            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
+                                 file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                sh "chmod +x .jenkins/scripts/update_dependencies.sh && .jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                                sh "chmod +x .jenkins/scripts/release.sh && .jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
+                            }
                         }
                     }
                 }
@@ -151,37 +155,42 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
+                                    sh "chmod +x .jenkins/scripts/finish_release.sh && .jenkins/scripts/finish_release.sh ${params.release_version}"
+                                }
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                withCredentials([
+                                        usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER'),
+                                        file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                    sh "chmod +x .jenkins/scripts/update_develop.sh && .jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                }
                             }
                         }
                     }
                 }
+/*                 stage('Scan third party dependencies') {
+                    steps {
+                        echo "executing scan of third party dependencies"
+                        withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                          sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
+                        }
+                    }
+                } */
             }
         }
     }
     post {
         always {
-            sh "chmod +x .jenkins/scripts/clean.sh && .jenkins/scripts/clean.sh"
-        }
-        success {
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'SUCCESSFUL' ${JOB_NAME} ${BUILD_TAG} "
-            }
+            archiveArtifacts artifacts:"**"
         }
         failure {
             script {
                 if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
-                    chat 'AAAAvnc5o90'
+//                     chat 'AAAAvnc5o90'
                 }
-            }
-
-            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-                sh "chmod +x .jenkins/scripts/status.sh && .jenkins/scripts/status.sh 'FAILED' ${JOB_NAME} ${BUILD_TAG} "
             }
         }
     }

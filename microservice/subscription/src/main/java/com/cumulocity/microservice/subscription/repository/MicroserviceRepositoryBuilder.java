@@ -5,7 +5,6 @@ import com.cumulocity.microservice.subscription.repository.impl.CurrentMicroserv
 import com.cumulocity.microservice.subscription.repository.impl.LegacyMicroserviceRepository;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -18,17 +17,18 @@ public class MicroserviceRepositoryBuilder {
     private String tenant;
     private String username;
     private String password;
-    private ObjectMapper objectMapper;
     private CredentialsSwitchingPlatform connector;
     private Environment environment;
+    private String applicationName;
+    private String applicationKey;
 
     /**
      * creates MicroserviceRepository implementation according to microservice isolation env variable:
      * - when C8Y.microservice.isolation is defined, then microservice runs on new SDK (8.18+) in kubernetes
      * - when C8Y.microservice.isolation not defined, then microservice should support old SDK (before 8.18)
+     * @return microservice repository instance
      */
     public MicroserviceRepository build() {
-        final ObjectMapper nonNullObjectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
         final CumulocityCredentials credentials = CumulocityBasicCredentials.builder()
                 .username(username)
                 .password(password)
@@ -40,9 +40,9 @@ public class MicroserviceRepositoryBuilder {
         final Environment notNullEnvironment = environment == null ? new StandardEnvironment() : environment;
 
         if (notNullEnvironment.containsProperty(MICROSERVICE_ISOLATION_ENV_NAME)) {
-            return new CurrentMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
+            return new CurrentMicroserviceRepository(nonNullConnector, api);
         } else {
-            return new LegacyMicroserviceRepository(nonNullConnector, nonNullObjectMapper, api);
+            return new LegacyMicroserviceRepository(applicationName, applicationKey, nonNullConnector, api);
         }
     }
 
@@ -68,13 +68,18 @@ public class MicroserviceRepositoryBuilder {
         return this;
     }
 
-    public MicroserviceRepositoryBuilder password(String password) {
-        this.password = password;
+    public MicroserviceRepositoryBuilder applicationName(String applicationName){
+        this.applicationName = applicationName;
         return this;
     }
 
-    public MicroserviceRepositoryBuilder objectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public MicroserviceRepositoryBuilder applicationKey(String applicationKey){
+        this.applicationKey = applicationKey;
+        return this;
+    }
+
+    public MicroserviceRepositoryBuilder password(String password) {
+        this.password = password;
         return this;
     }
 

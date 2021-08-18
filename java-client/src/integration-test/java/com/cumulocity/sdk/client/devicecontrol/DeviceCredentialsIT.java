@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -20,13 +20,13 @@
 package com.cumulocity.sdk.client.devicecontrol;
 
 import static com.cumulocity.rest.representation.operation.DeviceControlMediaType.NEW_DEVICE_REQUEST;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.rest.representation.devicebootstrap.DeviceCredentialsRepresentation;
 import com.cumulocity.rest.representation.devicebootstrap.NewDeviceRequestRepresentation;
@@ -40,13 +40,13 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
     private ResponseParser responseParser;
     private RestConnector restConnector;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deviceCredentialsResource = (DeviceCredentialsApiImpl) bootstrapPlatform.getDeviceCredentialsApi();
         responseParser = new ResponseParser();
         restConnector = new RestConnector(platform, responseParser);
     }
-    
+
     @Test
     public void shouldPollCredentialsUntilDeviceAccepted() throws Exception {
         final String deviceId = "3000";

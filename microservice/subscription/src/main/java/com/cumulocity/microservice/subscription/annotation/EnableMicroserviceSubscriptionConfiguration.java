@@ -15,16 +15,17 @@ import com.cumulocity.model.JSONBase;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.rest.representation.application.MicroserviceManifestRepresentation;
 import com.cumulocity.sdk.client.RestOperations;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 
 import java.io.BufferedReader;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Slf4j
 @Configuration
 @ComponentScan(basePackageClasses = {
         MicroserviceSubscriptionsService.class,
@@ -39,6 +41,7 @@ import java.nio.file.Path;
 })
 @ConditionalOnProperty(value = "microservice.subscription.enabled", havingValue = "true", matchIfMissing = true)
 public class EnableMicroserviceSubscriptionConfiguration {
+
     @Bean
     @ConditionalOnMissingBean
     public PlatformProperties.PlatformPropertiesProvider platformPropertiesProvider() {
@@ -53,22 +56,26 @@ public class EnableMicroserviceSubscriptionConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MicroserviceRepository microserviceRepository(ObjectMapper objectMapper, final PlatformProperties properties, final Environment environment) {
-        final Credentials boostrapUser = properties.getMicroserviceBoostrapUser();
+    public MicroserviceRepository microserviceRepository(final PlatformProperties properties, final Environment environment) {
+        final Credentials bootstrapUser = properties.getMicroserviceBoostrapUser();
+        String applicationName = properties.getApplicationName();
+        log.info("Microservice repository will be build for application '{}'.", applicationName);
         return MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
                 .baseUrl(properties.getUrl())
                 .environment(environment)
                 .connector(new DefaultCredentialsSwitchingPlatform(properties.getUrl())
                         .switchTo(CumulocityBasicCredentials.builder()
-                                .username(boostrapUser.getUsername())
-                                .password(boostrapUser.getPassword())
-                                .tenantId(boostrapUser.getTenant())
+                                .username(bootstrapUser.getUsername())
+                                .password(bootstrapUser.getPassword())
+                                .tenantId(bootstrapUser.getTenant())
                                 .build()))
-                .objectMapper(objectMapper)
+                .applicationName(applicationName)
+                .applicationKey(properties.getApplicationKey())
                 .build();
     }
 
     @Bean
+    @Order
     @ConditionalOnMissingBean
     public MicroserviceMetadataRepresentation metadata(Environment environment) throws IOException {
         ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);

@@ -4,15 +4,15 @@ import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.cumulocity.rest.representation.tenant.OptionRepresentation.asOptionRepresetation;
+import static com.cumulocity.rest.representation.tenant.OptionRepresentation.asOptionRepresentation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -25,12 +25,12 @@ public class TenantOptionIT extends JavaSdkITBase {
 
     private TenantOptionApi tenantOptionApi;
 
-    @Before
+    @BeforeEach
     public void setup() {
         tenantOptionApi = platform.getTenantOptionApi();
     }
 
-    @After
+    @AfterEach
     public void cleanup(){
         for(OptionRepresentation option: tenantOptionApi.getAllOptionsForCategory(CATEGORY)){
             tenantOptionApi.delete(new OptionPK(option.getCategory(), option.getKey()));
@@ -39,7 +39,7 @@ public class TenantOptionIT extends JavaSdkITBase {
 
     @Test
     public void shouldCreateOption() {
-        OptionRepresentation expectedOption = asOptionRepresetation(CATEGORY, KEY, "value");
+        OptionRepresentation expectedOption = asOptionRepresentation(CATEGORY, KEY, "value");
         OptionRepresentation option = tenantOptionApi.save(expectedOption);
         OptionRepresentation savedOption = tenantOptionApi.getOption(new OptionPK(CATEGORY, KEY));
         assertThat(option, equalTo(expectedOption));
@@ -48,13 +48,13 @@ public class TenantOptionIT extends JavaSdkITBase {
 
     @Test
     public void shouldUpdateOption() {
-        OptionRepresentation expectedOption = asOptionRepresetation(CATEGORY, KEY, "value");
+        OptionRepresentation expectedOption = asOptionRepresentation(CATEGORY, KEY, "value");
         OptionRepresentation option = tenantOptionApi.save(expectedOption);
         OptionRepresentation savedOption = tenantOptionApi.getOption(new OptionPK(CATEGORY, KEY));
         assertThat(option, equalTo(expectedOption));
         assertThat(savedOption, equalTo(expectedOption));
 
-        expectedOption = asOptionRepresetation(CATEGORY, KEY, "value3");
+        expectedOption = asOptionRepresentation(CATEGORY, KEY, "value3");
         option = tenantOptionApi.save(expectedOption);
         savedOption = tenantOptionApi.getOption(new OptionPK(CATEGORY, KEY));
         assertThat(option, equalTo(expectedOption));
@@ -87,7 +87,7 @@ public class TenantOptionIT extends JavaSdkITBase {
     public void shouldDeleteOption() {
         OptionPK optionPK = new OptionPK(CATEGORY, KEY);
 
-        tenantOptionApi.save(asOptionRepresetation(CATEGORY, KEY, "value"));
+        tenantOptionApi.save(asOptionRepresentation(CATEGORY, KEY, "value"));
         OptionRepresentation savedOption = tenantOptionApi.getOption(optionPK);
         assertThat(savedOption, notNullValue());
 
@@ -104,7 +104,7 @@ public class TenantOptionIT extends JavaSdkITBase {
     private List<OptionRepresentation> sampleOptions(String category, String keyPrefix, int count) {
         List<OptionRepresentation> options = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            options.add(asOptionRepresetation(category, keyPrefix + ".v" + i, "" + i));
+            options.add(asOptionRepresentation(category, keyPrefix + ".v" + i, "" + i));
         }
         return options;
     }

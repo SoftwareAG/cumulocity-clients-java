@@ -4,7 +4,7 @@
     <parent>
         <artifactId>microservice-dependencies</artifactId>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <version>1004.6.1-SNAPSHOT</version>
+        <version>1010.16.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-settings</artifactId>
@@ -47,6 +47,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
 

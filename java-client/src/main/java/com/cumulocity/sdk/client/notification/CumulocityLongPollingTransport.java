@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -21,15 +21,15 @@ package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.RestConnector;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.HttpClientTransport;
 import org.cometd.client.transport.TransportListener;
+import org.glassfish.jersey.client.ClientProperties;
+import javax.ws.rs.core.Response;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.NewCookie;
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static javax.ws.rs.core.HttpHeaders.COOKIE;
 
@@ -126,7 +127,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private void createMessageExchange(final TransportListener listener, final String content, List<Mutable> messages) {
         final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService, resolveHeartbeatInterval());
-        httpClient.setReadTimeout((int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval()+30));
+        httpClient.property(ClientProperties.READ_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval()+30));
         final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, unauthorizedConnectionWatcher, messages);
         watcher.addConnectionListener(new ConnectionIdleListener() {
             @Override
@@ -153,9 +154,9 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         return heartbeat;
     }
 
-    private ClientResponse copyCookies(final ClientResponse clientResponse) {
+    private Response copyCookies(final Response clientResponse) {
         CookieStore cookieStore = getCookieStore();
-        for (NewCookie cookie : clientResponse.getCookies()) {
+        for (NewCookie cookie : clientResponse.getCookies().values()) {
             cookieStore.add(null, toHttpCookie(cookie));
         }
         return clientResponse;
@@ -177,7 +178,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         executorService.shutdownNow();
     }
 
-    protected void addCookieHeader(ClientRequest exchange) {
+    protected void addCookieHeader(ClientRequestContext exchange) {
         CookieStore cookieStore = getCookieStore();
         if (cookieStore != null) {
             StringBuilder builder = new StringBuilder();
@@ -192,8 +193,8 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         }
     }
 
-    private void addApplicationKeyHeader(ClientRequest request) {
-        if (applicationKey != null) {
+    private void addApplicationKeyHeader(ClientRequestContext request) {
+        if (isNotBlank(applicationKey)) {
             request.getHeaders().putSingle(RestConnector.X_CUMULOCITY_APPLICATION_KEY, applicationKey);
         }
     }
@@ -209,14 +210,10 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         @Override
         public Client get() {
             final Client client = httpClient.get();
-            client.setExecutorService(executorService);
-            client.addFilter(new ClientFilter() {
-                @Override
-                public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-                    addCookieHeader(cr);
-                    addApplicationKeyHeader(cr);
-                    return copyCookies(getNext().handle(cr));
-                }
+            client.register(new LongPollingExecutorServiceProvider(executorService));
+            client.register((ClientRequestFilter) cr -> {
+                addCookieHeader(cr);
+                addApplicationKeyHeader(cr);
             });
             return client;
         }

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -29,22 +29,20 @@ import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.UrlProcessor;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.joda.time.DateTime;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class DeviceControlApiImplTest {
@@ -55,7 +53,7 @@ public class DeviceControlApiImplTest {
 
     private static final String DEVICE_ID = "123ABC";
 
-    private static final int DEAFAULT_PAGE_SIZE = 7;
+    private static final int DEFAULT_PAGE_SIZE = 7;
 
     private DeviceControlApi deviceControlApi;
 
@@ -67,7 +65,7 @@ public class DeviceControlApiImplTest {
     @Mock
     private UrlProcessor urlProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -77,27 +75,27 @@ public class DeviceControlApiImplTest {
         ocr.setOperations(opList);
         deviceControlApiRepresentation.setOperations(ocr);
 
-        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, deviceControlApiRepresentation, DEAFAULT_PAGE_SIZE);
+        deviceControlApi = new DeviceControlApiImpl(null, restConnector, urlProcessor, deviceControlApiRepresentation, DEFAULT_PAGE_SIZE);
     }
 
     @Test
     public void shouldGetOperation() throws SDKException {
-        // Given 
+        //given
         GId gid = new GId("value");
         OperationRepresentation op = new OperationRepresentation();
         when(restConnector.get(DEVICE_CONTROL_COLLECTION_URL + "/value", DeviceControlMediaType.OPERATION, OperationRepresentation.class))
                 .thenReturn(op);
 
-        // When
+        //when
         OperationRepresentation retrieved = deviceControlApi.getOperation(gid);
 
-        // Then
-        assertThat(retrieved, sameInstance(op));
+        //then
+        assertThat(retrieved).isSameAs(op);
     }
 
     @Test
-    public void shouldCreateOperation() throws Exception {
-        //Given
+    public void shouldCreateOperation() {
+        //given
         OperationRepresentation operation = new OperationRepresentation();
         OperationRepresentation created = new OperationRepresentation();
 
@@ -106,17 +104,17 @@ public class DeviceControlApiImplTest {
         //when
         OperationRepresentation result = deviceControlApi.create(operation);
 
-        // then 
-        assertThat(result, sameInstance(created));
+        //then
+        assertThat(result).isSameAs(created);
     }
 
     @Test
     public void shouldUpdateOperation() throws SDKException {
-        //Given
+        //given
         OperationRepresentation op = new OperationRepresentation();
         op.setStatus(OperationStatus.EXECUTING.toString());
         op.setId(new GId("myId"));
-        op.setCreationTime(new Date());
+        op.setCreationDateTime(new DateTime());
         OperationRepresentation updated = new OperationRepresentation();
         when(restConnector.put(eq(DEVICE_CONTROL_COLLECTION_URL + "/myId"), eq(DeviceControlMediaType.OPERATION),
                 argThat(hasOnlyUpdateFields(op)))).thenReturn(updated);
@@ -124,54 +122,53 @@ public class DeviceControlApiImplTest {
         //when
         OperationRepresentation result = deviceControlApi.update(op);
 
-        // then 
-        assertThat(result, sameInstance(updated));
+        //then
+        assertThat(result).isSameAs(updated);
     }
 
     @Test
-    public void shouldGetOperations() throws Exception {
-        //Given
-        OperationCollection expected = new OperationCollectionImpl(restConnector,
-                DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
+    public void shouldGetOperations() {
+        //given
+        OperationCollection expected = new OperationCollectionImpl(restConnector, DEVICE_CONTROL_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
-        // When
+        //when
         OperationCollection result = deviceControlApi.getOperations();
 
-        // Then
-        assertThat(result, is(expected));
+        //then
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
-    public void shouldGetOperationsByEmptyFilter() throws Exception {
-        //Given
+    public void shouldGetOperationsByEmptyFilter() {
+        //given
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, Collections.<String, String>emptyMap())).thenReturn(DEVICE_CONTROL_COLLECTION_URL);
         OperationCollection expected = new OperationCollectionImpl(restConnector,
-                DEVICE_CONTROL_COLLECTION_URL, DEAFAULT_PAGE_SIZE);
+                DEVICE_CONTROL_COLLECTION_URL, DEFAULT_PAGE_SIZE);
 
-        // When
+        //when
         OperationFilter filter = new OperationFilter();
         OperationCollection result = deviceControlApi.getOperationsByFilter(filter);
 
-        // Then
-        assertThat(result, is(expected));
+        //then
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
-    public void shouldGetOperationsByDeviceFilter() throws Exception {
-        // Given
+    public void shouldGetOperationsByDeviceFilter() {
+        //given
         OperationFilter filter = new OperationFilter().byDevice(DEVICE_ID);
         deviceControlApiRepresentation.setOperationsByDeviceId(TEMPLATE_URL);
         String operationsByDeviceIdUrl = DEVICE_CONTROL_COLLECTION_URL + "?deviceId="+ DEVICE_ID;
         when(urlProcessor.replaceOrAddQueryParam(DEVICE_CONTROL_COLLECTION_URL, filter.getQueryParams())).thenReturn(operationsByDeviceIdUrl);
 
         OperationCollection expected = new OperationCollectionImpl(restConnector, operationsByDeviceIdUrl,
-                DEAFAULT_PAGE_SIZE);
+                DEFAULT_PAGE_SIZE);
 
-        // When
+        //when
         OperationCollection result = deviceControlApi.getOperationsByFilter(filter);
 
-        // Then
-        assertThat(result, is(expected));
+        //then
+        assertThat(result).isEqualTo(expected);
     }
 
     private ArgumentMatcher<OperationRepresentation> hasOnlyUpdateFields(final OperationRepresentation op) {
@@ -187,7 +184,7 @@ public class DeviceControlApiImplTest {
                 CoreMatchers.nullValue().matches(item.getDeviceExternalIDs());
                 return item.getDeviceExternalIDs() == null &&
                         item.getId() == null &&
-                        item.getCreationTime() == null &&
+                        item.getCreationDateTime() == null &&
                         item.getStatus().equals(op.getStatus()) &&
                         (OperationStatus.FAILED.name().equals(item.getStatus()) ? item.getFailureReason().equals(op.getFailureReason()) : item.getFailureReason() == null) &&
                         item.getAttrs().equals(op.getAttrs());

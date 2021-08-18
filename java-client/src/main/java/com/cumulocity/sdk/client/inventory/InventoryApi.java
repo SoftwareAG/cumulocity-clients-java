@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -26,6 +26,7 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.SupportedMeasurementsRepresentation;
 import com.cumulocity.rest.representation.inventory.SupportedSeriesRepresentation;
+import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.SDKException;
 
 /**
@@ -37,35 +38,48 @@ public interface InventoryApi {
     /**
      * Returns the Managed Object of the Resource.
      *
+     * @param id Managed Object General Identifier
      * @return ManagedObjectRepresentation
-     * @throws SDKException
+     * @throws SDKException if query failed
      */
     ManagedObjectRepresentation get(GId id) throws SDKException;
-    
+
+    /**
+     * Returns the Managed Object of the Resource. Using additional query params e.g. withChildren=false to optimize access time.
+     *
+     * @param id Managed Object General Identifier
+     * @param params query parameters
+     * @return ManagedObjectRepresentation
+     * @throws SDKException if query failed
+     */
+    ManagedObjectRepresentation get(GId id, QueryParam ... params) throws SDKException;
+
     /**
      * Deletes the Managed Object from the Cumulocity Server.
      *
-     * @throws SDKException
+     * @param id Managed Object General Identifier
+     * @throws SDKException if the managed object could not be deleted
      */
     void delete(GId id) throws SDKException;
-    
+
     /**
      * Deletes the Managed Object and all child devices and child assets recursively from the Cumulocity Server.
      *
-     * @throws SDKException
+     * @param id Managed Object General Identifier
+     * @throws SDKException if the managed object could not be deleted
      */
     void deleteCascade(GId id) throws SDKException;
 
     /**
      * This update the ManagedObject for the operationCollection. Cannot update the ID.
      *
-     * @param managedObjectRepresentation
+     * @param managedObjectRepresentation managed object representation
      * @return ManagedObjectRepresentation updated ManagedObject.
-     * @throws SDKException
+     * @throws SDKException if the managed object could not be updated
      */
     ManagedObjectRepresentation update(ManagedObjectRepresentation managedObjectRepresentation) throws SDKException;
 
-    
+
     /**
      * Gets managed object resource by id. To get the managed object representation you have to call {@code get()} on the returned resource.
      *
@@ -131,7 +145,7 @@ public interface InventoryApi {
      */
     @Deprecated
     ManagedObjectCollection getManagedObjectsByListOfIds(List<GId> ids) throws SDKException;
-    
+
     /**
      * Gets managed object resource by id. To get the managed object representation you have to call {@code get()} on the returned resource.
      *

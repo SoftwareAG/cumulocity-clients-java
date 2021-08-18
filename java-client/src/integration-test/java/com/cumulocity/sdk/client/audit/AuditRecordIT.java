@@ -19,27 +19,20 @@
  */
 package com.cumulocity.sdk.client.audit;
 
-import com.cumulocity.model.authentication.CumulocityBasicCredentials;
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.common.SystemPropertiesOverrider;
+import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TenantCreator;
-import com.cumulocity.sdk.client.inventory.InventoryIT;
+import org.joda.time.DateTime;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
 import java.util.*;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -47,7 +40,7 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepr
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-//TODO speed up execution time by creating tenant and alarms only once in @BeforeClass
+//TODO speed up execution time by creating tenant and alarms only once in @BeforeAll
 public class AuditRecordIT {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<ManagedObjectRepresentation>();
@@ -55,355 +48,267 @@ public class AuditRecordIT {
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
 
-    @BeforeClass
+    private static final int OK = 200;
+
+    private List<AuditRecordRepresentation> input;
+    private List<AuditRecordRepresentation> result1;
+    private List<AuditRecordRepresentation> result2;
+    private AuditRecordCollectionRepresentation collection1;
+    private AuditRecordApi auditRecordsApi;
+
+    private int status;
+
+    @BeforeAll
     public static void createTenantWithApplication() throws Exception {
-        platform = createPlatform();
-
+        platform = JavaSdkITBase.createPlatform(false);
     }
 
-    private static PlatformImpl createPlatform() throws IOException {
-        Properties cumulocityProps = new Properties();
-        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-
-        SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
-        PlatformImpl platform = new PlatformImpl(
-                p.get("cumulocity.host"),
-                CumulocityBasicCredentials.builder()
-                        .tenantId(p.get("cumulocity.tenant"))
-                        .username(p.get("cumulocity.user"))
-                        .password(p.get("cumulocity.password"))
-                        .build(),
-                5);
-        platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
-        return platform;
-    }
-
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
 
         auditRecordsApi = platform.getAuditRecordApi();
         status = OK;
-        input = new ArrayList<AuditRecordRepresentation>();
-        result1 = new ArrayList<AuditRecordRepresentation>();
-        result2 = new ArrayList<AuditRecordRepresentation>();
+        input = new ArrayList<>();
+        result1 = new ArrayList<>();
+        result2 = new ArrayList<>();
 
-//    Given I have '3' managed objects
-//    And I create all
         for (int i = 0; i < 3; ++i) {
             ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().withName("MO" + i).build());
             managedObjects.add(mo);
         }
     }
 
-    @After
-    public void removeTenantAndApplication() throws Exception {
+    @AfterEach
+    public void removeTenantAndApplication() {
         tenantCreator.removeTenant();
     }
 
-    private static ManagedObjectRepresentationBuilder aSampleMo() {
-        return anMoRepresentationLike(MO_REPRESENTATION);
-    }
-
-    //    Scenario: Create and get audit records
     @Test
-    public void createAndGetAuditRecords() throws Exception {
-//    Given I have '3' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void createAndGetAuditRecords() {
+        // given
         iHaveAuditRecord(3, "com.type1", "app1", "user1");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I get all audit records
+        // when
         iGetAllAuditRecords();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should I get all the audit records
-        shouldGetAllMeasurements();
+        iShouldGetAtLeastNumberOfAudits(3);
     }
 
-//
-//
-//    Scenario: Create and get audit record
-
     @Test
-    public void createAndGetAuditRecord() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void createAndGetAuditRecord() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I get the audit record with the created id
+        // when
         iGetWithCreatedId();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get the audit record
-        shouldGetTheMeasurement();
+        shouldGetTheAuditRecord();
     }
 
-//    Scenario: Query by user
-
     @Test
-    public void queryByUser() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryByUser() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(3, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by user 'user2'
+        // when
         iQueryByUser("user2");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by user 'user1'
+        // when
+        iShouldGetNumberOfAudits(3);
         iQueryByUser("user1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by user 'user3'
+        // when
+        iShouldGetNumberOfAudits(1);
         iQueryByUser("user3");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
-//
-//    Scenario: Query by type
-
     @Test
-    public void queryByType() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryByType() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type2' and application 'app1' and user 'user1' for the managed object
         iHaveAuditRecord(3, "com.type2", "app1", "user1");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by type 'com.type2'
+        // when
         iQueryByType("com.type2");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by type 'com.type1'
+        iShouldGetNumberOfAudits(3);
+        // when
         iQueryByType("com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by type 'com.type3'
+        iShouldGetNumberOfAudits(1);
+        // when
         iQueryByType("com.type3");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
-//
-//
-//    Scenario: Query by application
-
     @Test
-    public void queryByApplication() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryByApplication() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type1' and application 'app2' and user 'user1' for the managed object
         iHaveAuditRecord(3, "com.type1", "app2", "user1");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by application 'app2'
+        // when
         iQueryByApp("app2");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by application 'app1'
+        iShouldGetNumberOfAudits(3);
+        // when
         iQueryByApp("app1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by application 'app3'
+        iShouldGetNumberOfAudits(1);
+        // when
         iQueryByApp("app3");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
-
-//
-//    Scenario: Query by user and type
 
     @Test
-    public void queryByUserAndType() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryByUserAndType() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(3, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by user 'user2' and type 'com.type1'
+        // when
         iQueryByUserAndType("user2", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by user 'user1' and type 'com.type1'
+        iShouldGetNumberOfAudits(3);
+        // when
         iQueryByUserAndType("user1", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by user 'user3' and type 'com.type1'
+        iShouldGetNumberOfAudits(1);
+        // when
         iQueryByUserAndType("user3", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
-
-//
-//    Scenario: Query by user and application
 
     @Test
     public void queryByUserAndApplication() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(3, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by user 'user2' and application 'app1'
+        // when
         iQueryByUserAndApp("user2", "app1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by user 'user1' and application 'app1'
+        iShouldGetNumberOfAudits(3);
+        // when
         iQueryByUserAndApp("user1", "app1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by user 'user3' and application 'app1'
+        iShouldGetNumberOfAudits(1);
+        // when
         iQueryByUserAndApp("user3", "app1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
-//
-//
-//    Scenario: Query by user, application and type
-
     @Test
-    public void queryByUserApplicationAndType() throws Exception {
-//    Given I have '1' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryByUserApplicationAndType() {
+        // given
         iHaveAuditRecord(1, "com.type1", "app1", "user1");
-//    Given I have '3' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(3, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by user 'user2' and application 'app1' and type 'com.type1'
         iQueryByUserAndAppAndType("user2", "app1", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '3' audit records
-        iShouldGetNumberOfMeasurements(3);
-//    And I query the audit record collection by user 'user1' and application 'app1' and type 'com.type1'
+        iShouldGetNumberOfAudits(3);
+        // when
         iQueryByUserAndAppAndType("user1", "app1", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '1' audit records
-        iShouldGetNumberOfMeasurements(1);
-//    And I query the audit record collection by user 'user3' and application 'app1' and type 'com.type1'
+        iShouldGetNumberOfAudits(1);
+        // when
         iQueryByUserAndAppAndType("user3", "app1", "com.type1");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I should get '0' audit records
-        iShouldGetNumberOfMeasurements(0);
+        iShouldGetNumberOfAudits(0);
     }
 
-//
-//    Scenario: Query to test the paging with user
-
     @Test
-    public void queryToTestThePagingWithUser() throws Exception {
-//    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryToTestThePagingWithUser() {
+        // given
         iHaveAuditRecord(10, "com.type1", "app1", "user1");
-//    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(10, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I query the audit record collection by user 'user2'
+        // when
         iQueryByUser("user2");
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
     }
-
-//
-//    Scenario: Query to test the paging to get all AuditRecords
 
     @Test
-    public void queryToTestThePagingToGetAllAuditRecords() throws Exception {
-//    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user1' for the managed object
+    public void queryToTestThePagingToGetAllAuditRecords() {
+        // given
         iHaveAuditRecord(10, "com.type1", "app1", "user1");
-//    Given I have '10' audit records of type 'com.type1' and application 'app1' and user 'user2' for the managed object
         iHaveAuditRecord(10, "com.type1", "app1", "user2");
-//    When I create all audit records
+        // when
         iCreateAll();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
-//    And I get all audit records
+        // when
         iGetAllAuditRecords();
-//    Then Audit record response status should be success
+        // then
         shouldBeSuccess();
     }
-
-    private static final int OK = 200;
-
-    private List<AuditRecordRepresentation> input;
-
-    private List<AuditRecordRepresentation> result1;
-
-    private List<AuditRecordRepresentation> result2;
-
-    private AuditRecordCollectionRepresentation collection1;
-
-    private AuditRecordApi auditRecordsApi;
-
-    private int status;
 
     // ------------------------------------------------------------------------
     // Given
     // ------------------------------------------------------------------------
 
-    @Given("I have '(\\d+)' audit records of type '([^']*)' and application '([^']*)' and user '([^']*)' for the managed object$")
     public void iHaveAuditRecord(int n, String type, String application, String user) {
         for (int i = 0; i < n; i++) {
             AuditRecordRepresentation rep = new AuditRecordRepresentation();
             rep.setType(type);
-            rep.setTime(new Date());
+            rep.setDateTime(new DateTime());
             rep.setSource(managedObjects.get(0));
             rep.setActivity("Some Activity");
             rep.setApplication(application);
@@ -418,7 +323,6 @@ public class AuditRecordIT {
     // When
     // ------------------------------------------------------------------------
 
-    @When("I create all audit records$")
     public void iCreateAll() throws SDKException {
         try {
             for (AuditRecordRepresentation rep : input) {
@@ -430,7 +334,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I get all audit records$")
     public void iGetAllAuditRecords() throws SDKException {
         try {
             collection1 = auditRecordsApi.getAuditRecords().get();
@@ -440,7 +343,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I get the audit record with the created id$")
     public void iGetWithCreatedId() throws SDKException {
         try {
             AuditRecordRepresentation auditRecordRepresentation = auditRecordsApi.getAuditRecord(result1.get(0).getId());
@@ -452,7 +354,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by user '([^']*)'$")
     public void iQueryByUser(String user) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byUser(user);
@@ -463,7 +364,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by type '([^']*)'$")
     public void iQueryByType(String type) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byType(type);
@@ -474,7 +374,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by application '([^']*)'$")
     public void iQueryByApp(String app) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byApplication(app);
@@ -485,7 +384,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by user '([^']*)' and type '([^']*)'$")
     public void iQueryByUserAndType(String user, String type) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byUser(user).byType(type);
@@ -496,7 +394,6 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by user '([^']*)' and application '([^']*)'$")
     public void iQueryByUserAndApp(String user, String application) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byUser(user).byApplication(application);
@@ -507,21 +404,9 @@ public class AuditRecordIT {
         }
     }
 
-    @When("I query the audit record collection by user '([^']*)' and application '([^']*)' and type '([^']*)'$")
     public void iQueryByUserAndAppAndType(String user, String application, String type) throws SDKException {
         try {
             AuditRecordFilter filter = new AuditRecordFilter().byUser(user).byType(type).byApplication(application);
-            collection1 = auditRecordsApi.getAuditRecordsByFilter(filter).get();
-        } catch (SDKException ex) {
-            ex.printStackTrace();
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I query the audit record collection by type '([^']*)' and application '([^']*)'$")
-    public void iQueryByTypeAndApp(String type, String application) throws SDKException {
-        try {
-            AuditRecordFilter filter = new AuditRecordFilter().byType(type).byApplication(application);
             collection1 = auditRecordsApi.getAuditRecordsByFilter(filter).get();
         } catch (SDKException ex) {
             ex.printStackTrace();
@@ -533,55 +418,24 @@ public class AuditRecordIT {
     // Then
     // ------------------------------------------------------------------------
 
-    @Then("Audit record response status should be success$")
     public void shouldBeSuccess() {
         assertThat(status, is(lessThan(300)));
     }
 
-    @Then("I should get the audit record$")
-    public void shouldGetTheMeasurement() {
+    public void shouldGetTheAuditRecord() {
         assertThat(result1.get(0).getId(), is(equalTo(result2.get(0).getId())));
     }
 
-    @Then("I should get '(\\d+)' audit records$")
-    public void iShouldGetNumberOfMeasurements(int count) {
+    public void iShouldGetNumberOfAudits(int count) {
         assertThat(collection1.getAuditRecords().size(), is(equalTo(count)));
     }
 
-    @Then("I should I get all the audit records$")
-    public void shouldGetAllMeasurements() {
-        assertThat(collection1.getAuditRecords().size(), is(equalTo(result1.size())));
-
-        Map<GId, AuditRecordRepresentation> map = new HashMap<GId, AuditRecordRepresentation>();
-
-        for (AuditRecordRepresentation rep : result1) {
-            map.put(rep.getId(), rep);
-        }
-
-        for (AuditRecordRepresentation rep : collection1.getAuditRecords()) {
-            AuditRecordRepresentation orig = map.get(rep.getId());
-            assertThat(orig, is(notNullValue()));
-        }
+    public void iShouldGetAtLeastNumberOfAudits(int count) {
+        assertThat(collection1.getAuditRecords().size(), is(greaterThanOrEqualTo(count)));
     }
 
-    @Then("I should get '(\\d+)' pages of audit records$")
-    public void iShouldGetNPages(int count) {
-        assertThat(collection1.getPageStatistics().getTotalPages(), is(equalTo(count)));
-    }
-
-    @Then("I should getNextPage$")
-    public void iShouldGetNextPages() throws SDKException {
-        collection1 = auditRecordsApi.getAuditRecords().getNextPage(collection1);
-    }
-
-    @Then("I should get current page as '(\\d+)'$")
-    public void shouldBeCurrentPage(int pageNum) throws SDKException {
-        assertThat(collection1.getPageStatistics().getCurrentPage(), is(equalTo(pageNum)));
-    }
-
-    @Then("I should getPreviousPage$")
-    public void iShouldGetPreviousPages() throws SDKException {
-        collection1 = auditRecordsApi.getAuditRecords().getPreviousPage(collection1);
+    private static ManagedObjectRepresentationBuilder aSampleMo() {
+        return anMoRepresentationLike(MO_REPRESENTATION);
     }
 
 }

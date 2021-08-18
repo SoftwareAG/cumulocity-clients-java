@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -25,16 +25,13 @@ import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.joda.time.DateTime;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,30 +42,460 @@ public class EventIT extends JavaSdkITBase {
 
     private static ManagedObjectRepresentation managedObject;
 
-    @BeforeClass
-    public static void createManagedObject() throws Exception {
+    private static final int OK = 200;
+    private static final int NOT_FOUND = 404;
+    private static final int UNPROCESSABLE = 422;
+
+    private List<EventRepresentation> input;
+    private List<EventRepresentation> result;
+    private List<EventRepresentation> result1;
+    private EventCollectionRepresentation collection;
+    private EventCollectionRepresentation collection1;
+    private EventApi eventApi;
+
+    private int status;
+
+    @BeforeAll
+    public static void createManagedObject() {
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         mo.setName("MO");
-
         managedObject = platform.getInventoryApi().create(mo);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         eventApi = platform.getEventApi();
-        input = new ArrayList<EventRepresentation>();
-        result = new ArrayList<EventRepresentation>();
-        result1 = new ArrayList<EventRepresentation>();
+        input = new ArrayList<>();
+        result = new ArrayList<>();
+        result1 = new ArrayList<>();
         status = OK;
     }
 
-    @After
-    public void deleteEvents() throws Exception {
+    @AfterEach
+    public void deleteEvents() {
         List<EventRepresentation> eventsOn1stPage = getEventsFrom1stPage();
         while (!eventsOn1stPage.isEmpty()) {
             deleteMOs(eventsOn1stPage);
             eventsOn1stPage = getEventsFrom1stPage();
         }
+    }
+
+    @Test
+    public void createEvents() {
+        // given
+        iHaveEvents(2, "type1");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(2);
+    }
+
+    @Test
+    public void createEventsWithoutType() {
+        // given
+        iHaveAEventWithNoType();
+        // when
+        iCreateAll();
+        // then
+        shouldBeBadRequest();
+    }
+
+    @Test
+    public void createEventsWithoutTime() {
+        // given
+        iHaveAEventWithNoTime();
+        // when
+        iCreateAll();
+        // then
+        shouldBeBadRequest();
+    }
+
+    @Test
+    public void createEventsWithoutText() {
+        // given
+        iHaveAEventWithNoText();
+        // when
+        iCreateAll();
+        // then
+        shouldBeBadRequest();
+    }
+
+    @Test
+    public void getEventCollection() {
+        // given
+        iHaveEvents(2, "type1");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        shouldGetAllEvents();
+    }
+
+
+    @Test
+    public void getEventCollectionByType() throws Exception {
+        // given
+        iHaveEvents(2, "type");
+        iHaveEvents(3, "type1");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(5);
+        // when
+        iQueryAllByType("type");
+        // then
+        iShouldGetNumberOfEvents(2);
+        // when
+        iQueryAllByType("type1");
+        // then
+        iShouldGetNumberOfEvents(3);
+        // when
+        iQueryAllByType("type2");
+        // then
+        iShouldGetNumberOfEvents(0);
+    }
+
+    @Test
+    public void getEventCollectionBySource() {
+        // given
+        iHaveEventsForSource(3);
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(3);
+        // when
+        iQueryAllBySource();
+        // then
+        iShouldGetNumberOfEvents(3);
+    }
+
+    @Test
+    public void getEventCollectionBySourceAndType() {
+        // given
+        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type");
+        iHaveAEventWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "type1");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(2);
+        // when
+        iQueryAllBySourceAndType(0, "type");
+        // then
+        iShouldGetNumberOfEvents(1);
+        // when
+        iQueryAllBySourceAndType(0, "type1");
+        // then
+        iShouldGetNumberOfEvents(1);
+        // when
+        iQueryAllBySourceAndType(0, "type2");
+        // then
+        iShouldGetNumberOfEvents(0);
+    }
+
+    @Test
+    public void getEventCollectionByTime() {
+        // given
+        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type");
+        iHaveAEventWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "type1");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(2);
+        // when
+        iQueryAllBySourceAndTime(0, "2011-11-03T11:01:00.000+05:30");
+        // then
+        iShouldGetNumberOfEvents(1);
+    }
+
+    @Test
+    public void getEvent() {
+        // given
+        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type");
+        // when
+        iCreateAll();
+        iGetEventsWithCreatedId();
+        // then
+        shouldGetTheEvent();
+    }
+
+    @Test
+    public void deleteEvent() {
+        // given
+        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type");
+        // when
+        iCreateAll();
+        iDeleteEventsWithCreatedId();
+        iGetEventsWithCreatedId();
+        // then
+        shouldNotBeFound();
+    }
+
+    @Test
+    public void deleteEventCollectionByEmptyFilter() {
+        // given
+        iHaveEvents(3, "type1");
+        iHaveEvents(2, "type2");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(5);
+        // when
+        iDeleteEventCollection();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(0);
+    }
+
+    @Test
+    public void deleteEventsByTypeFilter() {
+        // given
+        iHaveEvents(3, "type1");
+        iHaveEvents(2, "type2");
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(5);
+        // when
+        iDeleteAllByType("type2");
+        iGetAllEvents();
+        // then
+        iShouldGetNumberOfEvents(3);
+        // when
+        iQueryAllByType("type1");
+        // then
+        iShouldGetNumberOfEvents(3);
+        // when
+        iQueryAllByType("type2");
+        // then
+        iShouldGetNumberOfEvents(0);
+    }
+
+    @Test
+    public void getEventCollectionByPaging() {
+        // given
+        iHaveEventsForSource(17);
+        // when
+        iCreateAll();
+        iGetAllEvents();
+        // when
+        iShouldGetNumberOfEvents(5);
+        // when
+        iQueryAllByPageNumber(1);
+        // then
+        iShouldGetNumberOfEventsOfPaging(5);
+        // when
+        iQueryAllByPageNumber(2);
+        // then
+        iShouldGetNumberOfEventsOfPaging(5);
+        // when
+        iQueryAllByPageNumber(3);
+        // then
+        iShouldGetNumberOfEventsOfPaging(5);
+        // when
+        iQueryAllByPageNumber(4);
+        // then
+        iShouldGetNumberOfEventsOfPaging(2);
+        // when
+        iQueryAllByPageNumber(5);
+        // then
+        iShouldGetNumberOfEventsOfPaging(0);
+    }
+
+    // ------------------------------------------------------------------------
+    // Given
+    // ------------------------------------------------------------------------
+
+    private void iHaveEvents(int n, String type) {
+        for (int i = 0; i < n; i++) {
+            EventRepresentation rep = new EventRepresentation();
+            rep.setType(type);
+            rep.setDateTime(new DateTime());
+            rep.setText(" Event of Managed Object : " + i);
+            rep.setSource(managedObject);
+            input.add(rep);
+
+        }
+    }
+
+    private void iHaveAEventWithNoType() {
+        EventRepresentation rep = new EventRepresentation();
+        rep.setDateTime(new DateTime());
+        rep.setText(" Event of Managed Object : " + 0);
+        rep.setSource(managedObject);
+        input.add(rep);
+    }
+
+    private void iHaveAEventWithNoText() {
+        EventRepresentation rep = new EventRepresentation();
+        rep.setType("type");
+        rep.setDateTime(new DateTime());
+        rep.setSource(managedObject);
+        input.add(rep);
+    }
+
+    private void iHaveAEventWithNoTime() {
+        EventRepresentation rep = new EventRepresentation();
+        rep.setType("type");
+        rep.setText(" Event of Managed Object : " + 1);
+        rep.setSource(managedObject);
+        input.add(rep);
+    }
+
+    private void iHaveEventsForSource(int n) {
+        for (int i = 0; i < n; i++) {
+            EventRepresentation rep = new EventRepresentation();
+            rep.setType("type");
+            rep.setDateTime(new DateTime());
+            rep.setText(" Event of Managed Object : " + i);
+            rep.setSource(managedObject);
+            input.add(rep);
+        }
+    }
+
+    private void iHaveAEventWithTypeAndTime(String time, String type) {
+        EventRepresentation rep = new EventRepresentation();
+        rep.setType(type);
+        rep.setText(" Event of Managed Object : ");
+        rep.setDateTime(DateTime.parse(time));
+        rep.setSource(managedObject);
+        input.add(rep);
+    }
+
+    // ------------------------------------------------------------------------
+    // When
+    // ------------------------------------------------------------------------
+
+    private void iCreateAll() throws SDKException {
+        try {
+            for (EventRepresentation rep : input) {
+                result.add(eventApi.create(rep));
+            }
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iGetAllEvents() throws SDKException {
+        try {
+            collection = eventApi.getEvents().get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iQueryAllByType(String type) throws SDKException {
+        try {
+            EventFilter filter = new EventFilter().byType(type);
+            collection = eventApi.getEventsByFilter(filter).get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iQueryAllBySource() throws SDKException {
+        try {
+            ManagedObjectRepresentation mo = managedObject;
+            EventFilter filter = new EventFilter().bySource(mo);
+            collection = eventApi.getEventsByFilter(filter).get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iQueryAllBySourceAndType(int index, String type) throws SDKException {
+        try {
+            ManagedObjectRepresentation mo = managedObject;
+            EventFilter filter = new EventFilter().bySource(mo).byType(type);
+            collection = eventApi.getEventsByFilter(filter).get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iQueryAllBySourceAndTime(int index, String time) throws SDKException {
+        try {
+            ManagedObjectRepresentation mo = managedObject;
+            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time), DateConverter.string2Date(time));
+            collection = eventApi.getEventsByFilter(filter).get();
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iGetEventsWithCreatedId() throws SDKException {
+        try {
+            result1.add(eventApi.getEvent(result.get(0).getId()));
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iDeleteEventsWithCreatedId() throws SDKException {
+        try {
+            eventApi.delete(result.get(0));
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iDeleteEventCollection() throws SDKException {
+        try {
+            eventApi.deleteEventsByFilter(new EventFilter());
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iDeleteAllByType(String type) throws SDKException {
+        try {
+            EventFilter typeFilter = new EventFilter().byType(type);
+            eventApi.deleteEventsByFilter(typeFilter);
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    private void iQueryAllByPageNumber(int pageNumber) throws SDKException {
+        try {
+            collection1 = eventApi.getEvents().getPage(collection, pageNumber);
+        } catch (SDKException ex) {
+            status = ex.getHttpStatus();
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Then
+    // ------------------------------------------------------------------------
+
+    private void iShouldGetNumberOfEvents(int count) {
+        assertThat(collection.getEvents().size(), is(count));
+    }
+
+    private void iShouldGetNumberOfEventsOfPaging(int count) {
+        assertThat(collection1.getEvents().size(), is(count));
+    }
+
+    private void shouldBeBadRequest() {
+        assertThat(status, is(UNPROCESSABLE));
+    }
+
+    private void shouldGetAllEvents() {
+        assertThat(collection.getEvents().size(), is(equalTo(result.size())));
+    }
+
+    private void shouldGetTheEvent() {
+        assertThat(result1.get(0), is(equalTo(result1.get(0))));
+    }
+
+    private void shouldNotBeFound() {
+        assertThat(status, is(equalTo(NOT_FOUND)));
     }
 
     private void deleteMOs(List<EventRepresentation> mosOn1stPage) throws SDKException {
@@ -80,572 +507,4 @@ public class EventIT extends JavaSdkITBase {
     private List<EventRepresentation> getEventsFrom1stPage() throws SDKException {
         return eventApi.getEvents().get().getEvents();
     }
-
-    //    Scenario: Create Events
-    @Test
-    public void createEvents() throws Exception {
-//    Given I have '2' Events of type 'type1' for the managed object
-        iHaveEvents(2, "type1");
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '2' Events
-        iShouldGetNumberOfEvents(2);
-    }
-
-    //    Scenario: Create Events without type
-    @Test
-    public void createEventsWithoutType() throws Exception {
-//    Given I have a Event with no type value for the managed object
-        iHaveAEventWithNoType();
-//    When I create all Events
-        iCreateAll();
-//    Then Event response should be unprocessable
-        shouldBeBadRequest();
-    }
-
-    //
-//
-//    Scenario: Create Events without time
-
-    @Test
-    public void createEventsWithoutTime() throws Exception {
-//    Given I have a Event with no time value for the managed object
-        iHaveAEventWithNoTime();
-//    When I create all Events
-        iCreateAll();
-//    Then Event response should be unprocessable
-        shouldBeBadRequest();
-    }
-
-//
-//    Scenario: Create Events without text
-
-    @Test
-    public void createEventsWithoutText() throws Exception {
-//    Given I have a Event with no text value for the managed object
-        iHaveAEventWithNoText();
-//    When I create all Events
-        iCreateAll();
-//    Then Event response should be unprocessable
-        shouldBeBadRequest();
-    }
-
-//
-//    Scenario: Get Event collection
-
-    @Test
-    public void getEventCollection() throws Exception {
-//    Given I have '2' Events of type 'type1' for the managed object
-        iHaveEvents(2, "type1");
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get all the Events
-        shouldGetAllEvents();
-    }
-
-//
-//
-//    Scenario: Get event collection by type
-
-    @Test
-    public void getEventCollectionByType() throws Exception {
-//    Given I have '2' Events of type 'type' for the managed object
-        iHaveEvents(2, "type");
-//    And I have '3' Events of type 'type1' for the managed object
-        iHaveEvents(3, "type1");
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '5' Events
-        iShouldGetNumberOfEvents(5);
-//    And I query all Events by type 'type'
-        iQueryAllByType("type");
-//    Then I should get '2' Events
-        iShouldGetNumberOfEvents(2);
-//    And I query all Events by type 'type1'
-        iQueryAllByType("type1");
-//    Then I should get '3' Events
-        iShouldGetNumberOfEvents(3);
-//    And I query all Events by type 'type2'
-        iQueryAllByType("type2");
-//    Then I should get '0' Events
-        iShouldGetNumberOfEvents(0);
-    }
-
-//
-//
-//    Scenario: Get event collection by source
-
-    @Test
-    public void getEventCollectionBySource() throws Exception {
-//    Given I have '3' Events for the source '0' the managed object
-        iHaveEventsForSource(3, 0);
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '3' Events
-        iShouldGetNumberOfEvents(3);
-//    And I query all Events by source '0'
-        iQueryAllBySource(0);
-//    Then I should get '3' Events
-        iShouldGetNumberOfEvents(3);
-
-    }
-
-//
-//    Scenario: Get event collection by source and type
-
-    @Test
-    public void getEventCollectionbySourceAndType() throws Exception {
-//    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type", 0);
-//    And I have a Event with time '2011-11-03T11:05:00.000+05:30' with type 'type1' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "type1", 0);
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '2' Events
-        iShouldGetNumberOfEvents(2);
-//    And I query all Events by source '0' and type 'type'
-        iQueryAllBySourceAndType(0, "type");
-//    Then I should get '1' Events
-        iShouldGetNumberOfEvents(1);
-//    And I query all Events by source '0' and type 'type1'
-        iQueryAllBySourceAndType(0, "type1");
-//    Then I should get '1' Events
-        iShouldGetNumberOfEvents(1);
-//    And I query all Events by source '0' and type 'type2'
-        iQueryAllBySourceAndType(0, "type2");
-//    Then I should get '0' Events
-        iShouldGetNumberOfEvents(0);
-    }
-    
-    
-    @Test
-    public void getEventCollectionbyTime() throws Exception {
-//    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type", 0);
-//    And I have a Event with time '2011-11-03T11:05:00.000+05:30' with type 'type1' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "type1", 0);
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '2' Events
-        iShouldGetNumberOfEvents(2);
-//    And I query all Events by source '0' and type 'type'
-        iQueryAllBySourceAndTime(0, "2011-11-03T11:01:00.000+05:30");
-//    Then I should get '1' Events
-        iShouldGetNumberOfEvents(1);
-
-    }
-
-//
-//    Scenario: Get Event
-
-    @Test
-    public void getEvent() throws Exception {
-//    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type", 0);
-//    When I create all Events
-        iCreateAll();
-//    And I get the Events with the created id
-        iGetEventsWithCreatedId();
-//    Then I should get the Events
-        shouldGetTheEvent();
-    }
-
-//
-//    Scenario: Delete Event
-
-    @Test
-    public void deleteEvent() throws Exception {
-//    Given I have a Event with time '2011-11-03T11:01:00.000+05:30' with type 'type' and for '0' managed object
-        iHaveAEventWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "type", 0);
-//    When I create all Events
-        iCreateAll();
-//    And I delete the Events with the created id
-        iDeleteEventsWithCreatedId();
-//    And I get the Events with the created id
-        iGetEventsWithCreatedId();
-//    Then Events should not be found
-        shouldNotBeFound();
-    }
-
-//
-//    Scenario: Delete all Event collection by an empty filter
-
-    @Test
-    public void deleteEventCollectionByEmptyFilter() throws Exception {
-//    Given I have '3' Events of type 'type1' for the managed object
-        iHaveEvents(3, "type1");
-//    And I have '2' Events of type 'type2' for the managed object
-        iHaveEvents(2, "type2");
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '5' Events
-        iShouldGetNumberOfEvents(5);
-//    And I delete all Event collection
-        iDeleteEventCollection();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '0' Events
-        iShouldGetNumberOfEvents(0);
-    }
-
-//
-//    Scenario: Delete Events by filter
-
-    @Test
-    public void deleteEventsByTypeFilter() throws Exception {
-//    Given I have '3' Events of type 'type1' for the managed object
-        iHaveEvents(3, "type1");
-//    And I have '2' Events of type 'type2' for the managed object
-        iHaveEvents(2, "type2");
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '5' Events
-        iShouldGetNumberOfEvents(5);
-//    And I delete all Events by type 'type2'
-        iDeleteAllByType("type2");
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '3' Events
-        iShouldGetNumberOfEvents(3);
-//    And I query all Events by type 'type1'
-        iQueryAllByType("type1");
-//    Then I should get '3' Events
-        iShouldGetNumberOfEvents(3);
-//    And I query all Events by type 'type2'
-        iQueryAllByType("type2");
-//    Then I should get '0' Events
-        iShouldGetNumberOfEvents(0);
-    }
-
-//
-//    Scenario: Get event collection by paging
-
-    @Test
-    public void getEventCollectionByPaging() throws Exception {
-//    Given I have '17' Events for the source '0' the managed object
-        iHaveEventsForSource(17, 0);
-//    When I create all Events
-        iCreateAll();
-//    And I get all Events
-        iGetAllEvents();
-//    Then I should get '5' Events
-        iShouldGetNumberOfEvents(5);
-//    And I query all Events by page '1'
-        iQueryAllByPageNumber(1);
-//    Then I should get '5' Events of paging
-        iShouldGetNumberOfEventsOfPaging(5);
-//    And I query all Events by page '2'
-        iQueryAllByPageNumber(2);
-//    Then I should get '5' Events of paging
-        iShouldGetNumberOfEventsOfPaging(5);
-//    And I query all Events by page '3'
-        iQueryAllByPageNumber(3);
-//    Then I should get '5' Events of paging
-        iShouldGetNumberOfEventsOfPaging(5);
-//      And I query all Events by page '4'
-        iQueryAllByPageNumber(4);
-//    Then I should get '2' Events of paging
-        iShouldGetNumberOfEventsOfPaging(2);
-//    And I query all Events by page '5'
-        iQueryAllByPageNumber(5);
-//    Then I should get '0' Events of paging
-        iShouldGetNumberOfEventsOfPaging(0);
-//    Then I should get previous page which has current page '4' and events '2'
-    }
-
-    private static final int OK = 200;
-
-    private static final int NOT_FOUND = 404;
-
-    private static final int UNPROCESSABLE = 422;
-
-    private List<EventRepresentation> input;
-
-    private List<EventRepresentation> result;
-
-    private List<EventRepresentation> result1;
-
-    private EventCollectionRepresentation collection;
-
-    private EventCollectionRepresentation collection1;
-
-    private EventApi eventApi;
-
-    private int status;
-
-    // ------------------------------------------------------------------------
-    // Given
-    // ------------------------------------------------------------------------
-
-    @Given("I have '(\\d+)' Events of type '([^']*)' for the managed object$")
-    public void iHaveEvents(int n, String type) {
-        for (int i = 0; i < n; i++) {
-            EventRepresentation rep = new EventRepresentation();
-            rep.setType(type);
-            rep.setTime(new Date());
-            rep.setText(" Event of Managed Object : " + i);
-            rep.setSource(managedObject);
-            input.add(rep);
-
-        }
-    }
-
-    @Given("I have '(\\d+)' Events with type '([^']*)' for the managed object$")
-    public void iHaveEventsWithFragments(int n, String type) throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException {
-        for (int i = 0; i < n; i++) {
-            EventRepresentation rep = new EventRepresentation();
-            rep.setType(type);
-            rep.setTime(new Date());
-            rep.setText(" Event of Managed Object : " + i);
-            rep.setSource(managedObject);
-            input.add(rep);
-        }
-    }
-
-    @Given("I have a Event with no type value for the managed object$")
-    public void iHaveAEventWithNoType() {
-        EventRepresentation rep = new EventRepresentation();
-        rep.setTime(new Date());
-        rep.setText(" Event of Managed Object : " + 0);
-        rep.setSource(managedObject);
-        input.add(rep);
-    }
-
-    @Given("I have a Event with no text value for the managed object$")
-    public void iHaveAEventWithNoText() {
-        EventRepresentation rep = new EventRepresentation();
-        rep.setType("type");
-        rep.setTime(new Date());
-        rep.setSource(managedObject);
-        input.add(rep);
-    }
-
-    @Given("I have a Event with no time value for the managed object$")
-    public void iHaveAEventWithNoTime() {
-        EventRepresentation rep = new EventRepresentation();
-        rep.setType("type");
-        rep.setText(" Event of Managed Object : " + 1);
-        rep.setSource(managedObject);
-        input.add(rep);
-    }
-
-    @Given("I have '(\\d+)' Events for the source '(\\d+)' the managed object$")
-    public void iHaveEventsForSource(int n, int index) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        for (int i = 0; i < n; i++) {
-            EventRepresentation rep = new EventRepresentation();
-            rep.setType("type");
-            rep.setTime(new Date());
-            rep.setText(" Event of Managed Object : " + i);
-            rep.setSource(managedObject);
-            input.add(rep);
-        }
-    }
-
-    @Given("I have a Event with time '([^']*)' with type '([^']*)' and for '(\\d+)' managed object$")
-    public void iHaveAEventWithTypeAndTime(String time, String type, int index) throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException {
-        EventRepresentation rep = new EventRepresentation();
-        rep.setType(type);
-        rep.setText(" Event of Managed Object : ");
-        rep.setTime(DateConverter.string2Date(time));
-        rep.setSource(managedObject);
-        input.add(rep);
-    }
-
-    // ------------------------------------------------------------------------
-    // When
-    // ------------------------------------------------------------------------
-
-    @When("I create all Events$")
-    public void iCreateAll() throws SDKException {
-        try {
-            for (EventRepresentation rep : input) {
-                result.add(eventApi.create(rep));
-            }
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I get all Events$")
-    public void iGetAllEvents() throws SDKException {
-        try {
-            collection = eventApi.getEvents().get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I query all Events by type '([^']*)'$")
-    public void iQueryAllByType(String type) throws SDKException, ClassNotFoundException {
-        try {
-            EventFilter filter = new EventFilter().byType(type);
-            collection = eventApi.getEventsByFilter(filter).get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I query all Events by source '(\\d+)'$")
-    public void iQueryAllBySource(int index) throws SDKException {
-        try {
-            ManagedObjectRepresentation mo = managedObject;
-            EventFilter filter = new EventFilter().bySource(mo);
-            collection = eventApi.getEventsByFilter(filter).get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I query all Events by source '(\\d+)' and type '([^']*)'$")
-    public void iQueryAllBySourceAndType(int index, String type) throws SDKException, ClassNotFoundException {
-        try {
-            ManagedObjectRepresentation mo = managedObject;
-            EventFilter filter = new EventFilter().bySource(mo).byType(type);
-            collection = eventApi.getEventsByFilter(filter).get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-    
-    @When("I query all Events by source '(\\d+)' and time '([^']*)'$")
-    public void iQueryAllBySourceAndTime(int index, String time) throws SDKException, ClassNotFoundException {
-        try {
-            ManagedObjectRepresentation mo = managedObject;
-            EventFilter filter = new EventFilter().byDate(DateConverter.string2Date(time), DateConverter.string2Date(time));
-            collection = eventApi.getEventsByFilter(filter).get();
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-
-    @When("I get the Events with the created id$")
-    public void iGetEventsWithCreatedId() throws SDKException {
-        try {
-            result1.add(eventApi.getEvent(result.get(0).getId()));
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I delete the Events with the created id$")
-    public void iDeleteEventsWithCreatedId() throws SDKException {
-        try {
-            eventApi.delete(result.get(0));
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I delete all Event collection$")
-    public void iDeleteEventCollection() throws SDKException {
-        try {
-            eventApi.deleteEventsByFilter(new EventFilter());
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I delete all Events by type '([^']*)'$")
-    public void iDeleteAllByType(String type) throws SDKException {
-        try {
-            EventFilter typeFilter = new EventFilter().byType(type);
-            eventApi.deleteEventsByFilter(typeFilter);
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I query all Events by page '(\\d+)'$")
-    public void iQueryAllByPageNumber(int pageNumber) throws SDKException {
-        try {
-            collection1 = eventApi.getEvents().getPage(collection, pageNumber);
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    @When("I should get next page which has current page '(\\d+)' and events '(\\d+)'$")
-    public void iQueryAllByNextPage(int currentPage, int numEvents) throws SDKException {
-        try {
-            EventCollectionRepresentation collectionRepresentation = eventApi.getEvents().getNextPage(collection1);
-            assertThat(collectionRepresentation.getPageStatistics().getCurrentPage(), is(currentPage));
-            assertThat(collectionRepresentation.getEvents().size(), is(numEvents));
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-
-    }
-
-    @When("I should get previous page which has current page '(\\d+)' and events '(\\d+)'$")
-    public void iQueryAllByPreviousPage(int currentPage, int numEvents) throws SDKException {
-        try {
-            EventCollectionRepresentation collectionRepresentation = eventApi.getEvents().getPreviousPage(collection1);
-            assertThat(currentPage, is(equalTo(collectionRepresentation.getPageStatistics().getCurrentPage())));
-            assertThat(numEvents, is(equalTo(collectionRepresentation.getEvents().size())));
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-
-    }
-
-    // ------------------------------------------------------------------------
-    // Then
-    // ------------------------------------------------------------------------
-
-    @Then("All Events should be created$")
-    public void shouldBeCreated() {
-        for (EventRepresentation rep : result) {
-            assertThat(rep.getId(), is(notNullValue()));
-        }
-    }
-
-    @Then("I should get '(\\d+)' Events$")
-    public void iShouldGetNumberOfEvents(int count) {
-        assertThat(collection.getEvents().size(), is(count));
-    }
-
-    @Then("I should get '(\\d+)' Events of paging$")
-    public void iShouldGetNumberOfEventsOfPaging(int count) {
-        assertThat(collection1.getEvents().size(), is(count));
-    }
-
-    @Then("Event response should be unprocessable$")
-    public void shouldBeBadRequest() {
-        assertThat(status, is(UNPROCESSABLE));
-    }
-
-    @Then("I should get all the Events$")
-    public void shouldGetAllEvents() {
-        assertThat(collection.getEvents().size(), is(equalTo(result.size())));
-    }
-
-    @Then("I should get the Events$")
-    public void shouldGetTheEvent() {
-        assertThat(result1.get(0), is(equalTo(result1.get(0))));
-    }
-
-    @Then("Events should not be found$")
-    public void shouldNotBeFound() {
-        assertThat(status, is(equalTo(NOT_FOUND)));
-    }
-
 }

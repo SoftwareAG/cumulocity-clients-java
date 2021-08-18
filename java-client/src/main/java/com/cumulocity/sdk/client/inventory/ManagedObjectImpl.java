@@ -24,8 +24,13 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.sdk.client.QueryParam;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.UrlProcessor;
+
+import static com.cumulocity.sdk.client.QueryParam.asMap;
+import static com.cumulocity.sdk.client.inventory.InventoryParam.withoutChildren;
 
 public class ManagedObjectImpl implements ManagedObject {
 
@@ -35,10 +40,12 @@ public class ManagedObjectImpl implements ManagedObject {
     private final int pageSize;
     private volatile ManagedObjectRepresentation managedObject;
 
+    private final UrlProcessor urlProcessor;
     final String url;
 
-    public ManagedObjectImpl(RestConnector restConnector, String url, int pageSize) {
+    public ManagedObjectImpl(RestConnector restConnector, UrlProcessor urlProcessor, String url, int pageSize) {
         this.restConnector = restConnector;
+        this.urlProcessor = urlProcessor;
         this.url = url;
         this.pageSize = pageSize;
     }
@@ -210,7 +217,7 @@ public class ManagedObjectImpl implements ManagedObject {
 
     private ManagedObjectRepresentation getInternal() throws SDKException {
         if (managedObject == null) {
-            managedObject = restConnector.get(url, InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
+            managedObject = restConnector.get(urlProcessor.replaceOrAddQueryParam(url, asMap(withoutChildren())), InventoryMediaType.MANAGED_OBJECT, ManagedObjectRepresentation.class);
         }
         return managedObject;
     }

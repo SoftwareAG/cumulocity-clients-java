@@ -3,23 +3,26 @@ package com.cumulocity.microservice.monitoring.health.controller;
 import com.cumulocity.microservice.monitoring.health.controller.configuration.TestConfiguration;
 import com.cumulocity.microservice.monitoring.health.controller.configuration.TestMicroserviceSubscriptionConfiguration;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static io.restassured.http.ContentType.JSON;
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@RunWith(SpringRunner.class)
 @DirtiesContext(classMode = AFTER_CLASS)
-@SpringBootTest(classes = { TestMicroserviceSubscriptionConfiguration.class, TestConfiguration.class })
+@SpringBootTest(classes = { TestMicroserviceSubscriptionConfiguration.class, TestConfiguration.class },
+        properties = {
+        "management.endpoint.health.enabled=true",
+        "management.endpoints.web.exposure.include=health"
+})
 public class SubscriptionHealthIndicatorTest {
 
     @Autowired
@@ -30,12 +33,14 @@ public class SubscriptionHealthIndicatorTest {
     public void healthShouldBeDown() {
         given(subscriptionsService.isRegisteredSuccessfully()).willReturn(false);
 
+        RestAssuredMockMvc.given()
+                .accept(ActuatorMediaType.V3_JSON).
         when()
                 .get("/health").
 
         then()
                 .statusCode(503)
                 .contentType(JSON)
-                .body("subscription.status", equalTo("DOWN"));
+                .body("components.subscription.status", equalTo("DOWN"));
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 public class FilterRegistrationConfiguration {
 
     /**
-     * @param filter
+     * @param filter pre authenticate servlet filter
      * @return A disabled filter registration bean, for Spring not to auto register the {@link PreAuthenticateServletFilter} filter which is mapped to /** including ignore paths.
      * The filter will be added manually under {@link com.cumulocity.microservice.security.annotation.EnableWebSecurityConfiguration#configure(HttpSecurity)}
      */
@@ -24,7 +24,7 @@ public class FilterRegistrationConfiguration {
     }
 
     /**
-     * @param filter
+     * @param filter post authenticate servlet filter
      * @return A disabled filter registration bean, for Spring not to auto register the {@link PostAuthenticateServletFilter} filter which is mapped to /** including ignore paths.
      * The filter will be added manually under {@link com.cumulocity.microservice.security.annotation.EnableWebSecurityConfiguration#configure(HttpSecurity)}
      */

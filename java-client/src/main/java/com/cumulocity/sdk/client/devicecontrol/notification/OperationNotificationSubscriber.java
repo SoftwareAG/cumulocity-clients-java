@@ -7,7 +7,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
 
 public class OperationNotificationSubscriber implements Subscriber<GId, OperationRepresentation> {
-    public static final String DEVICE_CONTROL_NOTIFICATIONS_URL = "devicecontrol/notifications";
+    public static final String DEVICE_CONTROL_NOTIFICATIONS_URL = "notification/operations";
 
     private final Subscriber<GId, OperationRepresentation> subscriber;
 

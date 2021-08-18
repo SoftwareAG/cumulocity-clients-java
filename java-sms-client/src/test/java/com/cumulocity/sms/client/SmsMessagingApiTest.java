@@ -1,9 +1,9 @@
 package com.cumulocity.sms.client;
 
 import com.cumulocity.sms.client.messaging.MessagingClient;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SmsMessagingApiTest {
 
@@ -13,6 +13,6 @@ public class SmsMessagingApiTest {
 
         final MessagingClient messagingClient = messaging.getMessagingClient();
 
-        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/service/messaging/smsmessaging/v1");
+        assertThat(messagingClient.getRootEndpoint()).isEqualTo("http://host/service/messaging/smsmessaging");
     }
 }

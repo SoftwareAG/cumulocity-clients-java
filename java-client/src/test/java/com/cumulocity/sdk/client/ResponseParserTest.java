@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,8 +19,10 @@
  */
 package com.cumulocity.sdk.client;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.when;
 
@@ -28,10 +30,11 @@ import java.net.URI;
 
 import javax.ws.rs.core.MediaType;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import javax.ws.rs.core.Response;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -39,7 +42,6 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
-import com.sun.jersey.api.client.ClientResponse;
 
 public class ResponseParserTest {
 
@@ -48,14 +50,11 @@ public class ResponseParserTest {
     private static final int ERROR_STATUS = 500;
 
     @Mock
-    private ClientResponse response;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    private Response response;
 
     private ResponseParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         MockitoAnnotations.initMocks(this);
 
@@ -63,11 +62,11 @@ public class ResponseParserTest {
     }
 
     @Test
-    public void shouldParse() throws Exception {
+    public void shouldParse() {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
-        when(response.getEntity(BaseResourceRepresentation.class)).thenReturn(representation);
+        when(response.readEntity(BaseResourceRepresentation.class)).thenReturn(representation);
 
         // When
         BaseResourceRepresentation result = parser.parse(response,
@@ -82,7 +81,7 @@ public class ResponseParserTest {
         // Given
         when(response.getStatus()).thenReturn(EXPECTED_STATUS);
         InventoryRepresentation representation = new InventoryRepresentation();
-        when(response.getEntity(InventoryRepresentation.class)).thenReturn(representation);
+        when(response.readEntity(InventoryRepresentation.class)).thenReturn(representation);
 
         // When
         InventoryRepresentation result = parser.parse(response, InventoryRepresentation.class, EXPECTED_STATUS);
@@ -97,15 +96,15 @@ public class ResponseParserTest {
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         ErrorMessageRepresentation errorRepresentation = new ErrorMessageRepresentation();
         when(response.hasEntity()).thenReturn(true);
-        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-        when(response.getEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
-
-        // Then
-        thrown.expect(SDKException.class);
-        thrown.expectMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation.toString());
+        when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+        when(response.readEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
 
         // When
-        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
+        Throwable thrown = catchThrowable(() -> parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS));
+
+        // Then
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
+                .hasMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation);
     }
 
     @Test
@@ -113,15 +112,15 @@ public class ResponseParserTest {
         // Given
         when(response.getStatus()).thenReturn(ERROR_STATUS);
         when(response.hasEntity()).thenReturn(false);
-        when(response.getEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
-        when(response.getType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-
-        // Then
-        thrown.expect(SDKException.class);
-        thrown.expectMessage("Http status code: " + ERROR_STATUS);
+        when(response.readEntity(ErrorMessageRepresentation.class)).thenThrow(new RuntimeException());
+        when(response.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
 
         // When
-        parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS);
+        Throwable thrown = catchThrowable(() -> parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS));
+
+        // Then
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
+                .hasMessage("Http status code: %s", ERROR_STATUS);
     }
 
     @Test

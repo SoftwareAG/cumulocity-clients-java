@@ -3,15 +3,15 @@
 # requirement on a Linux machine.  If it is successful, it will export a JAVA_PATH environment
 # variable that can be used by another calling script.
 #
-# To specify the required version, set the REQUIRED_VERSION to the major version required, 
+# To specify the required version, set the REQUIRED_VERSION to the major version required,
 # e.g. 1.3, but not 1.3.1.
 if [ -z $REQUIRED_VERSION ]
 then
-	REQUIRED_VERSION=1.7
+	REQUIRED_VERSION=1.8
 fi
 
 
-REQUIRED_VERSION=`echo $REQUIRED_VERSION | sed -e 's;\.;0;g'`
+REQUIRED_VERSION=`echo $REQUIRED_VERSION | sed -e 's;\.;0;g' | sed -e :a -e 's/^.\{1,2\}$/&0/;ta'`
 JAVA_PATH=
 
 function java_version(){
@@ -35,19 +35,18 @@ function set_java_path(){
 	else
 		JAVA_PATH=
 	fi
-
 }
 
 if [ $JAVA_HOME ]
 then
-	set_java_path $JAVA_HOME/bin/java 
+	set_java_path $JAVA_HOME/bin/java
 fi
 
 if ! [ $JAVA_PATH ]
 then
 	for JAVA_EXE in `locate bin/java | grep java$ | xargs echo`
 	do
-		if [ ! $JAVA_PATH ] 
+		if [ ! $JAVA_PATH ]
 		then
 			if [ "$JAVA_EXE" != "/usr/bin/java" ]
 			then
@@ -63,7 +62,7 @@ then
 else
 	for JAVA_EXE in `find /usr/lib/jvm/ -name java | grep java$ | xargs echo`
 	do
-		if ! [ $JAVA_PATH ] 
+		if ! [ $JAVA_PATH ]
 		then
 			set_java_path $JAVA_EXE
 		fi

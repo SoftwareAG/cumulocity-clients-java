@@ -1,14 +1,13 @@
 package com.cumulocity.sdk.client;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.core.util.Base64;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-class HTTPBasicProxyAuthenticationFilter extends ClientFilter {
+class HTTPBasicProxyAuthenticationFilter implements ClientRequestFilter {
 
     private static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
 
@@ -18,25 +17,18 @@ class HTTPBasicProxyAuthenticationFilter extends ClientFilter {
      * Creates a new HTTP Proxy-Authorization filter using provided username
      * and password credentials
      *
-     * @param username
-     * @param password
+     * @param username a username
+     * @param password a password
      */
     public HTTPBasicProxyAuthenticationFilter(final String username, final String password) {
-        try {
-            authentication = "Basic " + new String(Base64.encode(username + ":" + password), "ASCII");
-        } catch (UnsupportedEncodingException ex) {
-            // This should never occur
-            throw new RuntimeException(ex);
-        }
+        String credentials = username + ":" + password;
+        authentication = "Basic " + new String(Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.US_ASCII)), StandardCharsets.US_ASCII);
     }
 
     @Override
-    public ClientResponse handle(final ClientRequest cr) throws ClientHandlerException {
-
+    public void filter(ClientRequestContext cr) throws IOException {
         if (!cr.getHeaders().containsKey(PROXY_AUTHORIZATION)) {
             cr.getHeaders().putSingle(PROXY_AUTHORIZATION, authentication);
         }
-        return getNext().handle(cr);
     }
-
 }

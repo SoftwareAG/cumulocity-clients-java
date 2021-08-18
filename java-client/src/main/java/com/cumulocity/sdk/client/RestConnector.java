@@ -19,71 +19,55 @@
  */
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.rest.mediatypes.ErrorMessageRepresentationReader;
-import com.cumulocity.rest.providers.CumulocityJSONMessageBodyReader;
-import com.cumulocity.rest.providers.CumulocityJSONMessageBodyWriter;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentationWithId;
+import com.cumulocity.rest.representation.inventory.InventoryMediaType;
 import com.cumulocity.sdk.client.buffering.BufferRequestService;
 import com.cumulocity.sdk.client.buffering.BufferedRequest;
 import com.cumulocity.sdk.client.buffering.Future;
+import com.cumulocity.sdk.client.interceptor.BufferedResponseStreamInterceptor;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
-import com.sun.jersey.api.client.*;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
-import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
-import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReader;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.client.*;
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.*;
-import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
+import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
+import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
+import static javax.ws.rs.core.Response.Status.*;
+import static org.glassfish.jersey.media.multipart.Boundary.addBoundary;
 
+@Slf4j
 public class RestConnector implements RestOperations {
-
-
-    public static final class ProxyHttpURLConnectionFactory implements HttpURLConnectionFactory {
-
-        Proxy proxy;
-
-        public ProxyHttpURLConnectionFactory(PlatformParameters platformParameters) {
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(platformParameters.getProxyHost(), platformParameters.getProxyPort()));
-        }
-
-        public HttpURLConnection getHttpURLConnection(URL url) throws IOException {
-            return (HttpURLConnection) url.openConnection(proxy);
-        }
-    }
 
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
 
     public static final String X_CUMULOCITY_REQUEST_ORIGIN = "X-Cumulocity-Request-Origin";
 
-    private static final String TFA_TOKEN_HEADER = "TFAToken";
+    public static final String MIME_VERSION = "MIME-Version";
 
-    private final static Class<?>[] PROVIDERS_CLASSES = {CumulocityJSONMessageBodyWriter.class, CumulocityJSONMessageBodyReader.class,
-            ErrorMessageRepresentationReader.class};
-
-    private static final int READ_TIMEOUT_IN_MILLIS = 180000;
+    protected static final String TFA_TOKEN_HEADER = "TFAToken";
 
     private final PlatformParameters platformParameters;
 
@@ -94,7 +78,6 @@ public class RestConnector implements RestOperations {
     public RestConnector(PlatformParameters platformParameters, ResponseParser responseParser) {
         this(platformParameters, responseParser, createClient(platformParameters));
     }
-
 
     protected RestConnector(PlatformParameters platformParameters, ResponseParser responseParser, Client client) {
         this.platformParameters = platformParameters;
@@ -115,124 +98,131 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
+    public void close() throws Exception {
+        if (client != null) {
+            client.close();
+        }
+    }
+
+    @Override
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
-        ClientResponse response = getClientResponse(path, mediaType);
+        Response response = getClientResponse(path, mediaType);
         return responseParser.parse(response, responseType, OK.getStatusCode());
     }
 
     @Override
     public <T extends Object> T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException {
-        ClientResponse response = getClientResponse(path, mediaType);
+        Response response = getClientResponse(path, mediaType);
         return responseParser.parseObject(response, OK.getStatusCode(), responseType);
     }
 
-    public ClientResponse get(String path, MediaType mediaType) {
+    public Response get(String path, MediaType mediaType) {
         return getClientResponse(path, mediaType);
     }
 
     @Override
     public Response.Status getStatus(String path, CumulocityMediaType mediaType) throws SDKException {
-        ClientResponse response = getClientResponse(path, mediaType);
-        return response.getResponseStatus();
+        Response response = getClientResponse(path, mediaType);
+        return response.getStatusInfo().toEnum();
     }
 
-    private ClientResponse getClientResponse(String path, MediaType mediaType) {
-        Builder builder = client.resource(path).accept(mediaType);
+    private Response getClientResponse(String path, MediaType mediaType) {
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.get(ClientResponse.class);
+        builder = addAcceptHeader(builder, mediaType);
+        return builder.get();
     }
 
     @Override
     public <T extends ResourceRepresentation> T postStream(String path, CumulocityMediaType mediaType, InputStream content,
                                                            Class<T> responseClass) throws SDKException {
-        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
-        }
+        builder = addAcceptHeader(builder, mediaType);
+        builder = addMimeVersion(builder);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
-
+        return parseResponseWithoutId(responseClass, builder.post(Entity.entity(form, addBoundary(MULTIPART_FORM_DATA_TYPE))), CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T postText(String path, String content, Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
+        Builder builder = client.target(path).request();
+        builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
-        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, content), CREATED.getStatusCode());
+        return parseResponseWithoutId(responseClass, builder.post(Entity.text(content)), CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T putText(String path, String content, Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(MediaType.TEXT_PLAIN);
+        Builder builder = client.target(path).request();
+        builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
-        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), OK.getStatusCode());
+        return parseResponseWithoutId(responseClass, builder.put(Entity.text(content)), OK.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T putStream(String path, String contentType, InputStream content,
                                                           Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(contentType);
+        Builder builder = client.target(path).request();
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(MediaType.APPLICATION_JSON);
-        }
-        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, content), CREATED.getStatusCode());
+        builder = addAcceptHeader(builder, MediaType.valueOf(InventoryMediaType.MANAGED_OBJECT_TYPE));
+        Entity<?> stream = Entity.entity(content, contentType);
+        return parseResponseWithoutId(responseClass, builder.put(stream), CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
                                                           Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
-        builder = addApplicationKeyHeader(builder);
-        builder = addTfaHeader(builder);
-        builder = addRequestOriginHeader(builder);
-        builder = applyInterceptors(builder);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
-        }
+        Builder builder = getResourceBuilder(path);
+        builder = addAcceptHeader(builder, mediaType);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("file", content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        return parseResponseWithoutId(responseClass, builder.put(ClientResponse.class, form), OK.getStatusCode());
+        Entity<MultiPart> stream = Entity.entity(form, form.getMediaType());
+        return parseResponseWithoutId(responseClass, builder.put(stream), OK.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                          Class<T> responseClass) {
-        WebResource.Builder builder = client.resource(path).type(MULTIPART_FORM_DATA);
-        builder = addApplicationKeyHeader(builder);
-        builder = addTfaHeader(builder);
-        builder = addRequestOriginHeader(builder);
-        builder = applyInterceptors(builder);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(MediaType.APPLICATION_JSON);
-        }
+        Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("filesize", String.valueOf(bytes.length)));
         form.bodyPart(new FormDataBodyPart("file", bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        return parseResponseWithoutId(responseClass, builder.post(ClientResponse.class, form), CREATED.getStatusCode());
+        Entity<MultiPart> file = Entity.entity(form, addBoundary(form.getMediaType()));
+        return parseResponseWithoutId(responseClass, builder.post(file), CREATED.getStatusCode());
+    }
+
+    @Override
+    public <T extends ResourceRepresentation> T postFileAsStream(String path, T representation,
+                                                                 InputStream inputStream, Class<T> responseClass) {
+        Builder builder = getResourceBuilder(path);
+        FormDataMultiPart form = new FormDataMultiPart();
+        form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
+        form.bodyPart(new FormDataBodyPart("file", inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        Entity<MultiPart> stream = Entity.entity(form, addBoundary(form.getMediaType()));
+        return parseResponseWithoutId(responseClass, builder.post(stream), CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException {
-        ClientResponse response = httpPut(path, mediaType, representation);
+        Response response = httpPut(path, mediaType, representation);
         return parseResponseWithId(representation, response, OK.getStatusCode());
     }
 
-    private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, ClientResponse response, int responseCode)
+    private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, Response response, int responseCode)
             throws SDKException {
         @SuppressWarnings("unchecked")
         T repFromPlatform = responseParser.parse(response, (Class<T>) representation.getClass(), responseCode);
@@ -268,24 +258,26 @@ public class RestConnector implements RestOperations {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T post(String path, MediaType mediaType, T representation) throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
+        Response response = httpPost(path, mediaType, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, CREATED.getStatusCode(), OK.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
-        ClientResponse response = httpPost(path, mediaType, mediaType, representation);
+        Response response = httpPost(path, mediaType, mediaType, representation);
         return parseResponseWithId(representation, response, CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> void postWithoutResponse(String path, MediaType mediaType, T representation) throws SDKException {
-        WebResource.Builder builder = client.resource(path).type(mediaType);
+        Builder builder = client.target(path).request();
+        builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        ClientResponse response = builder.post(ClientResponse.class, representation);
+        Entity<T> request = Entity.entity(representation, mediaType);
+        Response response = builder.post(request);
         responseParser.checkStatus(response, CREATED.getStatusCode(), ACCEPTED.getStatusCode());
     }
 
@@ -296,34 +288,34 @@ public class RestConnector implements RestOperations {
             final CumulocityMediaType accept,
             final Param representation,
             final Class<Result> clazz) {
-        ClientResponse response = httpPost(path, contentType, accept, representation);
-        return parseResponseWithoutId(clazz, response, Response.Status.OK.getStatusCode(), Response.Status.CREATED.getStatusCode());
+        Response response = httpPost(path, contentType, accept, representation);
+        return parseResponseWithoutId(clazz, response, OK.getStatusCode(), CREATED.getStatusCode());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ResourceRepresentation> T put(String path, MediaType mediaType, T representation) throws SDKException {
 
-        ClientResponse response = httpPut(path, mediaType, representation);
+        Response response = httpPut(path, mediaType, representation);
         return (T) parseResponseWithoutId(representation.getClass(), response, OK.getStatusCode());
     }
 
     private Builder addApplicationKeyHeader(Builder builder) {
-        if (platformParameters.getApplicationKey() != null) {
+        if (isNotBlank(platformParameters.getApplicationKey())) {
             builder = builder.header(X_CUMULOCITY_APPLICATION_KEY, platformParameters.getApplicationKey());
         }
         return builder;
     }
 
     private Builder addTfaHeader(Builder builder) {
-        if (platformParameters.getTfaToken() != null) {
+        if (isNotBlank(platformParameters.getTfaToken())) {
             builder = builder.header(TFA_TOKEN_HEADER, platformParameters.getTfaToken());
         }
         return builder;
     }
 
     private Builder addRequestOriginHeader(Builder builder) {
-        if (platformParameters.getRequestOrigin() != null) {
+        if (isNotBlank(platformParameters.getRequestOrigin())) {
             builder = builder.header(X_CUMULOCITY_REQUEST_ORIGIN, platformParameters.getRequestOrigin());
         }
         return builder;
@@ -340,97 +332,123 @@ public class RestConnector implements RestOperations {
         return builder;
     }
 
-    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, ClientResponse response, int... responseCodes)
+    private Builder addAcceptHeader(Builder builder, MediaType accept) {
+        if (platformParameters.requireResponseBody()) {
+            return builder.accept(accept);
+        }
+        return addDefaultAcceptHeader(builder);
+    }
+
+    private Builder addDefaultAcceptHeader(Builder builder) {
+        // for backward compatibility avoid jersey 2.x setting default accept header
+        // first call to `header()` with null value removes default accept header
+        builder = builder.header(HttpHeaders.ACCEPT, null);
+        return builder.accept(CumulocityMediaType.WILDCARD);
+    }
+
+    private Builder addMimeVersion(Builder builder) {
+        builder.header(MIME_VERSION, "1.0");
+        return builder;
+    }
+
+    private <T extends ResourceRepresentation> T parseResponseWithoutId(Class<T> type, Response response, int... responseCodes)
             throws SDKException {
         return responseParser.parse(response, type, responseCodes);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPost(String path, MediaType contentType, MediaType accept, T representation) {
-        WebResource.Builder builder = client.resource(path).type(contentType);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(accept);
-        }
+    private <T extends ResourceRepresentation> Response httpPost(String path, MediaType contentType, MediaType accept, T representation) {
+        Builder builder = client.target(path).request();
+
+        builder = addAcceptHeader(builder, accept);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.post(ClientResponse.class, responseParser.write(representation));
+        Entity<?> request = Entity.entity(responseParser.write(representation), contentType);
+        return builder.post(request);
     }
 
-    private <T extends ResourceRepresentation> ClientResponse httpPut(String path, MediaType mediaType, T representation) {
+    private <T extends ResourceRepresentation> Response httpPut(String path, MediaType mediaType, T representation) {
+        Invocation.Builder builder = client.target(path).request();
 
-        WebResource.Builder builder = client.resource(path).type(mediaType);
-        if (platformParameters.requireResponseBody()) {
-            builder.accept(mediaType);
-        }
+        builder = addAcceptHeader(builder, mediaType);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        return builder.put(ClientResponse.class, responseParser.write(representation));
+        Entity<?> request = Entity.entity(responseParser.write(representation), mediaType);
+        return builder.put(request);
     }
 
     @Override
     public void delete(String path) throws SDKException {
-        Builder builder = client.resource(path).getRequestBuilder();
+        Builder builder = client.target(path).request();
 
+        builder = addDefaultAcceptHeader(builder);
         builder = addApplicationKeyHeader(builder);
         builder = addTfaHeader(builder);
         builder = addRequestOriginHeader(builder);
         builder = applyInterceptors(builder);
-        ClientResponse response = builder.delete(ClientResponse.class);
+        Response response = builder.delete();
         responseParser.checkStatus(response, NO_CONTENT.getStatusCode());
     }
 
     public static Client createClient(PlatformParameters platformParameters) {
 
-        DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
+        ClientConfig config = new ClientConfig();
+        config.connectorProvider(new ApacheConnectorProvider());
 
         if (isProxyRequired(platformParameters)) {
-            config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI,
-                    "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
+            config.property(ClientProperties.PROXY_URI, "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
             if (isProxyAuthenticationRequired(platformParameters)) {
-                config.getState().setProxyCredentials(null, platformParameters.getProxyHost(), platformParameters.getProxyPort(),
-                        platformParameters.getProxyUserId(), platformParameters.getProxyPassword());
+                config.property(ClientProperties.PROXY_USERNAME, platformParameters.getProxyUserId());
+                config.property(ClientProperties.PROXY_PASSWORD, platformParameters.getProxyPassword());
             }
         }
+        config.property(ClientProperties.READ_TIMEOUT, platformParameters.getHttpClientConfig().getHttpReadTimeout());
+        config.property(ClientProperties.FOLLOW_REDIRECTS, true);
 
         registerClasses(config);
-        config.getProperties().put(ApacheHttpClientConfig.PROPERTY_READ_TIMEOUT, READ_TIMEOUT_IN_MILLIS);
-
-        CumulocityHttpClient client = new CumulocityHttpClient(
-                createDefaultClientHander(config, platformParameters), null);
-        client.setPlatformParameters(platformParameters);
-        client.setFollowRedirects(true);
-        client.addFilter(
-                new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials())
-        );
+        config.register(new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials()));
+        config.register(new BufferedResponseStreamInterceptor());
 
         if (platformParameters.isAlwaysCloseConnection()) {
-            client.addFilter(new ClientFilter() {
-                @Override
-                public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-                    cr.getHeaders().add("Connection", "close");
-                    return getNext().handle(cr);
-                }
-            });
+            config.register((ClientRequestFilter) cr -> cr.getHeaders().add("Connection", "close"));
         }
+        if (platformParameters.getChunkedEncodingSize() > 0) {
+            config.property(ClientProperties.CHUNKED_ENCODING_SIZE, platformParameters.getChunkedEncodingSize());
+        }
+        config.property(ApacheClientProperties.CONNECTION_MANAGER, createConnectionManager(platformParameters));
+        config.property(ApacheClientProperties.REQUEST_CONFIG, createRequestConfig(platformParameters));
+
+
+        CumulocityHttpClient client = new CumulocityHttpClient(config);
+        client.setPlatformParameters(platformParameters);
+
         return client;
     }
 
-    private static ApacheHttpClientHandler createDefaultClientHander(ClientConfig cc, PlatformParameters platformParameters) {
-        MultiThreadedHttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        HttpConnectionManagerParams params = httpConnectionManager.getParams();
+    private static HttpClientConnectionManager createConnectionManager(PlatformParameters platformParameters) {
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         ConnectionPoolConfig pool = platformParameters.getHttpClientConfig().getPool();
-        final HttpClient client = new HttpClient(httpConnectionManager);
+
         if (pool.isEnabled()) {
-            params.setDefaultMaxConnectionsPerHost(pool.getPerHost());
-            params.setMaxTotalConnections(pool.getPerHost());
-            client.getParams().setConnectionManagerTimeout(pool.getAwaitTimeout());
+            connectionManager.setMaxTotal(pool.getMax());
+            connectionManager.setDefaultMaxPerRoute(pool.getPerHost());
         } else {
-            params.setStaleCheckingEnabled(false);
+            connectionManager.setValidateAfterInactivity(ConnectionPoolConfig.STALE_CHECK_DISABLED);
         }
-        return new ApacheHttpClientHandler(client, cc);
+        return connectionManager;
+    }
+
+    private static RequestConfig createRequestConfig(PlatformParameters platformParameters) {
+        ConnectionPoolConfig pool = platformParameters.getHttpClientConfig().getPool();
+        if (pool.isEnabled()) {
+            return RequestConfig.custom()
+                    .setConnectionRequestTimeout(pool.getAwaitTimeout())
+                    .build();
+        }
+        return RequestConfig.DEFAULT;
     }
 
     private static boolean isProxyAuthenticationRequired(PlatformParameters platformParameters) {
@@ -443,31 +461,38 @@ public class RestConnector implements RestOperations {
 
     public static Client createURLConnectionClient(final PlatformParameters platformParameters) {
 
-        ClientConfig config = new DefaultClientConfig();
+        ClientConfig config = new ClientConfig()
+                .property(ClientProperties.FOLLOW_REDIRECTS, true)
+                .connectorProvider(new ApacheConnectorProvider());
+
+        if (isProxyRequired(platformParameters)) {
+            config.property(ClientProperties.PROXY_URI, "http://" + platformParameters.getProxyHost() + ":" + platformParameters.getProxyPort());
+            if (isProxyAuthenticationRequired(platformParameters)) {
+                config.property(ClientProperties.PROXY_USERNAME, platformParameters.getProxyUserId());
+                config.property(ClientProperties.PROXY_PASSWORD, platformParameters.getProxyPassword());
+            }
+        }
 
         registerClasses(config);
 
-        Client client = new Client(new URLConnectionClientHandler(resolveConnectionFactory(platformParameters)), config);
-        client.setReadTimeout(READ_TIMEOUT_IN_MILLIS);
-        client.setFollowRedirects(true);
-        client.addFilter(
-                new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials())
-        );
+        config.register(new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials()));
+        config.register(new BufferedResponseStreamInterceptor());
+
         if (isProxyRequired(platformParameters) && isProxyAuthenticationRequired(platformParameters)) {
-            client.addFilter(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
+            config.register(new HTTPBasicProxyAuthenticationFilter(platformParameters.getProxyUserId(), platformParameters
                     .getProxyPassword()));
         }
-        return client;
-    }
-
-    private static HttpURLConnectionFactory resolveConnectionFactory(final PlatformParameters platformParameters) {
-        return isProxyRequired(platformParameters) ? new ProxyHttpURLConnectionFactory(platformParameters) : null;
+        return ClientBuilder.newBuilder()
+                .withConfig(config)
+                .readTimeout(platformParameters.getHttpClientConfig().getHttpReadTimeout(), TimeUnit.MILLISECONDS)
+                .build();
     }
 
     private static void registerClasses(ClientConfig config) {
-        for (Class<?> c : PROVIDERS_CLASSES) {
-            config.getClasses().add(c);
-        }
+        config.register(new MultiPartFeature());
+        config.register(new CumulocityJSONMessageBodyWriter());
+        config.register(new CumulocityJSONMessageBodyReader());
+        config.register(new ErrorMessageRepresentationReader());
     }
 
     private static boolean hasText(String string) {
@@ -478,6 +503,17 @@ public class RestConnector implements RestOperations {
             return false;
         }
         return true;
+    }
+
+    private Invocation.Builder getResourceBuilder(String path) {
+        Invocation.Builder builder = client.target(path).request();
+        builder = addApplicationKeyHeader(builder);
+        builder = addTfaHeader(builder);
+        builder = addRequestOriginHeader(builder);
+        builder = applyInterceptors(builder);
+        builder = addAcceptHeader(builder, MediaType.APPLICATION_JSON_TYPE);
+        builder = addMimeVersion(builder);
+        return builder;
     }
 
 }

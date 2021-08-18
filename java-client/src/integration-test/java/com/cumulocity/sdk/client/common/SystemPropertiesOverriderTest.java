@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -22,30 +22,30 @@ package com.cumulocity.sdk.client.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SystemPropertiesOverriderTest {
 
     private Map<Object, Object> properties = new HashMap<Object, Object>();
 
     @Test
-    public void shouldReturnOriginalPropertyIfSystemIsNotDefined() throws Exception {
+    public void shouldReturnOriginalPropertyIfSystemIsNotDefined() {
         properties.put("key", "value");
 
         SystemPropertiesOverrider overrider = new SystemPropertiesOverrider(properties);
 
-        Assert.assertThat(overrider.get("key"), Matchers.is("value"));
+        assertThat(overrider.get("key")).isEqualTo("value");
     }
 
     @Test
-    public void shouldReturnSystemPropertyIfSystemIsDefined() throws Exception {
+    public void shouldReturnSystemPropertyIfSystemIsDefined() {
         properties.put("system", "value");
         System.setProperty("system", "overridden");
 
         SystemPropertiesOverrider overrider = new SystemPropertiesOverrider(properties);
 
-        Assert.assertThat(overrider.get("system"), Matchers.is("overridden"));
+        assertThat(overrider.get("system")).isEqualTo("overridden");
     }
 }

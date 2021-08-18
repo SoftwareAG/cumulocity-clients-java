@@ -1,10 +1,12 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
+import com.cumulocity.model.DateTimeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joda.time.DateTime;
 import org.svenson.JSONTypeHint;
+import org.svenson.converter.JSONConverter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,5 +31,10 @@ public class MeasurementDto implements Serializable {
     @JSONTypeHint(MeasurementValueDto.class)
     public List<MeasurementValueDto> getValues() {
         return values;
+    }
+
+    @JSONConverter(type = DateTimeConverter.class)
+    public DateTime getTime() {
+        return time;
     }
 }

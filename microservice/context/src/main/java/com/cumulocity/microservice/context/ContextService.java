@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 /**
  * A service to get and enter context to run tasks with.
  * The service is aimed to be used for the tasks which contains Cumulocity API calls.
- * Context contains credentials to use as authorization to Cumulocity platform. 
+ * Context contains credentials to use as authorization to Cumulocity platform.
  * @param <C> Generic type for the context.
  */
 public interface ContextService<C> {
@@ -35,10 +35,11 @@ public interface ContextService<C> {
      * Enters context to run with Callable task
      * @param context the credentials to access the Cumulocity platform
      * @param task Callable task
+     * @param <V> generic type of Callable
      * @return the returned value from the Callable task
      */
     <V> V callWithinContext(C context, Callable<V> task);
-    
+
     /**
      * Enters context to run with Runnable task and returns the task with context
      * @param context the credentials to access the Cumulocity platform
@@ -46,11 +47,12 @@ public interface ContextService<C> {
      * @return Runnable task with context
      */
     Runnable withinContext(C context, Runnable task);
-    
+
     /**
      * Enters context to run with Callable task and returns the task with context
      * @param context the credentials to access the Cumulocity platform
      * @param task Callable task
+     * @param <V> generic type of Callable
      * @return Callable task with context
      */
     <V> Callable<V> withinContext(C context, Callable<V> task);

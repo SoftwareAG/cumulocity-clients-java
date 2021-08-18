@@ -1,58 +1,85 @@
 package com.cumulocity.sdk.client;
 
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import javax.ws.rs.client.Client;;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class CumulocityHttpClientTest {
-    
-    private static final String HOST = "http://management.cumulocity.com:8080";
-    
-    private CumulocityHttpClient client;
-    
-    @Before
-    public void setUp() {
-        PlatformParameters platformParameters = new PlatformParameters();
-        platformParameters.setForceInitialHost(true);
-        platformParameters.setHost(HOST);
-        client = createClient(platformParameters);
-    }
 
-    @Test
-    public void shouldChangeHostToPlatformHostIfThisIsForcedInParameters() throws Exception {
-        String queryParams = "?test=1&a=1";
-        String pathParams = "/test/1/q=1&a=1";
+        protected final String HOST = "http://management.cumulocity.com:8080";
 
-        verifyResolvedPath(HOST, HOST);
-        verifyResolvedPath(HOST, "http://127.0.0.1");
-        verifyResolvedPath(HOST, "http://127.0.0.1:8181");
-        verifyResolvedPath(HOST + queryParams, "http://127.0.0.1:8181" + queryParams);
-        verifyResolvedPath(HOST + queryParams, "http://127.0.0.1" + queryParams);
-        verifyResolvedPath(HOST + pathParams, "http://127.0.0.1" + pathParams);
-    }
-    
-    private void verifyResolvedPath(String expected, String initial) {
+        protected CumulocityHttpClient client;
+
+        protected Client jerseyClient;
+
+        protected ClientConfig clientConfig;
+
+        protected int chunkedEncodingSize = 1024;
+
+        protected  ResponseParser responseParser;
+
+        protected RestConnector restConnector;
+
+        @BeforeEach
+        public void setUp() {
+            PlatformParameters platformParameters = new PlatformParameters();
+            platformParameters.setForceInitialHost(true);
+            platformParameters.setHost(HOST);
+            platformParameters.setChunkedEncodingSize(chunkedEncodingSize);
+            restConnector = new RestConnector(platformParameters,responseParser);
+            jerseyClient = restConnector.getClient();
+            client = createClient(platformParameters);
+        }
+
+        @Test
+        public void shouldChangeHostToPlatformHostIfThisIsForcedInParameters() {
+            String queryParams = "?test=1&a=1";
+            String pathParams = "/test/1/q=1&a=1";
+
+            verifyResolvedPath(HOST, HOST);
+            verifyResolvedPath(HOST, "http://127.0.0.1");
+            verifyResolvedPath(HOST, "http://127.0.0.1:8181");
+            verifyResolvedPath(HOST + queryParams, "http://127.0.0.1:8181" + queryParams);
+            verifyResolvedPath(HOST + queryParams, "http://127.0.0.1" + queryParams);
+            verifyResolvedPath(HOST + pathParams, "http://127.0.0.1" + pathParams);
+        }
+
+        @Test
+        public void shouldEnableChunkedEncoding() {
+            Integer chunkedProperty = (Integer) jerseyClient.getConfiguration().getProperty(ClientProperties.CHUNKED_ENCODING_SIZE);
+
+            assertThat(chunkedProperty).isEqualTo(chunkedEncodingSize);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "{", "}" })
+        public void shouldThrowExceptionWithCode400WhenIllegalCharactersInPath(String character) {
+            String path = "http://example.com/" + character;
+            Throwable thrown = catchThrowable(() -> client.target(path).request());
+
+            assertThat(thrown).isInstanceOf(SDKException.class);
+            assertThat(thrown).hasMessageContaining("Illegal characters used in URL.");
+            assertThat(((SDKException) thrown).getHttpStatus()).isEqualTo(400);
+        }
+
+    protected void verifyResolvedPath(String expected, String initial) {
         String resolved = client.resolvePath(initial);
-        assertThat(expected, is(resolved));
+        assertThat(expected).isEqualTo(resolved);
     }
-    
-    public static CumulocityHttpClient createClient(PlatformParameters platformParameters) {
-        CumulocityHttpClient client = new CumulocityHttpClient(createDefaultClientHander(), null);
+
+    protected CumulocityHttpClient createClient(PlatformParameters platformParameters) {
+        CumulocityHttpClient client = new CumulocityHttpClient(clientConfig);
         client.setPlatformParameters(platformParameters);
         return client;
-    }
-    
-    private static ApacheHttpClientHandler createDefaultClientHander() {
-        final HttpClient client = new HttpClient(new MultiThreadedHttpConnectionManager());
-        return new ApacheHttpClientHandler(client, mock(ClientConfig.class));
     }
 
 }

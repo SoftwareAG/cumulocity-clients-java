@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,16 +19,20 @@
  */
 package com.cumulocity.sdk.client.common;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 
 public class HttpClientFactory {
 
     public Client createClient() {
-        Client client = ApacheHttpClient.create();
-        client.setFollowRedirects(true);
-        client.addFilter(new HTTPBasicAuthFilter("management/admin", "Pyi1bo1r"));
+        Client client = ClientBuilder.newClient();
+        client.property(ClientProperties.FOLLOW_REDIRECTS, true);
+        client.register(HttpAuthenticationFeature.basic("management/admin", "Pyi1bo1r"));
+        client.register(CumulocityJSONMessageBodyReader.class);
         return client;
     }
 }

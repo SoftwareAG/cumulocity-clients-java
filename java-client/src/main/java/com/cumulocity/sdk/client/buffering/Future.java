@@ -6,17 +6,17 @@ import java.util.concurrent.TimeUnit;
 import com.cumulocity.sdk.client.SDKException;
 
 public class Future {
-    
+
     private static int MAX_WAIT_FOR_RESPONSE = 120;
-    
+
     private final CountDownLatch latch = new CountDownLatch(1);
 
     private volatile Result result;
-    
+
     /**
      * Waits for the response to complete
-     * @return
-     * @throws SDKException
+     * @return the response
+     * @throws SDKException when exception occur during waiting for the response
      */
     public Object get() throws SDKException {
         try {
@@ -32,7 +32,7 @@ public class Future {
             throw new RuntimeException("", e);
         }
     }
-    
+
     public void setResponse(Result result) {
         this.result = result;
         latch.countDown();

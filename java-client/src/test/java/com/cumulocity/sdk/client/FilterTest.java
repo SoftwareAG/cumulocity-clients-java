@@ -1,10 +1,10 @@
 package com.cumulocity.sdk.client;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;

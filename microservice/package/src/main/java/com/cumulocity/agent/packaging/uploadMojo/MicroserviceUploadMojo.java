@@ -9,18 +9,20 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.client.impl.ApacheHttp
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Application;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.ApplicationWithSubscriptions;
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
-import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import lombok.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
@@ -72,6 +74,9 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "skip.microservice.upload")
     protected boolean skipMicroserviceUpload;
 
+    @Parameter(defaultValue = "${session}", readonly = true)
+    protected MavenSession mavenSession;
+
     @Component
     private Settings settings;
 
@@ -82,7 +87,13 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     private final CredentialsConfigurationSupplier credentialsSupplier = new CredentialsConfigurationSupplier(serviceId, settings, credentials);
 
     @Getter(lazy = true)
-    private final PlatformRepository repository = new PlatformRepository(new ApacheHttpClientExecutor(getCredentialsSupplier().getObject().get(), getLog()), getLog());
+    private final PlatformRepository repository = new PlatformRepository(
+            new ApacheHttpClientExecutor(
+                    getCredentialsSupplier().getObject().get(),
+                    (Log)getLog(),
+                    mavenSession),
+            (Log)getLog()
+    );
 
     @Override
     public void execute() {
@@ -112,13 +123,13 @@ public class MicroserviceUploadMojo extends AbstractMojo {
             getLog().info("application configuration " + applicationMaybe);
 
             if (!applicationMaybe.isPresent() || !credentialsMaybe.isPresent()) {
-                getLog().info("Skipping");
+                getLog().info("Skipping because present of application: " + applicationMaybe.isPresent() + " or present of credentials: " + credentialsMaybe.isPresent() );
                 return;
             }
 
             final File file = targetFile();
             if (!file.exists()) {
-                getLog().info("Skipping");
+                getLog().info("Skipping because target file " + file.getAbsolutePath() + " doesn't exist.");
                 return;
             }
 
@@ -162,7 +173,7 @@ public class MicroserviceUploadMojo extends AbstractMojo {
                 }
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private void uploadAndSubscribe(PlatformRepository repository, ApplicationWithSubscriptions application, ApplicationConfiguration configuration, File file) {

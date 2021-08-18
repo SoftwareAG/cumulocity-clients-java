@@ -1,7 +1,7 @@
 package com.cumulocity.agent.packaging.microservice;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -74,19 +74,14 @@ public class MicroserviceDeployMojo extends AbstractMojo {
     private Optional<String> getServerUrl() {
         final Server server = settings.getServer(serviceId);
         if(server == null){
-            return Optional.absent();
+            return Optional.empty();
         }
         final Object configuration = server.getConfiguration();
         if (!(configuration instanceof Xpp3Dom)) {
-            return Optional.absent();
+            return Optional.empty();
         }
         final Xpp3Dom urlDom = ((Xpp3Dom) configuration).getChild("url");
-        return Optional.fromNullable(urlDom).transform(new Function<Xpp3Dom, String>() {
-            @Override
-            public String apply(final Xpp3Dom input) {
-                return input.getValue();
-            }
-        });
+        return Optional.ofNullable(urlDom).map((Function<Xpp3Dom, String>) Xpp3Dom::getValue);
     }
 
 }

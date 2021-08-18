@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -32,7 +32,7 @@ public class SubscriberBuilder<T, R> {
 
     public static final String NOTIFICATIONS = "cep/notifications";
 
-    public static final String REALTIME = "cep/realtime";
+    public static final String REALTIME = "notification/realtime";
 
     public static final <T> SubscriptionNameResolver<T>  identityNameResolve() {
         return new SubscriptionNameResolver<T>() {
@@ -51,7 +51,7 @@ public class SubscriberBuilder<T, R> {
     private SubscriptionNameResolver<T> subscriptionNameResolver;
 
     private boolean messageReliability = false;
-    
+
     private UnauthorizedConnectionWatcher unauthorizedConnectionWatcher = new UnauthorizedConnectionWatcher();
 
     public static <T, R> SubscriberBuilder<T, R> anSubscriber() {
@@ -102,7 +102,7 @@ public class SubscriberBuilder<T, R> {
 
     private void verifyRequiredFields() {
         checkNotNull(endpoint, "endpoint can't be null");
-        checkNotNull(parameters, "plantform parameters can't be null");
+        checkNotNull(parameters, "platform parameters can't be null");
         checkNotNull(subscriptionNameResolver, "subscriptionNameResolver can't be null");
         checkNotNull(dataType, "dataType can't be null");
     }

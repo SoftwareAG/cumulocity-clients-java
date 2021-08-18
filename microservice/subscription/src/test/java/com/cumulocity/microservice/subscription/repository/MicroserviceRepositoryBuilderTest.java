@@ -3,8 +3,8 @@ package com.cumulocity.microservice.subscription.repository;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties.IsolationLevel;
 import com.cumulocity.microservice.subscription.repository.impl.CurrentMicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.impl.LegacyMicroserviceRepository;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -16,7 +16,7 @@ public class MicroserviceRepositoryBuilderTest {
 
     private MicroserviceRepositoryBuilder builder;
 
-    @Before
+    @BeforeEach
     public void setup() {
         builder = MicroserviceRepositoryBuilder.microserviceRepositoryBuilder()
         .username("test")

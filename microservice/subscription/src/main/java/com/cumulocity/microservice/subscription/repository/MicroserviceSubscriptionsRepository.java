@@ -2,31 +2,34 @@ package com.cumulocity.microservice.subscription.repository;
 
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.beans.ConstructorProperties;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import static com.google.common.base.Optional.fromNullable;
-import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.compare;
 
+@Slf4j
 @Repository
 public class MicroserviceSubscriptionsRepository {
-    @ConstructorProperties({"repository"})
+    @ConstructorProperties({"repository", "platformProperties"})
     @Autowired
-    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository) {
+    public MicroserviceSubscriptionsRepository(MicroserviceRepository repository, PlatformProperties platformProperties) {
         this.repository = repository;
+        this.platformProperties = platformProperties;
     }
 
     public Collection<MicroserviceCredentials> getCurrentSubscriptions() {
@@ -70,17 +73,17 @@ public class MicroserviceSubscriptionsRepository {
             SubscriptionsBuilder() {
             }
 
-            public Subscriptions.SubscriptionsBuilder all(Collection<MicroserviceCredentials> all) {
+            public SubscriptionsBuilder all(Collection<MicroserviceCredentials> all) {
                 this.all = all;
                 return this;
             }
 
-            public Subscriptions.SubscriptionsBuilder removed(Collection<MicroserviceCredentials> removed) {
+            public SubscriptionsBuilder removed(Collection<MicroserviceCredentials> removed) {
                 this.removed = removed;
                 return this;
             }
 
-            public Subscriptions.SubscriptionsBuilder added(Collection<MicroserviceCredentials> added) {
+            public SubscriptionsBuilder added(Collection<MicroserviceCredentials> added) {
                 this.added = added;
                 return this;
             }
@@ -92,46 +95,77 @@ public class MicroserviceSubscriptionsRepository {
     }
 
     private final MicroserviceRepository repository;
+    private final PlatformProperties platformProperties;
 
     private volatile Collection<MicroserviceCredentials> currentSubscriptions = newArrayList();
 
+    public Optional<ApplicationRepresentation> register(MicroserviceMetadataRepresentation metadata) {
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
+    }
+
+    @Deprecated
     public Optional<ApplicationRepresentation> register(String applicationName, MicroserviceMetadataRepresentation metadata) {
-        return fromNullable(repository.register(applicationName, metadata));
+        Optional<ApplicationRepresentation> application = ofNullable(repository.register(applicationName, metadata));
+        checkRegisteredApplicationKey(application);
+        return application;
+    }
+
+    private void checkRegisteredApplicationKey(Optional<ApplicationRepresentation> application) {
+        if (application.isPresent() && !application.get().getKey().equals(platformProperties.getApplicationKey())) {
+            log.warn("Configured application key '{}' differs from the registered application key: '{}'. Updating configuration.", platformProperties.getApplicationKey(), application.get().getKey());
+            platformProperties.setApplicationKey(application.get().getKey());
+        }
     }
 
     public Subscriptions retrieveSubscriptions(String applicationId) {
-        final List<MicroserviceCredentials> subscriptions = from(repository.getSubscriptions(applicationId))
-                .transform(new Function<ApplicationUserRepresentation, MicroserviceCredentials>() {
-                    public MicroserviceCredentials apply(ApplicationUserRepresentation representation) {
-                        return MicroserviceCredentials.builder()
-                                .username(representation.getName())
-                                .tenant(representation.getTenant())
-                                .password(representation.getPassword())
-                                .oAuthAccessToken(null)
-                                .xsrfToken(null)
-                                .build();
-                    }
-                })
-                .toList();
-        final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, subscriptions);
-        final Collection<MicroserviceCredentials> added = subtract(subscriptions, currentSubscriptions);
+        List<MicroserviceCredentials> subscriptions = StreamSupport.stream(repository.getSubscriptions(applicationId).spliterator(), false).map(representation -> MicroserviceCredentials.builder()
+                .username(representation.getName())
+                .tenant(representation.getTenant())
+                .password(representation.getPassword())
+                .oAuthAccessToken(null)
+                .xsrfToken(null)
+                .appKey(platformProperties.getApplicationKey())
+                .build()).collect(Collectors.toCollection(ArrayList::new));
+        moveManagementToFront(subscriptions);
+        return diffWithCurrentSubscriptions(subscriptions);
+    }
+
+    private void moveManagementToFront(List<MicroserviceCredentials> subscriptions) {
+        if (CollectionUtils.size(subscriptions) < 2) {
+            return;
+        }
+        MicroserviceCredentials management = null;
+        for (MicroserviceCredentials subscription : subscriptions) {
+            if ("management".equals(subscription.getTenant())) {
+                management = subscription;
+                break;
+            }
+        }
+        if (management != null) {
+            subscriptions.remove(management);
+            subscriptions.add(0, management);
+        }
+    }
+
+    public Subscriptions diffWithCurrentSubscriptions(List<MicroserviceCredentials> credentials) {
+        final Collection<MicroserviceCredentials> removed = subtract(currentSubscriptions, credentials);
+        final Collection<MicroserviceCredentials> added = subtract(credentials, currentSubscriptions);
         return Subscriptions.builder()
-                .all(subscriptions)
+                .all(credentials)
                 .removed(removed)
                 .added(added)
                 .build();
     }
 
     private Collection<MicroserviceCredentials> subtract(Collection<MicroserviceCredentials> a, final Collection<MicroserviceCredentials> b) {
-        return FluentIterable.from(a).filter(new Predicate<MicroserviceCredentials>() {
-            @Override
-            public boolean apply(MicroserviceCredentials credentials) {
-                if(b.contains(credentials)){
-                    return false;
-                }
-                return true;
+        return a.stream().filter(credentials -> {
+            if (b.contains(credentials)) {
+                return false;
             }
-        }).toList();
+            return true;
+        }).collect(Collectors.toList());
     }
 
     public void updateCurrentSubscriptions(final Collection<MicroserviceCredentials> subscriptions) {

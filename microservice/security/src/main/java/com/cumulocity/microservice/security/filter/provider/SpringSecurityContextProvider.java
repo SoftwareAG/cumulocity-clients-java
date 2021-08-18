@@ -5,7 +5,7 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.microservice.security.filter.util.HttpRequestUtils;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

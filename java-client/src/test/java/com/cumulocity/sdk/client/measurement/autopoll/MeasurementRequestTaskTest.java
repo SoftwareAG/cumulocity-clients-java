@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,27 +19,26 @@
  */
 package com.cumulocity.sdk.client.measurement.autopoll;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.sdk.client.devicecontrol.autopoll.OperationsQueue;
 
 public class MeasurementRequestTaskTest {
-    
+
     @Test
     public void emptyQueueShouldAcceptMoreThanOneMeasurementAgentRequest() throws InterruptedException {
         //given
         MeasurementRequestTask mrt = new MeasurementRequestTask();
         OperationsQueue queue = new OperationsQueue();
-        
+
         //when
         queue.add(mrt.getNewMeasurementOperation());
         Thread.sleep(1); // unique measurement operations use system time in millis. To ensure unique op wait at least 1 milli
         queue.add(mrt.getNewMeasurementOperation());
-        
-        //then
-        assertTrue(queue.size() == 2);
-    }
 
+        //then
+        assertThat(queue).hasSize(2);
+    }
 }

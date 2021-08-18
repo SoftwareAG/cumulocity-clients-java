@@ -17,6 +17,7 @@ public interface DecoderService {
      * @param deviceId device from which this data comes from
      * @param args additional arguments that may be required by decoder
      * @return DecoderResult object
+     * @throws DecoderServiceException when decode failed
      */
     DecoderResult decode(String inputData, GId deviceId, Map<String, String> args) throws DecoderServiceException;
 }

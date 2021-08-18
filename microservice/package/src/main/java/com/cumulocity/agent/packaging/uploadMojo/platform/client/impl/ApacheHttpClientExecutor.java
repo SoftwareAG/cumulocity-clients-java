@@ -6,12 +6,13 @@ import com.cumulocity.agent.packaging.uploadMojo.configuration.CredentialsConfig
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import jersey.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Throwables;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -22,11 +23,14 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.settings.Proxy;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 
 import static com.cumulocity.agent.packaging.uploadMojo.platform.client.impl.UrlUtils.concat;
@@ -46,7 +50,8 @@ public class ApacheHttpClientExecutor implements Executor {
     private final String url;
     private final Log log;
 
-    public ApacheHttpClientExecutor(final CredentialsConfiguration credentials, Log log) {
+    public ApacheHttpClientExecutor(final CredentialsConfiguration credentials, Log log, MavenSession mavenSession) {
+        this.log = log;
         url = UrlUtils.ensureHttpSchema(credentials.getUrl());
         client = HttpClients.custom()
                 .setDefaultCredentialsProvider(new BasicCredentialsProvider() {
@@ -54,8 +59,28 @@ public class ApacheHttpClientExecutor implements Executor {
                         return new UsernamePasswordCredentials(credentials.getUsername(), credentials.getPassword());
                     }
                 })
+                .setProxy( getProxyHost( mavenSession ) )
                 .build();
-        this.log = log;
+    }
+
+    private HttpHost getProxyHost( MavenSession mavenSession ) {
+    	try {    		
+	        List<Proxy>  list = mavenSession.getSettings().getProxies();
+	
+	        //loop about Proxy settings
+	        for ( Proxy proxy : list ) {
+	        	if ( proxy.isActive() ) {
+	        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+	        		log.info( "Found Proxy settings and passing to Apache Client: " + pS );
+	        		return new HttpHost( proxy.getHost(), proxy.getPort(), proxy.getProtocol() );
+	        	}			
+			}
+    	}
+    	catch ( NullPointerException e ) {
+    		//suppress NPEs because no proxy settings can be retrieved
+    	}
+
+    	return null;
     }
 
     @Override

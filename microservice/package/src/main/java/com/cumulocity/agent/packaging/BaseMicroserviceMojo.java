@@ -2,14 +2,12 @@ package com.cumulocity.agent.packaging;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -23,15 +21,19 @@ import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.io.Files.asByteSink;
 import static com.google.common.io.Files.asByteSource;
 import static com.google.common.io.Resources.asByteSource;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.lang3.StringUtils.firstNonEmpty;
 
 public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
@@ -83,7 +85,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip.microservice.package")
     protected boolean skipMicroservicePackage;
 
-    @Parameter(defaultValue = "${maven.compiler.target}")
+    @Parameter(defaultValue = "${maven.compiler.release}, ${maven.compiler.target}, ${microservice.java.version}")
     protected String javaRuntime;
 
     @Component
@@ -98,14 +100,21 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "agent-package.arguments")
     private List<String> arguments;
 
-    @Parameter(property = "project.build.sourceEncoding", defaultValue = "utf8")
-    private String encoding;
+    @Parameter(property = "project.build.sourceEncoding", defaultValue = "UTF-8")
+    protected String encoding;
+
+    @Parameter(property = "nonFilteredFileExtensions", defaultValue = "jks,jar")
+    private List<String> nonFilteredFileExtensions;
 
     @Parameter(property = "agent-package.heap")
     private Memory heap;
 
+    @Deprecated
     @Parameter(property = "agent-package.perm")
     private Memory perm;
+
+    @Parameter(property = "agent-package.metaspace")
+    private Memory metaspace;
 
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
@@ -115,34 +124,53 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         createDirectories(destination.toPath());
         execution.setOverwrite(override);
         execution.setFilterFilenames(true);
-        execution.setNonFilteredFileExtensions(ImmutableList.of("jks","jar"));
+        execution.setNonFilteredFileExtensions(nonFilteredFileExtensions);
         execution.setDelimiters(Sets.newLinkedHashSet(ImmutableSet.of("@*@")));
         execution.setSupportMultiLineFiltering(true);
         final Properties props = new Properties();
         props.put("package.name", name);
         props.put("package.directory", directory);
         props.put("package.description", firstNonNull(description, name + " Service"));
+        props.put("package.jvm-heap", Joiner.on(' ').join(getJvmHeap()));
+        props.put("package.jvm-meta", Joiner.on(' ').join(getJvmMeta()));
         props.put("package.jvm-mem", Joiner.on(' ').join(getJvmMem()));
         props.put("package.jvm-gc", Joiner.on(' ').join(getJvmGc()));
         props.put("package.arguments", Joiner.on(' ').join(arguments));
-        props.put("package.required-java", javaRuntime);
         props.put("package.java-version", getJavaVersion());
+        props.put("package.required-java", javaRuntime);
         execution.setAdditionalProperties(props);
         mavenResourcesFiltering.filterResources(execution);
     }
 
     private List<String> getJvmMem() {
-        Memory heap = this.heap.or(new Memory("128m", "384m"));
-        Memory perm = this.perm.or(new Memory("64m", "128m"));
+        return Lists.newArrayList(Iterables.concat(getJvmHeap(), getJvmMeta()));
+    }
 
-        return ImmutableList.of("-Xms" + heap.getMin(), "-Xmx" + heap.getMax(), "-XX:PermSize=" + perm.getMin(),
-            "-XX:MaxPermSize=" + perm.getMax());
+    private List<String> getJvmHeap() {
+        return heap.isEmpty() ? Collections.emptyList() : ImmutableList.of(
+                "-Xms" + heap.getMin(),
+                "-Xmx" + heap.getMax()
+        );
+    }
+
+    private List<String> getJvmMeta() {
+        if (metaspace.isEmpty() && perm.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return ImmutableList.of(
+                "-XX:MetaspaceSize=" + firstNonEmpty(metaspace.getMin(), perm.getMin()),
+                "-XX:MaxMetaspaceSize=" + firstNonEmpty(metaspace.getMax(), perm.getMax())
+                );
     }
 
     private List<String> getJvmGc() {
         if (jvmArgs == null || jvmArgs.isEmpty()) {
-            return ImmutableList.<String>builder().add("-XX:+UseConcMarkSweepGC", "-XX:+CMSParallelRemarkEnabled",
-                "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark").build();
+            return ImmutableList.<String>builder()
+                    .add("-XX:+UseG1GC",
+                         "-XX:+UseStringDeduplication",
+                         "-XX:MinHeapFreeRatio=25",
+                         "-XX:MaxHeapFreeRatio=75"
+                        ).build();
         } else
             return jvmArgs;
     }
@@ -165,7 +193,6 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
                 asByteSource(url).copyTo(asByteSink(destination));
             }
         }
-
     }
 
     protected void copyArtifact(@NonNull File destination) throws IOException {
@@ -174,7 +201,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         final File to = new File(destination, String.format("%s.jar", name));
         Files.createParentDirs(to);
         getLog().debug(String.format("copy artifact %s to %s ", project.getArtifact().getFile().getAbsolutePath(), to.getAbsolutePath()));
-        if(!to.exists() || !asByteSource(project.getArtifact().getFile()).contentEquals(asByteSource(to))) {
+        if (!to.exists() || !asByteSource(project.getArtifact().getFile()).contentEquals(asByteSource(to))) {
             java.nio.file.Files.copy(project.getArtifact().getFile().toPath(), to.toPath(), REPLACE_EXISTING);
         }
     }
@@ -213,6 +240,16 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     private String getJavaVersion() {
+        Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
+        Matcher matcher = pattern.matcher(javaRuntime);
+
+        if (matcher.find()) {
+            javaRuntime = matcher.group();
+        } else {
+            throw new IllegalArgumentException("Wrong format or missing java version. Missing at least one property from list: " +
+                    "maven.compiler.release, maven.compiler.target, microservice.java.version in valid format (1.8, 11 etc.)");
+        }
+
         if (javaRuntime.startsWith("1.")) {
             return javaRuntime.substring(2);
         }

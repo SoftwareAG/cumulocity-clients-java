@@ -1,7 +1,7 @@
 package com.cumulocity.sdk.client;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -9,15 +9,14 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import com.cumulocity.rest.representation.TestCollectionRepresentation;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PagedCollectionIterableTest {
 
     TestCollectionRepresentation<String> firstPage = new TestCollectionRepresentation<String>()
@@ -37,7 +36,7 @@ public class PagedCollectionIterableTest {
 
     PagedCollectionIterable<String, TestCollectionRepresentation<String>> pagedStrings;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         pagedStrings = new PagedCollectionIterable<String, TestCollectionRepresentation<String>>(
                 stringsResource, firstPage);

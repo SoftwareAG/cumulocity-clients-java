@@ -19,77 +19,79 @@
  */
 package com.cumulocity.sdk.client;
 
-import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.google.common.net.HttpHeaders;
+import org.glassfish.jersey.client.ClientProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
 public class RestConnectorTest {
 
     private static final String PATH = "path";
 
-    private CumulocityMediaType mediaType;
+    private CumulocityMediaType mediaType = CumulocityMediaType.ERROR_MESSAGE;
 
     @Mock
-    private WebResource webResource;
+    private WebTarget webResource;
 
     @Mock
-    private ClientResponse response;
+    private Response response;
 
-    @Mock
-    private Builder typeBuilder;
+    @Mock(lenient = true)
+    private Invocation.Builder typeBuilder;
 
-    private PlatformParameters clientParameters = new PlatformParameters();
+    private PlatformParameters clientParameters = spy(new PlatformParameters());
 
-    @Mock
+    @Mock(lenient = true)
     private Client client;
 
-    @Mock
+    @Mock(lenient = true)
     private ResponseParser parser;
 
     private RestConnector restConnector;
 
-    @Before
-    public void initializingMediaTypeAtDeclarationCausesPowerMockAndJerseyToThrowALinkageError() {
-        mediaType = CumulocityMediaType.ERROR_MESSAGE;
-    }
-
-    @Before
+    @BeforeEach
     public void setup() {
         restConnector = new RestConnector(clientParameters, parser, client);
 
-        when(client.resource(PATH)).thenReturn(webResource);
+        when(client.target(PATH)).thenReturn(webResource);
 
         when(parser.write(anyObject())).thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
     @Test
-    public void shouldRetrieveResource() throws Exception {
+    public void shouldRetrieveResource() {
         // Given
-        when(webResource.accept(mediaType)).thenReturn(typeBuilder);
-        when(typeBuilder.get(ClientResponse.class)).thenReturn(response);
+        Response response = Response.accepted().build();
+        when(webResource.request()).thenReturn(typeBuilder);
+        when(typeBuilder.get()).thenReturn(response);
+        returnResponseWhenSending();
 
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         when(parser.parse(response, BaseResourceRepresentation.class, 200)).thenReturn(representation);
@@ -103,7 +105,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostBaseRepresentation() throws Exception {
+    public void shouldPostBaseRepresentation() {
         // Given
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         returnResponseWhenPosting(representation);
@@ -118,7 +120,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingId() throws Exception {
+    public void shouldPostRepresentationSupportingId() {
         // Given
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
@@ -133,7 +135,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingIdWithNoResponseBody() throws Exception {
+    public void shouldPostRepresentationSupportingIdWithNoResponseBody() throws URISyntaxException {
         // Given
         clientParameters.setRequireResponseBody(false);
 
@@ -153,12 +155,13 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPostRepresentationSupportingIdWithNoResponseBodyAndNoLocation() throws Exception {
+    public void shouldPostRepresentationSupportingIdWithNoResponseBodyAndNoLocation() {
         // Given
         clientParameters.setRequireResponseBody(false);
 
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPosting(representation);
+
         when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(null);
         when(response.getLocation()).thenReturn(null);
 
@@ -174,19 +177,26 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPosting(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(typeBuilder.post(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.post(Entity.entity(representation, mediaType))).thenReturn(response);
     }
 
     private void returnResponseWhenSending() {
-        when(webResource.type(mediaType)).thenReturn(typeBuilder);
+        when(webResource.request()).thenReturn(typeBuilder);
         when(typeBuilder.accept(mediaType)).thenReturn(typeBuilder);
+        acceptDefaultMediaType();
+    }
+
+    private void acceptDefaultMediaType() {
+        when(typeBuilder.accept(CumulocityMediaType.WILDCARD)).thenReturn(typeBuilder);
+        when(typeBuilder.header(eq(HttpHeaders.ACCEPT), any())).thenReturn(typeBuilder);
     }
 
     @Test
-    public void shouldDelete() throws Exception {
+    public void shouldDelete() {
         // Given
-        when(webResource.getRequestBuilder()).thenReturn(typeBuilder);
-        when(typeBuilder.delete(ClientResponse.class)).thenReturn(response);
+        when(webResource.request()).thenReturn(typeBuilder);
+        when(typeBuilder.delete()).thenReturn(response);
+        acceptDefaultMediaType();
 
         // When
         restConnector.delete(PATH);
@@ -196,7 +206,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPutBaseRepresentation() throws Exception {
+    public void shouldPutBaseRepresentation() {
         // Given
         BaseResourceRepresentation representation = new BaseResourceRepresentation();
         BaseResourceRepresentation outputRepresentation = new BaseResourceRepresentation();
@@ -212,11 +222,11 @@ public class RestConnectorTest {
 
     private void returnResponseWhenPut(BaseResourceRepresentation representation) {
         returnResponseWhenSending();
-        when(typeBuilder.put(ClientResponse.class, representation)).thenReturn(response);
+        when(typeBuilder.put(Entity.entity(representation, mediaType))).thenReturn(response);
     }
 
     @Test
-    public void shouldPutRepresentationSupportingId() throws Exception {
+    public void shouldPutRepresentationSupportingId() {
         // Given
         ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
         returnResponseWhenPut(representation);
@@ -251,7 +261,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldPutRepresentationSupportingIdWithNoResponseBodyAndNoLocation() throws Exception {
+    public void shouldPutRepresentationSupportingIdWithNoResponseBodyAndNoLocation() {
         // Given
         clientParameters.setRequireResponseBody(false);
 
@@ -270,11 +280,11 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldAddHeaderFormInterceptor() throws Exception {
+    public void shouldAddHeaderFormInterceptor() {
         // Given
         clientParameters.registerInterceptor(new HttpClientInterceptor() {
             @Override
-            public Builder apply(Builder builder) {
+            public Invocation.Builder apply(Invocation.Builder builder) {
                 builder.header("fake", "fake");
                 return builder;
             }
@@ -294,11 +304,11 @@ public class RestConnectorTest {
     }
 
     @Test
-    public void shouldNotAddHeaderFormInterceptorAfterRemovingInterceptor() throws Exception {
+    public void shouldNotAddHeaderFormInterceptorAfterRemovingInterceptor() {
         // given
         HttpClientInterceptor addHeaderFake = new HttpClientInterceptor() {
             @Override
-            public Builder apply(Builder builder) {
+            public Invocation.Builder apply(Invocation.Builder builder) {
                 builder.header("fake", "fake");
                 return builder;
             }
@@ -314,6 +324,7 @@ public class RestConnectorTest {
             restConnector.post(PATH, mediaType, representation);
             verify(typeBuilder).header(eq("fake"), eq("fake"));
             reset(typeBuilder);
+            returnResponseWhenPosting(representation);
         }
 
         clientParameters.unregisterInterceptor(addHeaderFake);
@@ -325,4 +336,82 @@ public class RestConnectorTest {
         verify(typeBuilder, never()).header(eq("fake"), eq("fake"));
     }
 
+    @Test
+    public void shouldUseDefaultReadTimeoutWhenNotSet() {
+
+        //when
+        Client client = RestConnector.createURLConnectionClient(clientParameters);
+
+        //then
+        Integer readTimeout = (Integer) client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT);
+        assertThat("Should be default 180000", readTimeout == 180000);
+    }
+
+    @Test
+    public void shouldUseCustomHttpReadTimeoutWhenSpecified() {
+        // given
+        HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().httpReadTimeout(360000).build();
+        clientParameters.setHttpClientConfig(httpClientConfig);
+
+        // when
+        Client client = RestConnector.createURLConnectionClient(clientParameters);
+
+        //then
+        Integer readTimeout = (Integer) client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT);
+        assertThat("Should be default 360000", readTimeout == 360000);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'app-key',1"})
+    public void shouldIncludeApplicationKeyHeader(String applicationKey, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getApplicationKey()).thenReturn(applicationKey);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.X_CUMULOCITY_APPLICATION_KEY), invocations > 0 ? eq(applicationKey) : any());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'request-origin',1"})
+    public void shouldIncludeTfaTokenHeader(String tfaToken, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getTfaToken()).thenReturn(tfaToken);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.TFA_TOKEN_HEADER), invocations > 0 ? eq(tfaToken) : any());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {",0", "'',0", "'  ',0", "'request-origin',1"})
+    public void shouldIncludeRequestOriginHeader(String requestOrigin, int invocations) {
+        // Given
+        ManagedObjectRepresentation representation = new ManagedObjectRepresentation();
+        returnResponseWhenPosting(representation);
+        ManagedObjectRepresentation outputRepresentation = new ManagedObjectRepresentation();
+        when(parser.parse(response, ManagedObjectRepresentation.class, 201)).thenReturn(outputRepresentation);
+        when(clientParameters.getRequestOrigin()).thenReturn(requestOrigin);
+        when(typeBuilder.header(any(), any())).thenReturn(typeBuilder);
+
+        // When
+        restConnector.post(PATH, mediaType, representation);
+
+        // Then
+        verify(typeBuilder, times(invocations)).header(eq(RestConnector.X_CUMULOCITY_REQUEST_ORIGIN), invocations > 0 ? eq(requestOrigin) : any());
+    }
 }

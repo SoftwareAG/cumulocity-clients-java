@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -22,18 +22,20 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.util.Properties;
 
 public class JavaSdkITBase {
+
     private static TenantCreator tenantCreator;
     protected static PlatformImpl platform;
     protected static PlatformImpl bootstrapPlatform;
 
-    @BeforeClass
+    @BeforeAll
     public static void createTenantWithApplication() throws Exception {
         platform = createPlatform(false);
         bootstrapPlatform = createPlatform(true);
@@ -41,31 +43,35 @@ public class JavaSdkITBase {
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
 
-        ((CumulocityBasicCredentials)bootstrapPlatform.getCumulocityCredentials()).setTenantId(platform.getTenantId());
-        
+        ((CumulocityBasicCredentials) bootstrapPlatform.getCumulocityCredentials()).setTenantId(platform.getTenantId());
+
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTenantAndApplication() throws Exception {
         tenantCreator = new TenantCreator(platform);
         tenantCreator.removeTenant();
     }
 
-    private static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
+    public static PlatformImpl createPlatform(boolean bootstrap) throws IOException {
         Properties cumulocityProps = new Properties();
         cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
-        
-        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user"; 
-        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password"; 
+
+        String userKey = bootstrap ? "cumulocity.bootstrap.user" : "cumulocity.user";
+        String userPassword = bootstrap ? "cumulocity.bootstrap.password" : "cumulocity.password";
         SystemPropertiesOverrider p = new SystemPropertiesOverrider(cumulocityProps);
         PlatformImpl platform = new PlatformImpl(
                 p.get("cumulocity.host"),
                 CumulocityBasicCredentials.builder()
-                        .tenantId(p.get("cumulocity.tenant"))
+                        .tenantId(nextTenantId())
                         .username(p.get(userKey))
                         .password(p.get(userPassword))
                         .build());
         platform.setForceInitialHost(Boolean.parseBoolean(p.get("cumulocity.forceInitialHost")));
         return platform;
+    }
+
+    private static String nextTenantId() {
+        return "sdk_tenant_" + RandomUtils.nextInt(1_000_000);
     }
 }

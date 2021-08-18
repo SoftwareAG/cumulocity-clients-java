@@ -6,8 +6,29 @@ import com.cumulocity.rest.representation.application.ApplicationUserRepresentat
 
 public interface MicroserviceRepository {
 
-    ApplicationRepresentation register(final String applicationName, final MicroserviceMetadataRepresentation metadata);
+    ApplicationRepresentation register(final MicroserviceMetadataRepresentation metadata);
 
+    /**
+     * Method is Deprecated and will be removed in the future
+     * Use {@link #register(MicroserviceMetadataRepresentation)} method instead.
+     * @param applicationName application name
+     * @param metadata microservice metadata
+     * @return application representation
+     */
+    @Deprecated
+    ApplicationRepresentation register(String applicationName, MicroserviceMetadataRepresentation metadata);
+
+    ApplicationRepresentation getCurrentApplication();
+
+    Iterable<ApplicationUserRepresentation> getSubscriptions();
+
+    /**
+     * Method is Deprecated and will be removed in the future.
+     * Use {@link #getSubscriptions()} method instead.
+     * @param applicationId application identifier
+     * @return collection of application users
+     */
+    @Deprecated
     Iterable<ApplicationUserRepresentation> getSubscriptions(String applicationId);
 
 }

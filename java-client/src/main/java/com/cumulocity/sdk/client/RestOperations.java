@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
-public interface RestOperations {
+public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException;
 
     <T > T get(String path, MediaType mediaType, Class<T> responseType) throws SDKException;
@@ -31,6 +31,9 @@ public interface RestOperations {
 
     <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                   Class<T> responseClass);
+
+    <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream,
+                                                          Class<T> responseClass);
 
     <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException;
 

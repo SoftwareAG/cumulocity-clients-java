@@ -1,10 +1,10 @@
 package com.cumulocity.sdk.client.polling;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PollingStrategyTest {
     

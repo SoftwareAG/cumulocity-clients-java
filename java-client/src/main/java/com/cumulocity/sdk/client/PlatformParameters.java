@@ -26,6 +26,7 @@ import com.cumulocity.sdk.client.base.Suppliers;
 import com.cumulocity.sdk.client.buffering.*;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Set;
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Creates processor responsible for handling buffered requests.
  * Important to call close() method on shutdown to finish processing.
  */
+@Slf4j
 public class PlatformParameters {
 
     public final static int DEFAULT_PAGE_SIZE = 5;
@@ -74,6 +76,14 @@ public class PlatformParameters {
     private HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().build();
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
+
+    /** This property determines whether the chunked encoding is used and if so,
+     * the chunk size used by the http client while sending the request.
+     * A value < 0 declares that chunked encoding will not be used.
+     * A value = 0 declares that chunked encoding will be used with default chunk size.
+     * A value > 0 declares that chunked encoding will be used with provided chunk size.
+     */
+    private int chunkedEncodingSize = -1;
 
     public PlatformParameters() {
         //empty constructor for spring based initialization
@@ -203,7 +213,7 @@ public class PlatformParameters {
      *      .build())
      *  .build()
      * );
-     * @param httpClientConfig
+     * @param httpClientConfig http client configuration
      */
     public void setHttpClientConfig(HttpClientConfig httpClientConfig) {
         this.httpClientConfig = httpClientConfig;
@@ -212,7 +222,7 @@ public class PlatformParameters {
     /**
      * Set header to the http client to close connection always.
      *
-     * @param alwaysCloseConnection
+     * @param alwaysCloseConnection specifies if header value should be set
      */
     public void setAlwaysCloseConnection(boolean alwaysCloseConnection) {
         httpClientConfig = httpClientConfig.toBuilder().pool(httpClientConfig.getPool().toBuilder().enabled(!alwaysCloseConnection).build()).build();
@@ -252,6 +262,14 @@ public class PlatformParameters {
         if (bufferProcessor != null) {
             bufferProcessor.shutdown();
         }
+
+        if (restConnector != null) {
+            try {
+                restConnector.close();
+            } catch (Exception e) {
+                log.debug("Error while closing restConnector.", e);
+            }
+        }
     }
 
     public boolean registerInterceptor(HttpClientInterceptor interceptor) {
@@ -268,6 +286,14 @@ public class PlatformParameters {
 
     public void setResponseMapper(ResponseMapper responseMapper) {
         this.responseMapper = responseMapper;
+    }
+
+    public void setChunkedEncodingSize(int chunkedEncodingSize) {
+        this.chunkedEncodingSize = chunkedEncodingSize;
+    }
+
+    public int getChunkedEncodingSize() {
+        return this.chunkedEncodingSize;
     }
 
     private class DisabledBufferRequestService implements BufferRequestService {

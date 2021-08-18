@@ -3,6 +3,12 @@ set +eu
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 set -e
 
+add-key-for-host(){
+  mkdir -p ~/.ssh > /dev/null || echo
+  grep -qF $1 ~/.ssh/known_hosts || ssh-keyscan -t rsa $1 >> ~/.ssh/known_hosts
+}
+add-key-for-host bitbucket.org
+add-key-for-host yum.cumulocity.com
 export resources=hudson@yum.cumulocity.com
 export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false -Dnexus.url=http://nexus:8081"
 function call-mvn {
@@ -14,6 +20,14 @@ function call-mvn {
         cd -
     else
         echo "Skipping microservice"
+    fi
+    if [ -f lpwan-backend/pom.xml ] ;
+    then
+        cd lpwan-backend
+        ../mvnw ${@}
+        cd -
+    else
+        echo "Skipping lpwan-backend"
     fi
     if [ -f cumulocity-sdk/pom.xml ] ;
     then
@@ -28,8 +42,8 @@ function call-mvn {
 
 function tag-version {
     tag=$1
-    hg commit -m "[maven-release-plugin] prepare release ${tag}" || echo ""
-    hg tag -f -m "copy for tag ${tag}" "${tag}"
+    git commit -am "[maven-release-plugin] prepare release ${tag}" --allow-empty || echo ""
+    git tag -f -m "copy for tag ${tag}" "${tag}" # create tag with additional message "copy for tag TAG_TAME" and remove old one if exists
 }
 
 function update-property {

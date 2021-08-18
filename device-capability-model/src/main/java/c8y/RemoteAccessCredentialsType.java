@@ -7,7 +7,7 @@ public enum RemoteAccessCredentialsType {
     NONE(new CredentialsValidator() {
         @Override
         public void validateCredentials(RemoteAccessCredentials credentials) {
-
+            return;
         }
     }),
     PASS_ONLY(new CredentialsValidator() {
@@ -28,6 +28,14 @@ public enum RemoteAccessCredentialsType {
         public void validateCredentials(RemoteAccessCredentials credentials) {
             validateValueNotEmpty(credentials.getUsername(), "User", KEY_PAIR);
             validateValueNotEmpty(credentials.getPrivateKey(), "Private key", KEY_PAIR);
+        }
+    }),
+    CERTIFICATE(new CredentialsValidator() {
+        @Override
+        public void validateCredentials(RemoteAccessCredentials credentials) {
+            validateValueNotEmpty(credentials.getUsername(), "User", CERTIFICATE);
+            validateValueNotEmpty(credentials.getPrivateKey(), "Private key", CERTIFICATE);
+            validateValueNotEmpty(credentials.getCertificate(), "Certificate", CERTIFICATE);
         }
     });
 

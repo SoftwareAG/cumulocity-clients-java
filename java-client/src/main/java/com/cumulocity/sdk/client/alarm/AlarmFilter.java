@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -48,16 +48,16 @@ public class AlarmFilter extends Filter {
 
     @ParamSource
     private String dateTo;
-    
+
     @ParamSource
     private String severity;
-    
+
     @ParamSource
     private String resolved;
-    
+
     @ParamSource
     private String type;
-    
+
     /**
      * Specifies the {@code source} query parameter
      *
@@ -68,7 +68,7 @@ public class AlarmFilter extends Filter {
         this.source = source.getValue();
         return this;
     }
-    
+
     /**
      * Specifies the {@code source} query parameter
      *
@@ -84,8 +84,8 @@ public class AlarmFilter extends Filter {
     /**
      * Specifies the {@code status} query parameter
      *
-     * @param status status of the alarm(s)
-     * @return the alarm filter with {@code status} set
+     * @param statuses status array of the alarm(s)
+     * @return the alarm filter with {@code statuses} set
      */
     public AlarmFilter byStatus(CumulocityAlarmStatuses... statuses) {
     	if(statuses == null){
@@ -96,7 +96,7 @@ public class AlarmFilter extends Filter {
 		for (int index = 0; index <= statuses.length - 1; index++) {
 			tmp.append(statuses[index].toString());
 			if(index < statuses.length -1){
-				tmp.append(",");	
+				tmp.append(",");
 			}
 		}
 		this.status = tmp.toString();
@@ -110,12 +110,12 @@ public class AlarmFilter extends Filter {
     public String getStatus() {
         return status;
     }
-    
+
     /**
-     * Specifies the {@code status} query parameter
+     * Specifies the {@code severity} query parameter
      *
-     * @param status status of the alarm(s)
-     * @return the alarm filter with {@code status} set
+     * @param severity severity of the alarm(s)
+     * @return the alarm filter with {@code severity} set
      */
     public AlarmFilter bySeverity(CumulocitySeverities severity) {
         this.severity = severity.toString();
@@ -123,13 +123,13 @@ public class AlarmFilter extends Filter {
     }
 
     /**
-     * @return the {@code status} parameter of the query
+     * @return the {@code severity} parameter of the query
      */
     public String getSeverity() {
         return severity;
     }
 
-    
+
     /**
      * @return the {@code source} parameter of the query
      */
@@ -139,7 +139,7 @@ public class AlarmFilter extends Filter {
 
 
     /**
-     * Specifies the {@code fromDate} and {@code toDate} query parameters 
+     * Specifies the {@code fromDate} and {@code toDate} query parameters
      * for query in a time range.
      *
      * @param fromDate the start date time of the range
@@ -153,7 +153,7 @@ public class AlarmFilter extends Filter {
     }
 
     /**
-     * Specifies the {@code fromDate} query parameter 
+     * Specifies the {@code fromDate} query parameter
      * for querying all alarms from the specified date time.
      *
      * @param fromDate the date time from which all alarms to be returned.
@@ -163,7 +163,7 @@ public class AlarmFilter extends Filter {
         this.dateFrom = DateConverter.date2String(fromDate);
         return this;
     }
-    
+
     public String getFromDate() {
         return dateFrom;
     }
@@ -189,6 +189,6 @@ public class AlarmFilter extends Filter {
 		this.type = type;
 		return this;
 	}
-    
-    
+
+
 }

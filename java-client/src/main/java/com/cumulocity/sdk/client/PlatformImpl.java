@@ -44,6 +44,8 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryApiImpl;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
+import com.cumulocity.sdk.client.option.SystemOptionApi;
+import com.cumulocity.sdk.client.option.SystemOptionApiImpl;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApiImpl;
 import com.cumulocity.sdk.client.user.UserApi;
@@ -137,7 +139,7 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
 
     /**
      * This static method creates the Platform from the system parameters.
-     * <p/>
+     * <p>
      * System Properties
      * cumolocityHost     : ip address or name of the Cumulocity server
      * cumulocityPort     : port number of the Cumulocity server;
@@ -145,18 +147,18 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
      * cumulocityUser     : User ID ;
      * cumulocityPassword : Password ;
      * cumulocityPageSize : Page size for the paging parameters.
-     * <p/>
+     * <p>
      * proxyHost          : Proxy Host Name;
      * proxyPort          : Proxy Port Name
      * proxyUser          : Proxy User Name
-     * proxyPassword      : Proxy Passowrd
+     * proxyPassword      : Proxy Password
      *
      * @return Platform for the handle to get other methods.
-     * @throws SDKException
+     * @throws SDKException when platform creation fails
      */
 
     public static Platform createPlatform() throws SDKException {
-        PlatformImpl platform = null;
+        PlatformImpl platform;
         try {
             String host = System.getProperty(CUMOLOCITY_HOST);
             int port = Integer.parseInt(System.getProperty(CUMULOCITY_PORT));
@@ -267,6 +269,12 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public TenantOptionApi getTenantOptionApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new TenantOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant(), getPageSize());
+    }
+
+    @Override
+    public SystemOptionApi getSystemOptionApi() throws SDKException {
+        RestConnector restConnector = createRestConnector();
+        return new SystemOptionApiImpl(restConnector, getPlatformApi(restConnector).getTenant());
     }
 
     private synchronized PlatformApiRepresentation getPlatformApi(RestConnector restConnector) throws SDKException {

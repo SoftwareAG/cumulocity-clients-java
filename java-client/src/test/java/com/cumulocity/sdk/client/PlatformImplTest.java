@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,18 +19,18 @@
  */
 package com.cumulocity.sdk.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PlatformImplTest {
 
     @Test
     public void testCreationFromSystemParams() throws SDKException {
-
-        //Given
+        // given
         System.setProperty(PlatformImpl.CUMOLOCITY_HOST, "abdc");
         System.setProperty(PlatformImpl.CUMULOCITY_PORT, "123");
         System.setProperty(PlatformImpl.CUMULOCITY_TENANT, "tenant");
@@ -40,7 +40,7 @@ public class PlatformImplTest {
         // when
         PlatformImpl platformImpl = (PlatformImpl) PlatformImpl.createPlatform();
 
-        //then
+        // then
         assertEquals("http://abdc:123/", platformImpl.getHost());
         assertEquals("tenant", platformImpl.getTenantId());
         assertEquals("user", platformImpl.getUser());
@@ -50,8 +50,7 @@ public class PlatformImplTest {
 
     @Test
     public void testCreationFromSystemParamsWithPageSize() throws SDKException {
-
-        //Given
+        // given
         System.setProperty(PlatformImpl.CUMOLOCITY_HOST, "abdc");
         System.setProperty(PlatformImpl.CUMULOCITY_PORT, "123");
         System.setProperty(PlatformImpl.CUMULOCITY_TENANT, "tenant");
@@ -62,19 +61,17 @@ public class PlatformImplTest {
         // when
         PlatformImpl platformImpl = (PlatformImpl) PlatformImpl.createPlatform();
 
-        //then
+        // then
         assertEquals("http://abdc:123/", platformImpl.getHost());
         assertEquals("tenant", platformImpl.getTenantId());
         assertEquals("user", platformImpl.getUser());
         assertEquals("password", ((CumulocityBasicCredentials)platformImpl.getCumulocityCredentials()).getPassword());
         assertEquals(9, platformImpl.getPageSize());
-
     }
 
-    @Test(expected = SDKException.class)
+    @Test
     public void testCreationFromSystemParamsInvalidPort() throws SDKException {
-
-        //Given
+        // given
         System.setProperty(PlatformImpl.CUMOLOCITY_HOST, "abdc");
         System.setProperty(PlatformImpl.CUMULOCITY_PORT, "XYz");
         System.setProperty(PlatformImpl.CUMULOCITY_TENANT, "tenant");
@@ -82,17 +79,15 @@ public class PlatformImplTest {
         System.setProperty(PlatformImpl.CUMULOCITY_PASSWORD, "password");
 
         // when
-        PlatformImpl.createPlatform();
+        Throwable thrown = catchThrowable(PlatformImpl::createPlatform);
 
-        //then
-        fail();
-
+        // then
+        assertThat(thrown).isInstanceOf(SDKException.class);
     }
 
     @Test
     public void testCreationFromSystemParamsWithProxy() throws SDKException {
-
-        //Given
+        // given
         System.setProperty(PlatformImpl.CUMOLOCITY_HOST, "abdc");
         System.setProperty(PlatformImpl.CUMULOCITY_PORT, "123");
         System.setProperty(PlatformImpl.CUMULOCITY_TENANT, "tenant");
@@ -106,12 +101,10 @@ public class PlatformImplTest {
         // when
         PlatformImpl platformImpl = (PlatformImpl) PlatformImpl.createPlatform();
 
-        //then 
+        // then
         assertEquals("proxyHost", platformImpl.getProxyHost());
         assertEquals(8, platformImpl.getProxyPort());
         assertEquals("proxyUser", platformImpl.getProxyUserId());
         assertEquals("password", platformImpl.getProxyPassword());
-
     }
-
 }

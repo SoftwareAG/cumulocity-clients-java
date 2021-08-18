@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -23,15 +23,10 @@ import static com.cumulocity.rest.representation.builder.RestRepresentationObjec
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectReferenceRepresentation.MO_REF_REPRESENTATION;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import org.junit.*;
-import org.junit.rules.ExpectedException;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
@@ -40,16 +35,16 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectReferenceRepres
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MOChildrenOrderingIT extends JavaSdkITBase {
-    private InventoryApi inventory;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    private InventoryApi inventory;
 
     private ManagedObject parentMo;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         inventory = platform.getInventoryApi();
 
@@ -63,27 +58,27 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldKeepChildAssetsOrder() throws Exception {
+    public void shouldKeepChildAssetsOrder() {
         shouldKeepChildrenInOrder(new ChildAssetAdder(), new ChildAssetsQuery());
     }
 
     @Test
-    public void shouldKeepChildAdditionsOrder() throws Exception {
+    public void shouldKeepChildAdditionsOrder() {
         shouldKeepChildrenInOrder(new ChildAdditionAdder(), new ChildAdditionsQuery());
     }
 
     @Test
-    public void addingSameChildDeviceTwiceHasNoEffect() throws Exception {
+    public void addingSameChildDeviceTwiceHasNoEffect() {
         addingSameItemTwiceHasNoEffect(new ChildDeviceAdder(), new ChildDevicesQuery());
     }
 
     @Test
-    public void addingSameChildAssetTwiceHasNoEffect() throws Exception {
+    public void addingSameChildAssetTwiceHasNoEffect() {
         addingSameItemTwiceHasNoEffect(new ChildAssetAdder(), new ChildAssetsQuery());
     }
 
     @Test
-    public void addingSameChildAdditionTwiceHasNoEffect() throws Exception {
+    public void addingSameChildAdditionTwiceHasNoEffect() {
         addingSameItemTwiceHasNoEffect(new ChildAdditionAdder(), new ChildAdditionsQuery());
     }
 
@@ -103,7 +98,7 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
 
         // Then
         List<GId> childIds = getIdsOfChildren(childrenQuery);
-        assertThat(childIds, is(asList(ch1.getId(), ch2.getId())));
+        assertThat(childIds).contains(ch1.getId(), ch2.getId());
     }
 
     private void shouldKeepChildrenInOrder(ChildAdder childrenAdder, ChildrenQuery childrenQuery) throws SDKException {
@@ -112,7 +107,7 @@ public class MOChildrenOrderingIT extends JavaSdkITBase {
 
         // Then
         List<GId> childIds = getIdsOfChildren(childrenQuery);
-        assertThat(childIds, is(childDeviceIdsInCreationOrder));
+        assertThat(childIds).containsExactlyInAnyOrderElementsOf(childDeviceIdsInCreationOrder);
     }
 
     private List<GId> getIdsOfChildren(ChildrenQuery childrenQuery) throws SDKException {

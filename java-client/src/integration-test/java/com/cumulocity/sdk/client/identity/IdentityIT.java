@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Cumulocity GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
@@ -19,16 +19,14 @@
  */
 package com.cumulocity.sdk.client.identity;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.idtype.XtId;
@@ -38,24 +36,30 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
+import static org.assertj.core.api.Assertions.assertThat;
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
 public class IdentityIT extends JavaSdkITBase {
 
     private IdentityApi identity;
 
-    @Before
+    private static final int NOT_FOUND = 404;
+
+    private List<ExternalIDRepresentation> input;
+    private List<ExternalIDRepresentation> result1;
+    private ExternalIDCollectionRepresentation collection1;
+
+    private boolean notFound;
+
+    @BeforeEach
     public void setup() throws Exception {
         identity = platform.getIdentityApi();
-        input = new ArrayList<ExternalIDRepresentation>();
-        result1 = new ArrayList<ExternalIDRepresentation>();
+        input = new ArrayList<>();
+        result1 = new ArrayList<>();
         notFound = false;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SDKException {
         for (ExternalIDRepresentation e : input) {
             try {
@@ -68,83 +72,55 @@ public class IdentityIT extends JavaSdkITBase {
         }
     }
 
-    //    Scenario: Create one external id and get all for the global id
     @Test
-    public void createExternalIdAndGetAllForTheGlobalId() throws Exception {
-//    Given I have external id for '100' with value 'DN-1' and type 'com.nsn.DN'
+    public void createExternalIdAndGetAllForTheGlobalId() {
+        // given
         iHaveManagedObject(100, "DN-1", "com.nsn.DN");
-//    When I create the external id
+        // when
         iCallCreate();
-//    Then I should get back the external id
+        // then
         shouldGetBackTheExternalId();
     }
 
-//
-//    Scenario: Create multiple external ids and get all for the global id
-
     @Test
-    public void createMultipleExternalIdsAndGetAllForTheGlobalId() throws Exception {
-//    Given I have the global id '200' with following external ids:
-//            | type | value |
-//            | com.type1 | 1002 |
-//            | com.dn | DN-1 |
+    public void createMultipleExternalIdsAndGetAllForTheGlobalId() {
+        // given
         iHaveManagedObject(200, "com.type1", "1002");
         iHaveManagedObject(200, "com.dn", "DN-1");
-//    When I create all external ids
+        // when
         iCreateAll();
-//    Then I should get back all the external ids
+        // then
         shouldGetBackAllTheIds();
 
     }
 
-//
-//    Scenario: Create one external id and get the external id
-
     @Test
-    public void createOneExternalIdAndGetTheExternalId() throws Exception {
-//    Given I have external id for '100' with value 'DN-1' and type 'com.nsn.DN'
+    public void createOneExternalIdAndGetTheExternalId() {
+        // given
         iHaveManagedObject(100, "DN-1", "com.nsn.DN");
-//    When I create the external id
+        // when
         iCallCreate();
-//    And I get the external id
         iGetTheExternalId();
-//    Then I should get back the external id
+        // then
         shouldGetBackTheExternalId();
     }
 
-//
-//    Scenario: Create one external id, delete it and get the external id
-
     @Test
-    public void createOneExternalIdAndDeleteIdAndGetTheExternalId() throws Exception {
-//    Given I have external id for '100' with value 'DN-1' and type 'com.nsn.DN'
+    public void createOneExternalIdAndDeleteIdAndGetTheExternalId() {
+        // given
         iHaveManagedObject(100, "DN-1", "com.nsn.DN");
-//    When I create the external id
+        // when
         iCallCreate();
-//    And I delete the external id
         iDeleteTheExternalId();
-//    And I get the external id
         iGetTheExternalId();
-//    Then External id should not be found
+        // then
         shouldNotBeFound();
     }
-
-    private static final int NOT_FOUND = 404;
-
-    private List<ExternalIDRepresentation> input;
-
-    private List<ExternalIDRepresentation> result1;
-
-    private ExternalIDCollectionRepresentation collection1;
-
-    private boolean notFound;
 
     // ------------------------------------------------------------------------
     // Given
     // ------------------------------------------------------------------------
-
-    @Given("I have external id for '(\\d+)' with value '([^']*)' and type '([^']*)'")
-    public void iHaveManagedObject(long globalId, String extId, String type) {
+    private void iHaveManagedObject(long globalId, String extId, String type) {
         ExternalIDRepresentation rep = new ExternalIDRepresentation();
         rep.setExternalId(extId);
         rep.setType(type);
@@ -156,40 +132,20 @@ public class IdentityIT extends JavaSdkITBase {
         input.add(rep);
     }
 
-    @Given("I have the global id '(\\d+)' with following external ids:")
-    public void iHaveManagedObject(long globalId, List<Row> rows) {
-        ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
-        GId gId = new GId();
-        gId.setValue(Long.toString(globalId));
-        mo.setId(gId);
-
-        for (Row row : rows) {
-            ExternalIDRepresentation rep = new ExternalIDRepresentation();
-            rep.setExternalId(row.value);
-            rep.setType(row.type);
-            rep.setManagedObject(mo);
-            input.add(rep);
-        }
-    }
-
     // ------------------------------------------------------------------------
     // When
     // ------------------------------------------------------------------------
-
-    @When("I create the external id")
-    public void iCallCreate() throws SDKException {
+    private void iCallCreate() throws SDKException {
         result1.add(identity.create(input.get(0)));
     }
 
-    @When("I create all external ids")
-    public void iCreateAll() throws SDKException {
+    private void iCreateAll() throws SDKException {
         for (ExternalIDRepresentation rep : input) {
             result1.add(identity.create(rep));
         }
     }
 
-    @When("I get the external id")
-    public void iGetTheExternalId() throws SDKException {
+    private void iGetTheExternalId() throws SDKException {
         result1.clear();
         try {
             XtId id = new XtId(input.get(0).getExternalId());
@@ -200,8 +156,7 @@ public class IdentityIT extends JavaSdkITBase {
         }
     }
 
-    @When("I delete the external id")
-    public void iDeleteTheExternalId() throws SDKException {
+    private void iDeleteTheExternalId() throws SDKException {
         ExternalIDRepresentation extIdRep = new ExternalIDRepresentation();
         extIdRep.setExternalId(input.get(0).getExternalId());
         extIdRep.setType(input.get(0).getType());
@@ -211,21 +166,18 @@ public class IdentityIT extends JavaSdkITBase {
     // ------------------------------------------------------------------------
     // Then
     // ------------------------------------------------------------------------
-
-    @Then("I should get back the external id")
-    public void shouldGetBackTheExternalId() throws SDKException {
+    private void shouldGetBackTheExternalId() throws SDKException {
         collection1 = identity.getExternalIdsOfGlobalId(input.get(0).getManagedObject().getId()).get();
-        assertEquals(1, collection1.getExternalIds().size());
-        assertEquals(input.get(0).getExternalId(), collection1.getExternalIds().get(0).getExternalId());
-        assertEquals(input.get(0).getType(), collection1.getExternalIds().get(0).getType());
-        assertEquals(input.get(0).getManagedObject().getId().getValue(), collection1.getExternalIds().get(0).getManagedObject().getId()
-                .getValue());
+        assertThat(collection1.getExternalIds()).hasSize(1);
+        assertThat(collection1.getExternalIds().get(0).getExternalId()).isEqualTo(input.get(0).getExternalId());
+        assertThat(collection1.getExternalIds().get(0).getType()).isEqualTo(input.get(0).getType());
+        assertThat(collection1.getExternalIds().get(0).getManagedObject().getId().getValue())
+                .isEqualTo(input.get(0).getManagedObject().getId().getValue());
     }
 
-    @Then("I should get back all the external ids")
-    public void shouldGetBackAllTheIds() throws SDKException {
+    private void shouldGetBackAllTheIds() throws SDKException {
         collection1 = identity.getExternalIdsOfGlobalId(input.get(0).getManagedObject().getId()).get();
-        assertEquals(input.size(), collection1.getExternalIds().size());
+        assertThat(collection1.getExternalIds()).hasSameSizeAs(input);
 
         Map<String, ExternalIDRepresentation> result = new HashMap<String, ExternalIDRepresentation>();
 
@@ -235,22 +187,14 @@ public class IdentityIT extends JavaSdkITBase {
 
         for (int index = 0; index < input.size(); index++) {
             ExternalIDRepresentation rep = result.get(input.get(index).getExternalId());
-            assertNotNull(rep);
-            assertEquals(input.get(index).getType(), rep.getType());
-            assertEquals(input.get(index).getManagedObject().getId().getValue(), rep.getManagedObject().getId().getValue());
+            assertThat(rep).isNotNull();
+            assertThat(rep.getType()).isEqualTo(input.get(index).getType());
+            assertThat(rep.getManagedObject().getId().getValue()).isEqualTo(input.get(index).getManagedObject().getId().getValue());
         }
-
     }
 
-    @Then("External id should not be found")
-    public void shouldNotBeFound() {
-        assertTrue(notFound);
-    }
-
-    class Row {
-        String type;
-
-        String value;
+    private void shouldNotBeFound() {
+        assertThat(notFound).isTrue();
     }
 
 }

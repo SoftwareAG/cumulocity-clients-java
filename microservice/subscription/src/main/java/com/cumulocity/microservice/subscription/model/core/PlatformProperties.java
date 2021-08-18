@@ -4,20 +4,22 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
+import static com.cumulocity.microservice.subscription.model.core.PlatformProperties.IsolationLevel.PER_TENANT;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.springframework.util.StringUtils.isEmpty;
 
 public class PlatformProperties {
-    @java.beans.ConstructorProperties({"applicationName", "url", "mqttUrl", "microserviceBoostrapUser", "subscriptionDelay", "subscriptionInitialDelay", "isolation"})
-    public PlatformProperties(String applicationName, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation, boolean forceInitialHost) {
+    @java.beans.ConstructorProperties({"applicationName", "applicationKey", "url", "mqttUrl", "microserviceBoostrapUser", "microserviceUser", "subscriptionDelay", "subscriptionInitialDelay", "isolation"})
+    public PlatformProperties(String applicationName, String applicationKey, Supplier<String> url, Supplier<String> mqttUrl, Credentials microserviceBoostrapUser, Credentials microserviceUser, Integer subscriptionDelay, Integer subscriptionInitialDelay, IsolationLevel isolation, boolean forceInitialHost) {
         this.applicationName = applicationName;
+        this.applicationKey = applicationKey;
         this.url = url;
         this.mqttUrl = mqttUrl;
         this.microserviceBoostrapUser = microserviceBoostrapUser;
+        this.microserviceUser = microserviceUser;
         this.subscriptionDelay = subscriptionDelay;
         this.subscriptionInitialDelay = subscriptionInitialDelay;
         this.isolation = isolation;
@@ -32,6 +34,10 @@ public class PlatformProperties {
         return this.applicationName;
     }
 
+    public String getApplicationKey() {
+        return applicationKey;
+    }
+
     public Supplier<String> getUrl() {
         return this.url;
     }
@@ -42,6 +48,10 @@ public class PlatformProperties {
 
     public Credentials getMicroserviceBoostrapUser() {
         return this.microserviceBoostrapUser;
+    }
+
+    public Credentials getMicroserviceUser() {
+        return microserviceUser;
     }
 
     public Integer getSubscriptionDelay() {
@@ -64,6 +74,13 @@ public class PlatformProperties {
         this.applicationName = applicationName;
     }
 
+    public void setApplicationKey(String applicationKey) {
+        this.applicationKey = applicationKey;
+        if (microserviceUser instanceof MicroserviceCredentials) {
+            ((MicroserviceCredentials) microserviceUser).setAppKey(applicationKey);
+        }
+    }
+
     public void setUrl(Supplier<String> url) {
         this.url = url;
     }
@@ -74,6 +91,10 @@ public class PlatformProperties {
 
     public void setMicroserviceBoostrapUser(Credentials microserviceBoostrapUser) {
         this.microserviceBoostrapUser = microserviceBoostrapUser;
+    }
+
+    public void setMicroserviceUser(Credentials microserviceUser) {
+        this.microserviceUser = microserviceUser;
     }
 
     public void setSubscriptionDelay(Integer subscriptionDelay) {
@@ -90,7 +111,7 @@ public class PlatformProperties {
 
 
     public String toString() {
-        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
+        return "PlatformProperties(applicationName=" + this.getApplicationName() + ", applicationKey=" + this.applicationKey + ", url=" + this.getUrl() + ", mqttUrl=" + this.getMqttUrl() + ", microserviceBoostrapUser=" + this.getMicroserviceBoostrapUser() + ", microserviceUser=" + this.getMicroserviceUser() + ", subscriptionDelay=" + this.getSubscriptionDelay() + ", subscriptionInitialDelay=" + this.getSubscriptionInitialDelay() + ", isolation=" + this.getIsolation() + ", forceInitialHost=" + this.getForceInitialHost() + " )";
     }
 
     public enum IsolationLevel {
@@ -98,15 +119,16 @@ public class PlatformProperties {
     }
 
 
+    @Slf4j
     public static class PlatformPropertiesProvider {
-
-        private final Logger log = LoggerFactory.getLogger(PlatformPropertiesProvider.class);
-
         @Value("${C8Y.bootstrap.register:true}")
         private boolean autoRegistration;
 
         @Value("${application.name:}")
         private String applicationName;
+
+        @Value("${application.key:}")
+        private String applicationKey;
 
         @Value("${C8Y.baseURL:${platform.url:http://localhost:8181}}")
         private String url;
@@ -125,6 +147,15 @@ public class PlatformProperties {
 
         @Value("${C8Y.bootstrap.password:${platform.bootstrap.agent.password:!j5iBT0GE7,a73s2;4q51h_52m&6%#}}")
         private String microserviceBootstrapPassword;
+
+        @Value("${C8Y.tenant:}")
+        private String microserviceTenant;
+
+        @Value("${C8Y.user:}")
+        private String microserviceUser;
+
+        @Value("${C8Y.password:}")
+        private String microservicePassword;
 
         @Value("${C8Y.bootstrap.delay:${platform.bootstrap.agent.delay:10000}}")
         private int microserviceSubscriptionDelay;
@@ -145,6 +176,7 @@ public class PlatformProperties {
             if (isEmpty(name)) {
                 throw new IllegalStateException("Please set up application name");
             }
+            IsolationLevel isolationLevel = isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation);
             return PlatformProperties.builder()
                     .url(Suppliers.ofInstance(url))
                     .mqttUrl(Suppliers.ofInstance(mqttUrl))
@@ -154,22 +186,36 @@ public class PlatformProperties {
                             .password(microserviceBootstrapPassword)
                             .oAuthAccessToken(null)
                             .xsrfToken(null)
+// We should not set the key for the bootstrap user (which causes attaching the `X-Cumulocity-Application-Key` header to every request
+// sent by the bootstrap user) as we don't have the guarantee that the application exists. See the LegacyMicroserviceRepository.register(..)
+// methods where in case of a missing application a new one is created.
+// Bootstrap user only uses requests on `/application/*` endpoints so it should not affect the billing.
+                            //.appKey(applicationKey)
                             .build())
+                    .microserviceUser(PER_TENANT.equals(isolationLevel) ? MicroserviceCredentials.builder()
+                            .tenant(microserviceTenant)
+                            .username(microserviceUser)
+                            .password(microservicePassword)
+                            .oAuthAccessToken(null)
+                            .xsrfToken(null)
+                            .appKey(applicationKey)
+                            .build() : null)
                     .subscriptionDelay(microserviceSubscriptionDelay)
                     .subscriptionInitialDelay(microserviceSubscriptionInitialDelay)
                     .applicationName(name)
-                    .isolation(isNullOrEmpty(isolation) ? null : IsolationLevel.valueOf(isolation))
+                    .applicationKey(applicationKey)
+                    .isolation(isolationLevel)
                     .forceInitialHost(forceInitialHost)
                     .build();
         }
-
-
     }
 
     private String applicationName;
+    private String applicationKey;
     private Supplier<String> url;
     private Supplier<String> mqttUrl;
     private Credentials microserviceBoostrapUser;
+    private Credentials microserviceUser;
     private Integer subscriptionDelay;
     private Integer subscriptionInitialDelay;
     private IsolationLevel isolation;
@@ -177,9 +223,11 @@ public class PlatformProperties {
 
     public static class PlatformPropertiesBuilder {
         private String applicationName;
+        private String applicationKey;
         private Supplier<String> url;
         private Supplier<String> mqttUrl;
         private Credentials microserviceBoostrapUser;
+        private Credentials microserviceUser;
         private Integer subscriptionDelay;
         private Integer subscriptionInitialDelay;
         private IsolationLevel isolation;
@@ -190,6 +238,11 @@ public class PlatformProperties {
 
         public PlatformProperties.PlatformPropertiesBuilder applicationName(String applicationName) {
             this.applicationName = applicationName;
+            return this;
+        }
+
+        public PlatformProperties.PlatformPropertiesBuilder applicationKey(String applicationKey) {
+            this.applicationKey = applicationKey;
             return this;
         }
 
@@ -205,6 +258,11 @@ public class PlatformProperties {
 
         public PlatformProperties.PlatformPropertiesBuilder microserviceBoostrapUser(Credentials microserviceBoostrapUser) {
             this.microserviceBoostrapUser = microserviceBoostrapUser;
+            return this;
+        }
+
+        public PlatformProperties.PlatformPropertiesBuilder microserviceUser(Credentials microserviceUser) {
+            this.microserviceUser = microserviceUser;
             return this;
         }
 
@@ -229,11 +287,11 @@ public class PlatformProperties {
         }
 
         public PlatformProperties build() {
-            return new PlatformProperties(applicationName, url, mqttUrl, microserviceBoostrapUser, subscriptionDelay, subscriptionInitialDelay, isolation, forceInitialHost);
+            return new PlatformProperties(applicationName, applicationKey, url, mqttUrl, microserviceBoostrapUser, microserviceUser, subscriptionDelay, subscriptionInitialDelay, isolation, forceInitialHost);
         }
 
         public String toString() {
-            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
+            return "PlatformProperties.PlatformPropertiesBuilder(applicationName=" + this.applicationName + ", applicationKey=" + this.applicationKey + ", url=" + this.url + ", mqttUrl=" + this.mqttUrl + ", microserviceBoostrapUser=" + this.microserviceBoostrapUser + ", microserviceUser=" + this.microserviceUser + ", subscriptionDelay=" + this.subscriptionDelay + ", subscriptionInitialDelay=" + this.subscriptionInitialDelay + ", isolation=" + this.isolation + ")";
         }
     }
 }
