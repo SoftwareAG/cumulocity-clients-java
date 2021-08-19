@@ -1,0 +1,11 @@
+#!groovy
+
+node {
+    stage('Checkout') {
+        cleanWs()
+        checkout scm
+     }
+    stage ('Using Bitbucket Jenkinsfile') {
+    }
+    load '.jenkins/bitbucket/Jenkinsfile'
+}
