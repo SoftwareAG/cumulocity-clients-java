@@ -7,7 +7,7 @@ pipeline {
         }
     }
     triggers{
-        bitbucketPush()
+        githubPush()
     }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -183,7 +183,7 @@ pipeline {
                     steps {
                         echo "executing scan of third party dependencies"
                         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                          sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
+                          sh ".jenkins/common/scripts/scan_dependencies.sh ${params.release_version}"
                         }
                     }
                 } */

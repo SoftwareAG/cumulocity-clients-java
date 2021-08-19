@@ -22,7 +22,7 @@ while [ "$1" != "" ]; do
 done
 
 call-mvn -s $MVN_SETTINGS clean -T 4
-#if it is a release on develop branch, hg branch (git symbolic-ref --short HEAD) will return release/rX.X.X as it is the branch created in previous step.
+#if it is a release on develop branch, 'git symbolic-ref --short HEAD' will return release/rX.X.X as it is the branch created in previous step.
 # If it is a release/hotfix on release branch it should just push the branch it was on
 branch_name=$(git symbolic-ref --short HEAD)
 if [ "develop" == "${branch_name}" ]; then
