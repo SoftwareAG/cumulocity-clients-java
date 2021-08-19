@@ -2,7 +2,6 @@ package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.svenson.JSONProperty;
@@ -12,19 +11,38 @@ import org.svenson.JSONProperty;
 @Setter
 public class TokenClaims extends BaseResourceRepresentation {
 
-    @Getter(onMethod_ = @JSONProperty(value = "sub", ignoreIfNull = true))
     private String subscriber;
 
-    @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String topic;
 
-    @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String jti;
 
-    @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private long iat;
 
-    @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private long exp;
 
+    @JSONProperty(value = "sub", ignoreIfNull = true)
+    public String getSubscriber() {
+        return this.subscriber;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public String getTopic() {
+        return this.topic;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public String getJti() {
+        return this.jti;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public long getIat() {
+        return this.iat;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public long getExp() {
+        return this.exp;
+    }
 }
