@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 hotfix_version=$1
 development_version=$2
 
@@ -9,16 +9,16 @@ git checkout develop
 cd -
 
 find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/<version>${development_version}<\\/version>/g"
-.jenkins/common/scripts/update_dependencies.sh ${development_version}
+.jenkins/scripts/update_dependencies.sh ${development_version}
 
 git commit -am 'Update dependencies to next SNAPSHOT version' --allow-empty
-git push --follow-tags https://${GITHUB_USER}:${GITHUB_PASSWORD}@github.com/SoftwareAG/cumulocity-clients-java develop
+git push --follow-tags ${REPOSITORY_CLIENTS_JAVA} develop
 
 cd cumulocity-sdk
 
 git commit -am 'Update to dependencies next SNAPSHOT version' --allow-empty
-git push --follow-tags https://${GHES_USER}:${GHES_PASSWORD}@github.softwareag.com/IOTA/cumulocity-sdk develop
+git push --follow-tags ${REPOSITORY_SDK} develop
 
 cd -
 
-.jenkins/common/scripts/deploy.sh
+.jenkins/scripts/deploy.sh

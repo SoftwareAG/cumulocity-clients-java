@@ -1,3 +1,9 @@
+withCredentials([usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
+                 usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER')]) {
+                    env.REPOSITORY_CLIENTS_JAVA="https://${GITHUB_USER}:${GITHUB_PASSWORD}@github.com/SoftwareAG/cumulocity-clients-java"
+                    env.REPOSITORY_SDK="https://${GHES_USER}:${GHES_PASSWORD}@github.softwareag.com/IOTA/cumulocity-sdk"
+}
+
 pipeline {
     agent {
         kubernetes {
@@ -7,7 +13,7 @@ pipeline {
         }
     }
     triggers{
-        bitbucketPush()
+        githubPush()
     }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -57,7 +63,7 @@ pipeline {
             steps {
 
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh ".jenkins/common/scripts/build.sh"
+                    sh ".jenkins/scripts/build.sh"
                 }
             }
             post {
@@ -86,10 +92,10 @@ pipeline {
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
                         [$class: 'LocalBranch', localBranch: "**"]
                     ],
-                    userRemoteConfigs: [[url: 'ssh://git@github.softwareag.com/IOTA/cumulocity-sdk', credentialsId:'Cumulocity-Jenkins']]
+                    userRemoteConfigs: [[url: 'ssh://git@github.softwareag.com/IOTA/cumulocity-sdk', credentialsId:'jenkins-master']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh ".jenkins/common/scripts/repo.sh"
+                    sh ".jenkins/scripts/repo.sh"
                 }
             }
         }
@@ -106,7 +112,7 @@ pipeline {
             }
             steps {
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                    sh ".jenkins/common/scripts/deploy.sh"
+                    sh ".jenkins/scripts/deploy.sh"
                 }
             }
         }
@@ -129,7 +135,7 @@ pipeline {
                         equals expected: 'RELEASE', actual: params.build_type
                     }
                     steps {
-                        sh ".jenkins/common/scripts/prepare_release.sh ${params.release_version}"
+                        sh ".jenkins/scripts/prepare_release.sh ${params.release_version}"
                     }
                 }
                 stage('Release') {
@@ -142,12 +148,9 @@ pipeline {
                     steps {
                         sshagent(['hudson-ssh-resources']) {
 
-                            withCredentials(
-                                  [usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
-                                   usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER'),
-                                   file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                                sh ".jenkins/common/scripts/update_dependencies.sh ${params.release_version}"
-                                sh ".jenkins/github/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
+                            withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                sh ".jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                                sh ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
                             }
                         }
                     }
@@ -159,21 +162,13 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                                withCredentials([
-                                    usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
-                                    usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER')
-                                ]) {
-                                    sh ".jenkins/github/scripts/finish_release.sh ${params.release_version}"
-                                }
+                                    sh ".jenkins/scripts/finish_release.sh ${params.release_version}"
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                withCredentials([
-                                        usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
-                                        usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER'),
-                                        file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                                    sh ".jenkins/github/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                    sh ".jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
                                 }
                             }
                         }
@@ -183,7 +178,7 @@ pipeline {
                     steps {
                         echo "executing scan of third party dependencies"
                         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-                          sh "chmod +x .jenkins/scripts/scan_dependencies.sh && .jenkins/scripts/scan_dependencies.sh ${params.release_version}"
+                          sh ".jenkins/scripts/scan_dependencies.sh ${params.release_version}"
                         }
                     }
                 } */

@@ -10,7 +10,7 @@
     <description>Microservice</description>
     <packaging>pom</packaging>
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/m2m/cumulocity-clients-java</connection>
+        <connection>scm:git:ssh://git@github.com/SoftwareAG/cumulocity-clients-java</connection>
         <tag>HEAD</tag>
     </scm>
 
