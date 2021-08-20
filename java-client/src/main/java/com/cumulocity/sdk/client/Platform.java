@@ -32,7 +32,9 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.user.UserApi;
+import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
 
 public interface Platform extends AutoCloseable{
     RestOperations rest();
@@ -62,6 +64,10 @@ public interface Platform extends AutoCloseable{
     TenantOptionApi getTenantOptionApi() throws SDKException;
 
     SystemOptionApi getSystemOptionApi() throws SDKException;
+
+    TokenApi getTokenApi() throws SDKException;
+
+    NotificationSubscriptionApi getNotificationSubscriptionApi() throws SDKException;
 
     void close();
 }
