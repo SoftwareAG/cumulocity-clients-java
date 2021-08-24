@@ -33,6 +33,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import java.io.IOException;
 import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +50,7 @@ public class TenantCreator {
         this.platform = platform;
     }
 
-    public void createTenant() {
+    public void createTenant() throws IOException {
         Client httpClient = new HttpClientFactory().createClient();
         try {
             createTenant(httpClient);
@@ -63,7 +64,7 @@ public class TenantCreator {
         assertThat(tr.getStatus(), is(201));
     }
 
-    public void removeTenant() {
+    public void removeTenant() throws IOException {
         Client httpClient = new HttpClientFactory().createClient();
         try {
             removeTenant(httpClient);
