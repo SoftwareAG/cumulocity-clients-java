@@ -1,5 +1,7 @@
 package c8y;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,6 +49,25 @@ public class WlanSsidInformation extends ArrayList<SsidInformation> {
         public void remove() {
             iterator.remove();
         }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        WlanSsidInformation other = (WlanSsidInformation)o;
+        if (size() != other.size()) {
+            return false;
+        }
+        for (int i = 0; i < size(); i++) {
+            if (ObjectUtils.notEqual(get(i), other.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
