@@ -3,13 +3,21 @@ package com.cumulocity.microservice.context.annotation;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
+import com.cumulocity.microservice.context.scope.BaseScope;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Map;
+
+import static com.cumulocity.microservice.context.scope.BaseScope.DEFAULT_CACHE_EXPIRATION_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -115,5 +123,40 @@ public class EnableContextSupportConfigurationTest {
         //then
         assertThat(context1).isEqualTo("tenant, 0");
         assertThat(context2).isEqualTo("tenant, 1");
+    }
+
+    @Nested
+    @TestPropertySource(properties = {
+            "tenantCacheExpirationTimeout=123456"
+    })
+    @SpringBootTest(classes = EnableContextSupportConfiguration.class )
+    public class TenantCacheExpirationTimeoutFromPropertiesTest {
+        @Autowired
+        private CustomScopeConfigurer customScopeConfigurer;
+
+        @Test
+        public void shouldReadTimeoutValueFromProperties() {
+            Map<String, Object> scopes = (Map<String, Object>) ReflectionTestUtils.getField(customScopeConfigurer, "scopes");
+
+            assertThat(scopes.size()).isEqualTo(2);
+            assertThat(((BaseScope) scopes.get("user")).getCacheExpirationTimeout()).isEqualTo(Long.valueOf(DEFAULT_CACHE_EXPIRATION_TIMEOUT));
+            assertThat(((BaseScope) scopes.get("tenant")).getCacheExpirationTimeout()).isEqualTo(Long.valueOf("123456"));
+        }
+    }
+
+    @Nested
+    @SpringBootTest(classes = EnableContextSupportConfiguration.class )
+    public class TenantCacheExpirationTimeoutMissingFromPropertiesTest {
+        @Autowired
+        private CustomScopeConfigurer customScopeConfigurer;
+
+        @Test
+        public void shouldSetTimeoutValueToDefaultWhenMissingInProperties() {
+            Map<String, Object> scopes = (Map<String, Object>) ReflectionTestUtils.getField(customScopeConfigurer, "scopes");
+
+            assertThat(scopes.size()).isEqualTo(2);
+            assertThat(((BaseScope) scopes.get("user")).getCacheExpirationTimeout()).isEqualTo(Long.valueOf(DEFAULT_CACHE_EXPIRATION_TIMEOUT));
+            assertThat(((BaseScope) scopes.get("tenant")).getCacheExpirationTimeout()).isEqualTo(Long.valueOf(DEFAULT_CACHE_EXPIRATION_TIMEOUT));
+        }
     }
 }
