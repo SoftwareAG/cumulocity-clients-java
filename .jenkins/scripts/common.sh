@@ -8,6 +8,7 @@ add-key-for-host(){
   grep -qF $1 ~/.ssh/known_hosts || ssh-keyscan -t rsa $1 >> ~/.ssh/known_hosts
 }
 add-key-for-host bitbucket.org
+add-key-for-host github.com
 add-key-for-host yum.cumulocity.com
 export resources=hudson@yum.cumulocity.com
 export release_args="-DskipTests -Dmaven.javadoc.skip=true -Dskip.microservice.package=false -Dskip.agent.package.container=false  -Darguments=-Dskip.microservice.package=false -Dskip.agent.package.rpm=false -Dskip.agent.package.container=false"
