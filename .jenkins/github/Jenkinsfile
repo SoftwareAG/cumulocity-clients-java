@@ -1,15 +1,19 @@
-withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'BITBUCKET_PASSWORD', usernameVariable: 'BITBUCKET_USER')]) {
-        repository_url="https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m"
-        env.REPOSITORY_CLIENTS_JAVA="${repository_url}/cumulocity-clients-java"
-        env.REPOSITORY_SDK="${repository_url}/cumulocity-sdk"
+withCredentials([usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
+                 usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER')]) {
+                    env.REPOSITORY_CLIENTS_JAVA="https://${GITHUB_USER}:${GITHUB_PASSWORD}@github.com/SoftwareAG/cumulocity-clients-java"
+                    env.REPOSITORY_SDK="https://${GHES_USER}:${GHES_PASSWORD}@github.softwareag.com/IOTA/cumulocity-sdk"
 }
 
 pipeline {
     agent {
         kubernetes {
-            label 'jdk8'
+            label 'jdk11'
+            inheritFrom 'jdk11'
             defaultContainer 'default'
         }
+    }
+    triggers{
+        githubPush()
     }
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -78,16 +82,17 @@ pipeline {
             }
             steps {
                 sh "mkdir -p ~/.ssh"
-                sh "grep -qF bitbucket.org ~/.ssh/known_hosts || ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts"
+                sh "grep -qF github.com ~/.ssh/known_hosts || ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts"
+                sh "grep -qF github.softwareag.com ~/.ssh/known_hosts || ssh-keyscan -t rsa github.softwareag.com >> ~/.ssh/known_hosts"
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "${env.BRANCH_NAME}"]],
+                    branches: [[name: "develop"]],//[[name: "${env.BRANCH_NAME}"]],
                     extensions: [
                         [$class: 'CleanCheckout'],
                         [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
                         [$class: 'LocalBranch', localBranch: "**"]
                     ],
-                    userRemoteConfigs: [[url: 'ssh://git@bitbucket.org/m2m/cumulocity-sdk', credentialsId:'jenkins-master']]
+                    userRemoteConfigs: [[url: 'ssh://git@github.softwareag.com/IOTA/cumulocity-sdk', credentialsId:'jenkins-master']]
                 ])
                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                     sh ".jenkins/scripts/repo.sh"
@@ -142,6 +147,7 @@ pipeline {
                     }
                     steps {
                         sshagent(['hudson-ssh-resources']) {
+
                             withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
                                 sh ".jenkins/scripts/update_dependencies.sh ${params.release_version}"
                                 sh ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
