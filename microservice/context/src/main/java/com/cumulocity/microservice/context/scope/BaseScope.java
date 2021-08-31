@@ -10,30 +10,49 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class BaseScope implements Scope {
 
+    public static final int DEFAULT_CACHE_EXPIRATION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
     private static final Logger log = LoggerFactory.getLogger(BaseScope.class);
 
     private final KeyBasedLocksMap locks = new KeyBasedLocksMap();
 
-    private LoadingCache<String, ScopeContainer> scopes = CacheBuilder.newBuilder()
-            .concurrencyLevel(16)
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .removalListener(new RemovalListener<String, ScopeContainer>() {
-                @Override
-                public void onRemoval(RemovalNotification<String, ScopeContainer> removalNotification) {
-                    removalNotification.getValue().clear();
-                    log.debug("bean was removed, key: {}", removalNotification.getKey());
-                }
-            })
-            .build(new CacheLoader<String, ScopeContainer>() {
-                public ScopeContainer load(String key) {
-                    return new DefaultScopeContainer();
-                }
-            });
+    private LoadingCache<String, ScopeContainer> scopes;
 
     private final boolean sync;
+    private final long cacheExpirationTimeout;
 
     public BaseScope(boolean sync) {
+        this(sync, DEFAULT_CACHE_EXPIRATION_TIMEOUT);
+    }
+
+    public BaseScope(boolean sync, long cacheExpirationTimeout) {
         this.sync = sync;
+
+        if (cacheExpirationTimeout <= 0) {
+            this.cacheExpirationTimeout = Long.MAX_VALUE;
+        } else {
+            this.cacheExpirationTimeout = cacheExpirationTimeout;
+        }
+
+        initializeCache();
+    }
+
+    private void initializeCache() {
+        scopes = CacheBuilder.newBuilder()
+                .concurrencyLevel(16)
+                .expireAfterAccess(cacheExpirationTimeout, TimeUnit.MILLISECONDS)
+                .removalListener(new RemovalListener<String, ScopeContainer>() {
+                    @Override
+                    public void onRemoval(RemovalNotification<String, ScopeContainer> removalNotification) {
+                        removalNotification.getValue().clear();
+                        log.debug("bean was removed, key: {}", removalNotification.getKey());
+                    }
+                })
+                .build(new CacheLoader<String, ScopeContainer>() {
+                    public ScopeContainer load(String key) {
+                        return new DefaultScopeContainer();
+                    }
+                });
     }
 
     protected abstract String getContextId();
@@ -103,6 +122,10 @@ public abstract class BaseScope implements Scope {
     @Override
     public String getConversationId() {
         return getContextId();
+    }
+
+    public long getCacheExpirationTimeout() {
+        return cacheExpirationTimeout;
     }
 
     protected Object getObjectFromFactory(final ObjectFactory<?> objectFactory) {
