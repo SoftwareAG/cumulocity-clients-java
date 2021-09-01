@@ -1,0 +1,114 @@
+node("jdk8")
+{
+    try
+    {
+        cleanWs()
+        job_options()
+
+        container("default")
+        {
+            stage('Checkout')
+            {
+                scm_checkout()
+            }
+            stage('Test')
+            {
+                run_sdk_tests()
+            }
+            stage('Publish results')
+            {
+                publish_results()
+            }
+        }
+    }
+    catch (Exception err)
+    {
+        println err
+        currentBuild.result = "FAILURE"
+    }
+    finally
+    {
+        finish_job()
+    }
+}
+
+
+
+//set the job options and parameters
+def job_options()
+{
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
+                copyArtifactPermission('/*/**'),
+                parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
+                            string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'TEST_ENV')])])
+}
+
+def scm_checkout()
+{
+
+    try
+    {
+<<<<<<< HEAD:.jenkins/sdk_test.jenkinsfile
+        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url:'ssh://git@github.softwareag.com/AWS/cumulocity-clients-java'
+=======
+        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url: "git@github.com:SoftwareAG/cumulocity-clients-java"
+>>>>>>> bitbucket/develop:.jenkins/github/sdk_test.jenkinsfile
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        println err
+        currentBuild.result = "FAILURE"
+        error "Stopping pipeline checkout error"
+    }
+}
+
+def run_sdk_tests()
+{
+    try
+    {
+        withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
+        {
+            sh ".jenkins/scripts/new_sdk_tests.sh ${TEST_ENV}"
+        }
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        println err
+        currentBuild.result = "FAILURE"
+    }
+
+}
+// Publish the HTML report pass in the dir location, the name of the report file and the display name of the actual report
+def publish_results()
+{
+    try
+    {
+        junit "**/target/surefire-reports/*.xml"
+        junit "**/target/failsafe-reports/*.xml"
+        archiveArtifacts("**/TEST-*.xml")
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        println err
+        currentBuild.result = "FAILURE"
+    }
+}
+
+def finish_job()
+{
+    if (currentBuild.result != "SUCCESS")
+    {
+        chat roomid: 'AAAAvnc5o90'
+    }
+    //Add badge to show test branch
+    manager.addInfoBadge("Test branch is ${TEST_BRANCH}")
+    cleanWs notFailBuild: true
+}
+
+
+
+
+

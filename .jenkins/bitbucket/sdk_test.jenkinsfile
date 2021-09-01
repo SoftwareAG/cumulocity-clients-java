@@ -39,17 +39,15 @@ def job_options()
 {
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
                 copyArtifactPermission('/*/**'),
-                parameters([string(defaultValue: 'develop', description: 'tests branch/revison', name: 'TEST_BRANCH'),
+                parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
                             string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'TEST_ENV')])])
-
-
 }
 
 def scm_checkout()
 {
     try
     {
-        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url:'ssh://git@github.softwareag.com/AWS/cumulocity-clients-java'
+        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url: 'git@bitbucket.org:m2m/cumulocity-clients-java'
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
@@ -66,7 +64,7 @@ def run_sdk_tests()
     {
         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
         {
-            sh "chmod +x .jenkins/scripts/new_sdk_tests.sh && .jenkins/scripts/new_sdk_tests.sh ${TEST_ENV}"
+            sh ".jenkins/scripts/new_sdk_tests.sh ${TEST_ENV}"
         }
         currentBuild.result = "SUCCESS"
     }
