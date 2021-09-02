@@ -19,20 +19,30 @@
  */
 package com.cumulocity.sdk.client.common;
 
+import com.cumulocity.sdk.client.inventory.InventoryIT;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import java.io.IOException;
+import java.util.Properties;
 
 public class HttpClientFactory {
 
-    public Client createClient() {
+    public Client createClient() throws IOException {
+        SystemPropertiesOverrider properties = getProperties();
         Client client = ClientBuilder.newClient();
         client.property(ClientProperties.FOLLOW_REDIRECTS, true);
-        client.register(HttpAuthenticationFeature.basic("management/admin", "Pyi1bo1r"));
+        client.register(HttpAuthenticationFeature.basic("management/admin", properties.get("cumulocity.management.password")));
         client.register(CumulocityJSONMessageBodyReader.class);
         return client;
+    }
+
+    private SystemPropertiesOverrider getProperties() throws IOException {
+        Properties cumulocityProps = new Properties();
+        cumulocityProps.load(InventoryIT.class.getClassLoader().getResourceAsStream("cumulocity-test.properties"));
+        return new SystemPropertiesOverrider(cumulocityProps);
     }
 }
