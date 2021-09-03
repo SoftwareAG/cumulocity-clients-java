@@ -40,7 +40,7 @@ def job_options()
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
                 copyArtifactPermission('/*/**'),
                 parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
-                            string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'TEST_ENV'),
+                            string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'DEPLOY_ENVIRONMENT'),
                             string(defaultValue: 'Pyi1bo1r', description: 'management tenant password', name: 'MANAGE_PASS')])])
 }
 
