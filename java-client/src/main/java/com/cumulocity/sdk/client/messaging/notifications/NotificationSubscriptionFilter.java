@@ -9,6 +9,9 @@ public class NotificationSubscriptionFilter extends Filter {
     @ParamSource
     private String source;
 
+    @ParamSource
+    private String context;
+
     /**
      * Specifies the {@code source} query parameter
      *
@@ -25,5 +28,23 @@ public class NotificationSubscriptionFilter extends Filter {
      */
     public String getSource() {
         return source;
+    }
+
+    /**
+     * Specifies the {@code context} query parameter
+     *
+     * @param context the context to which the subscription is associated with.
+     * @return the filter with {@code context} set
+     */
+    public NotificationSubscriptionFilter byContext(String context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
+     * @return the {@code context} parameter of the query
+     */
+    public String getContext() {
+        return context;
     }
 }
