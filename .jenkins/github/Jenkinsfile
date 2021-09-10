@@ -1,8 +1,5 @@
-withCredentials([usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'GHES_PASSWORD', usernameVariable: 'GHES_USER'),
-                 usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USER')]) {
-                    env.REPOSITORY_CLIENTS_JAVA="https://${GITHUB_USER}:${GITHUB_PASSWORD}@github.com/SoftwareAG/cumulocity-clients-java"
-                    env.REPOSITORY_SDK="https://${GHES_USER}:${GHES_PASSWORD}@github.softwareag.com/IOTA/cumulocity-sdk"
-}
+env.REPOSITORY_CLIENTS_JAVA="github.com/SoftwareAG"
+env.REPOSITORY_SDK="github.softwareag.com/IOTA"
 
 pipeline {
     agent {
@@ -147,8 +144,9 @@ pipeline {
                     }
                     steps {
                         sshagent(['hudson-ssh-resources']) {
-
-                            withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                            withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+                                             usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER'),
+                                             usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER')]) {
                                 sh ".jenkins/scripts/update_dependencies.sh ${params.release_version}"
                                 sh ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
                             }
@@ -162,12 +160,17 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
+                                withCredentials([usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER'),
+                                                 usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER')]) {
                                     sh ".jenkins/scripts/finish_release.sh ${params.release_version}"
+                               }
                             }
                         }
                         stage('Bump develop branch') {
                             steps {
-                                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+                                                 usernamePassword(credentialsId: 'Cumulocity-Jenkins', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER'),
+                                                 usernamePassword(credentialsId: 'SAG-github.com', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER')]) {
                                     sh ".jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
                                 }
                             }
