@@ -110,7 +110,7 @@ Before building the agent ensure you have at least [JDK 1.7](http://www.oracle.c
 	mvn -version
 	javac -version
 
-Your Maven "settings.xml" file needs to point to the Cumulocity repository as described in [https://bitbucket.org/m2m/cumulocity-clients-java](https://bitbucket.org/m2m/cumulocity-clients-java). Source code is available at [https://bitbucket.org/m2m/cumulocity-examples](https://bitbucket.org/m2m/cumulocity-examples) in the folder java-agent.
+Your Maven "settings.xml" file needs to point to the Cumulocity repository as described in [https://github.com/SoftwareAG/cumulocity-clients-java](https://github.com/SoftwareAG/cumulocity-clients-java). Source code is available at [https://github.com/SoftwareAG/cumulocity-examples](https://github.com/SoftwareAG/cumulocity-examples) in the folder java-agent.
 
 To build the agent simply run:
 
@@ -120,13 +120,13 @@ To build the agent simply run:
 
 Extending the agent with drivers for new hardware and new devices requires the following steps:
 
-* Create a Java class that implements the interface [Driver](https://bitbucket.org/m2m/cumulocity-examples/src/c1ab2abac58e683697061d2f8740c54da055061b/linux-agent/lx-driver/src/main/java/c8y/lx/driver/Driver.java?at=default).
+* Create a Java class that implements the interface [Driver](https://github.com/SoftwareAG/cumulocity-examples/blob/develop/java-agent/jv-driver/src/main/java/c8y/lx/driver/Driver.java).
 * Create a jar file with the class and an additional text file "META-INF/services/c8y.lx.driver.Driver". The text file needs to contain the fully-qualified class name of the Java class.
 * Deploy the jar file either by copying it to the "lib" folder of the agent or by deploying it through Cumulocity's software management.
 
-The [BitBucket repository](https://bitbucket.org/m2m/cumulocity-examples) contains numerous examples of drivers. Usage of the Java client library is described in [Developing Java clients](/guides/device-sdk/java#developing-java-clients).
+The [GitHub repository](https://github.com/SoftwareAG/cumulocity-examples) contains numerous examples of drivers. Usage of the Java client library is described in [Developing Java clients](/guides/device-sdk/java#developing-java-clients).
 
 
 ### Server-side agents
 
-The [BitBucket repository](https://bitbucket.org/m2m/cumulocity-examples) also contains a complete example of a server-side agent for closed devices in the folder "tracker-agent". This example works with tracking devices from Telic and Queclink, see Devices guide. It demonstrates solutions to various challenges when developing server-side functionality for mobile devices.
+The [GitHub repository](https://github.com/SoftwareAG/cumulocity-examples) also contains a complete example of a server-side agent for closed devices in the folder "tracker-agent". This example works with tracking devices from Telic and Queclink, see Devices guide. It demonstrates solutions to various challenges when developing server-side functionality for mobile devices.
