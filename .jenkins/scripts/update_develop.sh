@@ -14,12 +14,12 @@ find . -name 'pom.xml' | xargs sed -i "s/<version>${hotfix_version}<\\/version>/
 # update-dependencies ${development_version}
 
 git commit -am 'Update dependencies to next SNAPSHOT version' --allow-empty
-git push --follow-tags ${REPOSITORY_CLIENTS_JAVA} develop
+git push --follow-tags https://${CLIENTS_USER}:${CLIENTS_PASSWORD}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java  develop
 
 cd cumulocity-sdk
 
 git commit -am 'Update to dependencies next SNAPSHOT version' --allow-empty
-git push --follow-tags ${REPOSITORY_SDK} develop
+git push --follow-tags https://${SDK_USER}:${SDK_PASSWORD}@${REPOSITORY_SDK}/cumulocity-sdk develop
 
 cd -
 
