@@ -13,8 +13,6 @@ import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -102,15 +100,15 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
                 try {
                     UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
-//                    if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice
-                        DecodedDataMapping decodedDataMapping = makeServiceCallToCodec("uplinkConfiguration.getCodec().getName()",
+                    if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice
+                        DecodedDataMapping decodedDataMapping = makeServiceCallToCodec(uplinkConfiguration.getCodec().getName(),
                                 uplinkMessage.getPayloadHex(),uplinkConfiguration);
                         payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
-                   /* } else {
+                    } else {
                         DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
                         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
-                    }*/
-                } catch (Exception e) {
+                    }
+                } catch (PayloadDecodingFailedException e) {
                     log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
                 }
             }
@@ -133,8 +131,8 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 //        ObjectMapper mapper = new ObjectMapper();
         ResponseEntity<DecodedDataMapping> response = restTemplate.exchange(
-                "http://localhost:9090/service/lora-codec-microservice/decode"
-                /*System.getenv("C8Y.baseURL")+"/service/"+codecServiceName+"/decode"*/, HttpMethod.POST,
+                /*"http://localhost:9090/service/lora-codec-microservice/decode"*/
+                System.getenv("C8Y.baseURL")+"/service/"+codecServiceName+"/decode", HttpMethod.POST,
                 new HttpEntity<Decode>(decode, headers), DecodedDataMapping.class);
 
         return response.getBody();
