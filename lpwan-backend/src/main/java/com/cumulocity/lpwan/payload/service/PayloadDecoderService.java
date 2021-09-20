@@ -1,5 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.model.Decode;
+import com.cumulocity.lpwan.devicetype.model.DecodedDataMapping;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
@@ -9,16 +11,28 @@ import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PayloadDecoderService<T extends UplinkMessage> {
+
+    @Autowired
+    MicroserviceSubscriptionsService subscriptionsService;
 
     public interface MessageIdReader<T> {
         Integer read(T uplinkMessage, MessageIdConfiguration messageIdConfiguration);
@@ -45,8 +59,9 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         }
     }
 
+    @NonNull
     private PayloadMappingService payloadMappingService;
-
+    @NonNull
     private MessageIdReader<T> messageIdReader;
 
     /**
@@ -58,14 +73,22 @@ public class PayloadDecoderService<T extends UplinkMessage> {
      * @param source the source device managed object
      * @param deviceType the device type
      */
-    public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType) {
-
+    public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType) throws IOException, InterruptedException {
         List<UplinkConfiguration> uplinkConfigurations = deviceType.getUplinkConfigurations();
 
         MessageIdConfiguration messageIdConfiguration = deviceType.getMessageIdConfiguration();
 
         try {
             Integer messageTypeId = messageIdReader.read(uplinkMessage, messageIdConfiguration);
+
+           /* //for codec microservice
+            if(messageTypeId == Integer.MIN_VALUE){
+                MappingCollections mappingCollections = new MappingCollections();
+                DecodedDataMapping decodedDataMapping = makeServiceCallToCodec(messageIdConfiguration.getSource());
+                payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
+                payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
+                return;
+            }*/
 
             MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
 
@@ -79,9 +102,15 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
                 try {
                     UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
-                    DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
-                    payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
-                } catch (PayloadDecodingFailedException e) {
+//                    if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice
+                        DecodedDataMapping decodedDataMapping = makeServiceCallToCodec("uplinkConfiguration.getCodec().getName()",
+                                uplinkMessage.getPayloadHex(),uplinkConfiguration);
+                        payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
+                   /* } else {
+                        DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
+                        payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
+                    }*/
+                } catch (Exception e) {
                     log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
                 }
             }
@@ -90,6 +119,25 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    private DecodedDataMapping makeServiceCallToCodec(String codecServiceName, String payloadHex, UplinkConfiguration uplinkConfiguration) {
+
+        Decode decode =  new Decode(payloadHex, uplinkConfiguration);
+//        String authentication = "Basic bWFuYWdlbWVudC9hZG1pbjpQeWkxYm8xcg==";
+        String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
+                .toCumulocityCredentials().getAuthenticationString();
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", authentication);
+        headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+//        ObjectMapper mapper = new ObjectMapper();
+        ResponseEntity<DecodedDataMapping> response = restTemplate.exchange(
+                "http://localhost:9090/service/lora-codec-microservice/decode"
+                /*System.getenv("C8Y.baseURL")+"/service/"+codecServiceName+"/decode"*/, HttpMethod.POST,
+                new HttpEntity<Decode>(decode, headers), DecodedDataMapping.class);
+
+        return response.getBody();
     }
 
     private DecodedObject generateDecodedData(T uplinkMessage, UplinkConfiguration uplinkConfiguration)
