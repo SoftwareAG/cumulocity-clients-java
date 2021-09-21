@@ -4,6 +4,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,10 +29,17 @@ public class ErrorController extends BasicErrorController {
     public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
         HttpStatus status = getStatus(request);
         Map<String, Object> model = Collections
-                .unmodifiableMap(getErrorAttributes(request, isIncludeStackTrace(request, MediaType.TEXT_HTML)));
+                .unmodifiableMap(getErrorAttributes(request, isIncludeStacktraceErrorAttribute(request)));
         response.setStatus(status.value());
         ModelAndView modelAndView = resolveErrorView(request, response, status, model);
         return (modelAndView != null) ? modelAndView : new ModelAndView(new HtmlErrorView(), model);
+    }
+
+    private ErrorAttributeOptions isIncludeStacktraceErrorAttribute(HttpServletRequest request) {
+        if (isIncludeStackTrace(request, MediaType.TEXT_HTML)) {
+            return ErrorAttributeOptions.of(ErrorAttributeOptions.Include.STACK_TRACE);
+        }
+        return ErrorAttributeOptions.defaults();
     }
 
     private static class HtmlErrorView implements View {
