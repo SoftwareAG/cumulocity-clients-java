@@ -140,8 +140,8 @@ pipeline {
                     steps {
                         sshagent(['hudson-ssh-resources']) {
                             withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
-                                             usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER'),
-                                             usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER')]) {
+                                             usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'CLIENTS_CREDENTIALS'),
+                                             usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'SDK_CREDENTIALS')]) {
                                 sh ".jenkins/scripts/update_dependencies.sh ${params.release_version}"
                                 sh ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
                             }
@@ -155,8 +155,8 @@ pipeline {
                     stages {
                         stage('Close and merge release branch') {
                             steps {
-                            withCredentials([usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER'),
-                                             usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER')]) {
+                            withCredentials([usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'CLIENTS_CREDENTIALS'),
+                                             usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'SDK_CREDENTIALS')]) {
                                     sh ".jenkins/scripts/finish_release.sh ${params.release_version}"
                                     }
                             }
@@ -164,8 +164,8 @@ pipeline {
                         stage('Bump develop branch') {
                             steps {
                                 withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
-                                        usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'CLIENTS_PASSWORD', usernameVariable: 'CLIENTS_USER'),
-                                        usernamePassword(credentialsId: 'bitbucket-m2m', passwordVariable: 'SDK_PASSWORD', usernameVariable: 'SDK_USER')]) {
+                                        usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'CLIENTS_CREDENTIALS'),
+                                        usernameColonPassword(credentialsId: 'bitbucket-m2m', variable: 'SDK_CREDENTIALS')]) {
                                     sh ".jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
                                 }
                             }
