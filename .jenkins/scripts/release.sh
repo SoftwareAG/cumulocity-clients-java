@@ -29,13 +29,13 @@ echo "branch name: $branch_name"
 
 echo checkout to new branch
 git checkout ${branch_name}
-git push --follow-tags https://${CLIENTS_USER}:${CLIENTS_PASSWORD}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
-git pull https://${CLIENTS_USER}:${CLIENTS_PASSWORD}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
+git push --follow-tags https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
+git pull https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
 
 cd cumulocity-sdk
 git checkout ${branch_name}
-git push --follow-tags https://${SDK_USER}:${SDK_PASSWORD}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
-git pull https://${SDK_USER}:${SDK_PASSWORD}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
+git push --follow-tags https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
+git pull https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
 cd -
 
 echo "Update version to ${version}"
@@ -103,9 +103,9 @@ cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
 echo "Push repositories"
-git push --follow-tags https://${CLIENTS_USER}:${CLIENTS_PASSWORD}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
+git push --follow-tags https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
 cd cumulocity-sdk
-git push --follow-tags https://${SDK_USER}:${SDK_PASSWORD}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
+git push --follow-tags https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh
