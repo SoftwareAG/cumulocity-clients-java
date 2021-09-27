@@ -100,8 +100,8 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
                 try {
                     UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
-                    if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice
-                        DecodedDataMapping decodedDataMapping = makeServiceCallToCodec(uplinkConfiguration.getCodec().getName(),
+                    if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice;
+                        DecodedDataMapping decodedDataMapping = codecServiceCall(uplinkConfiguration.getCodec().getName(),
                                 uplinkMessage.getPayloadHex(),uplinkConfiguration);
                         payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
                     } else {
@@ -119,20 +119,17 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         }
     }
 
-    private DecodedDataMapping makeServiceCallToCodec(String codecServiceName, String payloadHex, UplinkConfiguration uplinkConfiguration) {
+    private DecodedDataMapping codecServiceCall(String codecServiceName, String payloadHex, UplinkConfiguration uplinkConfiguration) {
 
         Decode decode =  new Decode(payloadHex, uplinkConfiguration);
-//        String authentication = "Basic bWFuYWdlbWVudC9hZG1pbjpQeWkxYm8xcg==";
         String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
                 .toCumulocityCredentials().getAuthenticationString();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authentication);
         headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
-//        ObjectMapper mapper = new ObjectMapper();
         ResponseEntity<DecodedDataMapping> response = restTemplate.exchange(
-                /*"http://localhost:9090/service/lora-codec-microservice/decode"*/
-                System.getenv("C8Y.baseURL")+"/service/"+codecServiceName+"/decode", HttpMethod.POST,
+                System.getenv("C8Y_BASEURL")+"/service/"+codecServiceName+"/decode", HttpMethod.POST,
                 new HttpEntity<Decode>(decode, headers), DecodedDataMapping.class);
 
         return response.getBody();

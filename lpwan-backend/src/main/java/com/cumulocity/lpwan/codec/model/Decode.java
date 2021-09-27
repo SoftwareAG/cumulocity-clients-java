@@ -14,5 +14,4 @@ import java.util.List;
 public class Decode {
 	private String payload;
 	private UplinkConfiguration uplinkConfiguration;
-
 }
