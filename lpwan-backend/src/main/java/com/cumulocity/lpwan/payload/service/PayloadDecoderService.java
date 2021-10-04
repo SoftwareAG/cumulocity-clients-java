@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -101,9 +102,11 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 try {
                     UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
                     if(Objects.nonNull(uplinkConfiguration.getCodec())) { //for codec microservice;
-                        DecodedDataMapping decodedDataMapping = codecServiceCall(uplinkConfiguration.getCodec().getName(),
+                        List<DecodedDataMapping> decodedDataMappings = codecServiceCall(uplinkConfiguration.getCodec().getName(),
                                 uplinkMessage.getPayloadHex(),uplinkConfiguration);
-                        payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
+                        for(DecodedDataMapping decodedDataMapping : decodedDataMappings) {
+                            payloadMappingService.addMappingsToCollection(mappingCollections, decodedDataMapping.getDecodedObject(), decodedDataMapping.getUplinkConfigurationMapping());
+                        }
                     } else {
                         DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
                         payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
@@ -119,7 +122,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         }
     }
 
-    private DecodedDataMapping codecServiceCall(String codecServiceName, String payloadHex, UplinkConfiguration uplinkConfiguration) {
+    private List<DecodedDataMapping> codecServiceCall(String codecServiceName, String payloadHex, UplinkConfiguration uplinkConfiguration) {
 
         Decode decode =  new Decode(payloadHex, uplinkConfiguration);
         String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
@@ -128,9 +131,9 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authentication);
         headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
-        ResponseEntity<DecodedDataMapping> response = restTemplate.exchange(
+        ResponseEntity<List<DecodedDataMapping>> response = restTemplate.exchange(
                 System.getenv("C8Y_BASEURL")+"/service/"+codecServiceName+"/decode", HttpMethod.POST,
-                new HttpEntity<Decode>(decode, headers), DecodedDataMapping.class);
+                new HttpEntity<Decode>(decode, headers), new ParameterizedTypeReference<List<DecodedDataMapping>>() {});
 
         return response.getBody();
     }

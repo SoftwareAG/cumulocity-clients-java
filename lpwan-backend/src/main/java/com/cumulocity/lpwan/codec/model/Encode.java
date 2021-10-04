@@ -1,7 +1,7 @@
 package com.cumulocity.lpwan.codec.model;
 
 public class Encode {
-	private String devEui;
+	private String deviceIdentifier;
 	private String operation;
 	private String model;
 
@@ -10,21 +10,21 @@ public class Encode {
 
 	public Encode(String devEui, String operation, String model) {
 		super();
-		this.devEui = devEui;
+		this.deviceIdentifier = devEui;
 		this.operation = operation;
 		this.model = model;
 	}
 	
-	public void setDevEui(String devEui) {
-		this.devEui = devEui;
+	public void setDeviceIdentifier(String deviceIdentifier) {
+		this.deviceIdentifier = deviceIdentifier;
 	}
 	
 	public void setOperation(String operation) {
 		this.operation = operation;
 	}
 
-	public String getDevEui() {
-		return devEui;
+	public String getDeviceIdentifier() {
+		return deviceIdentifier;
 	}
 
 	public String getOperation() {
@@ -41,6 +41,6 @@ public class Encode {
 
 	@Override
 	public String toString() {
-		return "Encode [devEui=" + devEui + ", operation=" + operation + ", model=" + model + "]";
+		return "Encode [devEui=" + deviceIdentifier + ", operation=" + operation + ", model=" + model + "]";
 	}
 }
