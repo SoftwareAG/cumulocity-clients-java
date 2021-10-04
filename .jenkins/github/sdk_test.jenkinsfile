@@ -40,7 +40,8 @@ def job_options()
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
                 copyArtifactPermission('/*/**'),
                 parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
-                            string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'TEST_ENV')])])
+                            string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'DEPLOY_ENVIRONMENT'),
+                            string(defaultValue: 'Pyi1bo1r', description: 'management tenant password', name: 'MANAGE_PASS')])])
 }
 
 def scm_checkout()
@@ -65,7 +66,7 @@ def run_sdk_tests()
     {
         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
         {
-            sh ".jenkins/scripts/new_sdk_tests.sh ${TEST_ENV}"
+            sh ".jenkins/scripts/new_sdk_tests.sh ${DEPLOY_ENVIRONMENT} ${MANAGE_PASS}"
         }
         currentBuild.result = "SUCCESS"
     }
