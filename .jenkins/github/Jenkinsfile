@@ -1,5 +1,5 @@
-env.REPOSITORY_CLIENTS_JAVA="github.com/SoftwareAG/cumulocity-clients-java"
-env.REPOSITORY_SDK="github.softwareag.com/IOTA/cumulocity-sdk"
+env.REPOSITORY_CLIENTS_JAVA="github.com/SoftwareAG"
+env.REPOSITORY_SDK="github.softwareag.com/IOTA"
 
 pipeline {
     agent {
