@@ -30,7 +30,7 @@ fi
 
 jvm_gc=${JAVA_GC:-"@package.jvm-gc@"}
 jvm_mem=${JAVA_MEM:-"@package.jvm-heap@ @package.jvm-meta@"}
-jvm_opts=${JAVA_OPTS:-"-server -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/@package.directory@/heap-dump-%p.hprof"}
+jvm_opts=${JAVA_OPTS:-"-server -XX:HeapDumpPath=/var/log/@package.directory@/heap-dump-%p.hprof"}
 arguments=${ARGUMENTS:-"@package.arguments@ --package.name=@package.name@ --package.directory=@package.directory@"}
 
 proxy_params=""
