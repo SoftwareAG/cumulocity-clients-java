@@ -9,3 +9,4 @@ cd -
 cd lpwan-backend
 ../mvnw install javadoc:aggregate-jar -Pci -s $MVN_SETTINGS -U
 cd -
+

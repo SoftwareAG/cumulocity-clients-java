@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -81,7 +82,7 @@ public class AuditRecordIT {
     }
 
     @AfterEach
-    public void removeTenantAndApplication() {
+    public void removeTenantAndApplication() throws IOException {
         tenantCreator.removeTenant();
     }
 

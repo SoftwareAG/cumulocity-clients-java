@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-
+set -e
 release_version=$1
 
 function git_finish_release {
-  repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m/$1
+  repository_url=$1
   git pull $repository_url develop
   git commit -am "flow: Closed <release> ${release_version}" --allow-empty
   git checkout develop
@@ -15,7 +15,8 @@ function git_finish_release {
 
 echo "equivalent of git flow release finish r${release_version}"
 
-git_finish_release cumulocity-clients-java
+  git_finish_release https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java
+  cd cumulocity-sdk
+  git_finish_release https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk
 
-cd cumulocity-sdk
-git_finish_release cumulocity-sdk
+

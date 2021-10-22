@@ -2,10 +2,6 @@
 set -e
 source ${BASH_SOURCE%/*}/common.sh
 
-repository_url=https://${BITBUCKET_USER}:${BITBUCKET_PASSWORD}@bitbucket.org/m2m
-repository_clients_java=$repository_url/cumulocity-clients-java
-repository_sdk=$repository_url/cumulocity-sdk
-
 while [ "$1" != "" ]; do
     case $1 in
         -r | --release )        shift
@@ -23,7 +19,7 @@ while [ "$1" != "" ]; do
 done
 
 call-mvn -s $MVN_SETTINGS clean -T 4
-#if it is a release on develop branch, hg branch (git symbolic-ref --short HEAD) will return release/rX.X.X as it is the branch created in previous step.
+#if it is a release on develop branch, 'git symbolic-ref --short HEAD' will return release/rX.X.X as it is the branch created in previous step.
 # If it is a release/hotfix on release branch it should just push the branch it was on
 branch_name=$(git symbolic-ref --short HEAD)
 if [ "develop" == "${branch_name}" ]; then
@@ -33,13 +29,13 @@ echo "branch name: $branch_name"
 
 echo checkout to new branch
 git checkout ${branch_name}
-git push --follow-tags $repository_clients_java ${branch_name}
-git pull $repository_clients_java ${branch_name}
+git push --follow-tags https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
+git pull https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
 
 cd cumulocity-sdk
 git checkout ${branch_name}
-git push --follow-tags $repository_sdk ${branch_name}
-git pull $repository_sdk ${branch_name}
+git push --follow-tags https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
+git pull https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
 cd -
 
 echo "Update version to ${version}"
@@ -106,10 +102,10 @@ git commit -am "[maven-release-plugin] prepare for next development iteration" -
 cd cumulocity-sdk
 git commit -am "[maven-release-plugin] prepare for next development iteration" --allow-empty
 cd -
-echo "Push repositores"
-git push --follow-tags $repository_clients_java ${branch_name}
+echo "Push repositories"
+git push --follow-tags https://${CLIENTS_CREDENTIALS}@${REPOSITORY_CLIENTS_JAVA}/cumulocity-clients-java ${branch_name}
 cd cumulocity-sdk
-git push --follow-tags $repository_sdk ${branch_name}
+git push --follow-tags https://${SDK_CREDENTIALS}@${REPOSITORY_SDK}/cumulocity-sdk ${branch_name}
 cd -
 
 .jenkins/scripts/deploy.sh

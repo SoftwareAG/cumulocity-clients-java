@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
         <artifactId>microservice-dependencies</artifactId>
-        <version>1010.17.0-SNAPSHOT</version>
+        <version>1011.7.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>microservice-monitoring</artifactId>
@@ -66,12 +66,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
             <scope>test</scope>
         </dependency>
 
@@ -91,6 +85,10 @@
                    <artifactId>android-json</artifactId>
                </exclusion>
            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
 </project>

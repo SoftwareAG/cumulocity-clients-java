@@ -59,9 +59,15 @@ public interface NotificationSubscriptionApi {
     void deleteByFilter(NotificationSubscriptionFilter filter);
     
     /**
-     * Deletes all subscriptions to a source.
+     * Deletes all subscriptions to a source in managed object context.
      * 
      * @param source 
      */
     void deleteBySource(String source);
+
+    /**
+     * Deletes all subscriptions of the current tenant.
+     */
+    void deleteTenantSubscriptions();
+
 }
