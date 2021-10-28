@@ -38,4 +38,3 @@ Please add [Cumulocity] [1] [Maven repository] [2] to Your `settings.xml` like t
   [1]: http://www.cumulocity.com
   [2]: http://maven.apache.org/
   [3]: https://www.cumulocity.com/guides
-

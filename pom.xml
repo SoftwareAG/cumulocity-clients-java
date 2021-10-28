@@ -6,14 +6,9 @@
     <groupId>com.nsn.cumulocity.clients-java</groupId>
     <artifactId>clients-java</artifactId>
     <packaging>pom</packaging>
-    <version>1011.7.0-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
     <name>Cumulocity :: Clients Java</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
-
-    <scm>
-        <connection>scm:git:ssh://git@github.com/SoftwareAG/cumulocity-clients-java</connection>
-        <tag>HEAD</tag>
-    </scm>
 
     <distributionManagement>
         <snapshotRepository>
@@ -36,13 +31,13 @@
     </modules>
 
     <properties>
+        <revision>1.206.0</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
-
-        <cumulocity.core.version>${project.version}</cumulocity.core.version>
-
         <aspectj.version>1.8.13</aspectj.version>
         <assertj.version>3.19.0</assertj.version>
         <awaitility.version>4.0.2</awaitility.version>
@@ -110,12 +105,33 @@
         </extensions>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                    <id>flatten</id>
+                    <phase>process-resources</phase>
+                    <goals>
+                        <goal>flatten</goal>
+                    </goals>
+                    </execution>
+                    <execution>
+                    <id>flatten.clean</id>
+                    <phase>clean</phase>
+                    <goals>
+                        <goal>clean</goal>
+                    </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
+                <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.sonar</groupId>
@@ -228,11 +244,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
