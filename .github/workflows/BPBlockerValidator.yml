@@ -25,25 +25,18 @@ jobs:
     name: Build Pipeline Blocked
     runs-on: c8y-ci-cd
     steps:
-     - name: Check out SAG BP Repo
-       uses: actions/checkout@master
-       with:
-          repository: https://github.softwareag.com/IOTA/c8y-iot-build-pipeline
-          token: ${{ secrets.CICD_READONLY_TOKEN }}
-          ref: 'main'
-          path: 'c8y-iot-build-pipeline'
      - name: Checking branches status
        env:
          CICD_READONLY_TOKEN: ${{ secrets.CICD_READONLY_TOKEN }}
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        run: |
           #Remove stale code
-          #rm -Rf c8y-iot-build-pipeline
+          rm -Rf c8y-iot-build-pipeline
           
           #Checkout latest Blocker checker script
-          #git clone https://.:${{ secrets.CICD_READONLY_TOKEN }}@github.softwareag.com/IOTA/c8y-iot-build-pipeline.git c8y-iot-build-pipeline
+          git clone https://.:${{ secrets.CICD_READONLY_TOKEN }}@github.softwareag.com/IOTA/c8y-iot-build-pipeline.git c8y-iot-build-pipeline
           cd c8y-iot-build-pipeline
-          #git checkout main
+          git checkout main
           
           #Execute blocker checker script
           cd src
