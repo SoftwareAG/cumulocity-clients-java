@@ -4,6 +4,7 @@ import com.cumulocity.microservice.monitoring.actuator.annotation.EnableActuator
 import com.cumulocity.microservice.api.EnableMicroservicePlatformApi;
 import com.cumulocity.microservice.context.annotation.EnableContextSupport;
 import com.cumulocity.microservice.monitoring.health.annotation.EnableHealthIndicator;
+import com.cumulocity.microservice.security.annotation.EnableErrorAttributesConfiguration;
 import com.cumulocity.microservice.security.annotation.EnableMicroserviceSecurity;
 import com.cumulocity.microservice.settings.annotation.EnableTenantOptionSettings;
 import com.cumulocity.microservice.subscription.annotation.EnableMicroserviceSubscription;
@@ -29,5 +30,6 @@ import java.lang.annotation.Target;
 @EnableMicroserviceSubscription
 @EnableMicroservicePlatformApi
 @EnableTenantOptionSettings
+@EnableErrorAttributesConfiguration
 public @interface MicroserviceApplication {
 }
