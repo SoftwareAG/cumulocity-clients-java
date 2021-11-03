@@ -1,9 +1,23 @@
+import groovy.json.*
+class TestResults
+{
+    String status
+    int count
+}
+
+class Testrun
+{
+    String status
+    TestResults[] results_summary
+}
+
 node("jdk8")
 {
     try
     {
         cleanWs()
         job_options()
+        cimon_job = 'Cimon/Cimon_update_results'
 
         container("default")
         {
@@ -84,6 +98,7 @@ def publish_results()
         junit "**/target/surefire-reports/*.xml"
         junit "**/target/failsafe-reports/*.xml"
         archiveArtifacts("**/TEST-*.xml")
+        getTestSummary()
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
@@ -95,6 +110,10 @@ def publish_results()
 
 def finish_job()
 {
+    if(params.UPSTREAM_JOB != "none")
+    {
+        createJsonFiles()
+    }
     if (currentBuild.result != "SUCCESS")
     {
         chat roomid: 'AAAAvnc5o90'
@@ -104,7 +123,96 @@ def finish_job()
     cleanWs notFailBuild: true
 }
 
+def createJsonFiles()
+{
+    try
+    {
+        copyArtifacts(filter: 'branchdetails.json', fingerprintArtifacts: true, projectName: params.UPSTREAM_JOB, selector: specific(params.UPSTREAM_NUMBER), target: '')
 
+        def deployment_details = [
+                name: "Pre merge single node",
+                description: "Run functional tests"
+        ]
+        env.DEPLOYMENT = new JsonBuilder(deployment_details)
+        writeJSON file: 'deployment.json', json: env.DEPLOYMENT
+
+        def registerdeployment = [
+                pipeline_job: 1,
+                job_url     : env.BUILD_URL
+        ]
+        env.REGDEPLOY = new JsonBuilder(registerdeployment)
+        writeJSON file: 'reg_deploy.json', json: env.REGDEPLOY
+
+
+        jobStartTime = new Date(currentBuild.startTimeInMillis).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        def JavaTestStart = [
+                pipeline_job: 1,
+                name        : "Functional SDK Tests",
+                description : "Run of SDK tests",
+                start_time  : jobStartTime
+        ]
+        env.TEST_START = new JsonBuilder(JavaTestStart)
+        writeJSON file: 'teststart.json', json: env.TEST_START
+
+        getTestSummary()
+
+        def testpass = new TestResults()
+        testpass.status = "Passed"
+        testpass.count = sdk_pass
+
+        def testfail = new TestResults()
+        testfail.status = "Failed"
+        testfail.count = sdk_fail
+
+        def testsummary = new Testrun()
+        testsummary.status = "Closed"
+        testsummary.results_summary = [testpass, testfail]
+        env.TEST_RESULTS = new JsonBuilder(testsummary)
+        println env.TEST_RESULTS
+        writeFile file: "${WORKSPACE}/testresults.json", text: env.TEST_RESULTS
+
+        archiveArtifacts 'teststart.json, testresults.json, deployment.json, reg_deploy.json, branchdetails.json'
+
+
+        //trigger the CIMON update job don't wait for it to complete
+        build wait: false, job: cimon_job,
+                parameters: [string(name: 'CI_CD_BRANCH', value: 'feature/ci_cd_dev'),
+                             string(name: 'UPSTREAM_JOB', value: env.JOB_NAME),
+                             string(name: 'UPSTREAM_NUMBER', value: env.BUILD_NUMBER),
+                             string(name: 'FIRST_RUN', value: "FALSE"),
+                             string(name: 'PIPE_ID', value: params.PIPE_ID)]
+        currentBuild.result = "SUCCESS"
+    }
+    catch (Exception err)
+    {
+        println err
+        println "Error creating json"
+        currentBuild.result = "UNSTABLE"
+    }
+
+}
+
+
+// capture summary results
+import hudson.tasks.test.AbstractTestResultAction
+import hudson.model.Actionable
+@NonCPS
+def getTestSummary()
+{
+    def testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    if (testResultAction != null)
+    {
+        sdk_total = testResultAction.getTotalCount()
+        sdk_fail = testResultAction.getFailCount()
+        sdk_skip = testResultAction.getSkipCount()
+        sdk_pass = (sdk_total - sdk_fail - sdk_skip)
+    }
+    else
+    {
+        error "Stopping pipeline. No SDK tests found"
+    }
+
+}
 
 
 
