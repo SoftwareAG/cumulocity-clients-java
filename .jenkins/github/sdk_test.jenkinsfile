@@ -99,7 +99,7 @@ def finish_job()
 {
     if (currentBuild.result != "SUCCESS")
     {
-        chat roomid: 'AAAAvnc5o90'
+        chat 'AAAAvnc5o90'
     }
     //Add badge to show test branch
     manager.addInfoBadge("Test branch is ${TEST_BRANCH}")
