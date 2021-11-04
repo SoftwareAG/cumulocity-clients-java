@@ -35,7 +35,7 @@ public class HttpClientFactory {
         SystemPropertiesOverrider properties = getProperties();
         Client client = ClientBuilder.newClient();
         client.property(ClientProperties.FOLLOW_REDIRECTS, true);
-        client.register(HttpAuthenticationFeature.basic("management/admin", properties.get("cumulocity.management.password")));
+        client.register(HttpAuthenticationFeature.basic("management/" + properties.get("cumulocity.management.username"), properties.get("cumulocity.management.password")));
         client.register(CumulocityJSONMessageBodyReader.class);
         return client;
     }
