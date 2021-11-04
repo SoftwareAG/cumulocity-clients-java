@@ -21,7 +21,7 @@ ssh ${resources}  "rm -R /tmp/maven-repository-${VERSION}*"
 echo "Publishing java-client/target/java-client-${VERSION}-javadoc.jar to resources tmp "
 scp java-client/target/java-client-${VERSION}-javadoc.jar ${resources}:/tmp/java-client-${VERSION}-javadoc.jar
 ssh ${resources} "mkdir -p /resources/documentation/javasdk/${VERSION} ; unzip -o /tmp/java-client-${VERSION}-javadoc.jar -d /resources/documentation/javasdk/${VERSION}"
-if [ "RELEASE" == "${RELEASE_TYPE}" ]; then
+if [ "release" == "${RELEASE_TYPE}" ]; then
     echo "Update current symbolic link of javasdk javadocs"
     ssh ${resources} "rm -f /resources/documentation/javasdk/current ; ln -s /resources/documentation/javasdk/${VERSION} /resources/documentation/javasdk/current"
 fi
@@ -33,7 +33,7 @@ echo "Publishing microservice/target/microservice-dependencies-${VERSION}-javado
 scp microservice/target/microservice-dependencies-${VERSION}-javadoc.jar ${resources}:/tmp/microservice-dependencies-${VERSION}-javadoc.jar
 ssh ${resources} "mkdir -p /resources/documentation/microservicesdk/${VERSION} ; unzip -o /tmp/microservice-dependencies-${VERSION}-javadoc.jar -d /resources/documentation/microservicesdk/${VERSION}"
 
-if [ "RELEASE" == "${RELEASE_TYPE}" ]; then
+if [ "release" == "${RELEASE_TYPE}" ]; then
     echo "Update current symbolic link of microservicesdk javadocs"
     ssh ${resources} "rm -f /resources/documentation/microservicesdk/current ; ln -s /resources/documentation/microservicesdk/${VERSION} /resources/documentation/microservicesdk/current"
 fi
@@ -45,7 +45,7 @@ echo "Publishing lpwan-backend/target/lpwan-backend-${VERSION}-javadoc.jar to re
 scp lpwan-backend/target/lpwan-backend-${VERSION}-javadoc.jar ${resources}:/tmp/lpwan-backend-${VERSION}-javadoc.jar
 ssh ${resources} "mkdir -p /resources/documentation/lpwan-backend/${VERSION} ; unzip -o /tmp/lpwan-backend-${VERSION}-javadoc.jar -d /resources/documentation/lpwan-backend/${VERSION}"
 
-if [ "RELEASE" == "${RELEASE_TYPE}" ]; then
+if [ "release" == "${RELEASE_TYPE}" ]; then
     echo "Update current symbolic link of lpwan-backend javadocs"
     ssh ${resources} "rm -f /resources/documentation/lpwan-backend/current ; ln -s /resources/documentation/lpwan-backend/${VERSION} /resources/documentation/lpwan-backend/current"
 fi
