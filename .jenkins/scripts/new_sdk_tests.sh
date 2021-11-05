@@ -3,7 +3,7 @@
 DEPLOYMENT_ENVIRONMENT=$1
 MANAGE_PASS=$2
 
-if [[ -z "$3"]]; then
+if [[ -z "$3" ]]; then
   MANAGE_USER=admin
 else
   MANAGE_USER="$3"
