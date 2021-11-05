@@ -28,10 +28,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TenantCreator;
 import org.joda.time.DateTime;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -42,6 +39,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 //TODO speed up execution time by creating tenant and alarms only once in @BeforeAll
+//Tests disabled till resolving issue MTM-42208
+@Disabled
 public class AuditRecordIT {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<ManagedObjectRepresentation>();
