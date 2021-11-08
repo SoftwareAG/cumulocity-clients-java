@@ -12,6 +12,8 @@ if [[ "$RELEASE_TYPE" == "snapshot"]]; then
     exit 0;
 fi
 
+yum_srv=hudson@staging-resources.cumulocity.com
+
 ### Publishing to maven ###
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${VERSION}.tar.gz to resources tmp "
 scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${yum_srv}:/tmp/maven-repository-${VERSION}.tar.gz
