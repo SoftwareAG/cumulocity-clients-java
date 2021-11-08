@@ -8,7 +8,7 @@ export MAVEN_OPTS="-Xmx2048m -XX:MetaspaceSize=1024m ${MAVEN_OPTS}"
 
 call-mvn -s $MVN_SETTINGS deploy -T 2C -Dmaven.install.skip=true $release_args -DskipTests "$@"
 
-if [[ "$RELEASE_TYPE" == "snapshot"]]; then
+if [[ "$RELEASE_TYPE" == "snapshot" ]]; then
     exit 0;
 fi
 
