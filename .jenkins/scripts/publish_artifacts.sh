@@ -8,7 +8,9 @@ export MAVEN_OPTS="-Xmx2048m -XX:MetaspaceSize=1024m ${MAVEN_OPTS}"
 
 call-mvn -s $MVN_SETTINGS deploy -T 2C -Dmaven.install.skip=true $release_args -DskipTests "$@"
 
-yum_srv=hudson@staging-resources.cumulocity.com
+if [[ "$RELEASE_TYPE" == "snapshot"]]; then
+    exit 0;
+fi
 
 ### Publishing to maven ###
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${VERSION}.tar.gz to resources tmp "
