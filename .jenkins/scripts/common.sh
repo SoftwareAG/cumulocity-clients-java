@@ -7,6 +7,7 @@ add-key-for-host(){
   mkdir -p ~/.ssh > /dev/null || echo
   grep -qF $1 ~/.ssh/known_hosts || ssh-keyscan -t rsa $1 >> ~/.ssh/known_hosts
 }
+
 add-key-for-host bitbucket.org
 add-key-for-host github.com
 add-key-for-host yum.cumulocity.com
