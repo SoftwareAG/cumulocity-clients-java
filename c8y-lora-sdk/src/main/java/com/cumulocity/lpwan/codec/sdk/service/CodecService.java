@@ -20,16 +20,18 @@ public class CodecService {
 
     /**
      * This method should decode the payload received by a particular device.
+     *
      * @param decode
      * @return DecodedData
      */
     public DecodeResponse decode(DecodeRequest decode) throws DecoderException {
-        log.debug("Forwarding decoding request for the device with Id {} with payload {}",decode.getDeviceId(),decode.getPayload());
+        log.debug("Forwarding decoding request for the device with Id {} with payload {}", decode.getDeviceId(), decode.getPayload());
         return decoder.decode(null, null, null);
     }
 
     /**
      * This method should register a device type upon subscribing the codec microservice.
+     *
      * @param event
      */
     @EventListener
@@ -39,10 +41,11 @@ public class CodecService {
 
     /**
      * This method should delete a device type upon unsubscribing the codec microservice.
+     *
      * @param event
      */
     @EventListener
-    private void unregisterDeviceTypes(MicroserviceSubscriptionRemovedEvent event){
+    private void unregisterDeviceTypes(MicroserviceSubscriptionRemovedEvent event) {
         log.info("Deleting device types on codec microservice unsubscription");
     }
 }

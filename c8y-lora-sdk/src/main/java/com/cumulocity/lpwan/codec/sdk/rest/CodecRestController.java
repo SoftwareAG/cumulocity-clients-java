@@ -20,6 +20,7 @@ public class CodecRestController {
 
     /**
      * This REST API should expose '/decode' endpoint
+     *
      * @param decode
      * @return
      */

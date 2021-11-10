@@ -13,6 +13,7 @@ public interface Decoder {
     /**
      * This method should take the following params and should return the decoded response with mapping.
      * This method should provide a decoding logic w.r.t the device info.
+     *
      * @param payload
      * @param deviceId
      * @param deviceInfo

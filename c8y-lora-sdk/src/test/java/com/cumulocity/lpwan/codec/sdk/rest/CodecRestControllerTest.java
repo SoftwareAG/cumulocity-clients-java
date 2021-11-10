@@ -34,24 +34,24 @@ public class CodecRestControllerTest {
     @Test
     public void shouldTestDecodeApiWithOk() throws Exception {
         this.mockMvc.perform(post("/decode")
-                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                            .content(getJsonData())).andDo(print()).andExpect(status().isOk());
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(getJsonData())).andDo(print()).andExpect(status().isOk());
     }
 
     @Test
     public void shouldTestDecodeApiWithBadRequest() throws Exception {
         this.mockMvc.perform(post("/decode")
-                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                            .content("")).andDo(print()).andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("")).andDo(print()).andExpect(status().isBadRequest());
     }
 
     @Test
     public void shouldTestDecodeApiWithUnsupportedMediaType() throws Exception {
         this.mockMvc.perform(post("/decode")
-                            .content(getJsonData())).andDo(print()).andExpect(status().isUnsupportedMediaType());
+                .content(getJsonData())).andDo(print()).andExpect(status().isUnsupportedMediaType());
     }
 
     private String getJsonData() throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(new DecodeRequest("23124567","12345"));
+        return new ObjectMapper().writeValueAsString(new DecodeRequest("23124567", "12345"));
     }
 }

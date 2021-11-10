@@ -5,7 +5,6 @@ import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data

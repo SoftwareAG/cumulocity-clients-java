@@ -9,7 +9,7 @@ public class DecoderException extends Exception {
         super(message);
     }
 
-    public DecoderException(String message, Throwable cause){
+    public DecoderException(String message, Throwable cause) {
         super(message, cause);
     }
 }

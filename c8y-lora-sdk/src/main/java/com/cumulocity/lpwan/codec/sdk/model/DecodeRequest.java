@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DecodeRequest {
-	@NonNull
-	private String payload;
-	@NotNull
-	private String deviceId;
+    @NonNull
+    private String payload;
+    @NotNull
+    private String deviceId;
 }

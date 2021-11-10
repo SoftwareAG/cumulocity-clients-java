@@ -10,11 +10,12 @@ import java.util.Set;
  */
 @Component
 public abstract class CodecMicroservice {
-	/**
-	 * This method should return a set of uniquely supported devices w.r.t the device manufacturer and the device model.
-	 * @return Set<DeviceInfo>
-	 */
-	public Set<DeviceInfo> supportsDevices(){
-		throw new UnsupportedOperationException("Needs implementation for supportsDevices()");
-	}
+    /**
+     * This method should return a set of uniquely supported devices w.r.t the device manufacturer and the device model.
+     *
+     * @return Set<DeviceInfo>
+     */
+    public Set<DeviceInfo> supportsDevices() {
+        throw new UnsupportedOperationException("Needs implementation for supportsDevices()");
+    }
 }
