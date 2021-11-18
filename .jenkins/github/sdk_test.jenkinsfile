@@ -97,7 +97,12 @@ def publish_results()
 
 def finish_job()
 {
-    if (currentBuild.result != "SUCCESS")
+    //check the trigger job do not want to notify if a PR test run fails, too much noise on the channel
+    upstream = currentBuild.getBuildCauses('hudson.model.Cause$UpstreamCause')
+    //Make string so we can use .contains
+    String trigger = upstream.upstreamProject
+    //If job fails and is not a PR then notify on channel
+    if ((currentBuild.result != "SUCCESS") && !(trigger.contains("PR-")))
     {
         chat 'AAAAvnc5o90'
     }
