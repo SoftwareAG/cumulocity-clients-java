@@ -1,27 +1,44 @@
 /*
-~ Copyright (c) 2012-2021 Cumulocity GmbH
-~ Copyright (c) 2021 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA,
-~ and/or its subsidiaries and/or its affiliates and/or their licensors.
-~
-~ Licensed under the Apache License, Version 2.0 (the "License");
-~ you may not use this file except in compliance with the License.
-~ You may obtain a copy of the License at
-~
-~     http://www.apache.org/licenses/LICENSE-2.0
-~
-~ Unless required by applicable law or agreed to in writing, software
-~ distributed under the License is distributed on an "AS IS" BASIS,
-~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-~ See the License for the specific language governing permissions and
-~ limitations under the License.
-*/
+ * Copyright (c) 2012-2020 Cumulocity GmbH
+ * Copyright (c) 2020-2021 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
+ *
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
+ */
 
 package com.cumulocity.lpwan.codec.model;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
 
-@Data
+import java.util.Map;
+
+import static com.cumulocity.lpwan.codec.util.Constants.DEVICE_MANUFACTURER;
+import static com.cumulocity.lpwan.codec.util.Constants.DEVICE_MODEL;
+
+/**
+ * The DeviceInfo class uniquely represents one device with the device manufacturer name, the device model and the device type.
+ */
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode
 public class DeviceInfo {
-    String manufacturerName;
-    String model;
+    @NonNull
+    private String manufacturer;
+
+    @NonNull
+    private String model;
+
+    @NonNull
+    private DeviceTypeEnum type;
+
+    public String getDeviceTypeName() {
+        return manufacturer + " : " + model;
+    }
+
+    public Map<String, String> getAttributes() {
+        return Map.of(DEVICE_MANUFACTURER, manufacturer,
+                DEVICE_MODEL, model);
+    }
 }

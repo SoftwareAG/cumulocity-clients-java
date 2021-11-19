@@ -1,25 +1,14 @@
 /*
-~ Copyright (c) 2012-2021 Cumulocity GmbH
-~ Copyright (c) 2021 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA,
-~ and/or its subsidiaries and/or its affiliates and/or their licensors.
-~
-~ Licensed under the Apache License, Version 2.0 (the "License");
-~ you may not use this file except in compliance with the License.
-~ You may obtain a copy of the License at
-~
-~     http://www.apache.org/licenses/LICENSE-2.0
-~
-~ Unless required by applicable law or agreed to in writing, software
-~ distributed under the License is distributed on an "AS IS" BASIS,
-~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-~ See the License for the specific language governing permissions and
-~ limitations under the License.
-*/
+ * Copyright (c) 2012-2020 Cumulocity GmbH
+ * Copyright (c) 2020-2021 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
+ *
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
+ */
 
 package com.cumulocity.lpwan.codec.rest;
 
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.model.DecodeRequest;
+import com.cumulocity.lpwan.codec.model.DecodePayload;
 import com.cumulocity.lpwan.codec.model.DecodeResponse;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +29,11 @@ public class CodecRestController {
      * This REST API should expose '/decode' endpoint
      *
      * @param decode
-     * @return
+     * @return DecodeResponse
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public DecodeResponse decode(@RequestBody DecodeRequest decode) throws DecoderException {
-        log.info("Received decode request for the device {}", decode.getDeviceId());
+    public DecodeResponse decode(@RequestBody DecodePayload decode) throws DecoderException {
+        log.info("Received decode request for the device {}", decode.getDeviceMoId());
         return codecService.decode(decode);
     }
 }
