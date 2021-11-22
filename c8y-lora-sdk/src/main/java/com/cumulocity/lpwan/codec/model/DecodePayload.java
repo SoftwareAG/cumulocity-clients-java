@@ -7,10 +7,7 @@
 
 package com.cumulocity.lpwan.codec.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,16 +16,19 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class DecodePayload {
 
     @NotNull
     private String deviceMoId;
 
     @NotNull
+    private DeviceInfo deviceInfo;
+
+    @NotNull
     private String deviceEui;
 
-    private int fPort;
+    private Integer fPort;
 
     @NonNull
     private String payload;

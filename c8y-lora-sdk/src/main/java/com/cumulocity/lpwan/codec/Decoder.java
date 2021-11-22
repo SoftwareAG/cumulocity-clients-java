@@ -21,9 +21,8 @@ public interface Decoder {
      * This method should provide a decoding logic w.r.t the device info.
      *
      * @param payload - represents the payload object that is meant to be decoded.
-     * @param deviceInfo - represents the device details.
      * @return DecodeResponse - represents the response that is formed after decoding the device payload.
      * @throws DecoderException - represents the custom exception thrown while decoding the payload.
      */
-    DecodeResponse decode(DecodePayload payload, DeviceInfo deviceInfo) throws DecoderException;
+    DecodeResponse decode(DecodePayload payload) throws DecoderException;
 }

@@ -8,14 +8,12 @@
 package com.cumulocity.lpwan.codec;
 
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
+import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
-import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
-import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionRemovedEvent;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.ID;
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.identity.IdentityApi;
@@ -24,7 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static com.cumulocity.lpwan.codec.util.Constants.*;
 
@@ -82,9 +83,8 @@ public abstract class CodecMicroservice {
                             deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
                             deviceTypeMo.setType(supportedDevice.getType().getValue());
                             deviceTypeMo.set(supportedDevice.getType().getFieldbusType(), FIELDBUS_TYPE);
-                            Map<String, String> lpwanCodecDetails = new HashMap<>(supportedDevice.getAttributes());
-                            lpwanCodecDetails.put(CODEC_SERVICE_CONTEXT_PATH, getMicroserviceContextPath());
-                            deviceTypeMo.set(lpwanCodecDetails, C8Y_LPWAN_CODEC_DETAILS);
+                            LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
+                            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
                             } catch (Exception e) {

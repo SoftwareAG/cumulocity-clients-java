@@ -12,11 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.Map;
-
-import static com.cumulocity.lpwan.codec.util.Constants.DEVICE_MANUFACTURER;
-import static com.cumulocity.lpwan.codec.util.Constants.DEVICE_MODEL;
-
 /**
  * The DeviceInfo class uniquely represents one device with the device manufacturer name, the device model and the device type.
  */
@@ -35,10 +30,5 @@ public class DeviceInfo {
 
     public String getDeviceTypeName() {
         return manufacturer + " : " + model;
-    }
-
-    public Map<String, String> getAttributes() {
-        return Map.of(DEVICE_MANUFACTURER, manufacturer,
-                DEVICE_MODEL, model);
     }
 }
