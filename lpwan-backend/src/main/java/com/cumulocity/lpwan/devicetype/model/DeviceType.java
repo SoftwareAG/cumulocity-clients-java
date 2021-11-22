@@ -2,6 +2,7 @@ package com.cumulocity.lpwan.devicetype.model;
 
 import java.util.List;
 
+import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,4 +24,10 @@ public class DeviceType {
     
     @JsonProperty("c8y_MessageTypes")
     private MessageTypes messageTypes;
+
+    @JsonProperty("c8y_LpwanCodecDetails")
+    private LpwanCodecDetails lpwanCodecDetails;
+
+    @JsonProperty("fieldbusType")
+    private String fieldbusType;
 }

@@ -1,5 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.model.*;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
@@ -9,16 +10,52 @@ import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
+import com.cumulocity.model.event.CumulocityAlarmStatuses;
+import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
+import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.alarm.AlarmApi;
+import com.cumulocity.sdk.client.alarm.AlarmCollection;
+import com.cumulocity.sdk.client.alarm.AlarmFilter;
+import com.cumulocity.sdk.client.event.EventApi;
+import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.google.common.collect.FluentIterable;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
 @Slf4j
 @AllArgsConstructor
 public class PayloadDecoderService<T extends UplinkMessage> {
+
+    @Autowired
+    MicroserviceSubscriptionsService subscriptionsService;
+
+    @Autowired
+    private MeasurementApi measurementApi;
+
+    @Autowired
+    private EventApi eventApi;
+
+    @Autowired
+    private AlarmApi alarmApi;
+
+    @Autowired
+    private InventoryApi inventoryApi;
 
     public interface MessageIdReader<T> {
         Integer read(T uplinkMessage, MessageIdConfiguration messageIdConfiguration);
@@ -60,36 +97,112 @@ public class PayloadDecoderService<T extends UplinkMessage> {
      */
     public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType) {
 
-        List<UplinkConfiguration> uplinkConfigurations = deviceType.getUplinkConfigurations();
+        if (deviceType.getLpwanCodecDetails() == null) {
+            List<UplinkConfiguration> uplinkConfigurations = deviceType.getUplinkConfigurations();
 
-        MessageIdConfiguration messageIdConfiguration = deviceType.getMessageIdConfiguration();
+            MessageIdConfiguration messageIdConfiguration = deviceType.getMessageIdConfiguration();
 
-        try {
-            Integer messageTypeId = messageIdReader.read(uplinkMessage, messageIdConfiguration);
+            try {
+                Integer messageTypeId = messageIdReader.read(uplinkMessage, messageIdConfiguration);
 
-            MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
+                MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
 
-            if (messageTypeMappings == null) {
-                log.warn("Message type id {} not found for device type {}", messageTypeId, deviceType);
-                return;
+                if (messageTypeMappings == null) {
+                    log.warn("Message type id {} not found for device type {}", messageTypeId, deviceType);
+                    return;
+                }
+
+                MappingCollections mappingCollections = new MappingCollections();
+                for (Integer registerIndex : messageTypeMappings.getRegisterIndexes()) {
+
+                    try {
+                        UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
+                        DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
+                        payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
+                    } catch (PayloadDecodingFailedException e) {
+                        log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
+                    }
+                }
+                payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
+
+            } catch (Exception e) {
+                log.error(e.getMessage());
             }
-
-            MappingCollections mappingCollections = new MappingCollections();
-            for (Integer registerIndex : messageTypeMappings.getRegisterIndexes()) {
-
-                try {
-                    UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
-                    DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
-                    payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
-                } catch (PayloadDecodingFailedException e) {
-                    log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
+        } else {
+            LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
+            DeviceInfo deviceInfo =  new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel(), DeviceTypeEnum.valueOf(deviceType.getFieldbusType().toUpperCase()));
+            DecodePayload decodePayload = DecodePayload.builder()
+                            .deviceMoId(source.getId().getValue())
+                            .deviceInfo(deviceInfo)
+                            .deviceEui(uplinkMessage.getExternalId())
+                            .fPort(uplinkMessage.getFport())
+                            .payload(uplinkMessage.getPayloadHex())
+                            .updateTime(uplinkMessage.getDateTime().getMillis())
+                            .build();
+            DecodeResponse decodeResponse = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decodePayload);
+            //CreateMeasurements
+            if(!decodeResponse.getMeasurementsToCreate().isEmpty()){
+                for(MeasurementRepresentation measuremnet : decodeResponse.getMeasurementsToCreate()) {
+                    measurementApi.createWithoutResponse(measuremnet);
                 }
             }
-            payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
 
-        } catch (Exception e) {
-            log.error(e.getMessage());
+            //CreateEvents
+            if(!decodeResponse.getEventsToCreate().isEmpty()){
+                for(EventRepresentation event : decodeResponse.getEventsToCreate()) {
+                    eventApi.create(event);
+                }
+            }
+
+            //AlarmsToClear
+            if(!decodeResponse.getAlarmTypesToClear().isEmpty()){
+                for(String alarmTypeToClear : decodeResponse.getAlarmTypesToClear()) {
+                    alarmApi.
+                }
+            }
+            //createAlarms
+            //UpdatedeviceMO
         }
+    }
+
+    private void clear(GId source, String... types) {
+        final Iterable<AlarmRepresentation> alarmMaybe = find(source, ACTIVE, types);
+        for (final AlarmRepresentation alarm : alarmMaybe) {
+            alarm.setStatus(CLEARED.name());
+            alarmApi.update(alarm);
+        }
+    }
+
+    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String... types) {
+        try {
+            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(type);
+            if (alarmStatus != null && alarmStatus.length > 0) {
+                filter.byStatus(alarmStatus);
+            }
+            final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
+            return alarms.get().allPages();
+        } catch (final SDKException ex) {
+            if (ex.getHttpStatus() != 404) {
+                throw ex;
+            }
+        }
+        return FluentIterable.of();
+    }
+
+    private DecodeResponse invokeCodecMicroservice(String codecServiceContextPath, DecodePayload decodePayload){
+        /*String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
+                .toCumulocityCredentials().getAuthenticationString();
+
+        WebClient webClient = WebClient.create(System.getenv("C8Y_BASEURL"));
+        webClient.post()
+                .uri("/service/"+codecServiceContextPath+"/decode")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, authentication)
+                .body(Mono.just(decodePayload), DecodePayload.class)
+                .retrieve()
+                .bodyToMono(Void.class);*/
+        return null;
     }
 
     private DecodedObject generateDecodedData(T uplinkMessage, UplinkConfiguration uplinkConfiguration)

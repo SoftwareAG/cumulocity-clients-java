@@ -7,5 +7,8 @@ public abstract class UplinkMessage {
     public abstract String getPayloadHex();
     public abstract String getExternalId();
     public abstract DateTime getDateTime();
-    
+
+    public Integer getFport() {
+        return null;
+    }
 }
