@@ -10,13 +10,15 @@ import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.microservice.context.ContextService;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmCollection;
@@ -25,16 +27,26 @@ import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.google.common.collect.FluentIterable;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
@@ -44,6 +56,9 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
     @Autowired
     MicroserviceSubscriptionsService subscriptionsService;
+
+    @Autowired
+    private ContextService<MicroserviceCredentials> contextService;
 
     @Autowired
     private MeasurementApi measurementApi;
@@ -57,6 +72,13 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     @Autowired
     private InventoryApi inventoryApi;
 
+    @Autowired
+    private WebClient webClient;
+
+    private PayloadMappingService payloadMappingService;
+
+    private MessageIdReader<T> messageIdReader;
+
     public interface MessageIdReader<T> {
         Integer read(T uplinkMessage, MessageIdConfiguration messageIdConfiguration);
     }
@@ -64,9 +86,8 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     /**
      * Finds uplink message id from the uplink payload based on the given configuration.
      *
-     * @param uplink the uplink message
+     * @param uplink                 the uplink message
      * @param messageIdConfiguration the message ID configuration
-     *
      * @return decimal value of found message id
      */
     public static Integer messageIdFromPayload(UplinkMessage uplink, MessageIdConfiguration messageIdConfiguration) {
@@ -82,127 +103,160 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         }
     }
 
-    private PayloadMappingService payloadMappingService;
-
-    private MessageIdReader<T> messageIdReader;
-
     /**
      * According to the configuration given for the device type,
      * decode the input uplink message and
      * persist the mapped data as measurement/alarm/event/managed object update to the source device.
      *
      * @param uplinkMessage the uplink message
-     * @param source the source device managed object
-     * @param deviceType the device type
+     * @param source        the source device managed object
+     * @param deviceType    the device type
      */
     public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType) {
+        final String tenantId = contextService.getContext().getTenant();
+        Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
+        contextService.runWithinContext(serviceUser.get(), () -> {
+            if (deviceType.getLpwanCodecDetails() == null) {
+                List<UplinkConfiguration> uplinkConfigurations = deviceType.getUplinkConfigurations();
 
-        if (deviceType.getLpwanCodecDetails() == null) {
-            List<UplinkConfiguration> uplinkConfigurations = deviceType.getUplinkConfigurations();
+                MessageIdConfiguration messageIdConfiguration = deviceType.getMessageIdConfiguration();
 
-            MessageIdConfiguration messageIdConfiguration = deviceType.getMessageIdConfiguration();
+                try {
+                    Integer messageTypeId = messageIdReader.read(uplinkMessage, messageIdConfiguration);
 
-            try {
-                Integer messageTypeId = messageIdReader.read(uplinkMessage, messageIdConfiguration);
+                    MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
 
-                MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
-
-                if (messageTypeMappings == null) {
-                    log.warn("Message type id {} not found for device type {}", messageTypeId, deviceType);
-                    return;
-                }
-
-                MappingCollections mappingCollections = new MappingCollections();
-                for (Integer registerIndex : messageTypeMappings.getRegisterIndexes()) {
-
-                    try {
-                        UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
-                        DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
-                        payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
-                    } catch (PayloadDecodingFailedException e) {
-                        log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
+                    if (messageTypeMappings == null) {
+                        log.warn("Message type id {} not found for device type {}", messageTypeId, deviceType);
+                        return;
                     }
-                }
-                payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
 
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        } else {
-            LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
-            DeviceInfo deviceInfo =  new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel(), DeviceTypeEnum.valueOf(deviceType.getFieldbusType().toUpperCase()));
-            DecodePayload decodePayload = DecodePayload.builder()
-                            .deviceMoId(source.getId().getValue())
-                            .deviceInfo(deviceInfo)
-                            .deviceEui(uplinkMessage.getExternalId())
-                            .fPort(uplinkMessage.getFport())
-                            .payload(uplinkMessage.getPayloadHex())
-                            .updateTime(uplinkMessage.getDateTime().getMillis())
-                            .build();
-            DecodeResponse decodeResponse = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decodePayload);
-            //CreateMeasurements
-            if(!decodeResponse.getMeasurementsToCreate().isEmpty()){
-                for(MeasurementRepresentation measuremnet : decodeResponse.getMeasurementsToCreate()) {
-                    measurementApi.createWithoutResponse(measuremnet);
+                    MappingCollections mappingCollections = new MappingCollections();
+                    for (Integer registerIndex : messageTypeMappings.getRegisterIndexes()) {
+
+                        try {
+                            UplinkConfiguration uplinkConfiguration = uplinkConfigurations.get(registerIndex);
+                            DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
+                            payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
+                        } catch (PayloadDecodingFailedException e) {
+                            log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
+                        }
+                    }
+                    payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
+
+                } catch (Exception e) {
+                    log.error(e.getMessage());
                 }
+            } else {
+                LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
+                DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel(), DeviceTypeEnum.valueOf(deviceType.getFieldbusType().toUpperCase()));
+                DecoderInput decoderInput = DecoderInput.builder()
+                        .deviceMoId(source.getId().getValue())
+                        .deviceInfo(deviceInfo)
+                        .deviceEui(uplinkMessage.getExternalId())
+                        .fPort(uplinkMessage.getFport())
+                        .payload(uplinkMessage.getPayloadHex())
+                        .updateTime(uplinkMessage.getDateTime().getMillis())
+                        .build();
+                DecoderOutput decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
+
+                handleCodecServiceResponse(uplinkMessage, source, decoderOutput);
+            }
+        });
+    }
+
+    private void handleCodecServiceResponse(T uplinkMessage, ManagedObjectRepresentation source, DecoderOutput decoderOutput) {
+        if (Objects.nonNull(decoderOutput)) {
+            //CreateMeasurements
+            if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
+                decoderOutput.getMeasurementsToCreate().forEach(measurement -> {
+                    try {
+                        measurementApi.createWithoutResponse(measurement);
+                    } catch (SDKException e) {
+                        log.error("Unable to create a measurement", e);
+                    }
+                });
             }
 
             //CreateEvents
-            if(!decodeResponse.getEventsToCreate().isEmpty()){
-                for(EventRepresentation event : decodeResponse.getEventsToCreate()) {
-                    eventApi.create(event);
-                }
+            List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
+            if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
+                eventsToCreate.forEach(event -> {
+                    try {
+                        eventApi.create(event);
+                    } catch (SDKException e) {
+                        log.error("Unable to create an event", e);
+                    }
+                });
             }
 
             //AlarmsToClear
-            if(!decodeResponse.getAlarmTypesToClear().isEmpty()){
-                for(String alarmTypeToClear : decodeResponse.getAlarmTypesToClear()) {
-                    alarmApi.
+            List<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
+            if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
+                clearAlarms(source.getId(), alarmTypesToClear);
+            }
+
+            //createAlarms
+            List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
+            if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
+                alarmsToCreate.forEach(alarm -> {
+                    try {
+                        alarmApi.create(alarm);
+                    } catch (SDKException e) {
+                        log.error("Unable to create an alarm", e);
+                    }
+                });
+            }
+
+            //UpdatedeviceMO
+            List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
+            if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
+                ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
+                propertiesToUpdateDeviceMo.stream().map(ManagedObjectProperty::getPropertyAsMap).forEach(sourceToUpdate::setAttrs);
+                try {
+                    inventoryApi.update(sourceToUpdate);
+                } catch (SDKException e) {
+                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId(), e);
                 }
             }
-            //createAlarms
-            //UpdatedeviceMO
         }
     }
 
-    private void clear(GId source, String... types) {
-        final Iterable<AlarmRepresentation> alarmMaybe = find(source, ACTIVE, types);
-        for (final AlarmRepresentation alarm : alarmMaybe) {
+    private void clearAlarms(GId source, List<String> alarmTypes) {
+        alarmTypes.stream().map(alarmType -> find(source, ACTIVE, alarmType)).forEach(alarmMaybe -> alarmMaybe.forEach(alarm -> {
             alarm.setStatus(CLEARED.name());
-            alarmApi.update(alarm);
-        }
+            try {
+                alarmApi.update(alarm);
+            } catch (SDKException e) {
+                log.error("Unable clear the alarm for the device '{}'", source.getValue());
+            }
+        }));
     }
 
-    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String... types) {
+    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
         try {
-            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(type);
-            if (alarmStatus != null && alarmStatus.length > 0) {
+            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
+            if (alarmStatus != null) {
                 filter.byStatus(alarmStatus);
             }
             final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
             return alarms.get().allPages();
         } catch (final SDKException ex) {
-            if (ex.getHttpStatus() != 404) {
-                throw ex;
-            }
+            log.info("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
         }
         return FluentIterable.of();
     }
 
-    private DecodeResponse invokeCodecMicroservice(String codecServiceContextPath, DecodePayload decodePayload){
-        /*String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
+    private DecoderOutput invokeCodecMicroservice(String codecServiceContextPath, DecoderInput decoderInput) {
+        String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
                 .toCumulocityCredentials().getAuthenticationString();
-
-        WebClient webClient = WebClient.create(System.getenv("C8Y_BASEURL"));
-        webClient.post()
-                .uri("/service/"+codecServiceContextPath+"/decode")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+        Mono<DecoderOutput> decoderOutput = webClient.post()
+                .uri("/service/" + codecServiceContextPath + "/decode")
                 .header(HttpHeaders.AUTHORIZATION, authentication)
-                .body(Mono.just(decodePayload), DecodePayload.class)
+                .body(Mono.just(decoderInput), DecoderInput.class)
                 .retrieve()
-                .bodyToMono(Void.class);*/
-        return null;
+                .bodyToMono(DecoderOutput.class);
+        return decoderOutput.block(Duration.ofMillis(5000));
     }
 
     private DecodedObject generateDecodedData(T uplinkMessage, UplinkConfiguration uplinkConfiguration)
@@ -249,6 +303,19 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
         return value;
 
+    }
+
+    @Bean
+    public WebClient webClient() {
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofMillis(5000))
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS)));
+        WebClient client = WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return client;
     }
 
 }
