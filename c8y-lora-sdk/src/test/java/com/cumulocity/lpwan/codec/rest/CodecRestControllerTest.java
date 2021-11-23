@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.codec.rest;
 
-import com.cumulocity.lpwan.codec.model.DecodePayload;
+import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,6 +59,7 @@ public class CodecRestControllerTest {
     }
 
     private String getJsonData() throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(new DecodePayload());
+//        return new ObjectMapper().writeValueAsString(new DecoderInput());
+        return null;
     }
 }

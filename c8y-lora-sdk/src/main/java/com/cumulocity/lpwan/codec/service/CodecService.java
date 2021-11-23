@@ -9,26 +9,13 @@ package com.cumulocity.lpwan.codec.service;
 
 import com.cumulocity.lpwan.codec.Decoder;
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.model.DecodePayload;
-import com.cumulocity.lpwan.codec.model.DecodeResponse;
-import com.cumulocity.lpwan.codec.model.DeviceInfo;
-import com.cumulocity.lpwan.codec.model.DeviceTypeEnum;
+import com.cumulocity.lpwan.codec.model.DecoderInput;
+import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.microservice.context.inject.TenantScope;
-import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import static com.cumulocity.lpwan.codec.util.Constants.*;
 
 @Service
 @Slf4j
@@ -77,7 +64,7 @@ public class CodecService {
      * @param payload
      * @return DecodedData
      */
-    public DecodeResponse decode(DecodePayload payload) throws DecoderException {
+    public DecoderOutput decode(DecoderInput payload) throws DecoderException {
         log.debug("Forwarding decoding request for the device with Id {} with payload {}", payload.getDeviceMoId(), payload.getPayload());
 
 //        // Fetch device mo

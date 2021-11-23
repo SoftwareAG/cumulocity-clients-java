@@ -8,9 +8,8 @@
 package com.cumulocity.lpwan.codec;
 
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.model.DecodePayload;
-import com.cumulocity.lpwan.codec.model.DecodeResponse;
-import com.cumulocity.lpwan.codec.model.DeviceInfo;
+import com.cumulocity.lpwan.codec.model.DecoderInput;
+import com.cumulocity.lpwan.codec.model.DecoderOutput;
 
 /**
  * This interface will be implemented to provide a decoding logic.
@@ -24,5 +23,5 @@ public interface Decoder {
      * @return DecodeResponse - represents the response that is formed after decoding the device payload.
      * @throws DecoderException - represents the custom exception thrown while decoding the payload.
      */
-    DecodeResponse decode(DecodePayload payload) throws DecoderException;
+    DecoderOutput decode(DecoderInput payload) throws DecoderException;
 }

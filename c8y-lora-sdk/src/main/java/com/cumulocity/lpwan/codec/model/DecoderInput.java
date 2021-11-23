@@ -12,12 +12,12 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 
 /**
- * The DecodeRequest class represents the format nad content of the request coming in for decoding a device data where it must contain the payload data and the device id.
+ * The DecoderInput class represents the format nad content of the request coming in for decoding a device data where it must contain the payload data and the device id.
  */
 @Data
 @AllArgsConstructor
 @Builder
-public class DecodePayload {
+public class DecoderInput {
 
     @NotNull
     private String deviceMoId;

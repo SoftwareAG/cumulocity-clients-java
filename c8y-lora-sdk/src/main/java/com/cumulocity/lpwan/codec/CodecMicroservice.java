@@ -23,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import static com.cumulocity.lpwan.codec.util.Constants.*;
@@ -60,7 +58,7 @@ public abstract class CodecMicroservice {
     /**
      * @return
      */
-    abstract String getMicroserviceContextPath();
+    public abstract String getMicroserviceContextPath();
 
     /**
      * This method should register a device type upon subscribing the codec microservice.

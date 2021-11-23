@@ -8,8 +8,8 @@
 package com.cumulocity.lpwan.codec.rest;
 
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.model.DecodePayload;
-import com.cumulocity.lpwan.codec.model.DecodeResponse;
+import com.cumulocity.lpwan.codec.model.DecoderInput;
+import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class CodecRestController {
      * @return DecodeResponse
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public DecodeResponse decode(@RequestBody DecodePayload decode) throws DecoderException {
+    public DecoderOutput decode(@RequestBody DecoderInput decode) throws DecoderException {
         log.info("Received decode request for the device {}", decode.getDeviceMoId());
         return codecService.decode(decode);
     }

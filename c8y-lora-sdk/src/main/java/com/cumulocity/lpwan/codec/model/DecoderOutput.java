@@ -15,11 +15,11 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * The DecodeResponse class represents the response format which may contain the Measurements/Events/Alarms to be created.
+ * The DecoderOutput class represents the response format which may contain the Measurements/Events/Alarms to be created.
  * This may also contain the info about the alarm types to clear and the properties that to be added to the device managed object.
  */
 @Data
-public class DecodeResponse {
+public class DecoderOutput {
     private List<MeasurementRepresentation> measurementsToCreate;
     private List<EventRepresentation> eventsToCreate;
     private List<AlarmRepresentation> alarmsToCreate;
