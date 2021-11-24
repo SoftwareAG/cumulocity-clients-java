@@ -50,26 +50,26 @@ public class ManagedObjectProperty {
 
 
     public Map<String, Object> getPropertyAsMap() {
-        Map<String, Object> oneProperty = new HashMap<>(1);
+        Map<String, Object> propertyMap = new HashMap<>(1);
 
-        if (Objects.nonNull(childProperties) && !childProperties.isEmpty()) {
-            Map<String, Object> childProperties = new HashMap<>();
-            for (ManagedObjectProperty childProperty : this.childProperties) {
-                Map<String, Object> propertyAsMap = childProperty.getPropertyAsMap();
-                childProperties.putAll(propertyAsMap);
-            }
-            oneProperty.put(name, childProperties);
-        } else {
+        if (Objects.isNull(childProperties) || childProperties.isEmpty()) {
             if (Objects.nonNull(value) && !Strings.isNullOrEmpty(unit)) {
-                Map<String, Object> childProperties = new HashMap<>(2);
-                childProperties.put("value", value);
-                childProperties.put("unit", unit);
-                oneProperty.put(name, childProperties);
+                Map<String, Object> valueMap = new HashMap<>(2);
+                valueMap.put("value", value);
+                valueMap.put("unit", unit);
+                propertyMap.put(name, valueMap);
             } else if (Objects.nonNull(value) && Strings.isNullOrEmpty(unit)) {
-                oneProperty.put(name, value);
+                propertyMap.put(name, value);
             }
         }
+        else {
+            Map<String, Object> childPropertiesMap = new HashMap<>();
+            for (ManagedObjectProperty childProperty : this.childProperties) {
+                childPropertiesMap.putAll(childProperty.getPropertyAsMap());
+            }
+            propertyMap.put(name, childPropertiesMap);
+        }
 
-        return oneProperty;
+        return propertyMap;
     }
 }
