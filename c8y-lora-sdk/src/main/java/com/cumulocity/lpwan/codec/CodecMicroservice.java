@@ -45,7 +45,6 @@ public abstract class CodecMicroservice {
     @Autowired
     private ContextService<Credentials> contextService;
 
-
     /**
      * This method should return a set of uniquely supported devices w.r.t the device manufacturer and the device model.
      *
@@ -86,7 +85,7 @@ public abstract class CodecMicroservice {
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
                             } catch (Exception e) {
-                                log.error("Unable create device type with name '{}'", supportedDeviceTypeName);
+                                log.error("Unable create device type with name '{}'", supportedDeviceTypeName, e);
                             }
 
                             //Register the External Id
@@ -97,7 +96,7 @@ public abstract class CodecMicroservice {
                             try {
                                 identityApi.create(deviceTypeExternalId);
                             } catch (Exception e) {
-                                log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName);
+                                log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
                             }
                         } else {
                             log.info("Skipping the creation of device type with name '{}' as it already exists", supportedDeviceTypeName);
@@ -133,7 +132,7 @@ public abstract class CodecMicroservice {
 //                            GId deviceTypeId = identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceTypeName)).getManagedObject().getId();
 //                            inventoryApi.delete(deviceTypeId);
 //                        } catch (Exception e) {
-//                            log.error("Unable to delete device type with name '{}'", deviceTypeName);
+//                            log.error("Unable to delete device type with name '{}'", deviceTypeName, e);
 //                        }
 //                    });
 //        }

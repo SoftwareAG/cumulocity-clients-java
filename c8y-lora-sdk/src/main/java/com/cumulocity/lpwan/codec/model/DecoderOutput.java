@@ -10,6 +10,8 @@ package com.cumulocity.lpwan.codec.model;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import lombok.Data;
 
 import java.util.List;
@@ -25,4 +27,9 @@ public class DecoderOutput {
     private List<AlarmRepresentation> alarmsToCreate;
     private List<String> alarmTypesToClear;
     private List<ManagedObjectProperty> propertiesToUpdateDeviceMo;
+
+    static {
+        //Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
+        new ObjectMapper().registerModule(new JodaModule());
+    }
 }

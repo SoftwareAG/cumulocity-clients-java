@@ -9,6 +9,8 @@ package com.cumulocity.lpwan.codec.model;
 
 import com.google.common.base.Strings;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
  * childProperties - list of the sub properties of this one.
  */
 @Getter
+@Setter
+@NoArgsConstructor
 public class ManagedObjectProperty {
 
     private String name;
@@ -49,8 +53,12 @@ public class ManagedObjectProperty {
         Map<String, Object> oneProperty = new HashMap<>(1);
 
         if (Objects.nonNull(childProperties) && !childProperties.isEmpty()) {
-            List<Map<String, Object>> childPropertyMaps = childProperties.stream().map(ManagedObjectProperty::getPropertyAsMap).collect(Collectors.toCollection(() -> new ArrayList<>(childProperties.size())));
-            oneProperty.put(name, childPropertyMaps);
+            Map<String, Object> childProperties = new HashMap<>();
+            for (ManagedObjectProperty childProperty : this.childProperties) {
+                Map<String, Object> propertyAsMap = childProperty.getPropertyAsMap();
+                childProperties.putAll(propertyAsMap);
+            }
+            oneProperty.put(name, childProperties);
         } else {
             if (Objects.nonNull(value) && !Strings.isNullOrEmpty(unit)) {
                 Map<String, Object> childProperties = new HashMap<>(2);

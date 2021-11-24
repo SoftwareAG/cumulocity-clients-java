@@ -7,17 +7,15 @@
 
 package com.cumulocity.lpwan.codec.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 
 /**
  * The DeviceInfo class uniquely represents one device with the device manufacturer name, the device model and the device type.
  */
-@Getter
+@Data
 @AllArgsConstructor
-@EqualsAndHashCode
+@NoArgsConstructor
 public class DeviceInfo {
     @NonNull
     private String manufacturer;

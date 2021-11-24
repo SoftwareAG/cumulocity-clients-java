@@ -9,11 +9,15 @@ package com.cumulocity.lpwan.codec.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class LpwanCodecDetails {
 
     public static final String CODEC_SERVICE_CONTEXT_PATH = "codecServiceContextPath";
@@ -25,8 +29,12 @@ public class LpwanCodecDetails {
     private String codecServiceContextPath;
 
     public Map<String, String> getAttributes() {
-        return Map.of(DEVICE_MANUFACTURER, deviceManufacturer,
-                DEVICE_MODEL, deviceModel,
-                CODEC_SERVICE_CONTEXT_PATH, codecServiceContextPath);
+        Map<String,String> attributes = new HashMap<>(3);
+
+        attributes.put(DEVICE_MANUFACTURER, deviceManufacturer);
+        attributes.put(DEVICE_MODEL, deviceModel);
+        attributes.put(CODEC_SERVICE_CONTEXT_PATH, codecServiceContextPath);
+
+        return attributes;
     }
 }

@@ -28,36 +28,6 @@ public class CodecService {
     @Autowired
     private InventoryApi inventoryApi;
 
-//    private LoadingCache<GId, ManagedObjectRepresentation> devicesCache = CacheBuilder.newBuilder()
-//            .expireAfterWrite(10, TimeUnit.MINUTES)
-//            .build(
-//                    new CacheLoader<>() {
-//                        @Override
-//                        public ManagedObjectRepresentation load(GId deviceMoId) {
-//                            try {
-//                                return inventoryApi.get(deviceMoId);
-//                            } catch (Exception e) {
-//                                return null;
-//                            }
-//                        }
-//                    }
-//            );
-//
-//    private LoadingCache<GId, ManagedObjectRepresentation> deviceTypesCache = CacheBuilder.newBuilder()
-//            //The 'expireAfterWrite' is not set intentionally as the device types are never updated by the user.
-//            .build(
-//                    new CacheLoader<>() {
-//                        @Override
-//                        public ManagedObjectRepresentation load(GId deviceTypeMoId) {
-//                            try {
-//                                return inventoryApi.get(deviceTypeMoId);
-//                            } catch (Exception e) {
-//                                return null;
-//                            }
-//                        }
-//                    }
-//            );
-
     /**
      * This method should decode the payload received by a particular device.
      *
@@ -66,36 +36,6 @@ public class CodecService {
      */
     public DecoderOutput decode(DecoderInput payload) throws DecoderException {
         log.debug("Forwarding decoding request for the device with Id {} with payload {}", payload.getDeviceMoId(), payload.getPayload());
-
-//        // Fetch device mo
-//        ManagedObjectRepresentation deviceMo = null;
-//        try {
-//            deviceMo = devicesCache.get(GId.asGId(payload.getDeviceMoId()));
-//            if (deviceMo == null) {
-//                throw new DecoderException("Unable find the device with id {}", payload.getDeviceMoId());
-//            }
-//        } catch (ExecutionException e) {
-//            throw new DecoderException("Unable find the device with id {}", e, payload.getDeviceMoId());
-//        }
-//
-//        // Fetch the device type mo from the details in device mo
-//        Map<String, String> deviceTypeDetails = (Map<String, String>) deviceMo.get(C8Y_LPWAN_DEVICE);
-//        String deviceTypeUri = deviceTypeDetails.get("type");
-//        String deviceTypeId = deviceTypeUri.substring(deviceTypeUri.lastIndexOf('/') + 1);
-//        ManagedObjectRepresentation deviceTypeMo = null;
-//        try {
-//            deviceTypeMo = deviceTypesCache.get(GId.asGId(deviceTypeId));
-//            if (deviceTypeMo == null) {
-//                throw new DecoderException("Unable find the device type with id {}", deviceTypeId);
-//            }
-//        } catch (ExecutionException e) {
-//            throw new DecoderException("Unable find the device type with id {}", e, deviceTypeId);
-//        }
-//
-//        // From the device type mo create a deviceinfo.
-//        Map<String, String> lpawanCodecDeviceInfo = (Map<String, String>) deviceTypeMo.get(C8Y_LPWAN_CODEC_DETAILS);
-//        DeviceInfo deviceInfo = new DeviceInfo(lpawanCodecDeviceInfo.get(DEVICE_MANUFACTURER), lpawanCodecDeviceInfo.get(DEVICE_MODEL), DeviceTypeEnum.valueOf(lpawanCodecDeviceInfo.get(FIELDBUS_TYPE).toUpperCase()));
-
         return decoder.decode(payload);
     }
 }

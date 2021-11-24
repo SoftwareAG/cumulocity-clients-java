@@ -20,10 +20,10 @@ public class DecoderException extends Exception {
     }
 
     public DecoderException(String message, String... messageArgs) {
-        super(MessageFormat.format(message, messageArgs));
+        super(String.format(message, messageArgs));
     }
 
     public DecoderException(String message, Throwable cause, String... messageArgs) {
-        super(MessageFormat.format(message, messageArgs), cause);
+        super(String.format(message, messageArgs), cause);
     }
 }

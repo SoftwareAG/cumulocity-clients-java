@@ -62,6 +62,10 @@
             <artifactId>microservice-autoconfigure</artifactId>
             <version>${c8y.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
