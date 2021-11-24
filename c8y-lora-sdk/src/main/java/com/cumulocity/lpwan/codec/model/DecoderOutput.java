@@ -32,4 +32,24 @@ public class DecoderOutput {
         //Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
         new ObjectMapper().registerModule(new JodaModule());
     }
+
+    public void addMeasurement(MeasurementRepresentation measurement){
+        measurementsToCreate.add(measurement);
+    }
+
+    public void addEvent(EventRepresentation event){
+        eventsToCreate.add(event);
+    }
+
+    public void addAlarm(AlarmRepresentation alarm){
+        alarmsToCreate.add(alarm);
+    }
+
+    public void addAlarmTypeToClear(String alarmType){
+        alarmTypesToClear.add(alarmType);
+    }
+
+    public void addManagedObjectProperty(ManagedObjectProperty managedObjectProperty){
+        propertiesToUpdateDeviceMo.add(managedObjectProperty);
+    }
 }
