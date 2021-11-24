@@ -19,6 +19,7 @@ import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
+import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmCollection;
@@ -26,6 +27,7 @@ import com.cumulocity.sdk.client.alarm.AlarmFilter;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.measurement.MeasurementCollection;
 import com.google.common.collect.FluentIterable;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -43,19 +45,17 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
 @Slf4j
-@AllArgsConstructor
+//@AllArgsConstructor
 public class PayloadDecoderService<T extends UplinkMessage> {
 
     @Autowired
-    MicroserviceSubscriptionsService subscriptionsService;
+    private MicroserviceSubscriptionsService subscriptionsService;
 
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
@@ -72,12 +72,25 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     @Autowired
     private InventoryApi inventoryApi;
 
-    @Autowired
-    private WebClient webClient;
+    private final WebClient webClient;
 
-    private PayloadMappingService payloadMappingService;
+    private final PayloadMappingService payloadMappingService;
 
-    private MessageIdReader<T> messageIdReader;
+    private final MessageIdReader<T> messageIdReader;
+
+    public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader){
+        this.payloadMappingService =  payloadMappingService;
+        this.messageIdReader =  messageIdReader;
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
+                .responseTimeout(Duration.ofMillis(50000))
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(50000, TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(50000, TimeUnit.MILLISECONDS)));
+
+        this.webClient = WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    }
 
     public interface MessageIdReader<T> {
         Integer read(T uplinkMessage, MessageIdConfiguration messageIdConfiguration);
@@ -143,7 +156,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                         }
                     }
                     payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
-
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 }
@@ -158,36 +170,42 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                         .payload(uplinkMessage.getPayloadHex())
                         .updateTime(uplinkMessage.getDateTime().getMillis())
                         .build();
-                DecoderOutput decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
-
-                handleCodecServiceResponse(uplinkMessage, source, decoderOutput);
+                DecoderOutput decoderOutput = null;
+                try {
+                    decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
+                    handleCodecServiceResponse(uplinkMessage, source, decoderOutput);
+                } catch (PayloadDecodingFailedException e) {
+                    log.error(e.getMessage(),e);
+                }
             }
         });
     }
 
-    private void handleCodecServiceResponse(T uplinkMessage, ManagedObjectRepresentation source, DecoderOutput decoderOutput) {
+    private void handleCodecServiceResponse(T uplinkMessage, ManagedObjectRepresentation source, DecoderOutput decoderOutput) throws PayloadDecodingFailedException {
         if (Objects.nonNull(decoderOutput)) {
             //CreateMeasurements
             if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
-                decoderOutput.getMeasurementsToCreate().forEach(measurement -> {
-                    try {
-                        measurementApi.createWithoutResponse(measurement);
-                    } catch (SDKException e) {
-                        log.error("Unable to create a measurement", e);
-                    }
-                });
+                MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
+                measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
+                try {
+                    measurementApi.createBulkWithoutResponse(measurementCollection);
+                } catch (SDKException e) {
+                    log.error("Unable to create measurements", e);
+//                    throw new PayloadDecodingFailedException("Unable to create measurements", e);
+                }
             }
 
             //CreateEvents
             List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
             if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
-                eventsToCreate.forEach(event -> {
+                for (EventRepresentation event : eventsToCreate) {
                     try {
                         eventApi.create(event);
                     } catch (SDKException e) {
                         log.error("Unable to create an event", e);
+//                        throw new PayloadDecodingFailedException("Unable to create an event", e);
                     }
-                });
+                }
             }
 
             //AlarmsToClear
@@ -199,38 +217,50 @@ public class PayloadDecoderService<T extends UplinkMessage> {
             //createAlarms
             List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
             if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
-                alarmsToCreate.forEach(alarm -> {
+                for (AlarmRepresentation alarm : alarmsToCreate) {
                     try {
                         alarmApi.create(alarm);
                     } catch (SDKException e) {
                         log.error("Unable to create an alarm", e);
+//                        throw new PayloadDecodingFailedException("Unable to create an alarm", e);
                     }
-                });
+                }
             }
 
             //UpdatedeviceMO
             List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
             if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
+                Map<String, Object> propertiesAsMap = new HashMap<>(propertiesToUpdateDeviceMo.size());
+                for (ManagedObjectProperty managedObjectProperty : propertiesToUpdateDeviceMo) {
+                    propertiesAsMap.putAll(managedObjectProperty.getPropertyAsMap());
+                }
                 ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
-                propertiesToUpdateDeviceMo.stream().map(ManagedObjectProperty::getPropertyAsMap).forEach(sourceToUpdate::setAttrs);
+                sourceToUpdate.setAttrs(propertiesAsMap);
                 try {
                     inventoryApi.update(sourceToUpdate);
                 } catch (SDKException e) {
-                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId(), e);
+                    String errorMessage = String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId());
+                    log.error(errorMessage, e);
+//                    throw new PayloadDecodingFailedException(errorMessage, e);
                 }
             }
         }
     }
 
-    private void clearAlarms(GId source, List<String> alarmTypes) {
-        alarmTypes.stream().map(alarmType -> find(source, ACTIVE, alarmType)).forEach(alarmMaybe -> alarmMaybe.forEach(alarm -> {
-            alarm.setStatus(CLEARED.name());
-            try {
-                alarmApi.update(alarm);
-            } catch (SDKException e) {
-                log.error("Unable clear the alarm for the device '{}'", source.getValue());
+    private void clearAlarms(GId source, List<String> alarmTypes) throws PayloadDecodingFailedException {
+        for (String alarmType : alarmTypes) {
+            Iterable<AlarmRepresentation> alarmMaybe = find(source, ACTIVE, alarmType);
+            for (AlarmRepresentation alarm : alarmMaybe) {
+                alarm.setStatus(CLEARED.name());
+                try {
+                    alarmApi.update(alarm);
+                } catch (SDKException e) {
+                    String errorMessage = String.format("Unable clear the alarm for the device '%s'",source.getValue());
+                    log.error(errorMessage, e);
+//                    throw new PayloadDecodingFailedException(errorMessage, e);
+                }
             }
-        }));
+        }
     }
 
     private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
@@ -241,22 +271,28 @@ public class PayloadDecoderService<T extends UplinkMessage> {
             }
             final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
             return alarms.get().allPages();
-        } catch (final SDKException ex) {
-            log.info("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
+        } catch (final SDKException e) {
+            log.debug("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
         }
         return FluentIterable.of();
     }
 
-    private DecoderOutput invokeCodecMicroservice(String codecServiceContextPath, DecoderInput decoderInput) {
+    private DecoderOutput invokeCodecMicroservice(String codecServiceContextPath, DecoderInput decoderInput) throws PayloadDecodingFailedException {
         String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
                 .toCumulocityCredentials().getAuthenticationString();
-        Mono<DecoderOutput> decoderOutput = webClient.post()
-                .uri("/service/" + codecServiceContextPath + "/decode")
-                .header(HttpHeaders.AUTHORIZATION, authentication)
-                .body(Mono.just(decoderInput), DecoderInput.class)
-                .retrieve()
-                .bodyToMono(DecoderOutput.class);
-        return decoderOutput.block(Duration.ofMillis(5000));
+        try {
+            Mono<DecoderOutput> decoderOutput = webClient.post()
+                    .uri("/service/" + codecServiceContextPath + "/decode")
+                    .header(HttpHeaders.AUTHORIZATION, authentication)
+                    .body(Mono.just(decoderInput), DecoderInput.class)
+                    .retrieve()
+                    .bodyToMono(DecoderOutput.class);
+            return decoderOutput.block(Duration.ofMillis(50000));
+        } catch (Exception e) {
+            String errorMessage = String.format("Unable to invoke Codec microservice with context path '%s'", codecServiceContextPath);
+            log.error(errorMessage, e);
+            throw new PayloadDecodingFailedException(errorMessage, e);
+        }
     }
 
     private DecodedObject generateDecodedData(T uplinkMessage, UplinkConfiguration uplinkConfiguration)
@@ -304,18 +340,4 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         return value;
 
     }
-
-    @Bean
-    public WebClient webClient() {
-        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-                .responseTimeout(Duration.ofMillis(5000))
-                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS)));
-        WebClient client = WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
-        return client;
-    }
-
 }

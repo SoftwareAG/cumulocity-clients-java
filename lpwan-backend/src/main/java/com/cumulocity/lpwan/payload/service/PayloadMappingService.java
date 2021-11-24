@@ -1,5 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.model.ManagedObjectProperty;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.*;
 import com.cumulocity.lpwan.payload.uplink.model.AlarmMapping;
@@ -7,27 +9,40 @@ import com.cumulocity.lpwan.payload.uplink.model.EventMapping;
 import com.cumulocity.lpwan.payload.uplink.model.ManagedObjectMapping;
 import com.cumulocity.lpwan.payload.uplink.model.MeasurementMapping;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjects;
+import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
+import com.cumulocity.sdk.client.alarm.AlarmCollection;
 import com.cumulocity.sdk.client.alarm.AlarmFilter;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.google.common.collect.FluentIterable;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static com.cumulocity.model.event.CumulocityAlarmStatuses.ACTIVE;
+import static com.cumulocity.model.event.CumulocityAlarmStatuses.CLEARED;
 
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class PayloadMappingService {
 
     @Autowired
@@ -245,5 +260,87 @@ public class PayloadMappingService {
         }
 
         inventoryApi.update(toUpdate);
+    }
+
+    public void handleCodecServiceResponse(String externalId, ManagedObjectRepresentation source, DecoderOutput decoderOutput) {
+        if (Objects.nonNull(decoderOutput)) {
+            //CreateMeasurements
+            if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
+                MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
+                measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
+                try {
+                    measurementApi.createBulkWithoutResponse(measurementCollection);
+                } catch (SDKException e) {
+                    log.error("Unable to create measurements", e);
+                }
+            }
+
+            //CreateEvents
+            List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
+            if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
+                eventsToCreate.forEach(event -> {
+                    try {
+                        eventApi.create(event);
+                    } catch (SDKException e) {
+                        log.error("Unable to create an event", e);
+                    }
+                });
+            }
+
+            //AlarmsToClear
+            List<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
+            if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
+                clearAlarms(source.getId(), alarmTypesToClear);
+            }
+
+            //createAlarms
+            List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
+            if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
+                alarmsToCreate.forEach(alarm -> {
+                    try {
+                        alarmApi.create(alarm);
+                    } catch (SDKException e) {
+                        log.error("Unable to create an alarm", e);
+                    }
+                });
+            }
+
+            //UpdatedeviceMO
+            List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
+            if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
+                ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
+                propertiesToUpdateDeviceMo.stream().map(ManagedObjectProperty::getPropertyAsMap).forEach(sourceToUpdate::setAttrs);
+                try {
+                    inventoryApi.update(sourceToUpdate);
+                } catch (SDKException e) {
+                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), externalId, e);
+                }
+            }
+        }
+    }
+
+    private void clearAlarms(GId source, List<String> alarmTypes) {
+        alarmTypes.stream().map(alarmType -> find(source, ACTIVE, alarmType)).forEach(alarmMaybe -> alarmMaybe.forEach(alarm -> {
+            alarm.setStatus(CLEARED.name());
+            try {
+                alarmApi.update(alarm);
+            } catch (SDKException e) {
+                log.error("Unable clear the alarm for the device '{}'", source.getValue());
+            }
+        }));
+    }
+
+    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
+        try {
+            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
+            if (alarmStatus != null) {
+                filter.byStatus(alarmStatus);
+            }
+            final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
+            return alarms.get().allPages();
+        } catch (final SDKException ex) {
+            log.info("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
+        }
+        return FluentIterable.of();
     }
 }
