@@ -161,7 +161,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 }
             } else {
                 LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
-                DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel(), DeviceTypeEnum.valueOf(deviceType.getFieldbusType().toUpperCase()));
+                DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
                 DecoderInput decoderInput = DecoderInput.builder()
                         .deviceMoId(source.getId().getValue())
                         .deviceInfo(deviceInfo)
@@ -191,7 +191,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     measurementApi.createBulkWithoutResponse(measurementCollection);
                 } catch (SDKException e) {
                     log.error("Unable to create measurements", e);
-//                    throw new PayloadDecodingFailedException("Unable to create measurements", e);
                 }
             }
 
@@ -203,7 +202,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                         eventApi.create(event);
                     } catch (SDKException e) {
                         log.error("Unable to create an event", e);
-//                        throw new PayloadDecodingFailedException("Unable to create an event", e);
                     }
                 }
             }
@@ -222,7 +220,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                         alarmApi.create(alarm);
                     } catch (SDKException e) {
                         log.error("Unable to create an alarm", e);
-//                        throw new PayloadDecodingFailedException("Unable to create an alarm", e);
                     }
                 }
             }
@@ -239,9 +236,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 try {
                     inventoryApi.update(sourceToUpdate);
                 } catch (SDKException e) {
-                    String errorMessage = String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId());
-                    log.error(errorMessage, e);
-//                    throw new PayloadDecodingFailedException(errorMessage, e);
+                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId(), e);
                 }
             }
         }
@@ -255,9 +250,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 try {
                     alarmApi.update(alarm);
                 } catch (SDKException e) {
-                    String errorMessage = String.format("Unable clear the alarm for the device '%s'",source.getValue());
-                    log.error(errorMessage, e);
-//                    throw new PayloadDecodingFailedException(errorMessage, e);
+                    log.error("Unable clear the alarm for the device '{}'",source.getValue(), e);
                 }
             }
         }

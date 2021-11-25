@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>c8y.lpawan.codec.sdk</groupId>
-            <artifactId>c8y-lpwan-sdk</artifactId>
+            <artifactId>lpwan-codec-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
