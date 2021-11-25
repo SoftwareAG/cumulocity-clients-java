@@ -19,9 +19,9 @@ public interface Decoder {
      * This method should take the following params and should return the decoded response with mapping.
      * This method should provide a decoding logic w.r.t the device info.
      *
-     * @param payload - represents the payload object that is meant to be decoded.
+     * @param input - represents the payload object that is meant to be decoded.
      * @return DecodeResponse - represents the response that is formed after decoding the device payload.
      * @throws DecoderException - represents the custom exception thrown while decoding the payload.
      */
-    DecoderOutput decode(DecoderInput payload) throws DecoderException;
+    DecoderOutput decode(DecoderInput input) throws DecoderException;
 }

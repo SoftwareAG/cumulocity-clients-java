@@ -14,7 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The DecoderOutput class represents the response format which may contain the Measurements/Events/Alarms to be created.
@@ -33,23 +35,38 @@ public class DecoderOutput {
         new ObjectMapper().registerModule(new JodaModule());
     }
 
-    public void addMeasurement(MeasurementRepresentation measurement){
+    public void addMeasurementToCreate(MeasurementRepresentation measurement) {
+        if (Objects.isNull(measurementsToCreate)) {
+            measurementsToCreate = new ArrayList<>();
+        }
         measurementsToCreate.add(measurement);
     }
 
-    public void addEvent(EventRepresentation event){
+    public void addEventToCreate(EventRepresentation event) {
+        if (Objects.isNull(eventsToCreate)) {
+            eventsToCreate = new ArrayList<>();
+        }
         eventsToCreate.add(event);
     }
 
-    public void addAlarm(AlarmRepresentation alarm){
+    public void addAlarmToCreate(AlarmRepresentation alarm) {
+        if (Objects.isNull(alarmsToCreate)) {
+            alarmsToCreate = new ArrayList<>();
+        }
         alarmsToCreate.add(alarm);
     }
 
-    public void addAlarmTypeToClear(String alarmType){
+    public void addAlarmTypeToClear(String alarmType) {
+        if (Objects.isNull(alarmTypesToClear)) {
+            alarmTypesToClear = new ArrayList<>();
+        }
         alarmTypesToClear.add(alarmType);
     }
 
-    public void addManagedObjectProperty(ManagedObjectProperty managedObjectProperty){
+    public void addPropertyToUpdateDeviceMo(ManagedObjectProperty managedObjectProperty) {
+        if (Objects.isNull(propertiesToUpdateDeviceMo)) {
+            propertiesToUpdateDeviceMo = new ArrayList<>();
+        }
         propertiesToUpdateDeviceMo.add(managedObjectProperty);
     }
 }

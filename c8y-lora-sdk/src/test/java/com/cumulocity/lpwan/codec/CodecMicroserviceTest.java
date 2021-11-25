@@ -8,7 +8,7 @@
 package com.cumulocity.lpwan.codec;
 
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
-import com.cumulocity.lpwan.codec.model.DeviceTypeEnum;
+import com.cumulocity.lpwan.codec.model.NetworkProviderType;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
@@ -72,7 +72,7 @@ public class CodecMicroserviceTest extends TestCase {
 
             @Override
             public Set<DeviceInfo> supportsDevices() {
-                DeviceInfo deviceInfo = new DeviceInfo("Dummy_Manufacturer", "Dummy_Model", DeviceTypeEnum.LORA);
+                DeviceInfo deviceInfo = new DeviceInfo("Dummy_Manufacturer", "Dummy_Model", NetworkProviderType.LORA);
                 return Stream.of(deviceInfo).collect(Collectors.toCollection(HashSet::new));
             }
         };
@@ -89,8 +89,8 @@ public class CodecMicroserviceTest extends TestCase {
         ArgumentCaptor<ManagedObjectRepresentation> moArgumentCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
         verify(inventoryApi).create(moArgumentCaptor.capture());
         ManagedObjectRepresentation deviceTypeMo = moArgumentCaptor.getValue();
-        Assert.assertEquals(deviceTypeMo.getType(), DeviceTypeEnum.LORA.getValue());
-        Assert.assertEquals(deviceTypeMo.get("fieldbusType"), DeviceTypeEnum.LORA.getFieldbusType());
+        Assert.assertEquals(deviceTypeMo.getType(), NetworkProviderType.LORA.getValue());
+        Assert.assertEquals(deviceTypeMo.get("fieldbusType"), NetworkProviderType.LORA.getFieldbusType());
         Map<String, String> codecDeviceDetails = (Map<String, String>) deviceTypeMo.get(C8Y_LPWAN_CODEC_DETAILS);
 //        Assert.assertEquals(codecDeviceDetails.get(DEVICE_MANUFACTURER), codecMicroservice.supportsDevices().stream().findFirst().get().getAttributes().get(DEVICE_MANUFACTURER));
 //        Assert.assertEquals(codecDeviceDetails.get(DEVICE_MODEL), codecMicroservice.supportsDevices().stream().findFirst().get().getAttributes().get(DEVICE_MODEL));

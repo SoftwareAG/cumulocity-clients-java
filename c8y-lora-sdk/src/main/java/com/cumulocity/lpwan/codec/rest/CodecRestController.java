@@ -29,12 +29,13 @@ public class CodecRestController {
     /**
      * This REST API should expose '/decode' endpoint
      *
-     * @param decode
+     * @param input
      * @return DecodeResponse
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public DecoderOutput decode(@RequestBody DecoderInput decode) throws DecoderException {
-        log.info("Received decode request for the device {}", decode.getDeviceMoId());
-        return codecService.decode(decode);
+    public DecoderOutput decode(@RequestBody DecoderInput input) throws DecoderException {
+        log.info("Received decode request for the device {}", input.getDeviceMoId());
+        input.validate();
+        return codecService.decode(input);
     }
 }

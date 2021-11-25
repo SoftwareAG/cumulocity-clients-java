@@ -11,6 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Objects;
 
 /**
  * The DeviceInfo class uniquely represents one device with the device manufacturer name, the device model and the device type.
@@ -18,6 +21,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class DeviceInfo {
     @NonNull
     private String manufacturer;
@@ -26,13 +30,17 @@ public class DeviceInfo {
     private String model;
 
     @NonNull
-    private DeviceTypeEnum type;
+    private NetworkProviderType networkProviderType;
 
     public String getDeviceTypeName() {
         return manufacturer + " : " + model;
     }
 
     public String getDeviceTypeExternalId() {
-        return getDeviceTypeName() + " : " + type.getFieldbusType();
+        return getDeviceTypeName() + " : " + networkProviderType.getFieldbusType();
+    }
+
+    public boolean isValid() {
+        return Objects.nonNull(manufacturer) && Objects.nonNull(model) && Objects.nonNull(networkProviderType);
     }
 }

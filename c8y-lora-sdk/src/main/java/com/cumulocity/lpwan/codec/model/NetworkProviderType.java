@@ -9,7 +9,7 @@ package com.cumulocity.lpwan.codec.model;
 
 import lombok.Getter;
 
-public enum DeviceTypeEnum {
+public enum NetworkProviderType {
     LORA("c8y_LoraDeviceType", "lora"),
     SIGFOX("c8y_SigfoxDeviceType", "sigfox");
 
@@ -19,7 +19,7 @@ public enum DeviceTypeEnum {
     @Getter
     private String fieldbusType;
 
-    private DeviceTypeEnum(String value, String fieldbusType) {
+    private NetworkProviderType(String value, String fieldbusType) {
         this.value = value;
         this.fieldbusType = fieldbusType;
     }

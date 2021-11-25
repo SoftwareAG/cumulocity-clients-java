@@ -72,6 +72,10 @@ public abstract class CodecMicroservice {
         for (DeviceInfo supportedDevice : supportedDevices) {
             contextService.runWithinContext(event.getCredentials(),
                     () -> {
+                        if(!supportedDevice.isValid()){
+                            log.error("Device manufacturer, model and network provider type are mandatory fields in the supported device.");
+                            return;
+                        }
                         String supportedDeviceTypeName = supportedDevice.getDeviceTypeName();
                         LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
                         Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
@@ -83,8 +87,8 @@ public abstract class CodecMicroservice {
                             deviceTypeMo.setName(supportedDeviceTypeName);
                             deviceTypeMo.set(description, DESCRIPTION);
                             deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
-                            deviceTypeMo.setType(supportedDevice.getType().getValue());
-                            deviceTypeMo.set(supportedDevice.getType().getFieldbusType(), FIELDBUS_TYPE);
+                            deviceTypeMo.setType(supportedDevice.getNetworkProviderType().getValue());
+                            deviceTypeMo.set(supportedDevice.getNetworkProviderType().getFieldbusType(), FIELDBUS_TYPE);
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
