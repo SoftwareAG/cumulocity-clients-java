@@ -94,7 +94,7 @@ public abstract class CodecMicroservice {
 
                             //Register the External Id
                             ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
-                            deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
+                            deviceTypeExternalId.setExternalId(supportedDevice.getDeviceTypeExternalId());
                             deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
                             deviceTypeExternalId.setManagedObject(deviceTypeMo);
                             try {
@@ -108,8 +108,6 @@ public abstract class CodecMicroservice {
                             log.info("Updating the device type with name '{}' as it already exists", supportedDeviceTypeName);
 
                             ManagedObjectRepresentation deviceTypeMo = ManagedObjects.asManagedObject(deviceType.get().getManagedObject().getId());
-                            deviceTypeMo.setType(supportedDevice.getType().getValue());
-                            deviceTypeMo.set(supportedDevice.getType().getFieldbusType(), FIELDBUS_TYPE);
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 inventoryApi.update(deviceTypeMo);
@@ -125,7 +123,7 @@ public abstract class CodecMicroservice {
 
     private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
         try {
-            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeName())));
+            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeExternalId())));
         } catch (Exception e) {
             return Optional.empty();
         }

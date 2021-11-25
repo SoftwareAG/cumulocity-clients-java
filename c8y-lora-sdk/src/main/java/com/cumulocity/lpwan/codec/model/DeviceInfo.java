@@ -31,4 +31,8 @@ public class DeviceInfo {
     public String getDeviceTypeName() {
         return manufacturer + " : " + model;
     }
+
+    public String getDeviceTypeExternalId() {
+        return getDeviceTypeName() + " : " + type.getFieldbusType();
+    }
 }
