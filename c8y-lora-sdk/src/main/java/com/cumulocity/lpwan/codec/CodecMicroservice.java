@@ -73,7 +73,7 @@ public abstract class CodecMicroservice {
             contextService.runWithinContext(event.getCredentials(),
                     () -> {
                         if(!supportedDevice.isValid()){
-                            log.error("Device manufacturer, model and network provider type are mandatory fields in the supported device.");
+                            log.error("Device manufacturer and model are mandatory fields in the supported device.");
                             return;
                         }
                         String supportedDeviceTypeName = supportedDevice.getDeviceTypeName();
@@ -87,8 +87,8 @@ public abstract class CodecMicroservice {
                             deviceTypeMo.setName(supportedDeviceTypeName);
                             deviceTypeMo.set(description, DESCRIPTION);
                             deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
-                            deviceTypeMo.setType(supportedDevice.getNetworkProviderType().getValue());
-                            deviceTypeMo.set(supportedDevice.getNetworkProviderType().getFieldbusType(), FIELDBUS_TYPE);
+                            deviceTypeMo.setType(C8Y_LPWAN_DEVICE_TYPE);
+                            deviceTypeMo.set(LPWAN_FIELDBUS_TYPE, FIELDBUS_TYPE);
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
@@ -98,7 +98,7 @@ public abstract class CodecMicroservice {
 
                             //Register the External Id
                             ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
-                            deviceTypeExternalId.setExternalId(supportedDevice.getDeviceTypeExternalId());
+                            deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
                             deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
                             deviceTypeExternalId.setManagedObject(deviceTypeMo);
                             try {
@@ -127,7 +127,7 @@ public abstract class CodecMicroservice {
 
     private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
         try {
-            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeExternalId())));
+            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeName())));
         } catch (Exception e) {
             return Optional.empty();
         }

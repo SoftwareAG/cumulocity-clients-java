@@ -60,7 +60,7 @@ public class DecoderInput {
         }
 
         if (Objects.isNull(deviceInfo) || !deviceInfo.isValid()) {
-            throw new DecoderException("Device manufacturer, model and network provider type are mandatory parameters.");
+            throw new DecoderException("Device manufacturer and model are mandatory parameters.");
         }
     }
 }

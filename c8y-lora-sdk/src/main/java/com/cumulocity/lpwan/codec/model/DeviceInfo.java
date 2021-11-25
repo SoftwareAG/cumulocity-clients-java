@@ -29,18 +29,11 @@ public class DeviceInfo {
     @NonNull
     private String model;
 
-    @NonNull
-    private NetworkProviderType networkProviderType;
-
     public String getDeviceTypeName() {
         return manufacturer + " : " + model;
     }
 
-    public String getDeviceTypeExternalId() {
-        return getDeviceTypeName() + " : " + networkProviderType.getFieldbusType();
-    }
-
     public boolean isValid() {
-        return Objects.nonNull(manufacturer) && Objects.nonNull(model) && Objects.nonNull(networkProviderType);
+        return Objects.nonNull(manufacturer) && Objects.nonNull(model);
     }
 }
