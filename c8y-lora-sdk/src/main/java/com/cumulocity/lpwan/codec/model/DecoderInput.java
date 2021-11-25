@@ -7,7 +7,6 @@
 
 package com.cumulocity.lpwan.codec.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;

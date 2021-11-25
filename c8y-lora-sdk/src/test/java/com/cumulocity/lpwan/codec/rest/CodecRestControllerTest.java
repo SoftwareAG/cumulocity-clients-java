@@ -7,10 +7,8 @@
 
 package com.cumulocity.lpwan.codec.rest;
 
-import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

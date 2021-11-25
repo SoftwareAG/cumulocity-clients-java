@@ -16,6 +16,7 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.cumulocity.model.ID;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.cumulocity.lpwan.codec.util.Constants.*;
@@ -71,8 +73,11 @@ public abstract class CodecMicroservice {
             contextService.runWithinContext(event.getCredentials(),
                     () -> {
                         String supportedDeviceTypeName = supportedDevice.getDeviceTypeName();
-                        if (!isDeviceTypeExists(supportedDevice)) {
+                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
+                        Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
+                        if (!deviceType.isPresent()) {
                             log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
+
                             String description = String.format("Device protocol that supports device model '%s' manufactured by '%s'", supportedDevice.getModel(), supportedDevice.getManufacturer());
                             ManagedObjectRepresentation deviceTypeMo = new ManagedObjectRepresentation();
                             deviceTypeMo.setName(supportedDeviceTypeName);
@@ -80,7 +85,6 @@ public abstract class CodecMicroservice {
                             deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
                             deviceTypeMo.setType(supportedDevice.getType().getValue());
                             deviceTypeMo.set(supportedDevice.getType().getFieldbusType(), FIELDBUS_TYPE);
-                            LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
@@ -98,20 +102,33 @@ public abstract class CodecMicroservice {
                             } catch (Exception e) {
                                 log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
                             }
+
+                            log.info("Created device type '{}' on codec microservice subscription", supportedDeviceTypeName);
                         } else {
-                            log.info("Skipping the creation of device type with name '{}' as it already exists", supportedDeviceTypeName);
+                            log.info("Updating the device type with name '{}' as it already exists", supportedDeviceTypeName);
+
+                            ManagedObjectRepresentation deviceTypeMo = ManagedObjects.asManagedObject(deviceType.get().getManagedObject().getId());
+                            deviceTypeMo.setType(supportedDevice.getType().getValue());
+                            deviceTypeMo.set(supportedDevice.getType().getFieldbusType(), FIELDBUS_TYPE);
+                            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
+                            try {
+                                inventoryApi.update(deviceTypeMo);
+                            } catch (Exception e) {
+                                log.error("Unable update device type with name '{}'", supportedDeviceTypeName, e);
+                            }
+
+                            log.info("Updated the device type with name '{}' as it already exists", supportedDeviceTypeName);
                         }
                     });
         }
     }
 
-    private boolean isDeviceTypeExists(DeviceInfo deviceInfo) {
+    private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
         try {
-            identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeName()));
+            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeName())));
         } catch (Exception e) {
-            return false;
+            return Optional.empty();
         }
-        return true;
     }
 
 //    /**

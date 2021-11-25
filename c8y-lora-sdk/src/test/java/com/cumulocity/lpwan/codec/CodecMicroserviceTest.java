@@ -7,7 +7,6 @@
 
 package com.cumulocity.lpwan.codec;
 
-import com.cumulocity.lpwan.codec.CodecMicroservice;
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.lpwan.codec.model.DeviceTypeEnum;
 import com.cumulocity.microservice.context.ContextService;
@@ -24,10 +23,8 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -39,7 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.cumulocity.lpwan.codec.util.Constants.*;
+import static com.cumulocity.lpwan.codec.util.Constants.C8Y_LPWAN_CODEC_DETAILS;
+import static com.cumulocity.lpwan.codec.util.Constants.C8Y_SMART_REST_DEVICE_IDENTIFIER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;

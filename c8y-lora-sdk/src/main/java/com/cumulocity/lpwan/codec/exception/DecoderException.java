@@ -7,8 +7,6 @@
 
 package com.cumulocity.lpwan.codec.exception;
 
-import java.text.MessageFormat;
-
 public class DecoderException extends Exception {
 
     public DecoderException(String message) {
