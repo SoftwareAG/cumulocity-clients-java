@@ -29,10 +29,6 @@ public class DeviceInfo {
     @NonNull
     private String model;
 
-    public String getDeviceTypeName() {
-        return manufacturer + " : " + model;
-    }
-
     public boolean isValid() {
         return Objects.nonNull(manufacturer) && Objects.nonNull(model);
     }

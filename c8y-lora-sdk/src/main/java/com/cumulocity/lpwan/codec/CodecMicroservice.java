@@ -12,7 +12,6 @@ import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
-import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.ID;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -35,14 +34,13 @@ import static com.cumulocity.lpwan.codec.util.Constants.*;
 @Slf4j
 public abstract class CodecMicroservice {
 
+    private static final String DEVICE_TYPE_NAME_FORMAT = "%s : %s";
+
     @Autowired
     private InventoryApi inventoryApi;
 
     @Autowired
     private IdentityApi identityApi;
-
-    @Autowired
-    private MicroserviceSubscriptionsService subscriptions;
 
     @Autowired
     private ContextService<Credentials> contextService;
@@ -76,7 +74,7 @@ public abstract class CodecMicroservice {
                             log.error("Device manufacturer and model are mandatory fields in the supported device.");
                             return;
                         }
-                        String supportedDeviceTypeName = supportedDevice.getDeviceTypeName();
+                        String supportedDeviceTypeName = formDeviceTypeName(supportedDevice);
                         LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
                         Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
                         if (!deviceType.isPresent()) {
@@ -127,10 +125,14 @@ public abstract class CodecMicroservice {
 
     private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
         try {
-            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo.getDeviceTypeName())));
+            return Optional.of(identityApi.getExternalId(new ID(C8Y_SMART_REST_DEVICE_IDENTIFIER, formDeviceTypeName(deviceInfo))));
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    private String formDeviceTypeName(DeviceInfo deviceInfo) {
+        return String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo.getManufacturer(), deviceInfo.getModel());
     }
 
 //    /**
@@ -140,7 +142,7 @@ public abstract class CodecMicroservice {
 //     */
 //    @EventListener
 //    void unregisterDeviceTypes(MicroserviceSubscriptionRemovedEvent event) {
-//        log.info("Deleting device types on codec microservice unsubscription");
+//        log.info("Deleting device types as codec microservice is unsubscribed.");
 //        Set<DeviceInfo> supportedDevices = supportsDevices();
 //        Optional<MicroserviceCredentials> credentials = subscriptions.getCredentials(event.getTenant());
 //        for (DeviceInfo supportedDevice : supportedDevices) {
