@@ -36,6 +36,8 @@ public class CodecService {
      */
     public DecoderOutput decode(DecoderInput payload) throws DecoderException {
         log.debug("Forwarding decoding request for the device with Id {} with payload {}", payload.getDeviceMoId(), payload.getPayload());
+
+        payload.validate();
         return decoder.decode(payload);
     }
 }

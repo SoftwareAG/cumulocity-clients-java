@@ -35,7 +35,7 @@ public class CodecRestController {
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public DecoderOutput decode(@RequestBody DecoderInput input) throws DecoderException {
         log.info("Received decode request for the device {}", input.getDeviceMoId());
-        input.validate();
+
         return codecService.decode(input);
     }
 }

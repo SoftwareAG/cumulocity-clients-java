@@ -160,22 +160,29 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     log.error(e.getMessage());
                 }
             } else {
-                LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
-                DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
-                DecoderInput decoderInput = DecoderInput.builder()
-                        .deviceMoId(source.getId().getValue())
-                        .deviceInfo(deviceInfo)
-                        .deviceEui(uplinkMessage.getExternalId())
-                        .fPort(uplinkMessage.getFport())
-                        .payload(uplinkMessage.getPayloadHex())
-                        .updateTime(uplinkMessage.getDateTime().getMillis())
-                        .build();
-                DecoderOutput decoderOutput = null;
                 try {
-                    decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
+                    LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
+                    try {
+                        lpwanCodecDetails.validate();
+                    } catch (IllegalArgumentException e) {
+                        throw new PayloadDecodingFailedException(String.format("'c8y_LpwanCodecDetails' fragment in the device type assiciated with device EUI '%s' is invalid.", uplinkMessage.getExternalId()), e);
+                    }
+
+                    DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
+                    DecoderInput decoderInput = DecoderInput.builder()
+                            .deviceMoId(source.getId().getValue())
+                            .deviceInfo(deviceInfo)
+                            .deviceEui(uplinkMessage.getExternalId())
+                            .fPort(uplinkMessage.getFport())
+                            .payload(uplinkMessage.getPayloadHex())
+                            .updateTime(uplinkMessage.getDateTime().getMillis())
+                            .build();
+
+                    DecoderOutput decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
+
                     handleCodecServiceResponse(uplinkMessage, source, decoderOutput);
                 } catch (PayloadDecodingFailedException e) {
-                    log.error(e.getMessage(),e);
+                    log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part.", uplinkMessage.getExternalId(), e);
                 }
             }
         });
@@ -183,48 +190,58 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
     private void handleCodecServiceResponse(T uplinkMessage, ManagedObjectRepresentation source, DecoderOutput decoderOutput) throws PayloadDecodingFailedException {
         if (Objects.nonNull(decoderOutput)) {
-            //CreateMeasurements
+            //Create Measurements
             if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
                 MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
                 measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
                 try {
                     measurementApi.createBulkWithoutResponse(measurementCollection);
                 } catch (SDKException e) {
-                    log.error("Unable to create measurements", e);
+                    throw new PayloadDecodingFailedException(String.format("Unable to create measurements for device EUI '%s'", uplinkMessage.getExternalId()), e);
                 }
             }
 
-            //CreateEvents
+            //Create Events
             List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
             if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
                 for (EventRepresentation event : eventsToCreate) {
                     try {
                         eventApi.create(event);
                     } catch (SDKException e) {
-                        log.error("Unable to create an event", e);
+                        throw new PayloadDecodingFailedException(String.format("Unable to create event for device EUI '%s'", uplinkMessage.getExternalId()), e);
                     }
                 }
             }
 
-            //AlarmsToClear
+            //Clear Alarms
             List<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
             if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
-                clearAlarms(source.getId(), alarmTypesToClear);
+                for (String alarmType : alarmTypesToClear) {
+                    Iterable<AlarmRepresentation> alarmMaybe = find(source.getId(), ACTIVE, alarmType);
+                    for (AlarmRepresentation alarm : alarmMaybe) {
+                        alarm.setStatus(CLEARED.name());
+                        try {
+                            alarmApi.update(alarm);
+                        } catch (SDKException e) {
+                            throw new PayloadDecodingFailedException(String.format("Unable to clear alarm for device EUI '%s'", uplinkMessage.getExternalId()), e);
+                        }
+                    }
+                }
             }
 
-            //createAlarms
+            //Create Alarms
             List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
             if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
                 for (AlarmRepresentation alarm : alarmsToCreate) {
                     try {
                         alarmApi.create(alarm);
                     } catch (SDKException e) {
-                        log.error("Unable to create an alarm", e);
+                        throw new PayloadDecodingFailedException(String.format("Unable to create alarm for device EUI '%s'", uplinkMessage.getExternalId()), e);
                     }
                 }
             }
 
-            //UpdatedeviceMO
+            //Update device managed object
             List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
             if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
                 Map<String, Object> propertiesAsMap = new HashMap<>(propertiesToUpdateDeviceMo.size());
@@ -236,21 +253,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 try {
                     inventoryApi.update(sourceToUpdate);
                 } catch (SDKException e) {
-                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId(), e);
-                }
-            }
-        }
-    }
-
-    private void clearAlarms(GId source, List<String> alarmTypes) throws PayloadDecodingFailedException {
-        for (String alarmType : alarmTypes) {
-            Iterable<AlarmRepresentation> alarmMaybe = find(source, ACTIVE, alarmType);
-            for (AlarmRepresentation alarm : alarmMaybe) {
-                alarm.setStatus(CLEARED.name());
-                try {
-                    alarmApi.update(alarm);
-                } catch (SDKException e) {
-                    log.error("Unable clear the alarm for the device '{}'",source.getValue(), e);
+                    throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId()), e);
                 }
             }
         }
@@ -258,15 +261,17 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
     private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
         try {
-            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
+            AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
             if (alarmStatus != null) {
                 filter.byStatus(alarmStatus);
             }
-            final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
+            AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
             return alarms.get().allPages();
-        } catch (final SDKException e) {
-            log.debug("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
+        } catch (SDKException e) {
+            // This exception is caught to only log and return an empty alarms collection.
+            log.debug("Couldn't find any Alarm with type '{}' on source '{}'", alarmType, source.getValue());
         }
+
         return FluentIterable.of();
     }
 
@@ -282,7 +287,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     .bodyToMono(DecoderOutput.class);
             return decoderOutput.block(Duration.ofMillis(50000));
         } catch (Exception e) {
-            String errorMessage = String.format("Unable to invoke Codec microservice with context path '%s'", codecServiceContextPath);
+            String errorMessage = String.format("Error invoking the Codec microservice with context path '%s'", codecServiceContextPath);
             log.error(errorMessage, e);
             throw new PayloadDecodingFailedException(errorMessage, e);
         }

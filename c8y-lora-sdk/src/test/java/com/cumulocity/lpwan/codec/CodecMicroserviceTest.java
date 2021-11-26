@@ -102,13 +102,13 @@ public class CodecMicroserviceTest extends TestCase {
 //        Assert.assertEquals(deviceTypeExtId.getExternalId(), codecMicroservice.supportsDevices().stream().findFirst().get().getDeviceTypeName());
     }
 
-    @Test
-    public void shouldTestDeviceTypeIsAlreadyCreated(){
-        setUpIsDeviceTypeExists(true);
-
-        verify(inventoryApi,never()).create(any(ManagedObjectRepresentation.class));
-        verify(identityApi,never()).create(any(ExternalIDRepresentation.class));
-    }
+//    @Test
+//    public void shouldTestDeviceTypeIsAlreadyCreated(){
+//        setUpIsDeviceTypeExists(true);
+//
+//        verify(inventoryApi,never()).create(any(ManagedObjectRepresentation.class));
+//        verify(identityApi,never()).create(any(ExternalIDRepresentation.class));
+//    }
 
     private void setUpIsDeviceTypeExists(boolean isDeviceTypeExists) {
         MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");

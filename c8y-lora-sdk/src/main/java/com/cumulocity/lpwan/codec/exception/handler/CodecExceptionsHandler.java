@@ -25,18 +25,18 @@ import static com.cumulocity.rest.representation.CumulocityMediaType.ERROR_MESSA
 @Slf4j
 public class CodecExceptionsHandler {
 
-    @ExceptionHandler(value = DecoderException.class)
+    @ExceptionHandler(value = {DecoderException.class, UnsupportedOperationException.class})
     @ResponseBody
-    public ResponseEntity<String> handleException(DecoderException exception) throws Exception {
+    public ResponseEntity<String> handleException(DecoderException exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(value = UnsupportedOperationException.class)
+    @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
-    public ResponseEntity<String> handleException(UnsupportedOperationException exception) throws Exception {
+    public ResponseEntity<String> handleException(IllegalArgumentException exception) {
         log.error(exception.getMessage(), exception);
-        return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<String> buildErrorResponse(Exception exception, HttpStatus status) {

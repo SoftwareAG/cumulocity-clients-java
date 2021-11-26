@@ -7,9 +7,11 @@
 
 package com.cumulocity.lpwan.codec.model;
 
+import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,8 +25,13 @@ public class LpwanCodecDetails {
     private static final String DEVICE_MANUFACTURER = "deviceManufacturer";
     private static final String DEVICE_MODEL = "deviceModel";
 
+    @NonNull
     private String deviceManufacturer;
+
+    @NonNull
     private String deviceModel;
+
+    @NonNull
     private String codecServiceContextPath;
 
     public Map<String, String> getAttributes() {
@@ -35,5 +42,19 @@ public class LpwanCodecDetails {
         attributes.put(CODEC_SERVICE_CONTEXT_PATH, codecServiceContextPath);
 
         return attributes;
+    }
+
+    public void validate() {
+        if (Strings.isNullOrEmpty(deviceManufacturer)) {
+            throw new IllegalArgumentException("'deviceManufacturer' is a mandatory parameter.");
+        }
+
+        if (Strings.isNullOrEmpty(deviceModel)) {
+            throw new IllegalArgumentException("'deviceModel' is a mandatory parameter.");
+        }
+
+        if (Strings.isNullOrEmpty(codecServiceContextPath)) {
+            throw new IllegalArgumentException("'codecServiceContextPath' is a mandatory parameter.");
+        }
     }
 }

@@ -70,10 +70,13 @@ public abstract class CodecMicroservice {
         for (DeviceInfo supportedDevice : supportedDevices) {
             contextService.runWithinContext(event.getCredentials(),
                     () -> {
-                        if(!supportedDevice.isValid()){
-                            log.error("Device manufacturer and model are mandatory fields in the supported device.");
+                        try {
+                            supportedDevice.validate();
+                        } catch (IllegalArgumentException e) {
+                            log.error("Device manufacturer and model are mandatory fields in the supported device.", e);
                             return;
                         }
+
                         String supportedDeviceTypeName = formDeviceTypeName(supportedDevice);
                         LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
                         Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);

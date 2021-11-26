@@ -10,6 +10,7 @@ package com.cumulocity.lpwan.codec.model;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class ManagedObjectProperty {
 
+    @NonNull
     private String name;
     private Object value;
     private String unit;

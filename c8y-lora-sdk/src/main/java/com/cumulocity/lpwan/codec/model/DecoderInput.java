@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.codec.model;
 
-import com.cumulocity.lpwan.codec.exception.DecoderException;
+import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,25 +42,28 @@ public class DecoderInput {
     @NotNull
     private Long updateTime;
 
-    public void validate() throws DecoderException {
-        if (Objects.isNull(deviceMoId)) {
-            throw new DecoderException("Device Managed Object ID is a mandatory parameter.");
+    public void validate() {
+        if (Strings.isNullOrEmpty(deviceMoId)) {
+            throw new IllegalArgumentException("'deviceMoId' is a mandatory parameter.");
         }
 
-        if (Objects.isNull(deviceEui)) {
-            throw new DecoderException("Device EUI is a mandatory parameter.");
+        if (Strings.isNullOrEmpty(deviceEui)) {
+            throw new IllegalArgumentException("'deviceEui' is a mandatory parameter.");
         }
 
-        if (Objects.isNull(payload)) {
-            throw new DecoderException("Payload is a mandatory parameter.");
+        if (Strings.isNullOrEmpty(payload)) {
+            throw new IllegalArgumentException("'payload' is a mandatory parameter.");
         }
 
         if (Objects.isNull(updateTime)) {
-            throw new DecoderException("Update Time is a mandatory parameter.");
+            throw new IllegalArgumentException("'updateTime' is a mandatory parameter.");
         }
 
-        if (Objects.isNull(deviceInfo) || !deviceInfo.isValid()) {
-            throw new DecoderException("Device manufacturer and model are mandatory parameters.");
+        if (Objects.isNull(deviceInfo)) {
+            throw new IllegalArgumentException("'deviceInfo' is a mandatory parameter.");
+        }
+        else {
+            deviceInfo.validate();
         }
     }
 }
