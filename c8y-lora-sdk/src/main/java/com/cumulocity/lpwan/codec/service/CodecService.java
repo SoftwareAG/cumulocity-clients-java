@@ -12,10 +12,11 @@ import com.cumulocity.lpwan.codec.exception.DecoderException;
 import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.microservice.context.inject.TenantScope;
-import com.cumulocity.sdk.client.inventory.InventoryApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.validation.constraints.NotNull;
 
 @Service
 @Slf4j
@@ -25,19 +26,17 @@ public class CodecService {
     @Autowired
     private Decoder decoder;
 
-    @Autowired
-    private InventoryApi inventoryApi;
-
     /**
      * This method should decode the payload received by a particular device.
      *
      * @param payload
      * @return DecodedData
      */
-    public DecoderOutput decode(DecoderInput payload) throws DecoderException {
+    public DecoderOutput decode(@NotNull DecoderInput payload) throws DecoderException {
+        payload.validate();
+
         log.debug("Forwarding decoding request for the device with Id {} with payload {}", payload.getDeviceMoId(), payload.getPayload());
 
-        payload.validate();
         return decoder.decode(payload);
     }
 }

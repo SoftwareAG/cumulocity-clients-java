@@ -4,6 +4,7 @@ import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.model.ManagedObjectProperty;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.*;
+import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.AlarmMapping;
 import com.cumulocity.lpwan.payload.uplink.model.EventMapping;
 import com.cumulocity.lpwan.payload.uplink.model.ManagedObjectMapping;
@@ -32,9 +33,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.ACTIVE;
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.CLEARED;
@@ -262,85 +261,90 @@ public class PayloadMappingService {
         inventoryApi.update(toUpdate);
     }
 
-    public void handleCodecServiceResponse(String externalId, ManagedObjectRepresentation source, DecoderOutput decoderOutput) {
+    public void handleCodecServiceResponse(DecoderOutput decoderOutput, ManagedObjectRepresentation source, String deviceEui) throws PayloadDecodingFailedException {
         if (Objects.nonNull(decoderOutput)) {
-            //CreateMeasurements
+            //Create Measurements
             if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
                 MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
                 measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
                 try {
                     measurementApi.createBulkWithoutResponse(measurementCollection);
                 } catch (SDKException e) {
-                    log.error("Unable to create measurements", e);
+                    throw new PayloadDecodingFailedException(String.format("Unable to create measurements for device EUI '%s'", deviceEui), e);
                 }
             }
 
-            //CreateEvents
+            //Create Events
             List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
             if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
-                eventsToCreate.forEach(event -> {
+                for (EventRepresentation event : eventsToCreate) {
                     try {
                         eventApi.create(event);
                     } catch (SDKException e) {
-                        log.error("Unable to create an event", e);
+                        throw new PayloadDecodingFailedException(String.format("Unable to create event for device EUI '%s'", deviceEui), e);
                     }
-                });
+                }
             }
 
-            //AlarmsToClear
-            List<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
+            //Clear Alarms
+            Set<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
             if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
-                clearAlarms(source.getId(), alarmTypesToClear);
+                for (String alarmType : alarmTypesToClear) {
+                    Iterable<AlarmRepresentation> alarmMaybe = find(source.getId(), ACTIVE, alarmType);
+                    for (AlarmRepresentation alarm : alarmMaybe) {
+                        alarm.setStatus(CLEARED.name());
+                        try {
+                            alarmApi.update(alarm);
+                        } catch (SDKException e) {
+                            throw new PayloadDecodingFailedException(String.format("Unable to clear alarm for device EUI '%s'", deviceEui), e);
+                        }
+                    }
+                }
             }
 
-            //createAlarms
+            //Create Alarms
             List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
             if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
-                alarmsToCreate.forEach(alarm -> {
+                for (AlarmRepresentation alarm : alarmsToCreate) {
                     try {
                         alarmApi.create(alarm);
                     } catch (SDKException e) {
-                        log.error("Unable to create an alarm", e);
+                        throw new PayloadDecodingFailedException(String.format("Unable to create alarm for device EUI '%s'", deviceEui), e);
                     }
-                });
+                }
             }
 
-            //UpdatedeviceMO
+            //Update device managed object
             List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
             if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
+                Map<String, Object> propertiesAsMap = new HashMap<>(propertiesToUpdateDeviceMo.size());
+                for (ManagedObjectProperty managedObjectProperty : propertiesToUpdateDeviceMo) {
+                    propertiesAsMap.putAll(managedObjectProperty.getPropertyAsMap());
+                }
                 ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
-                propertiesToUpdateDeviceMo.stream().map(ManagedObjectProperty::getPropertyAsMap).forEach(sourceToUpdate::setAttrs);
+                sourceToUpdate.setAttrs(propertiesAsMap);
                 try {
                     inventoryApi.update(sourceToUpdate);
                 } catch (SDKException e) {
-                    log.error("Unable to update the device with id '{}' and device EUI '{}'", sourceToUpdate.getId().getValue(), externalId, e);
+                    throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), deviceEui), e);
                 }
             }
         }
-    }
-
-    private void clearAlarms(GId source, List<String> alarmTypes) {
-        alarmTypes.stream().map(alarmType -> find(source, ACTIVE, alarmType)).forEach(alarmMaybe -> alarmMaybe.forEach(alarm -> {
-            alarm.setStatus(CLEARED.name());
-            try {
-                alarmApi.update(alarm);
-            } catch (SDKException e) {
-                log.error("Unable clear the alarm for the device '{}'", source.getValue());
-            }
-        }));
     }
 
     private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
         try {
-            final AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
+            AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
             if (alarmStatus != null) {
                 filter.byStatus(alarmStatus);
             }
-            final AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
+            AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
             return alarms.get().allPages();
-        } catch (final SDKException ex) {
-            log.info("Couldn't find any Alarms with type '{}' on source '{}'", alarmType, source.getValue());
+        } catch (SDKException e) {
+            // This exception is caught to only log and return an empty alarms collection.
+            log.debug("Couldn't find any Alarm with type '{}' on source '{}'", alarmType, source.getValue());
         }
+
         return FluentIterable.of();
     }
 }

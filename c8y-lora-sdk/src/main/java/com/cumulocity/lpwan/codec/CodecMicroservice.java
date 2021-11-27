@@ -18,15 +18,15 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.cumulocity.lpwan.codec.util.Constants.*;
 
 /**
  * CodecMicroservice should be implemented by the microservice implementer to advertise the devices it supports.
@@ -34,7 +34,18 @@ import static com.cumulocity.lpwan.codec.util.Constants.*;
 @Slf4j
 public abstract class CodecMicroservice {
 
-    private static final String DEVICE_TYPE_NAME_FORMAT = "%s : %s";
+    static final String DEVICE_TYPE_DESCRIPTION_FORMAT = "Device protocol that supports device model '%s' manufactured by '%s'";
+    static final String C8Y_SMART_REST_DEVICE_IDENTIFIER = "c8y_SmartRestDeviceIdentifier";
+    static final String C8Y_LPWAN_CODEC_DETAILS = "c8y_LpwanCodecDetails";
+    static final String FIELDBUS_TYPE = "fieldbusType";
+    static final String DESCRIPTION = "description";
+    static final String C8Y_IS_DEVICE_TYPE = "c8y_IsDeviceType";
+    static final String C8Y_LPWAN_DEVICE_TYPE = "c8y_LpwanDeviceType";
+    static final String LPWAN_FIELDBUS_TYPE = "lpwan";
+    static final String DEVICE_TYPE_NAME_FORMAT = "%s : %s";
+
+    @Autowired
+    private ContextService<Credentials> contextService;
 
     @Autowired
     private InventoryApi inventoryApi;
@@ -42,22 +53,19 @@ public abstract class CodecMicroservice {
     @Autowired
     private IdentityApi identityApi;
 
-    @Autowired
-    private ContextService<Credentials> contextService;
-
     /**
      * This method should return a set of uniquely supported devices w.r.t the device manufacturer and the device model.
      *
      * @return Set<DeviceInfo>
      */
-    public Set<DeviceInfo> supportsDevices() {
+    public @NotNull Set<DeviceInfo> supportsDevices() {
         throw new UnsupportedOperationException("Needs implementation for supportsDevices()");
     }
 
     /**
      * @return
      */
-    public abstract String getMicroserviceContextPath();
+    public abstract @NotNull String getMicroserviceContextPath();
 
     /**
      * This method should register a device type upon subscribing the codec microservice.
@@ -66,14 +74,20 @@ public abstract class CodecMicroservice {
      */
     @EventListener
     void registerDeviceTypes(MicroserviceSubscriptionAddedEvent event) {
-        Set<DeviceInfo> supportedDevices = supportsDevices();
-        for (DeviceInfo supportedDevice : supportedDevices) {
-            contextService.runWithinContext(event.getCredentials(),
-                    () -> {
+        contextService.runWithinContext(event.getCredentials(),
+                () -> {
+                    if (Strings.isNullOrEmpty(getMicroserviceContextPath())) {
+                        log.error("CodecMicroservice#getMicroserviceContextPath method is incorrectly implemented. It is returning a null or an empty string. Skipping the Device Type creation for the tenant {}.",
+                                event.getCredentials().getTenant());
+                        return;
+                    }
+
+                    Set<DeviceInfo> supportedDevices = supportsDevices();
+                    for (DeviceInfo supportedDevice : supportedDevices) {
                         try {
                             supportedDevice.validate();
                         } catch (IllegalArgumentException e) {
-                            log.error("Device manufacturer and model are mandatory fields in the supported device.", e);
+                            log.error("Device manufacturer and model are mandatory fields in the supported device. Skipping the Device Type creation.", e);
                             return;
                         }
 
@@ -83,7 +97,7 @@ public abstract class CodecMicroservice {
                         if (!deviceType.isPresent()) {
                             log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
 
-                            String description = String.format("Device protocol that supports device model '%s' manufactured by '%s'", supportedDevice.getModel(), supportedDevice.getManufacturer());
+                            String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, supportedDevice.getModel(), supportedDevice.getManufacturer());
                             ManagedObjectRepresentation deviceTypeMo = new ManagedObjectRepresentation();
                             deviceTypeMo.setName(supportedDeviceTypeName);
                             deviceTypeMo.set(description, DESCRIPTION);
@@ -93,19 +107,19 @@ public abstract class CodecMicroservice {
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
+
+                                //Register the External Id
+                                ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
+                                deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
+                                deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
+                                deviceTypeExternalId.setManagedObject(deviceTypeMo);
+                                try {
+                                    identityApi.create(deviceTypeExternalId);
+                                } catch (Exception e) {
+                                    log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
+                                }
                             } catch (Exception e) {
                                 log.error("Unable create device type with name '{}'", supportedDeviceTypeName, e);
-                            }
-
-                            //Register the External Id
-                            ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
-                            deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
-                            deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
-                            deviceTypeExternalId.setManagedObject(deviceTypeMo);
-                            try {
-                                identityApi.create(deviceTypeExternalId);
-                            } catch (Exception e) {
-                                log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
                             }
 
                             log.info("Created device type '{}' on codec microservice subscription", supportedDeviceTypeName);
@@ -122,8 +136,8 @@ public abstract class CodecMicroservice {
 
                             log.info("Updated the device type with name '{}' as it already exists", supportedDeviceTypeName);
                         }
-                    });
-        }
+                    }
+                });
     }
 
     private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
@@ -134,7 +148,7 @@ public abstract class CodecMicroservice {
         }
     }
 
-    private String formDeviceTypeName(DeviceInfo deviceInfo) {
+    String formDeviceTypeName(DeviceInfo deviceInfo) {
         return String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo.getManufacturer(), deviceInfo.getModel());
     }
 

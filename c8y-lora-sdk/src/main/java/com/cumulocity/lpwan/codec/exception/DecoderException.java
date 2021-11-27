@@ -16,12 +16,4 @@ public class DecoderException extends Exception {
     public DecoderException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    public DecoderException(String message, String... messageArgs) {
-        super(String.format(message, messageArgs));
-    }
-
-    public DecoderException(String message, Throwable cause, String... messageArgs) {
-        super(String.format(message, messageArgs), cause);
-    }
 }

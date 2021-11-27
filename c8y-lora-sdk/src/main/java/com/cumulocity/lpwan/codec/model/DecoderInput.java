@@ -14,6 +14,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -43,27 +45,38 @@ public class DecoderInput {
     private Long updateTime;
 
     public void validate() {
+        boolean isValid = true;
+        List<String> missingParameters = new ArrayList<>(5);
+
         if (Strings.isNullOrEmpty(deviceMoId)) {
-            throw new IllegalArgumentException("'deviceMoId' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'deviceMoId'");
         }
 
         if (Strings.isNullOrEmpty(deviceEui)) {
-            throw new IllegalArgumentException("'deviceEui' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'deviceEui'");
         }
 
         if (Strings.isNullOrEmpty(payload)) {
-            throw new IllegalArgumentException("'payload' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'payload'");
         }
 
         if (Objects.isNull(updateTime)) {
-            throw new IllegalArgumentException("'updateTime' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'updateTime'");
         }
 
         if (Objects.isNull(deviceInfo)) {
-            throw new IllegalArgumentException("'deviceInfo' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'deviceInfo'");
         }
-        else {
-            deviceInfo.validate();
+
+        if(!isValid) {
+            throw new IllegalArgumentException("DecoderInput is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
+
+        deviceInfo.validate();
     }
 }

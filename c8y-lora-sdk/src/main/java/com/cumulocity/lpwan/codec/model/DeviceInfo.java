@@ -11,8 +11,11 @@ import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The DeviceInfo class uniquely represents one device with the device manufacturer name, the device model and the device type.
@@ -22,19 +25,28 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Slf4j
 public class DeviceInfo {
-    @NonNull
+    @NotNull
     private String manufacturer;
 
-    @NonNull
+    @NotNull
     private String model;
 
     public void validate() {
+        boolean isValid = true;
+        List<String> missingParameters = new ArrayList<>(2);
+
         if (Strings.isNullOrEmpty(manufacturer)) {
-            throw new IllegalArgumentException("'manufacturer' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'manufacturer'");
         }
 
         if (Strings.isNullOrEmpty(model)) {
-            throw new IllegalArgumentException("'model' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'model'");
+        }
+
+        if (!isValid) {
+            throw new IllegalArgumentException("DeviceInfo is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
     }
 }

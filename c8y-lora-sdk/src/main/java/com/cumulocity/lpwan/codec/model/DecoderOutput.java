@@ -12,11 +12,12 @@ import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.base.Strings;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * The DecoderOutput class represents the response format which may contain the Measurements/Events/Alarms to be created.
@@ -27,7 +28,7 @@ public class DecoderOutput {
     private List<MeasurementRepresentation> measurementsToCreate;
     private List<EventRepresentation> eventsToCreate;
     private List<AlarmRepresentation> alarmsToCreate;
-    private List<String> alarmTypesToClear;
+    private Set<String> alarmTypesToClear;
     private List<ManagedObjectProperty> propertiesToUpdateDeviceMo;
 
     static {
@@ -35,38 +36,58 @@ public class DecoderOutput {
         new ObjectMapper().registerModule(new JodaModule());
     }
 
-    public void addMeasurementToCreate(MeasurementRepresentation measurement) {
+    public void addMeasurementToCreate(@NotNull MeasurementRepresentation measurement) {
         if (Objects.isNull(measurementsToCreate)) {
             measurementsToCreate = new ArrayList<>();
         }
+        if (Objects.isNull(measurement)) {
+            throw new IllegalArgumentException("DecoderOutput: 'measurement' parameter can't be null.");
+        }
+
         measurementsToCreate.add(measurement);
     }
 
-    public void addEventToCreate(EventRepresentation event) {
+    public void addEventToCreate(@NotNull EventRepresentation event) {
         if (Objects.isNull(eventsToCreate)) {
             eventsToCreate = new ArrayList<>();
         }
+        if (Objects.isNull(event)) {
+            throw new IllegalArgumentException("DecoderOutput: 'event' parameter can't be null.");
+        }
+
         eventsToCreate.add(event);
     }
 
-    public void addAlarmToCreate(AlarmRepresentation alarm) {
+    public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
         if (Objects.isNull(alarmsToCreate)) {
             alarmsToCreate = new ArrayList<>();
         }
+        if (Objects.isNull(alarm)) {
+            throw new IllegalArgumentException("DecoderOutput: 'alarm' parameter can't be null.");
+        }
+
         alarmsToCreate.add(alarm);
     }
 
-    public void addAlarmTypeToClear(String alarmType) {
+    public void addAlarmTypeToClear(@NotNull @NotEmpty String alarmType) {
         if (Objects.isNull(alarmTypesToClear)) {
-            alarmTypesToClear = new ArrayList<>();
+            alarmTypesToClear = new HashSet<>();
         }
+        if (Strings.isNullOrEmpty(alarmType)) {
+            throw new IllegalArgumentException("DecoderOutput: 'alarmType' parameter can't be null or empty.");
+        }
+
         alarmTypesToClear.add(alarmType);
     }
 
-    public void addPropertyToUpdateDeviceMo(ManagedObjectProperty managedObjectProperty) {
+    public void addPropertyToUpdateDeviceMo(@NotNull ManagedObjectProperty managedObjectProperty) {
         if (Objects.isNull(propertiesToUpdateDeviceMo)) {
             propertiesToUpdateDeviceMo = new ArrayList<>();
         }
+        if (Objects.isNull(managedObjectProperty)) {
+            throw new IllegalArgumentException("DecoderOutput: 'managedObjectProperty' parameter can't be null.");
+        }
+
         propertiesToUpdateDeviceMo.add(managedObjectProperty);
     }
 }

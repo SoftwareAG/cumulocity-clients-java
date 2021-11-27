@@ -1,6 +1,9 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.model.*;
+import com.cumulocity.lpwan.codec.model.DecoderInput;
+import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.model.DeviceInfo;
+import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
@@ -13,30 +16,13 @@ import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import com.cumulocity.model.event.CumulocityAlarmStatuses;
-import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
-import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjects;
-import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
-import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.alarm.AlarmApi;
-import com.cumulocity.sdk.client.alarm.AlarmCollection;
-import com.cumulocity.sdk.client.alarm.AlarmFilter;
-import com.cumulocity.sdk.client.event.EventApi;
-import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.measurement.MeasurementApi;
-import com.cumulocity.sdk.client.measurement.MeasurementCollection;
-import com.google.common.collect.FluentIterable;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -45,10 +31,9 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
 @Slf4j
 //@AllArgsConstructor
@@ -59,18 +44,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
-
-    @Autowired
-    private MeasurementApi measurementApi;
-
-    @Autowired
-    private EventApi eventApi;
-
-    @Autowired
-    private AlarmApi alarmApi;
-
-    @Autowired
-    private InventoryApi inventoryApi;
 
     private final WebClient webClient;
 
@@ -165,7 +138,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     try {
                         lpwanCodecDetails.validate();
                     } catch (IllegalArgumentException e) {
-                        throw new PayloadDecodingFailedException(String.format("'c8y_LpwanCodecDetails' fragment in the device type assiciated with device EUI '%s' is invalid.", uplinkMessage.getExternalId()), e);
+                        throw new PayloadDecodingFailedException(String.format("'c8y_LpwanCodecDetails' fragment in the device type associated with device EUI '%s' is invalid.", uplinkMessage.getExternalId()), e);
                     }
 
                     DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
@@ -180,99 +153,12 @@ public class PayloadDecoderService<T extends UplinkMessage> {
 
                     DecoderOutput decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
 
-                    handleCodecServiceResponse(uplinkMessage, source, decoderOutput);
+                    payloadMappingService.handleCodecServiceResponse(decoderOutput, source, uplinkMessage.getExternalId());
                 } catch (PayloadDecodingFailedException e) {
                     log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part.", uplinkMessage.getExternalId(), e);
                 }
             }
         });
-    }
-
-    private void handleCodecServiceResponse(T uplinkMessage, ManagedObjectRepresentation source, DecoderOutput decoderOutput) throws PayloadDecodingFailedException {
-        if (Objects.nonNull(decoderOutput)) {
-            //Create Measurements
-            if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
-                MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
-                measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
-                try {
-                    measurementApi.createBulkWithoutResponse(measurementCollection);
-                } catch (SDKException e) {
-                    throw new PayloadDecodingFailedException(String.format("Unable to create measurements for device EUI '%s'", uplinkMessage.getExternalId()), e);
-                }
-            }
-
-            //Create Events
-            List<EventRepresentation> eventsToCreate = decoderOutput.getEventsToCreate();
-            if (Objects.nonNull(eventsToCreate) && !eventsToCreate.isEmpty()) {
-                for (EventRepresentation event : eventsToCreate) {
-                    try {
-                        eventApi.create(event);
-                    } catch (SDKException e) {
-                        throw new PayloadDecodingFailedException(String.format("Unable to create event for device EUI '%s'", uplinkMessage.getExternalId()), e);
-                    }
-                }
-            }
-
-            //Clear Alarms
-            List<String> alarmTypesToClear = decoderOutput.getAlarmTypesToClear();
-            if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
-                for (String alarmType : alarmTypesToClear) {
-                    Iterable<AlarmRepresentation> alarmMaybe = find(source.getId(), ACTIVE, alarmType);
-                    for (AlarmRepresentation alarm : alarmMaybe) {
-                        alarm.setStatus(CLEARED.name());
-                        try {
-                            alarmApi.update(alarm);
-                        } catch (SDKException e) {
-                            throw new PayloadDecodingFailedException(String.format("Unable to clear alarm for device EUI '%s'", uplinkMessage.getExternalId()), e);
-                        }
-                    }
-                }
-            }
-
-            //Create Alarms
-            List<AlarmRepresentation> alarmsToCreate = decoderOutput.getAlarmsToCreate();
-            if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {
-                for (AlarmRepresentation alarm : alarmsToCreate) {
-                    try {
-                        alarmApi.create(alarm);
-                    } catch (SDKException e) {
-                        throw new PayloadDecodingFailedException(String.format("Unable to create alarm for device EUI '%s'", uplinkMessage.getExternalId()), e);
-                    }
-                }
-            }
-
-            //Update device managed object
-            List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
-            if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
-                Map<String, Object> propertiesAsMap = new HashMap<>(propertiesToUpdateDeviceMo.size());
-                for (ManagedObjectProperty managedObjectProperty : propertiesToUpdateDeviceMo) {
-                    propertiesAsMap.putAll(managedObjectProperty.getPropertyAsMap());
-                }
-                ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
-                sourceToUpdate.setAttrs(propertiesAsMap);
-                try {
-                    inventoryApi.update(sourceToUpdate);
-                } catch (SDKException e) {
-                    throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), uplinkMessage.getExternalId()), e);
-                }
-            }
-        }
-    }
-
-    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
-        try {
-            AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
-            if (alarmStatus != null) {
-                filter.byStatus(alarmStatus);
-            }
-            AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
-            return alarms.get().allPages();
-        } catch (SDKException e) {
-            // This exception is caught to only log and return an empty alarms collection.
-            log.debug("Couldn't find any Alarm with type '{}' on source '{}'", alarmType, source.getValue());
-        }
-
-        return FluentIterable.of();
     }
 
     private DecoderOutput invokeCodecMicroservice(String codecServiceContextPath, DecoderInput decoderInput) throws PayloadDecodingFailedException {

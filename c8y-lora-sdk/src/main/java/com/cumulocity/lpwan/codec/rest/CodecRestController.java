@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotNull;
+
 
 @RestController
 @Slf4j
@@ -33,8 +35,8 @@ public class CodecRestController {
      * @return DecodeResponse
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public DecoderOutput decode(@RequestBody DecoderInput input) throws DecoderException {
-        log.info("Received decode request for the device {}", input.getDeviceMoId());
+    public @NotNull DecoderOutput decode(@RequestBody @NotNull DecoderInput input) throws DecoderException {
+        log.debug("Received decode request for the device {}", input.getDeviceMoId());
 
         return codecService.decode(input);
     }

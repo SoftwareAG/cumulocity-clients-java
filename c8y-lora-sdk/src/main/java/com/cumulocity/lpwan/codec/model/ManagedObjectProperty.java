@@ -13,10 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * The ManagedObjectProperty class represents the properties that can be added to a Managed Object
@@ -41,17 +39,31 @@ public class ManagedObjectProperty {
         this(name, value, null);
     }
 
-    public ManagedObjectProperty(String name, Object value, String unit) {
+    public ManagedObjectProperty(@NotNull String name, Object value, String unit) {
         this.name = name;
+        if (Strings.isNullOrEmpty(name)) {
+            throw new IllegalArgumentException("ManagedObjectProperty: 'name' parameter can't be null or empty.");
+        }
+
         this.value = value;
         this.unit = unit;
     }
 
-    public ManagedObjectProperty(String name, List<ManagedObjectProperty> childProperties) {
-        this.name = name;
+    public ManagedObjectProperty(@NotNull String name, List<ManagedObjectProperty> childProperties) {
+        this(name, null, null);
         this.childProperties = childProperties;
     }
 
+    public void addChildProperty(@NotNull ManagedObjectProperty childProperty) {
+        if (Objects.isNull(childProperties)) {
+            childProperties = new ArrayList<>();
+        }
+        if (Objects.isNull(childProperty)) {
+            throw new IllegalArgumentException("ManagedObjectProperty: 'childProperty' parameter can't be null.");
+        }
+
+        childProperties.add(childProperty);
+    }
 
     public Map<String, Object> getPropertyAsMap() {
         Map<String, Object> propertyMap = new HashMap<>(1);

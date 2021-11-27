@@ -11,6 +11,8 @@ import com.cumulocity.lpwan.codec.exception.DecoderException;
 import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.model.DecoderOutput;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * This interface will be implemented to provide a decoding logic.
  */
@@ -23,5 +25,5 @@ public interface Decoder {
      * @return DecodeResponse - represents the response that is formed after decoding the device payload.
      * @throws DecoderException - represents the custom exception thrown while decoding the payload.
      */
-    DecoderOutput decode(DecoderInput input) throws DecoderException;
+    @NotNull DecoderOutput decode(@NotNull DecoderInput input) throws DecoderException;
 }

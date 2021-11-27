@@ -11,9 +11,11 @@ import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -25,13 +27,13 @@ public class LpwanCodecDetails {
     private static final String DEVICE_MANUFACTURER = "deviceManufacturer";
     private static final String DEVICE_MODEL = "deviceModel";
 
-    @NonNull
+    @NotNull
     private String deviceManufacturer;
 
-    @NonNull
+    @NotNull
     private String deviceModel;
 
-    @NonNull
+    @NotNull
     private String codecServiceContextPath;
 
     public Map<String, String> getAttributes() {
@@ -45,16 +47,26 @@ public class LpwanCodecDetails {
     }
 
     public void validate() {
+        boolean isValid = true;
+        List<String> missingParameters = new ArrayList<>(3);
+
         if (Strings.isNullOrEmpty(deviceManufacturer)) {
-            throw new IllegalArgumentException("'deviceManufacturer' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'deviceManufacturer'");
         }
 
         if (Strings.isNullOrEmpty(deviceModel)) {
-            throw new IllegalArgumentException("'deviceModel' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'deviceModel'");
         }
 
         if (Strings.isNullOrEmpty(codecServiceContextPath)) {
-            throw new IllegalArgumentException("'codecServiceContextPath' is a mandatory parameter.");
+            isValid = false;
+            missingParameters.add("'codecServiceContextPath'");
+        }
+
+        if (!isValid) {
+            throw new IllegalArgumentException("LpwanCodecDetails is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
     }
 }
