@@ -24,11 +24,13 @@ class CodecExceptionsHandlerTest {
     @Test
     void doHandleException_DecoderException() {
         DecoderException exception = new DecoderException("Test message", new NullPointerException("Null message"));
-        ResponseEntity<String> responseEntity = new CodecExceptionsHandler().handleException(exception);
+        ResponseEntity<String> responseEntity = new CodecExceptionsHandler().handleExceptionForInternalServerError(exception);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getHeaders().getContentType());
         assertEquals(ERROR_MESSAGE_TYPE, responseEntity.getHeaders().getContentType().toString());
 
+        assertNotNull(responseEntity.getBody());
         ErrorMessageRepresentation errorMessageRepresentation = JSONParser.defaultJSONParser().parse(ErrorMessageRepresentation.class, responseEntity.getBody());
         assertEquals("Codec Microservice Error", errorMessageRepresentation.getError());
         assertEquals(exception.getMessage(), errorMessageRepresentation.getMessage());
@@ -42,11 +44,13 @@ class CodecExceptionsHandlerTest {
     @Test
     void doHandleException_IllegalArgumentException() {
         IllegalArgumentException exception = new IllegalArgumentException("Invalid input parameter message");
-        ResponseEntity<String> responseEntity = new CodecExceptionsHandler().handleException(exception);
+        ResponseEntity<String> responseEntity = new CodecExceptionsHandler().handleExceptionForBadRequest(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getHeaders().getContentType());
         assertEquals(ERROR_MESSAGE_TYPE, responseEntity.getHeaders().getContentType().toString());
 
+        assertNotNull(responseEntity.getBody());
         ErrorMessageRepresentation errorMessageRepresentation = JSONParser.defaultJSONParser().parse(ErrorMessageRepresentation.class, responseEntity.getBody());
         assertEquals("Codec Microservice Error", errorMessageRepresentation.getError());
         assertEquals(exception.getMessage(), errorMessageRepresentation.getMessage());

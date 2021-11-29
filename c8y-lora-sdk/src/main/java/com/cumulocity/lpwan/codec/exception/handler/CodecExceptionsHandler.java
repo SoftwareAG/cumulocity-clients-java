@@ -27,25 +27,25 @@ public class CodecExceptionsHandler {
 
     @ExceptionHandler(value = {DecoderException.class, UnsupportedOperationException.class})
     @ResponseBody
-    public ResponseEntity<String> handleException(DecoderException exception) {
+    public ResponseEntity<String> handleExceptionForInternalServerError(Throwable exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
-    public ResponseEntity<String> handleException(IllegalArgumentException exception) {
+    public ResponseEntity<String> handleExceptionForBadRequest(Throwable exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
-    private ResponseEntity<String> buildErrorResponse(Exception exception, HttpStatus status) {
+    private ResponseEntity<String> buildErrorResponse(Throwable exception, HttpStatus status) {
         ErrorMessageRepresentation representation = buildErrorMessageRepresentation(exception);
         String errorJson = JSON.defaultJSON().forValue(representation);
         return ResponseEntity.status(status).contentType(MediaType.parseMediaType(ERROR_MESSAGE_TYPE)).body(errorJson);
     }
 
-    private ErrorMessageRepresentation buildErrorMessageRepresentation(Exception exception) {
+    private ErrorMessageRepresentation buildErrorMessageRepresentation(Throwable exception) {
         ErrorMessageRepresentation representation = new ErrorMessageRepresentation();
         representation.setError("Codec Microservice Error");
         representation.setMessage(exception.getMessage());
@@ -53,7 +53,7 @@ public class CodecExceptionsHandler {
         return representation;
     }
 
-    private ErrorDetails buildErrorDetails(Exception exception) {
+    private ErrorDetails buildErrorDetails(Throwable exception) {
         ErrorDetails errorDetails = new ErrorDetails();
         errorDetails.setExpectionClass(exception.getClass().getCanonicalName());
         errorDetails.setExceptionMessage(exception.getMessage());
