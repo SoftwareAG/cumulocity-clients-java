@@ -178,11 +178,11 @@ public class CodecMicroserviceTest {
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
-        verify(identityApi, times(0)).create(externalIDRepresentationCaptor.capture());
+        verify(identityApi, never()).create(externalIDRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).create(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).create(managedObjectRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).update(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
     }
 
     @Test
@@ -197,11 +197,11 @@ public class CodecMicroserviceTest {
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
-        verify(identityApi, times(1)).create(externalIDRepresentationCaptor.capture());
+        verify(identityApi).create(externalIDRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).create(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).create(managedObjectRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).update(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
     }
 
     @Test
@@ -214,13 +214,13 @@ public class CodecMicroserviceTest {
 
         invokeRegisterDeviceTypes(codecMicroservice_with_invalidContextPath);
 
-        verify(identityApi, times(0)).getExternalId(idCaptor.capture());
+        verify(identityApi, never()).getExternalId(idCaptor.capture());
 
-        verify(identityApi, times(0)).create(externalIDRepresentationCaptor.capture());
+        verify(identityApi, never()).create(externalIDRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(0)).create(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi, never()).create(managedObjectRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(0)).update(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi, never()).update(managedObjectRepresentationCaptor.capture());
     }
 
     @Test
@@ -238,11 +238,11 @@ public class CodecMicroserviceTest {
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
-        verify(identityApi, times(1)).create(externalIDRepresentationCaptor.capture());
+        verify(identityApi).create(externalIDRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).create(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).create(managedObjectRepresentationCaptor.capture());
 
-        verify(inventoryApi, times(1)).update(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
     }
 
     private void invokeRegisterDeviceTypes(CodecMicroservice codecMicroservice) {

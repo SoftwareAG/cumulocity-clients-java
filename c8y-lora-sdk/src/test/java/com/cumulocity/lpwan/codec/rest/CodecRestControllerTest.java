@@ -60,7 +60,7 @@ public class CodecRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(jsonObjectMapper.writeValueAsString(new DecoderOutput()), true));
 
-        verify(codecService, times(1)).decode(decoderInputCapture.capture());
+        verify(codecService).decode(decoderInputCapture.capture());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class CodecRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(jsonObjectMapper.writeValueAsString(new DecoderOutput()), true));
 
-        verify(codecService, times(1)).decode(decoderInputCapture.capture());
+        verify(codecService).decode(decoderInputCapture.capture());
         DecoderInput decoderInputCaptureValue = decoderInputCapture.getValue();
 
         assertEquals(decoderInput.getDeviceMoId(), decoderInputCaptureValue.getDeviceMoId());
@@ -101,6 +101,6 @@ public class CodecRestControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
-        verify(codecService, times(0)).decode(decoderInputCapture.capture());
+        verify(codecService, never()).decode(decoderInputCapture.capture());
     }
 }

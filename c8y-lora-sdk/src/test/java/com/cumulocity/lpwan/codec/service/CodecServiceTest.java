@@ -39,10 +39,10 @@ public class CodecServiceTest {
 
         codecService.decode(decoderInput);
 
-        verify(decoderInput, times(1)).validate();
-        verify(decoderInput, times(1)).getDeviceMoId();
-        verify(decoderInput, times(1)).getPayload();
-        verify(decoder, times(1)).decode(decoderInput);
+        verify(decoderInput).validate();
+        verify(decoderInput).getDeviceMoId();
+        verify(decoderInput).getPayload();
+        verify(decoder).decode(decoderInput);
     }
 
     @Test
@@ -58,10 +58,10 @@ public class CodecServiceTest {
             // expected
         }
 
-        verify(decoderInput, times(1)).validate();
-        verify(decoderInput, times(1)).getDeviceMoId();
-        verify(decoderInput, times(1)).getPayload();
-        verify(decoder, times(1)).decode(decoderInput);
+        verify(decoderInput).validate();
+        verify(decoderInput).getDeviceMoId();
+        verify(decoderInput).getPayload();
+        verify(decoder).decode(decoderInput);
     }
 
     @Test
@@ -77,9 +77,9 @@ public class CodecServiceTest {
             Assertions.fail(e);
         }
 
-        verify(decoderInput, times(1)).validate();
-        verify(decoderInput, times(0)).getDeviceMoId();
-        verify(decoderInput, times(0)).getPayload();
-        verify(decoder, times(0)).decode(decoderInput);
+        verify(decoderInput).validate();
+        verify(decoderInput, never()).getDeviceMoId();
+        verify(decoderInput, never()).getPayload();
+        verify(decoder, never()).decode(decoderInput);
     }
 }
