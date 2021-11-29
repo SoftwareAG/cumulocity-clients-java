@@ -15,6 +15,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Strings;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -69,7 +70,7 @@ public class DecoderOutput {
         alarmsToCreate.add(alarm);
     }
 
-    public void addAlarmTypeToClear(@NotNull @NotEmpty String alarmType) {
+    public void addAlarmTypeToClear(@NotBlank String alarmType) {
         if (Objects.isNull(alarmTypesToClear)) {
             alarmTypesToClear = new HashSet<>();
         }

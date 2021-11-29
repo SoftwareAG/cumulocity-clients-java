@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Optional;
@@ -58,14 +59,14 @@ public abstract class CodecMicroservice {
      *
      * @return Set<DeviceInfo>
      */
-    public @NotNull Set<DeviceInfo> supportsDevices() {
+    public @NotNull @NotEmpty Set<DeviceInfo> supportsDevices() {
         throw new UnsupportedOperationException("Needs implementation for supportsDevices()");
     }
 
     /**
      * @return
      */
-    public abstract @NotNull String getMicroserviceContextPath();
+    public abstract @NotNull @NotEmpty String getMicroserviceContextPath();
 
     /**
      * This method should register a device type upon subscribing the codec microservice.

@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,13 +28,13 @@ public class LpwanCodecDetails {
     private static final String DEVICE_MANUFACTURER = "deviceManufacturer";
     private static final String DEVICE_MODEL = "deviceModel";
 
-    @NotNull
+    @NotBlank
     private String deviceManufacturer;
 
-    @NotNull
+    @NotBlank
     private String deviceModel;
 
-    @NotNull
+    @NotBlank
     private String codecServiceContextPath;
 
     public Map<String, String> getAttributes() {

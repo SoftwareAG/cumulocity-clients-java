@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,10 @@ import java.util.List;
 @NoArgsConstructor
 @Slf4j
 public class DeviceInfo {
-    @NotNull
+    @NotBlank
     private String manufacturer;
 
-    @NotNull
+    @NotBlank
     private String model;
 
     public void validate() {

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -32,7 +33,10 @@ public class CodecService {
      * @param payload
      * @return DecodedData
      */
-    public DecoderOutput decode(@NotNull DecoderInput payload) throws DecoderException {
+    public @NotNull DecoderOutput decode(@NotNull DecoderInput payload) throws DecoderException {
+        if(Objects.isNull(payload)) {
+            throw new IllegalArgumentException("Decoder invoked with empty payload.");
+        }
         payload.validate();
 
         log.debug("Forwarding decoding request for the device with Id {} with payload {}", payload.getDeviceMoId(), payload.getPayload());

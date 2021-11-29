@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 
 @RestController
@@ -36,7 +37,12 @@ public class CodecRestController {
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull DecoderOutput decode(@RequestBody @NotNull DecoderInput input) throws DecoderException {
-        log.debug("Received decode request for the device {}", input.getDeviceMoId());
+        if(!Objects.isNull(input)) {
+            log.debug("Received decode request for the device {}", input.getDeviceMoId());
+        }
+        else {
+            log.debug("Received decode request with empty input.");
+        }
 
         return codecService.decode(input);
     }

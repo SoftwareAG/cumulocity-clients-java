@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +28,18 @@ import java.util.Objects;
 @Builder
 public class DecoderInput {
 
-    @NotNull
+    @NotBlank
     private String deviceMoId;
 
     @NotNull
     private DeviceInfo deviceInfo;
 
-    @NotNull
+    @NotBlank
     private String deviceEui;
 
     private Integer fPort;
 
-    @NotNull
+    @NotBlank
     private String payload;
 
     @NotNull

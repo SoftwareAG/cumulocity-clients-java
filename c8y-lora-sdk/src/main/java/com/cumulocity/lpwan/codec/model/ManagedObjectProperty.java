@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
@@ -28,17 +30,17 @@ import java.util.*;
 @NoArgsConstructor
 public class ManagedObjectProperty {
 
-    @NotNull
+    @NotBlank
     private String name;
     private Object value;
     private String unit;
     private List<ManagedObjectProperty> childProperties;
 
-    public ManagedObjectProperty(@NotNull String name, Object value) {
+    public ManagedObjectProperty(@NotBlank String name, Object value) {
         this(name, value, null);
     }
 
-    public ManagedObjectProperty(@NotNull String name, Object value, String unit) {
+    public ManagedObjectProperty(@NotBlank String name, Object value, String unit) {
         this.name = name;
         if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("ManagedObjectProperty: 'name' parameter can't be null or empty.");
@@ -48,7 +50,7 @@ public class ManagedObjectProperty {
         this.unit = unit;
     }
 
-    public ManagedObjectProperty(@NotNull String name, List<ManagedObjectProperty> childProperties) {
+    public ManagedObjectProperty(@NotBlank String name, List<ManagedObjectProperty> childProperties) {
         this(name, null, null);
         this.childProperties = childProperties;
     }

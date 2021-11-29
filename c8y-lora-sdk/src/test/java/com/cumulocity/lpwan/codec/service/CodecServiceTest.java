@@ -64,6 +64,11 @@ public class CodecServiceTest {
         verify(decoder).decode(decoderInput);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void doCallDecode_withNullDecoderInput_Fail() throws DecoderException {
+        codecService.decode(null);
+    }
+
     @Test
     public void doCallDecode_withInvalidDecoderInput_Fail() throws Exception {
         doThrow(new IllegalArgumentException()).when(decoderInput).validate();
