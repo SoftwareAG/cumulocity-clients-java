@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Strings;
 import lombok.Data;
+import lombok.NonNull;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -36,35 +37,35 @@ public class DecoderOutput {
         new ObjectMapper().registerModule(new JodaModule());
     }
 
-    public void addMeasurementToCreate(@NotNull MeasurementRepresentation measurement) {
+    public void addMeasurementToCreate(@NonNull final MeasurementRepresentation measurement) {
         if (Objects.isNull(measurementsToCreate)) {
             measurementsToCreate = new ArrayList<>();
         }
-        if (Objects.isNull(measurement)) {
+        /*if (Objects.isNull(measurement)) {
             throw new IllegalArgumentException("DecoderOutput: 'measurement' parameter can't be null.");
-        }
+        }*/
 
         measurementsToCreate.add(measurement);
     }
 
-    public void addEventToCreate(@NotNull EventRepresentation event) {
+    public void addEventToCreate(@NonNull EventRepresentation event) {
         if (Objects.isNull(eventsToCreate)) {
             eventsToCreate = new ArrayList<>();
         }
-        if (Objects.isNull(event)) {
+        /*if (Objects.isNull(event)) {
             throw new IllegalArgumentException("DecoderOutput: 'event' parameter can't be null.");
-        }
+        }*/
 
         eventsToCreate.add(event);
     }
 
-    public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
+    public void addAlarmToCreate(@NonNull AlarmRepresentation alarm) {
         if (Objects.isNull(alarmsToCreate)) {
             alarmsToCreate = new ArrayList<>();
         }
-        if (Objects.isNull(alarm)) {
+        /*if (Objects.isNull(alarm)) {
             throw new IllegalArgumentException("DecoderOutput: 'alarm' parameter can't be null.");
-        }
+        }*/
 
         alarmsToCreate.add(alarm);
     }
@@ -80,13 +81,13 @@ public class DecoderOutput {
         alarmTypesToClear.add(alarmType);
     }
 
-    public void addPropertyToUpdateDeviceMo(@NotNull ManagedObjectProperty managedObjectProperty) {
+    public void addPropertyToUpdateDeviceMo(@NonNull ManagedObjectProperty managedObjectProperty) {
         if (Objects.isNull(propertiesToUpdateDeviceMo)) {
             propertiesToUpdateDeviceMo = new ArrayList<>();
         }
-        if (Objects.isNull(managedObjectProperty)) {
+        /*if (Objects.isNull(managedObjectProperty)) {
             throw new IllegalArgumentException("DecoderOutput: 'managedObjectProperty' parameter can't be null.");
-        }
+        }*/
 
         propertiesToUpdateDeviceMo.add(managedObjectProperty);
     }

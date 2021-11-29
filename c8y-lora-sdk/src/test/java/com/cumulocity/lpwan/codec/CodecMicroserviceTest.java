@@ -141,12 +141,12 @@ public class CodecMicroserviceTest {
         assertEquals(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo_2_ID.getType());
         assertEquals(deviceInfo_2_deviceTypeName, deviceInfo_2_ID.getValue());
 
-        verify(identityApi, times(1)).create(externalIDRepresentationCaptor.capture());
+        verify(identityApi).create(externalIDRepresentationCaptor.capture());
         ExternalIDRepresentation deviceInfo_1_externalId = externalIDRepresentationCaptor.getValue();
         assertEquals(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo_1_externalId.getType());
         assertEquals(deviceInfo_1_deviceTypeName, deviceInfo_1_externalId.getExternalId());
 
-        verify(inventoryApi, times(1)).create(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).create(managedObjectRepresentationCaptor.capture());
         List<ManagedObjectRepresentation> allMOs = managedObjectRepresentationCaptor.getAllValues();
         ManagedObjectRepresentation deviceInfo_1_DeviceType_MO = allMOs.get(0);
         assertEquals(deviceInfo_1_deviceTypeName, deviceInfo_1_DeviceType_MO.getName());
@@ -158,7 +158,7 @@ public class CodecMicroserviceTest {
         LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel(), validCodecMicroservice_with_2_valid_devices.getMicroserviceContextPath());
         assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 
-        verify(inventoryApi, times(1)).update(managedObjectRepresentationCaptor.capture());
+        verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
         ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
         assertEquals(deviceInfo_2_deviceTypeName + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
 

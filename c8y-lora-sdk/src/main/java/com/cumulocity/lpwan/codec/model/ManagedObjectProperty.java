@@ -29,13 +29,13 @@ import java.util.*;
 @NoArgsConstructor
 public class ManagedObjectProperty {
 
-    @NonNull
+    @NotNull
     private String name;
     private Object value;
     private String unit;
     private List<ManagedObjectProperty> childProperties;
 
-    public ManagedObjectProperty(String name, Object value) {
+    public ManagedObjectProperty(@NotNull String name, Object value) {
         this(name, value, null);
     }
 
