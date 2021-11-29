@@ -1,5 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
@@ -10,6 +11,7 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -19,12 +21,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,12 +44,31 @@ public class PayloadDecoderServiceTest {
     private ContextService<MicroserviceCredentials> contextService;
 
     @Mock
-    DecoderOutput decoderOutput;
+    WebClient webClient;
+
+    @Mock
+    Mono<DecoderOutput> decoderOutputMono;
+
+    @Mock
+    WebClient.RequestBodyUriSpec post;
+
+    @Mock
+    WebClient.RequestBodySpec uri;
+
+    @Mock
+    WebClient.ResponseSpec responseSpec;
+
+    @Mock
+    WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    DecoderOutput decoderOutput = new DecoderOutput();
+
+    PayloadMappingService payloadMappingService = new PayloadMappingService();
 
     ArgumentCaptor<Runnable> taskCaptor = ArgumentCaptor.forClass(Runnable.class);
 
     @InjectMocks
-    PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(null, null);
+    PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(payloadMappingService, null);
 
 
     @Test
@@ -125,7 +150,7 @@ public class PayloadDecoderServiceTest {
 
         LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("Manufacturer_X", "Model_X", "lpwanContextPath");
 
-        DeviceType deviceType  = new DeviceType();
+        DeviceType deviceType = new DeviceType();
         deviceType.setLpwanCodecDetails(lpwanCodecDetails);
         deviceType.setFieldbusType("LORA");
 
@@ -134,7 +159,18 @@ public class PayloadDecoderServiceTest {
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
-        payloadDecoderService.decodeAndMap(uplinkMessage, ManagedObjects.asManagedObject(GId.asGId("12345")), deviceType);
+        when(webClient.post()).thenReturn(post);
+        when(post.uri(anyString())).thenReturn(uri);
+        when(uri.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(uri);
+        when(uri.body(any(Mono.class), eq(DecoderInput.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(DecoderOutput.class)).thenReturn(decoderOutputMono);
+
+        when(decoderOutputMono.block(any(Duration.class))).thenReturn(decoderOutput);
+
+        ManagedObjectRepresentation source = ManagedObjects.asManagedObject(GId.asGId("12345"));
+
+        payloadDecoderService.decodeAndMap(uplinkMessage, source, deviceType);
 
         verify(contextService).runWithinContext(eq(credentials), taskCaptor.capture());
         taskCaptor.getValue().run();

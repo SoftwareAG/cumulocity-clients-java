@@ -17,26 +17,18 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
-//@AllArgsConstructor
 public class PayloadDecoderService<T extends UplinkMessage> {
 
     @Autowired
@@ -45,7 +37,8 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
 
-    private final WebClient webClient;
+    @Autowired
+    private WebClient webClient;
 
     private final PayloadMappingService payloadMappingService;
 
@@ -54,15 +47,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader){
         this.payloadMappingService =  payloadMappingService;
         this.messageIdReader =  messageIdReader;
-        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
-                .responseTimeout(Duration.ofMillis(50000))
-                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(50000, TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(50000, TimeUnit.MILLISECONDS)));
-
-        this.webClient = WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
     }
 
     public interface MessageIdReader<T> {
@@ -224,4 +208,17 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         return value;
 
     }
+
+    /*@Bean
+    public WebClient getWebClient(){
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
+                .responseTimeout(Duration.ofMillis(50000))
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(50000, TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(50000, TimeUnit.MILLISECONDS)));
+
+        return WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    }*/
 }
