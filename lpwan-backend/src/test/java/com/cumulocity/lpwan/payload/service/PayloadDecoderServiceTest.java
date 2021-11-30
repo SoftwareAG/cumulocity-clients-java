@@ -7,6 +7,7 @@ import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.lpwan.util.LpwanConfiguration;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -31,8 +32,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PayloadDecoderServiceTest {
@@ -63,7 +63,7 @@ public class PayloadDecoderServiceTest {
 
     DecoderOutput decoderOutput = new DecoderOutput();
 
-    PayloadMappingService payloadMappingService = new PayloadMappingService();
+    PayloadMappingService payloadMappingService = spy(new PayloadMappingService());
 
     ArgumentCaptor<Runnable> taskCaptor = ArgumentCaptor.forClass(Runnable.class);
 
@@ -159,6 +159,9 @@ public class PayloadDecoderServiceTest {
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
+        LpwanConfiguration lpwanConfiguration = spy(new LpwanConfiguration());
+        when(lpwanConfiguration.getWebClient()).thenReturn(webClient);
+
         when(webClient.post()).thenReturn(post);
         when(post.uri(anyString())).thenReturn(uri);
         when(uri.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(uri);
@@ -174,5 +177,7 @@ public class PayloadDecoderServiceTest {
 
         verify(contextService).runWithinContext(eq(credentials), taskCaptor.capture());
         taskCaptor.getValue().run();
+
+        verify(payloadMappingService).handleCodecServiceResponse(eq(decoderOutput), eq(source), eq("deviceExternalId"));
     }
 }

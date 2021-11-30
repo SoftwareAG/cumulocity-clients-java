@@ -13,6 +13,7 @@ import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.lpwan.util.LpwanConfiguration;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -37,7 +38,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
 
-    @Autowired
     private WebClient webClient;
 
     private final PayloadMappingService payloadMappingService;
@@ -47,6 +47,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader){
         this.payloadMappingService =  payloadMappingService;
         this.messageIdReader =  messageIdReader;
+        this.webClient = new LpwanConfiguration().getWebClient();
     }
 
     public interface MessageIdReader<T> {
