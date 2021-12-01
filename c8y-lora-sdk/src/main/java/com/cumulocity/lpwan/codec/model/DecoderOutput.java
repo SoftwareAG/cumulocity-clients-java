@@ -31,10 +31,19 @@ import java.util.*;
  */
 @Data
 public class DecoderOutput {
+    @Nullable
     private List<MeasurementRepresentation> measurementsToCreate;
+
+    @Nullable
     private List<EventRepresentation> eventsToCreate;
+
+    @Nullable
     private List<AlarmRepresentation> alarmsToCreate;
+
+    @Nullable
     private Set<String> alarmTypesToClear;
+
+    @Nullable
     private List<ManagedObjectRepresentation> managedObjectsToUpdate;
 
     static {
@@ -76,7 +85,7 @@ public class DecoderOutput {
         event.setSource(ManagedObjects.asManagedObject(sourceId));
         event.setType(type);
         event.setText(text);
-        if(!Objects.isNull(time)) {
+        if(Objects.nonNull(time)) {
             event.setDateTime(time);
         }
         addEventToCreate(event);
@@ -107,10 +116,10 @@ public class DecoderOutput {
         alarm.setSource(ManagedObjects.asManagedObject(sourceId));
         alarm.setType(type);
         alarm.setText(text);
-        if(!Objects.isNull(severity)) {
+        if(Objects.nonNull(severity)) {
             alarm.setSeverity(severity.name());
         }
-        if(!Objects.isNull(time)) {
+        if(Objects.nonNull(time)) {
             alarm.setDateTime(time);
         }
         addAlarmToCreate(alarm);

@@ -51,35 +51,29 @@ public class DecoderInput {
     }
 
     public void validate() {
-        boolean isValid = true;
         List<String> missingParameters = new ArrayList<>(5);
 
         if (Strings.isNullOrEmpty(deviceMoId)) {
-            isValid = false;
             missingParameters.add("'deviceMoId'");
         }
 
         if (Strings.isNullOrEmpty(deviceEui)) {
-            isValid = false;
             missingParameters.add("'deviceEui'");
         }
 
         if (Strings.isNullOrEmpty(payload)) {
-            isValid = false;
             missingParameters.add("'payload'");
         }
 
         if (Objects.isNull(updateTime)) {
-            isValid = false;
             missingParameters.add("'updateTime'");
         }
 
         if (Objects.isNull(deviceInfo)) {
-            isValid = false;
             missingParameters.add("'deviceInfo'");
         }
 
-        if(!isValid) {
+        if(!missingParameters.isEmpty()) {
             throw new IllegalArgumentException("DecoderInput is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
 

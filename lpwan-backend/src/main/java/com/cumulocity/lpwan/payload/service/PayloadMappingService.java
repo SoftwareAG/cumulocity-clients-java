@@ -1,7 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
 import com.cumulocity.lpwan.codec.model.DecoderOutput;
-import com.cumulocity.lpwan.codec.model.ManagedObjectProperty;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.*;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
@@ -14,7 +13,6 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.sdk.client.SDKException;
@@ -33,7 +31,10 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.ACTIVE;
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.CLEARED;
@@ -264,9 +265,10 @@ public class PayloadMappingService {
     public void handleCodecServiceResponse(DecoderOutput decoderOutput, ManagedObjectRepresentation source, String deviceEui) throws PayloadDecodingFailedException {
         if (Objects.nonNull(decoderOutput)) {
             //Create Measurements
-            if (!decoderOutput.getMeasurementsToCreate().isEmpty()) {
+            List<MeasurementRepresentation> measurementsToCreate = decoderOutput.getMeasurementsToCreate();
+            if (Objects.nonNull(measurementsToCreate) && !measurementsToCreate.isEmpty()) {
                 MeasurementCollectionRepresentation measurementCollection = new MeasurementCollectionRepresentation();
-                measurementCollection.setMeasurements(decoderOutput.getMeasurementsToCreate());
+                measurementCollection.setMeasurements(measurementsToCreate);
                 try {
                     measurementApi.createBulkWithoutResponse(measurementCollection);
                 } catch (SDKException e) {
@@ -315,18 +317,14 @@ public class PayloadMappingService {
             }
 
             //Update device managed object
-            List<ManagedObjectProperty> propertiesToUpdateDeviceMo = decoderOutput.getPropertiesToUpdateDeviceMo();
-            if (Objects.nonNull(propertiesToUpdateDeviceMo) && !propertiesToUpdateDeviceMo.isEmpty()) {
-                Map<String, Object> propertiesAsMap = new HashMap<>(propertiesToUpdateDeviceMo.size());
-                for (ManagedObjectProperty managedObjectProperty : propertiesToUpdateDeviceMo) {
-                    propertiesAsMap.putAll(managedObjectProperty.getPropertyAsMap());
-                }
-                ManagedObjectRepresentation sourceToUpdate = ManagedObjects.asManagedObject(source.getId());
-                sourceToUpdate.setAttrs(propertiesAsMap);
-                try {
-                    inventoryApi.update(sourceToUpdate);
-                } catch (SDKException e) {
-                    throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", sourceToUpdate.getId().getValue(), deviceEui), e);
+            List<ManagedObjectRepresentation> managedObjectsToUpdate = decoderOutput.getManagedObjectsToUpdate();
+            if (Objects.nonNull(managedObjectsToUpdate) && !managedObjectsToUpdate.isEmpty()) {
+                for (ManagedObjectRepresentation oneManagedObject : managedObjectsToUpdate) {
+                    try {
+                        inventoryApi.update(oneManagedObject);
+                    } catch (SDKException e) {
+                        throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", oneManagedObject.getId().getValue(), deviceEui), e);
+                    }
                 }
             }
         }

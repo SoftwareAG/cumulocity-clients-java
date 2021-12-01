@@ -47,25 +47,21 @@ public class LpwanCodecDetails {
     }
 
     public void validate() {
-        boolean isValid = true;
         List<String> missingParameters = new ArrayList<>(3);
 
         if (Strings.isNullOrEmpty(deviceManufacturer)) {
-            isValid = false;
             missingParameters.add("'deviceManufacturer'");
         }
 
         if (Strings.isNullOrEmpty(deviceModel)) {
-            isValid = false;
             missingParameters.add("'deviceModel'");
         }
 
         if (Strings.isNullOrEmpty(codecServiceContextPath)) {
-            isValid = false;
             missingParameters.add("'codecServiceContextPath'");
         }
 
-        if (!isValid) {
+        if(!missingParameters.isEmpty()) {
             throw new IllegalArgumentException("LpwanCodecDetails is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
     }

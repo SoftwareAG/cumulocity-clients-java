@@ -32,20 +32,17 @@ public class DeviceInfo {
     private String model;
 
     public void validate() {
-        boolean isValid = true;
         List<String> missingParameters = new ArrayList<>(2);
 
         if (Strings.isNullOrEmpty(manufacturer)) {
-            isValid = false;
             missingParameters.add("'manufacturer'");
         }
 
         if (Strings.isNullOrEmpty(model)) {
-            isValid = false;
             missingParameters.add("'model'");
         }
 
-        if (!isValid) {
+        if(!missingParameters.isEmpty()) {
             throw new IllegalArgumentException("DeviceInfo is missing mandatory parameters: " + String.join(", ", missingParameters));
         }
     }

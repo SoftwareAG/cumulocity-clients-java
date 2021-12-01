@@ -1,7 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
 import com.cumulocity.lpwan.codec.model.DecoderOutput;
-import com.cumulocity.lpwan.codec.model.ManagedObjectProperty;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
 import com.cumulocity.lpwan.mapping.model.ManagedObjectFragment;
@@ -35,7 +34,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import static org.junit.Assert.assertTrue;
@@ -273,14 +274,14 @@ public class PayloadMappingServiceTest {
         when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
 
         setUpAlarmTypesToClearProperties(decoderOutput);
-        setUpDeviceProperties(decoderOutput);
+        setUpManagedObjectsTo(decoderOutput);
 
         payloadMappingService.handleCodecServiceResponse(decoderOutput, ManagedObjects.asManagedObject(GId.asGId("12345")), anyString());
 
         verifyMeasurements();
         verifyEvents();
         verifyAlarm();
-        verifyManagedObjectProperty();
+        verifyManagedObjectToUpdate();
         verifyAlamrTypesToClear();
     }
 
@@ -371,7 +372,7 @@ public class PayloadMappingServiceTest {
     @Test
     public void shouldTestUpdateManagedObjectPropertyThrowsException() {
 
-        setUpDeviceProperties(decoderOutput);
+        setUpManagedObjectsTo(decoderOutput);
         SDKException sdkException = new SDKException(500, "TEST ERROR MESSAGE");
         doThrow(sdkException).when(inventoryApi).update(any(ManagedObjectRepresentation.class));
 
@@ -396,18 +397,11 @@ public class PayloadMappingServiceTest {
         assertEquals(alarm.getStatus(), "CLEARED");
     }
 
-    private void verifyManagedObjectProperty() {
+    private void verifyManagedObjectToUpdate() {
         verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
         ManagedObjectRepresentation managedObject = managedObjectRepresentationCaptor.getValue();
         assertEquals(managedObject.get("deviceSample"), "#sampleValue");
-        Map<String, Object> valueMap = (Map<String, Object>) managedObject.get("newDeviceSample");
-        assertEquals(valueMap.get("value"), 11);
-        assertEquals(valueMap.get("unit"), "C");
-        Map<String, Object> parent = (Map<String, Object>) managedObject.get("newChildDeviceSample");
-        assertEquals(parent.get("childDeviceSample"), "#sampleValue_1");
-        Map<String, Object> child = (Map<String, Object>) parent.get("newChildDeviceSample");
-        assertEquals(child.get("value"), 110);
-        assertEquals(child.get("unit"), "F");
+        assertEquals(managedObject.get("newDeviceSample"), 11);
     }
 
     private void verifyAlarm() {
@@ -485,15 +479,12 @@ public class PayloadMappingServiceTest {
         decoderOutput.addEventToCreate(event);
     }
 
-    private void setUpDeviceProperties(DecoderOutput decoderOutput) {
-        decoderOutput.addPropertyToUpdateDeviceMo(new ManagedObjectProperty("deviceSample", "#sampleValue"));
-        decoderOutput.addPropertyToUpdateDeviceMo(new ManagedObjectProperty("newDeviceSample", 11, "C"));
+    private void setUpManagedObjectsTo(DecoderOutput decoderOutput) {
+        ManagedObjectRepresentation managedObject = ManagedObjects.asManagedObject(GId.asGId("12345"));
+        managedObject.setProperty("deviceSample", "#sampleValue");
+        managedObject.setProperty("newDeviceSample", 11);
 
-        List<ManagedObjectProperty> childProperties = new ArrayList<>();
-        childProperties.add(new ManagedObjectProperty("childDeviceSample", "#sampleValue_1"));
-        childProperties.add(new ManagedObjectProperty("newChildDeviceSample", 110, "F"));
-
-        decoderOutput.addPropertyToUpdateDeviceMo(new ManagedObjectProperty("newChildDeviceSample", childProperties));
+        decoderOutput.addManagedObjectToUpdate(managedObject);
     }
 
     private ArgumentMatcher<ManagedObjectRepresentation> moThat(Predicate<ManagedObjectRepresentation> moPredicate) {

@@ -161,8 +161,6 @@ public class PayloadDecoderServiceTest {
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
-        when(webClientFactory.build()).thenReturn(webClient);
-
         when(webClient.post()).thenReturn(post);
         when(post.uri(anyString())).thenReturn(uri);
         when(uri.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(uri);
