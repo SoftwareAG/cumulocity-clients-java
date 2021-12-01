@@ -7,7 +7,6 @@ import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
-import com.cumulocity.lpwan.util.LpwanConfiguration;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -60,6 +59,9 @@ public class PayloadDecoderServiceTest {
 
     @Mock
     WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    WebClientFactory webClientFactory;
 
     DecoderOutput decoderOutput = new DecoderOutput();
 
@@ -159,8 +161,7 @@ public class PayloadDecoderServiceTest {
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
-        LpwanConfiguration lpwanConfiguration = spy(new LpwanConfiguration());
-        when(lpwanConfiguration.getWebClient()).thenReturn(webClient);
+        when(webClientFactory.build()).thenReturn(webClient);
 
         when(webClient.post()).thenReturn(post);
         when(post.uri(anyString())).thenReturn(uri);

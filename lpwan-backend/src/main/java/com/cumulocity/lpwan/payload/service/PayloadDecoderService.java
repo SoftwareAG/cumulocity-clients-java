@@ -13,30 +13,40 @@ import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
-import com.cumulocity.lpwan.util.LpwanConfiguration;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class PayloadDecoderService<T extends UplinkMessage> {
+
+    private static final Duration WEBCLIENT_DEFAULT_TIMEOUT_IN_MILLIS = Duration.ofMillis(5000);
 
     @Autowired
     private MicroserviceSubscriptionsService subscriptionsService;
 
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
+
+    private Duration webClientTimeout;
 
     private WebClient webClient;
 
@@ -45,9 +55,19 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     private final MessageIdReader<T> messageIdReader;
 
     public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader){
+        this(payloadMappingService, messageIdReader, WEBCLIENT_DEFAULT_TIMEOUT_IN_MILLIS);
+    }
+
+    public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader, Duration webClientTimeout){
         this.payloadMappingService =  payloadMappingService;
         this.messageIdReader =  messageIdReader;
-        this.webClient = new LpwanConfiguration().getWebClient();
+        this.webClientTimeout = webClientTimeout;
+        this.webClient = WebClientFactory.builder()
+                .timeout(webClientTimeout)
+                .baseUrl(System.getenv("C8Y_BASEURL"))
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .build();
     }
 
     public interface MessageIdReader<T> {
@@ -156,7 +176,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     .body(Mono.just(decoderInput), DecoderInput.class)
                     .retrieve()
                     .bodyToMono(DecoderOutput.class);
-            return decoderOutput.block(Duration.ofMillis(50000));
+            return decoderOutput.block(webClientTimeout);
         } catch (Exception e) {
             String errorMessage = String.format("Error invoking the Codec microservice with context path '%s'", codecServiceContextPath);
             log.error(errorMessage, e);
@@ -207,19 +227,49 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         value = DecoderUtil.offset(value, offset);
 
         return value;
+    }
+}
 
+class WebClientFactory {
+
+    private Duration timeout;
+    private String baseUrl;
+    private String contentType;
+    private String accept;
+
+    public static WebClientFactory builder() {
+        return new WebClientFactory();
     }
 
-    /*@Bean
-    public WebClient getWebClient(){
-        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
-                .responseTimeout(Duration.ofMillis(50000))
-                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(50000, TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(50000, TimeUnit.MILLISECONDS)));
+    public WebClientFactory timeout(Duration duration) {
+        this.timeout = duration;
+        return this;
+    }
 
-        return WebClient.builder().baseUrl(System.getenv("C8Y_BASEURL"))
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+    public WebClientFactory baseUrl(String url) {
+        this.baseUrl = url;
+        return this;
+    }
+
+    public WebClientFactory contentType(String mediaType) {
+        this.contentType = mediaType;
+        return this;
+    }
+
+    public WebClientFactory accept(String mediaType) {
+        this.accept = mediaType;
+        return this;
+    }
+
+    public WebClient build() {
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf((int) timeout.toMillis()))
+                .responseTimeout(timeout)
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS)));
+        WebClient client = WebClient.builder().baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, contentType)
+                .defaultHeader(HttpHeaders.ACCEPT, accept)
                 .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
-    }*/
+        return client;
+    }
 }
