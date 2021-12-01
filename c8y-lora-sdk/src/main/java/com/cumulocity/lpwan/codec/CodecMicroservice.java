@@ -21,14 +21,9 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;

@@ -7,6 +7,7 @@
 
 package com.cumulocity.lpwan.codec.model;
 
+import com.cumulocity.model.idtype.GId;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +45,10 @@ public class DecoderInput {
 
     @NotNull
     private Long updateTime;
+
+    public GId getDeviceMoIdAsGId() {
+        return GId.asGId(deviceMoId);
+    }
 
     public void validate() {
         boolean isValid = true;

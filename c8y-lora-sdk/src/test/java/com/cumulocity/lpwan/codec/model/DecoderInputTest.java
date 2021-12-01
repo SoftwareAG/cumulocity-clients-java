@@ -7,6 +7,7 @@
 
 package com.cumulocity.lpwan.codec.model;
 
+import com.cumulocity.model.idtype.GId;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -16,6 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DecoderInputTest {
+
+    @Test
+    void doGetDeviceMoIdAsGId_success() {
+        String deviceMoIdString = "1234";
+        DecoderInput decoderInput = DecoderInput.builder().deviceMoId(deviceMoIdString).build();
+
+        assertEquals(deviceMoIdString, decoderInput.getDeviceMoId());
+        assertEquals(GId.asGId(deviceMoIdString), decoderInput.getDeviceMoIdAsGId());
+    }
 
     @Test
     void doValidate_FailForAllNullParameters() {

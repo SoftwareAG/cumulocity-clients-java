@@ -7,14 +7,20 @@
 
 package com.cumulocity.lpwan.codec.model;
 
+import com.cumulocity.model.event.Severity;
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -29,10 +35,10 @@ public class DecoderOutput {
     private List<EventRepresentation> eventsToCreate;
     private List<AlarmRepresentation> alarmsToCreate;
     private Set<String> alarmTypesToClear;
-    private List<ManagedObjectProperty> propertiesToUpdateDeviceMo;
+    private List<ManagedObjectRepresentation> managedObjectsToUpdate;
 
     static {
-        //Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
+        // Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
         new ObjectMapper().registerModule(new JodaModule());
     }
 
@@ -58,6 +64,26 @@ public class DecoderOutput {
         eventsToCreate.add(event);
     }
 
+    public EventRepresentation addEventToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable DateTime time) {
+        if (Objects.isNull(sourceId)) {
+            throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
+        }
+        if (Strings.isNullOrEmpty(type)) {
+            throw new IllegalArgumentException("DecoderOutput: 'type' parameter can't be null or empty.");
+        }
+
+        EventRepresentation event = new EventRepresentation();
+        event.setSource(ManagedObjects.asManagedObject(sourceId));
+        event.setType(type);
+        event.setText(text);
+        if(!Objects.isNull(time)) {
+            event.setDateTime(time);
+        }
+        addEventToCreate(event);
+
+        return event;
+    }
+
     public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
         if (Objects.isNull(alarmsToCreate)) {
             alarmsToCreate = new ArrayList<>();
@@ -67,6 +93,29 @@ public class DecoderOutput {
         }
 
         alarmsToCreate.add(alarm);
+    }
+
+    public AlarmRepresentation addAlarmToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable Severity severity, @Nullable DateTime time) {
+        if (Objects.isNull(sourceId)) {
+            throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
+        }
+        if (Strings.isNullOrEmpty(type)) {
+            throw new IllegalArgumentException("DecoderOutput: 'type' parameter can't be null or empty.");
+        }
+
+        AlarmRepresentation alarm = new AlarmRepresentation();
+        alarm.setSource(ManagedObjects.asManagedObject(sourceId));
+        alarm.setType(type);
+        alarm.setText(text);
+        if(!Objects.isNull(severity)) {
+            alarm.setSeverity(severity.name());
+        }
+        if(!Objects.isNull(time)) {
+            alarm.setDateTime(time);
+        }
+        addAlarmToCreate(alarm);
+
+        return alarm;
     }
 
     public void addAlarmTypeToClear(@NotBlank String alarmType) {
@@ -80,14 +129,14 @@ public class DecoderOutput {
         alarmTypesToClear.add(alarmType);
     }
 
-    public void addPropertyToUpdateDeviceMo(@NotNull ManagedObjectProperty managedObjectProperty) {
-        if (Objects.isNull(propertiesToUpdateDeviceMo)) {
-            propertiesToUpdateDeviceMo = new ArrayList<>();
+    public void addManagedObjectToUpdate(@NotNull ManagedObjectRepresentation managedObject) {
+        if (Objects.isNull(managedObjectsToUpdate)) {
+            managedObjectsToUpdate = new ArrayList<>();
         }
-        if (Objects.isNull(managedObjectProperty)) {
-            throw new IllegalArgumentException("DecoderOutput: 'managedObjectProperty' parameter can't be null.");
+        if (Objects.isNull(managedObject)) {
+            throw new IllegalArgumentException("DecoderOutput: 'managedObject' parameter can't be null.");
         }
 
-        propertiesToUpdateDeviceMo.add(managedObjectProperty);
+        managedObjectsToUpdate.add(managedObject);
     }
 }
