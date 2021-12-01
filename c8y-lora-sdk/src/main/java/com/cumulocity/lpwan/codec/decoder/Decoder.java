@@ -5,7 +5,7 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.codec;
+package com.cumulocity.lpwan.codec.decoder;
 
 import com.cumulocity.lpwan.codec.exception.DecoderException;
 import com.cumulocity.lpwan.codec.model.DecoderInput;

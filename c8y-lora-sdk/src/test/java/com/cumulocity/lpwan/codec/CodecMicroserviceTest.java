@@ -54,6 +54,9 @@ public class CodecMicroserviceTest {
     @Mock
     private IdentityApi identityApi;
 
+    @Mock
+    Codec codec;
+
     private DeviceInfo deviceInfo_1 = new DeviceInfo("Manufacturer_1", "Model_1");
     private String deviceInfo_1_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1.getManufacturer(), deviceInfo_1.getModel());
     private DeviceInfo deviceInfo_2 = new DeviceInfo("Manufacturer_2", "Model_2");
@@ -64,48 +67,6 @@ public class CodecMicroserviceTest {
     private MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
     private MicroserviceSubscriptionAddedEvent microserviceSubscriptionAddedEvent = new MicroserviceSubscriptionAddedEvent(credentials);
 
-    @InjectMocks
-    private CodecMicroservice validCodecMicroservice_with_2_valid_devices = new CodecMicroservice() {
-        @Override
-        public String getMicroserviceContextPath() {
-            return "testServiceContextPath";
-        }
-
-        @Override
-        public Set<DeviceInfo> supportsDevices() {
-            return Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_2})
-                    .collect(Collectors.toCollection(HashSet::new));
-        }
-    };
-
-    @InjectMocks
-    private CodecMicroservice codecMicroservice_with_invalidContextPath = new CodecMicroservice() {
-        @Override
-        public String getMicroserviceContextPath() {
-            return null;
-        }
-
-        @Override
-        public Set<DeviceInfo> supportsDevices() {
-            return Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_2})
-                    .collect(Collectors.toCollection(HashSet::new));
-        }
-    };
-
-    @InjectMocks
-    private CodecMicroservice codecMicroservice_with_invalidDeviceInfo = new CodecMicroservice() {
-        @Override
-        public String getMicroserviceContextPath() {
-            return "testServiceContextPath";
-        }
-
-        @Override
-        public Set<DeviceInfo> supportsDevices() {
-            return Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_invalid, deviceInfo_2})
-                    .collect(Collectors.toCollection(HashSet::new));
-        }
-    };
-
     @Captor
     private ArgumentCaptor<ID> idCaptor;
 
@@ -114,6 +75,9 @@ public class CodecMicroserviceTest {
 
     @Captor
     private ArgumentCaptor<ManagedObjectRepresentation> managedObjectRepresentationCaptor;
+
+    @InjectMocks
+    CodecMicroservice codecMicroservice;
 
 
     @Before
@@ -129,7 +93,9 @@ public class CodecMicroserviceTest {
         setupIdentityApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
         setupInventoryApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
 
-        invokeRegisterDeviceTypes(validCodecMicroservice_with_2_valid_devices);
+        setup_codec_with_2_valid_devices();
+
+        invokeRegisterDeviceTypes(codecMicroservice);
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
         List<ID> allIds = idCaptor.getAllValues();
@@ -155,14 +121,14 @@ public class CodecMicroserviceTest {
         assertEquals(C8Y_LPWAN_DEVICE_TYPE, deviceInfo_1_DeviceType_MO.getType());
         assertEquals(LPWAN_FIELDBUS_TYPE, deviceInfo_1_DeviceType_MO.get(FIELDBUS_TYPE));
 
-        LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel(), validCodecMicroservice_with_2_valid_devices.getMicroserviceContextPath());
+        LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel(), codec.getMicroserviceContextPath());
         assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 
         verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
         ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
         assertEquals(deviceInfo_2_deviceTypeName + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
 
-        LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel(), validCodecMicroservice_with_2_valid_devices.getMicroserviceContextPath());
+        LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel(), codec.getMicroserviceContextPath());
         assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
     }
 
@@ -174,7 +140,8 @@ public class CodecMicroserviceTest {
         setupIdentityApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
         setupInventoryApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, true);
 
-        invokeRegisterDeviceTypes(validCodecMicroservice_with_2_valid_devices);
+        setup_codec_with_2_valid_devices();
+        invokeRegisterDeviceTypes(codecMicroservice);
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
@@ -193,7 +160,8 @@ public class CodecMicroserviceTest {
         setupIdentityApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, true);
         setupInventoryApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
 
-        invokeRegisterDeviceTypes(validCodecMicroservice_with_2_valid_devices);
+        setup_codec_with_2_valid_devices();
+        invokeRegisterDeviceTypes(codecMicroservice);
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
@@ -212,7 +180,8 @@ public class CodecMicroserviceTest {
         setupIdentityApi(deviceInfo_2, deviceInfo_2_deviceTypeName, false, false);
         setupInventoryApi(deviceInfo_2, deviceInfo_2_deviceTypeName, false, false);
 
-        invokeRegisterDeviceTypes(codecMicroservice_with_invalidContextPath);
+        setup_codec_with_invalidContextPath();
+        invokeRegisterDeviceTypes(codecMicroservice);
 
         verify(identityApi, never()).getExternalId(idCaptor.capture());
 
@@ -234,7 +203,8 @@ public class CodecMicroserviceTest {
         setupIdentityApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
         setupInventoryApi(deviceInfo_2, deviceInfo_2_deviceTypeName, true, false);
 
-        invokeRegisterDeviceTypes(codecMicroservice_with_invalidDeviceInfo);
+        setup_codec_with_invalidDeviceInfo();
+        invokeRegisterDeviceTypes(codecMicroservice);
 
         verify(identityApi, times(2)).getExternalId(idCaptor.capture());
 
@@ -243,6 +213,24 @@ public class CodecMicroserviceTest {
         verify(inventoryApi).create(managedObjectRepresentationCaptor.capture());
 
         verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
+    }
+
+    private void setup_codec_with_2_valid_devices() {
+        when(codec.getMicroserviceContextPath()).thenReturn("testServiceContextPath");
+        when(codec.supportsDevices()).thenReturn(Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_2})
+                .collect(Collectors.toCollection(HashSet::new)));
+    }
+
+    private void setup_codec_with_invalidContextPath() {
+        when(codec.getMicroserviceContextPath()).thenReturn(null);
+        when(codec.supportsDevices()).thenReturn(Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_2})
+                .collect(Collectors.toCollection(HashSet::new)));
+    }
+
+    private void setup_codec_with_invalidDeviceInfo() {
+        when(codec.getMicroserviceContextPath()).thenReturn("testServiceContextPath");
+        when(codec.supportsDevices()).thenReturn(Stream.of(new DeviceInfo[] {deviceInfo_1, deviceInfo_invalid, deviceInfo_2})
+                .collect(Collectors.toCollection(HashSet::new)));
     }
 
     private void invokeRegisterDeviceTypes(CodecMicroservice codecMicroservice) {

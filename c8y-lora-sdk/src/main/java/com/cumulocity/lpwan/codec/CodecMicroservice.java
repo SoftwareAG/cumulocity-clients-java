@@ -21,10 +21,14 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -33,7 +37,8 @@ import java.util.Set;
  * CodecMicroservice should be implemented by the microservice implementer to advertise the devices it supports.
  */
 @Slf4j
-public abstract class CodecMicroservice {
+@ComponentScan
+public class CodecMicroservice {
 
     static final String DEVICE_TYPE_DESCRIPTION_FORMAT = "Device protocol that supports device model '%s' manufactured by '%s'";
     static final String C8Y_SMART_REST_DEVICE_IDENTIFIER = "c8y_SmartRestDeviceIdentifier";
@@ -54,19 +59,8 @@ public abstract class CodecMicroservice {
     @Autowired
     private IdentityApi identityApi;
 
-    /**
-     * This method should return a set of uniquely supported devices w.r.t the device manufacturer and the device model.
-     *
-     * @return Set<DeviceInfo>
-     */
-    public @NotNull @NotEmpty Set<DeviceInfo> supportsDevices() {
-        throw new UnsupportedOperationException("Needs implementation for supportsDevices()");
-    }
-
-    /**
-     * @return
-     */
-    public abstract @NotNull @NotEmpty String getMicroserviceContextPath();
+    @Autowired
+    private Codec codec;
 
     /**
      * This method should register a device type upon subscribing the codec microservice.
@@ -77,13 +71,13 @@ public abstract class CodecMicroservice {
     void registerDeviceTypes(MicroserviceSubscriptionAddedEvent event) {
         contextService.runWithinContext(event.getCredentials(),
                 () -> {
-                    if (Strings.isNullOrEmpty(getMicroserviceContextPath())) {
+                    if (Strings.isNullOrEmpty(codec.getMicroserviceContextPath())) {
                         log.error("CodecMicroservice#getMicroserviceContextPath method is incorrectly implemented. It is returning a null or an empty string. Skipping the Device Type creation for the tenant {}.",
                                 event.getCredentials().getTenant());
                         return;
                     }
 
-                    Set<DeviceInfo> supportedDevices = supportsDevices();
+                    Set<DeviceInfo> supportedDevices = codec.supportsDevices();
                     for (DeviceInfo supportedDevice : supportedDevices) {
                         try {
                             supportedDevice.validate();
@@ -93,7 +87,7 @@ public abstract class CodecMicroservice {
                         }
 
                         String supportedDeviceTypeName = formDeviceTypeName(supportedDevice);
-                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), getMicroserviceContextPath());
+                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), codec.getMicroserviceContextPath());
                         Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
                         if (!deviceType.isPresent()) {
                             log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);

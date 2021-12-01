@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.codec.service;
 
-import com.cumulocity.lpwan.codec.Decoder;
+import com.cumulocity.lpwan.codec.decoder.Decoder;
 import com.cumulocity.lpwan.codec.exception.DecoderException;
 import com.cumulocity.lpwan.codec.model.DecoderInput;
 import com.cumulocity.lpwan.codec.model.DecoderOutput;

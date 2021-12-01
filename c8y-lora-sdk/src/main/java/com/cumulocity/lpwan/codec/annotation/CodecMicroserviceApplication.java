@@ -7,8 +7,7 @@
 
 package com.cumulocity.lpwan.codec.annotation;
 
-import com.cumulocity.lpwan.codec.rest.CodecRestController;
-import com.cumulocity.lpwan.codec.service.CodecService;
+import com.cumulocity.lpwan.codec.CodecMicroservice;
 import com.cumulocity.microservice.autoconfigure.MicroserviceApplication;
 import org.springframework.context.annotation.Import;
 
@@ -24,6 +23,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @MicroserviceApplication
-@Import({CodecRestController.class, CodecService.class})
+@Import(CodecMicroservice.class)
 public @interface CodecMicroserviceApplication {
 }
