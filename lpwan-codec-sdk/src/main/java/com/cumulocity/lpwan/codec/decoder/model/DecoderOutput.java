@@ -9,6 +9,7 @@ package com.cumulocity.lpwan.codec.decoder.model;
 
 import com.cumulocity.model.event.Severity;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.measurement.MeasurementValue;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -23,6 +24,7 @@ import org.joda.time.DateTime;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -62,20 +64,46 @@ public class DecoderOutput {
         measurementsToCreate.add(measurement);
     }
 
-//    public MeasurementRepresentation addMeasurementToCreate(@NotNull GId sourceId, @Nullable DateTime time, @Nullable Measurement... measurements) {
-//        ManagedObjectRepresentation source = ManagedObjects.asManagedObject(sourceId);
-//
-//        MeasurementRepresentation measurementRepresentation = new MeasurementRepresentation();
-//        measurementRepresentation.setSource(source);
-//        if (Objects.nonNull(time)) {
-//            measurementRepresentation.setDateTime(time);
-//        }
-//        else {
-//            measurementRepresentation.setDateTime(DateTime.now());
-//        }
-//
-//        return measurementRepresentation;
-//    }
+    public MeasurementRepresentation addMeasurementToCreate(@NotNull GId sourceId, @NotBlank String type, @NotBlank String fragmentName, @Nullable String seriesName, @NotNull BigDecimal value, @Nullable String unit, @Nullable DateTime time) {
+        if (Objects.isNull(sourceId)) {
+            throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
+        }
+        if (Strings.isNullOrEmpty(type)) {
+            throw new IllegalArgumentException("DecoderOutput: 'type' parameter can't be null or empty.");
+        }
+        if (Strings.isNullOrEmpty(fragmentName)) {
+            throw new IllegalArgumentException("DecoderOutput: 'fragmentName' parameter can't be null or empty.");
+        }
+        if (Objects.isNull(value)) {
+            throw new IllegalArgumentException("DecoderOutput: 'value' parameter can't be null.");
+        }
+
+        ManagedObjectRepresentation source = ManagedObjects.asManagedObject(sourceId);
+
+        MeasurementRepresentation measurementRepresentation = new MeasurementRepresentation();
+        measurementRepresentation.setSource(source);
+        measurementRepresentation.setType(type);
+
+        MeasurementValue measurementValue = new MeasurementValue(value, unit);
+        if (Strings.isNullOrEmpty(seriesName)) {
+            measurementRepresentation.setProperty(fragmentName, measurementValue);
+        }
+        else {
+            Map<String, MeasurementValue> seriesMap = new HashMap<>();
+            seriesMap.put(seriesName, measurementValue);
+
+            measurementRepresentation.setProperty(fragmentName, seriesMap);
+        }
+
+        if (Objects.nonNull(time)) {
+            measurementRepresentation.setDateTime(time);
+        }
+        else {
+            measurementRepresentation.setDateTime(DateTime.now());
+        }
+
+        return measurementRepresentation;
+    }
 
     public void addEventToCreate(@NotNull EventRepresentation event) {
         if (Objects.isNull(eventsToCreate)) {
@@ -88,7 +116,7 @@ public class DecoderOutput {
         eventsToCreate.add(event);
     }
 
-    public EventRepresentation addEventToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable DateTime time) {
+    public EventRepresentation addEventToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
             throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
         }
@@ -100,12 +128,18 @@ public class DecoderOutput {
         event.setSource(ManagedObjects.asManagedObject(sourceId));
         event.setType(type);
         event.setText(text);
+
+        if (Objects.nonNull(properties)) {
+            event.setAttrs(properties);
+        }
+
         if (Objects.nonNull(time)) {
             event.setDateTime(time);
         }
         else {
             event.setDateTime(DateTime.now());
         }
+
         addEventToCreate(event);
 
         return event;
@@ -122,27 +156,34 @@ public class DecoderOutput {
         alarmsToCreate.add(alarm);
     }
 
-    public AlarmRepresentation addAlarmToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable Severity severity, @Nullable DateTime time) {
+    public AlarmRepresentation addAlarmToCreate(@NotNull GId sourceId, @NotBlank String type, @NotNull Severity severity, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
             throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
         }
         if (Strings.isNullOrEmpty(type)) {
             throw new IllegalArgumentException("DecoderOutput: 'type' parameter can't be null or empty.");
         }
+        if (Objects.isNull(severity)) {
+            throw new IllegalArgumentException("DecoderOutput: 'severity' parameter can't be null or empty.");
+        }
 
         AlarmRepresentation alarm = new AlarmRepresentation();
         alarm.setSource(ManagedObjects.asManagedObject(sourceId));
         alarm.setType(type);
         alarm.setText(text);
-        if (Objects.nonNull(severity)) {
-            alarm.setSeverity(severity.name());
+        alarm.setSeverity(severity.name());
+
+        if (Objects.nonNull(properties)) {
+            alarm.setAttrs(properties);
         }
+
         if (Objects.nonNull(time)) {
             alarm.setDateTime(time);
         }
         else {
             alarm.setDateTime(DateTime.now());
         }
+
         addAlarmToCreate(alarm);
 
         return alarm;

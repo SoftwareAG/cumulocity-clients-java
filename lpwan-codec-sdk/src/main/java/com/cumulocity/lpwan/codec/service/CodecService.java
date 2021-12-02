@@ -7,10 +7,10 @@
 
 package com.cumulocity.lpwan.codec.service;
 
+import com.cumulocity.lpwan.codec.decoder.Decoder;
 import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
 import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.decoder.Decoder;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
