@@ -1,6 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.device.codec.decoder.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
 import com.cumulocity.lpwan.mapping.model.ManagedObjectFragment;
