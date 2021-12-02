@@ -10,6 +10,7 @@ package com.cumulocity.lpwan.codec.decoder.model;
 import com.cumulocity.model.event.CumulocitySeverities;
 import com.cumulocity.model.event.Severity;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.measurement.MeasurementValue;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -18,6 +19,7 @@ import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +38,49 @@ class DecoderOutputTest {
     }
 
     @Test
+    void doAddMeasurementToCreate_WithParametersMethod_Success() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        GId sourceId = GId.asGId("111");
+        String type = "c8y_Steam";
+        String fragmentName = "c8y_Steam";
+        String seriesName = "Temperature";
+        BigDecimal value = BigDecimal.valueOf(10);
+        String unit = "C";
+        DateTime timeNow = DateTime.now();
+
+        MeasurementRepresentation measurementRepresentation = decoderOutput.addMeasurementToCreate(sourceId, type, fragmentName, seriesName, value, unit, timeNow);
+        assertEquals(sourceId, measurementRepresentation.getSource().getId());
+        assertEquals(type, measurementRepresentation.getType());
+
+        Object fragment = measurementRepresentation.getProperty(fragmentName);
+        assertNotNull(fragment);
+        assertTrue(fragment.getClass().isAssignableFrom(HashMap.class));
+        Object series = ((Map)fragment).get(seriesName);
+        assertTrue(series.getClass().isAssignableFrom(MeasurementValue.class));
+        assertEquals(BigDecimal.valueOf(10), ((MeasurementValue)series).getValue());
+        assertEquals("C", ((MeasurementValue)series).getUnit());
+        assertEquals(timeNow, decoderOutput.getMeasurementsToCreate().get(0).getDateTime());
+    }
+
+    @Test
+    void doAddMeasurementToCreate_WithParametersMethod_FailForNullInputs() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addMeasurementToCreate(null, null, null, null, null, null, null));
+        assertEquals("DecoderOutput: 'sourceId' parameter can't be null.", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addMeasurementToCreate(GId.asGId("111"), null, null, null, null, null, null));
+        assertEquals("DecoderOutput: 'type' parameter can't be null or empty.", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addMeasurementToCreate(GId.asGId("111"), "type", null, null, null, null, null));
+        assertEquals("DecoderOutput: 'fragmentName' parameter can't be null or empty.", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addMeasurementToCreate(GId.asGId("111"), "type", "fragmentName", null, null, null, null));
+        assertEquals("DecoderOutput: 'value' parameter can't be null.", exception.getMessage());
+    }
+
+    @Test
     void doAddMeasurementToCreate_FailForNullMeasurement() {
         DecoderOutput decoderOutput = new DecoderOutput();
 
@@ -51,6 +96,87 @@ class DecoderOutputTest {
         decoderOutput.addAlarmToCreate(alarmRepresentation);
 
         assertEquals(alarmRepresentation, decoderOutput.getAlarmsToCreate().get(0));
+    }
+
+    @Test
+    void doAddAlarmToCreate_WithParametersMethod_Success() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        GId sourceId = GId.asGId("111");
+        String alarm_type = "Alarm Type test";
+        Severity alarm_severity = CumulocitySeverities.CRITICAL;
+        String alarm_text = "Alarm Text test";
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("property-1", "proverty-1 value");
+        DateTime timeNow = DateTime.now();
+        AlarmRepresentation alarmRepresentation = decoderOutput.addAlarmToCreate(sourceId, alarm_type, alarm_severity, alarm_text, properties, timeNow);
+
+        assertEquals(alarmRepresentation, decoderOutput.getAlarmsToCreate().get(0));
+        assertEquals(sourceId, decoderOutput.getAlarmsToCreate().get(0).getSource().getId());
+        assertEquals(alarm_type, decoderOutput.getAlarmsToCreate().get(0).getType());
+        assertEquals(alarm_severity.name(), decoderOutput.getAlarmsToCreate().get(0).getSeverity());
+        assertEquals(alarm_text, decoderOutput.getAlarmsToCreate().get(0).getText());
+        assertEquals(properties, decoderOutput.getAlarmsToCreate().get(0).getAttrs());
+        assertEquals(timeNow, decoderOutput.getAlarmsToCreate().get(0).getDateTime());
+    }
+
+    @Test
+    void doAddAlarmToCreate_WithParametersMethod_AlarmTextPropertiesAndTimeAsNull_Success() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        GId sourceId = GId.asGId("111");
+        String alarm_type = "Alarm Type test";
+        Severity alarm_severity = CumulocitySeverities.CRITICAL;
+        AlarmRepresentation alarmRepresentation = decoderOutput.addAlarmToCreate(sourceId, alarm_type, alarm_severity, null, null, null);
+
+        assertEquals(alarmRepresentation, decoderOutput.getAlarmsToCreate().get(0));
+        assertEquals(sourceId, decoderOutput.getAlarmsToCreate().get(0).getSource().getId());
+        assertEquals(alarm_type, decoderOutput.getAlarmsToCreate().get(0).getType());
+        assertEquals(alarm_severity.name(), decoderOutput.getAlarmsToCreate().get(0).getSeverity());
+        assertNull(decoderOutput.getAlarmsToCreate().get(0).getText());
+        assertNotNull(decoderOutput.getAlarmsToCreate().get(0).getDateTime());
+    }
+
+    @Test
+    void doAddAlarmToCreate_WithParametersMethod_FailForNullSourceId() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        String alarm_type = "Alarm Type test";
+        Severity alarm_severity = CumulocitySeverities.CRITICAL;
+        String alarm_text = "Alarm Text test";
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("property-1", "proverty-1 value");
+        DateTime timeNow = DateTime.now();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(null, alarm_type, alarm_severity, alarm_text, properties, timeNow));
+        assertEquals("DecoderOutput: 'sourceId' parameter can't be null.", exception.getMessage());
+    }
+
+    @Test
+    void doAddAlarmToCreate_WithParametersMethod_FailForNullAlarmType() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        GId sourceId = GId.asGId("111");
+        Severity alarm_severity = CumulocitySeverities.CRITICAL;
+        String alarm_text = "Alarm Text test";
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("property-1", "proverty-1 value");
+        DateTime timeNow = DateTime.now();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(sourceId, null, alarm_severity, alarm_text, properties, timeNow));
+        assertEquals("DecoderOutput: 'type' parameter can't be null or empty.", exception.getMessage());
+    }
+
+    @Test
+    void doAddAlarmToCreate_WithParametersMethod_FailForNullSeverity() {
+        DecoderOutput decoderOutput = new DecoderOutput();
+
+        GId sourceId = GId.asGId("111");
+        String alarm_type = "Alarm Type test";
+        String alarm_text = "Alarm Text test";
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("property-1", "proverty-1 value");
+        DateTime timeNow = DateTime.now();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(sourceId, alarm_type, null, alarm_text, properties, timeNow));
+        assertEquals("DecoderOutput: 'severity' parameter can't be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -150,87 +276,6 @@ class DecoderOutputTest {
 
         assertTrue(decoderOutput.getAlarmTypesToClear().contains("AAA"));
         assertTrue(decoderOutput.getAlarmTypesToClear().contains("BBB"));
-    }
-
-    @Test
-    void doAddAlarmToCreate_WithParametersMethod_Success() {
-        DecoderOutput decoderOutput = new DecoderOutput();
-
-        GId sourceId = GId.asGId("111");
-        String alarm_type = "Alarm Type test";
-        Severity alarm_severity = CumulocitySeverities.CRITICAL;
-        String alarm_text = "Alarm Text test";
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("property-1", "proverty-1 value");
-        DateTime timeNow = DateTime.now();
-        AlarmRepresentation alarmRepresentation = decoderOutput.addAlarmToCreate(sourceId, alarm_type, alarm_severity, alarm_text, properties, timeNow);
-
-        assertEquals(alarmRepresentation, decoderOutput.getAlarmsToCreate().get(0));
-        assertEquals(sourceId, decoderOutput.getAlarmsToCreate().get(0).getSource().getId());
-        assertEquals(alarm_type, decoderOutput.getAlarmsToCreate().get(0).getType());
-        assertEquals(alarm_severity.name(), decoderOutput.getAlarmsToCreate().get(0).getSeverity());
-        assertEquals(alarm_text, decoderOutput.getAlarmsToCreate().get(0).getText());
-        assertEquals(properties, decoderOutput.getAlarmsToCreate().get(0).getAttrs());
-        assertEquals(timeNow, decoderOutput.getAlarmsToCreate().get(0).getDateTime());
-    }
-
-    @Test
-    void doAddAlarmToCreate_WithParametersMethod_AlarmTextPropertiesAndTimeAsNull_Success() {
-        DecoderOutput decoderOutput = new DecoderOutput();
-
-        GId sourceId = GId.asGId("111");
-        String alarm_type = "Alarm Type test";
-        Severity alarm_severity = CumulocitySeverities.CRITICAL;
-        AlarmRepresentation alarmRepresentation = decoderOutput.addAlarmToCreate(sourceId, alarm_type, alarm_severity, null, null, null);
-
-        assertEquals(alarmRepresentation, decoderOutput.getAlarmsToCreate().get(0));
-        assertEquals(sourceId, decoderOutput.getAlarmsToCreate().get(0).getSource().getId());
-        assertEquals(alarm_type, decoderOutput.getAlarmsToCreate().get(0).getType());
-        assertEquals(alarm_severity.name(), decoderOutput.getAlarmsToCreate().get(0).getSeverity());
-        assertNull(decoderOutput.getAlarmsToCreate().get(0).getText());
-        assertNotNull(decoderOutput.getAlarmsToCreate().get(0).getDateTime());
-    }
-
-    @Test
-    void doAddAlarmToCreate_WithParametersMethod_FailForNullSourceId() {
-        DecoderOutput decoderOutput = new DecoderOutput();
-
-        String alarm_type = "Alarm Type test";
-        Severity alarm_severity = CumulocitySeverities.CRITICAL;
-        String alarm_text = "Alarm Text test";
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("property-1", "proverty-1 value");
-        DateTime timeNow = DateTime.now();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(null, alarm_type, alarm_severity, alarm_text, properties, timeNow));
-        assertEquals("DecoderOutput: 'sourceId' parameter can't be null.", exception.getMessage());
-    }
-
-    @Test
-    void doAddAlarmToCreate_WithParametersMethod_FailForNullAlarmType() {
-        DecoderOutput decoderOutput = new DecoderOutput();
-
-        GId sourceId = GId.asGId("111");
-        Severity alarm_severity = CumulocitySeverities.CRITICAL;
-        String alarm_text = "Alarm Text test";
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("property-1", "proverty-1 value");
-        DateTime timeNow = DateTime.now();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(sourceId, null, alarm_severity, alarm_text, properties, timeNow));
-        assertEquals("DecoderOutput: 'type' parameter can't be null or empty.", exception.getMessage());
-    }
-
-    @Test
-    void doAddAlarmToCreate_WithParametersMethod_FailForNullSeverity() {
-        DecoderOutput decoderOutput = new DecoderOutput();
-
-        GId sourceId = GId.asGId("111");
-        String alarm_type = "Alarm Type test";
-        String alarm_text = "Alarm Text test";
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("property-1", "proverty-1 value");
-        DateTime timeNow = DateTime.now();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addAlarmToCreate(sourceId, alarm_type, null, alarm_text, properties, timeNow));
-        assertEquals("DecoderOutput: 'severity' parameter can't be null or empty.", exception.getMessage());
     }
 
     @Test

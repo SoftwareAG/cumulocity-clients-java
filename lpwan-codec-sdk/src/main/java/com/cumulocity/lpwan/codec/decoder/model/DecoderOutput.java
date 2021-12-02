@@ -102,6 +102,8 @@ public class DecoderOutput {
             measurementRepresentation.setDateTime(DateTime.now());
         }
 
+        addMeasurementToCreate(measurementRepresentation);
+
         return measurementRepresentation;
     }
 
