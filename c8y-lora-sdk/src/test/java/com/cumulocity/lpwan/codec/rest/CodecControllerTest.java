@@ -7,8 +7,8 @@
 
 package com.cumulocity.lpwan.codec.rest;
 
-import com.cumulocity.lpwan.codec.model.DecoderInput;
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = CodecRestController.class)
+@SpringBootTest(classes = CodecController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @EnableWebMvc
-public class CodecRestControllerTest {
+public class CodecControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

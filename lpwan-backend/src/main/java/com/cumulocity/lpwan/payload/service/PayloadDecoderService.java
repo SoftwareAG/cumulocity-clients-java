@@ -1,7 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.model.DecoderInput;
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
@@ -85,8 +85,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         String payload = uplink.getPayloadHex();
         MessageIdMapping messageIdMapping = messageIdConfiguration.getMessageIdMapping();
         try {
-            int messageId = DecoderUtil.extractDecimalFromHex(payload, messageIdMapping.getStartBit(), messageIdMapping.getNoBits());
-            return messageId;
+            return DecoderUtil.extractDecimalFromHex(payload, messageIdMapping.getStartBit(), messageIdMapping.getNoBits());
         } catch (Exception e) {
             String errorMsg = "Error extracting message id from payload: " + e.getMessage();
             log.error(errorMsg);
@@ -262,14 +261,13 @@ class WebClientFactory {
     }
 
     public WebClient build() {
-        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Integer.valueOf((int) timeout.toMillis()))
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) timeout.toMillis())
                 .responseTimeout(timeout)
                 .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS))
                         .addHandlerLast(new WriteTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS)));
-        WebClient client = WebClient.builder().baseUrl(baseUrl)
+        return WebClient.builder().baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, contentType)
                 .defaultHeader(HttpHeaders.ACCEPT, accept)
                 .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
-        return client;
     }
 }

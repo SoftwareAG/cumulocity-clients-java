@@ -1,6 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.*;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
@@ -317,14 +317,12 @@ public class PayloadMappingService {
             }
 
             //Update device managed object
-            List<ManagedObjectRepresentation> managedObjectsToUpdate = decoderOutput.getManagedObjectsToUpdate();
-            if (Objects.nonNull(managedObjectsToUpdate) && !managedObjectsToUpdate.isEmpty()) {
-                for (ManagedObjectRepresentation oneManagedObject : managedObjectsToUpdate) {
-                    try {
-                        inventoryApi.update(oneManagedObject);
-                    } catch (SDKException e) {
-                        throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", oneManagedObject.getId().getValue(), deviceEui), e);
-                    }
+            ManagedObjectRepresentation deviceManagedObjectToUpdate = decoderOutput.getDeviceManagedObjectToUpdate();
+            if (Objects.nonNull(deviceManagedObjectToUpdate)) {
+                try {
+                    inventoryApi.update(deviceManagedObjectToUpdate);
+                } catch (SDKException e) {
+                    throw new PayloadDecodingFailedException(String.format("Unable to update the device with id '%s' and device EUI '%s'", deviceManagedObjectToUpdate.getId().getValue(), deviceEui), e);
                 }
             }
         }

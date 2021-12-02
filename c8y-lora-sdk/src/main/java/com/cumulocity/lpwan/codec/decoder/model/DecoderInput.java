@@ -5,8 +5,9 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.codec.model;
+package com.cumulocity.lpwan.codec.decoder.model;
 
+import com.cumulocity.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.model.idtype.GId;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;

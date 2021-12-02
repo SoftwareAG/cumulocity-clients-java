@@ -5,7 +5,7 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.codec.model;
+package com.cumulocity.lpwan.codec.decoder.model;
 
 import com.cumulocity.model.event.Severity;
 import com.cumulocity.model.idtype.GId;
@@ -44,7 +44,7 @@ public class DecoderOutput {
     private Set<String> alarmTypesToClear;
 
     @Nullable
-    private List<ManagedObjectRepresentation> managedObjectsToUpdate;
+    private ManagedObjectRepresentation deviceManagedObjectToUpdate;
 
     static {
         // Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
@@ -138,14 +138,11 @@ public class DecoderOutput {
         alarmTypesToClear.add(alarmType);
     }
 
-    public void addManagedObjectToUpdate(@NotNull ManagedObjectRepresentation managedObject) {
-        if (Objects.isNull(managedObjectsToUpdate)) {
-            managedObjectsToUpdate = new ArrayList<>();
-        }
-        if (Objects.isNull(managedObject)) {
-            throw new IllegalArgumentException("DecoderOutput: 'managedObject' parameter can't be null.");
+    public void setDeviceManagedObjectToUpdate(@NotNull ManagedObjectRepresentation deviceManagedObject) {
+        if (Objects.isNull(deviceManagedObject)) {
+            throw new IllegalArgumentException("DecoderOutput: 'deviceManagedObject' parameter can't be null.");
         }
 
-        managedObjectsToUpdate.add(managedObject);
+        deviceManagedObjectToUpdate = deviceManagedObject;
     }
 }

@@ -7,9 +7,9 @@
 
 package com.cumulocity.lpwan.codec.rest;
 
+import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.exception.DecoderException;
-import com.cumulocity.lpwan.codec.model.DecoderInput;
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.service.CodecService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
-public class CodecRestController {
+public class CodecController {
 
     @Autowired
     private CodecService codecService;

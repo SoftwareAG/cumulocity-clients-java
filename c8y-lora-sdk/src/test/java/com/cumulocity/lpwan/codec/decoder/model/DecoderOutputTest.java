@@ -5,7 +5,7 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.codec.model;
+package com.cumulocity.lpwan.codec.decoder.model;
 
 import com.cumulocity.model.event.CumulocitySeverities;
 import com.cumulocity.model.event.Severity;
@@ -221,20 +221,20 @@ class DecoderOutputTest {
     }
 
     @Test
-    void doAddManagedObjectToUpdate_Success() {
+    void doSetManagedObjectToUpdate_Success() {
         DecoderOutput decoderOutput = new DecoderOutput();
 
         ManagedObjectRepresentation managedObjectRepresentation = ManagedObjects.asManagedObject(GId.asGId("111"));
-        decoderOutput.addManagedObjectToUpdate(managedObjectRepresentation);
+        decoderOutput.setDeviceManagedObjectToUpdate(managedObjectRepresentation);
 
-        assertEquals(managedObjectRepresentation, decoderOutput.getManagedObjectsToUpdate().get(0));
+        assertEquals(managedObjectRepresentation, decoderOutput.getDeviceManagedObjectToUpdate());
     }
 
     @Test
     void doAddManagedObjectToUpdate_FailForNull() {
         DecoderOutput decoderOutput = new DecoderOutput();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.addManagedObjectToUpdate(null));
-        assertEquals("DecoderOutput: 'managedObject' parameter can't be null.", exception.getMessage());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> decoderOutput.setDeviceManagedObjectToUpdate(null));
+        assertEquals("DecoderOutput: 'deviceManagedObject' parameter can't be null.", exception.getMessage());
     }
 }

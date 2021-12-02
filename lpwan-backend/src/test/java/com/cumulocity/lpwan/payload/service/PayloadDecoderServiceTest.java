@@ -1,7 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.model.DecoderInput;
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;

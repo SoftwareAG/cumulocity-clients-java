@@ -1,6 +1,6 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.model.DecoderOutput;
+import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
 import com.cumulocity.lpwan.mapping.model.ManagedObjectFragment;
@@ -274,7 +274,7 @@ public class PayloadMappingServiceTest {
         when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
 
         setUpAlarmTypesToClearProperties(decoderOutput);
-        setUpManagedObjectsTo(decoderOutput);
+        setUpDeviceManagedObjectToUpdate(decoderOutput);
 
         payloadMappingService.handleCodecServiceResponse(decoderOutput, ManagedObjects.asManagedObject(GId.asGId("12345")), anyString());
 
@@ -370,9 +370,9 @@ public class PayloadMappingServiceTest {
     }
 
     @Test
-    public void shouldTestUpdateManagedObjectPropertyThrowsException() {
+    public void shouldTestSetDeviceManagedObjectToUpdateThrowsException() {
 
-        setUpManagedObjectsTo(decoderOutput);
+        setUpDeviceManagedObjectToUpdate(decoderOutput);
         SDKException sdkException = new SDKException(500, "TEST ERROR MESSAGE");
         doThrow(sdkException).when(inventoryApi).update(any(ManagedObjectRepresentation.class));
 
@@ -479,12 +479,12 @@ public class PayloadMappingServiceTest {
         decoderOutput.addEventToCreate(event);
     }
 
-    private void setUpManagedObjectsTo(DecoderOutput decoderOutput) {
+    private void setUpDeviceManagedObjectToUpdate(DecoderOutput decoderOutput) {
         ManagedObjectRepresentation managedObject = ManagedObjects.asManagedObject(GId.asGId("12345"));
         managedObject.setProperty("deviceSample", "#sampleValue");
         managedObject.setProperty("newDeviceSample", 11);
 
-        decoderOutput.addManagedObjectToUpdate(managedObject);
+        decoderOutput.setDeviceManagedObjectToUpdate(managedObject);
     }
 
     private ArgumentMatcher<ManagedObjectRepresentation> moThat(Predicate<ManagedObjectRepresentation> moPredicate) {
