@@ -2,7 +2,7 @@ package com.cumulocity.lpwan.devicetype.model;
 
 import java.util.List;
 
-import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
+import com.cumulocity.device.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
