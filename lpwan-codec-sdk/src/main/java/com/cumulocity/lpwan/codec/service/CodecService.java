@@ -19,6 +19,14 @@ import org.springframework.stereotype.Service;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
+/**
+ * The <b>CodecService</b> class delegates the decoding request to the <b>Decoder</b> implementer.
+ *
+ * @author Bhaskar Reddy Byreddy
+ * @author Atul Kumar Panda
+ * @version 1.0
+ * @since 2021-12-01
+ */
 @Service
 @Slf4j
 @TenantScope
@@ -28,10 +36,12 @@ public class CodecService {
     private Decoder decoder;
 
     /**
-     * This method should decode the payload received by a particular device.
+     * This method delegates the decoding request to the <b>Decoder</b> implementer.
      *
-     * @param payload
-     * @return DecodedData
+     * @param payload the payload
+     * @return DecodedData decoder output
+     * @throws DecoderException
+     * @see DecoderException
      */
     public @NotNull DecoderOutput decode(@NotNull DecoderInput payload) throws DecoderException {
         if(Objects.isNull(payload)) {

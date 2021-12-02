@@ -28,8 +28,13 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
- * The DecoderOutput class represents the response format which may contain the Measurements/Events/Alarms to be created.
+ * The <b>DecoderOutput</b> class represents the response format which may contain the Measurements/Events/Alarms to be created.
  * This may also contain the info about the alarm types to clear and the properties that to be added to the device managed object.
+ *
+ *  @author Bhaskar Reddy Byreddy
+ *  @author Atul Kumar Panda
+ *  @version 1.0
+ *  @since   2021-12-01
  */
 @Data
 public class DecoderOutput {
@@ -53,6 +58,13 @@ public class DecoderOutput {
         new ObjectMapper().registerModule(new JodaModule());
     }
 
+    /**
+     * This method adds a measurement to the measurement-list to be created.
+     *
+     * @param measurement  A non-null MeasurementRepresentation object that is to be added to the list.
+     * @throws IllegalArgumentException if the MeasurementRepresentation object (that is to be created) is null.
+     * @see IllegalArgumentException
+     */
     public void addMeasurementToCreate(@NotNull final MeasurementRepresentation measurement) {
         if (Objects.isNull(measurementsToCreate)) {
             measurementsToCreate = new ArrayList<>();
@@ -64,6 +76,20 @@ public class DecoderOutput {
         measurementsToCreate.add(measurement);
     }
 
+    /**
+     * This method takes in the measurement parameters to create a MeasurementRepresentation object.
+     *
+     * @param sourceId     A non-null that parameter represents the GId(ManagedObject ID) of the device on which the measurement has to be created.
+     * @param type         A non-null and non-empty parameter that represents the type of the measurement.
+     * @param fragmentName A non-null and non-empty parameter that represents the name of the fragment in the measurement.
+     * @param seriesName   represents the series name for the measurement fragment.
+     * @param value        A non-null parameter that represents the value for the measurement fragment
+     * @param unit         represents the unit of the value in the measurement fragment.
+     * @param time         represents the time at which the measurement is created.
+     * @return MeasurementRepresentation
+     * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
+     * @see IllegalArgumentException
+     */
     public MeasurementRepresentation addMeasurementToCreate(@NotNull GId sourceId, @NotBlank String type, @NotBlank String fragmentName, @Nullable String seriesName, @NotNull BigDecimal value, @Nullable String unit, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
             throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
@@ -107,6 +133,13 @@ public class DecoderOutput {
         return measurementRepresentation;
     }
 
+    /**
+     * This method adds an event to the event-list to be created.
+     *
+     * @param event  A non-null EventRepresentation object that is to be added to the list.
+     * @throws IllegalArgumentException if the EventRepresentation object (that is to be created) is null.
+     * @see IllegalArgumentException
+     */
     public void addEventToCreate(@NotNull EventRepresentation event) {
         if (Objects.isNull(eventsToCreate)) {
             eventsToCreate = new ArrayList<>();
@@ -118,6 +151,18 @@ public class DecoderOutput {
         eventsToCreate.add(event);
     }
 
+    /**
+     * This method takes in the event parameters to create an EventRepresentation object.
+     *
+     * @param sourceId   A non-null parameter that represents the GId(ManagedObject ID) of the device on which the event has to be created.
+     * @param type       A non-null and non-empty parameter that represents the type of the event.
+     * @param text       represents the event text
+     * @param properties represents the event properties
+     * @param time       represents the time at which the event is created.
+     * @return EventRepresentation
+     * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
+     * @see IllegalArgumentException
+     */
     public EventRepresentation addEventToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
             throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
@@ -147,6 +192,13 @@ public class DecoderOutput {
         return event;
     }
 
+    /**
+     * This method adds an alarm to the alarm-list to be created.
+     *
+     * @param alarm  A non-null AlarmRepresentation object that is to be added to the list.
+     * @throws IllegalArgumentException if the AlarmRepresentation object (that is to be created) is null.
+     * @see IllegalArgumentException
+     */
     public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
         if (Objects.isNull(alarmsToCreate)) {
             alarmsToCreate = new ArrayList<>();
@@ -158,6 +210,19 @@ public class DecoderOutput {
         alarmsToCreate.add(alarm);
     }
 
+    /**
+     * This method takes in the alarm parameters to create an AlarmRepresentation object.
+     *
+     * @param sourceId   A non-null parameter that represents the GId(ManagedObject ID) of the device on which the alarm has to be created.
+     * @param type       A non-null and non-empty parameter that represents the type of the alarm.
+     * @param severity   A non-null parameter that represents the severity of the alarm.
+     * @param text       represents the alarm text
+     * @param properties represents the alarm properties
+     * @param time       represents the time at which the alarm is created.
+     * @return AlarmRepresentation
+     * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
+     * @see IllegalArgumentException
+     */
     public AlarmRepresentation addAlarmToCreate(@NotNull GId sourceId, @NotBlank String type, @NotNull Severity severity, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
             throw new IllegalArgumentException("DecoderOutput: 'sourceId' parameter can't be null.");
@@ -191,6 +256,14 @@ public class DecoderOutput {
         return alarm;
     }
 
+
+    /**
+     * This method adds an alarm type to be cleared.
+     *
+     * @param alarmType  A non-null and non-empty alarm type that is to be cleared.
+     * @throws IllegalArgumentException if the alarmType (that is to be cleared) is null or empty.
+     * @see IllegalArgumentException
+     */
     public void addAlarmTypeToClear(@NotBlank String alarmType) {
         if (Objects.isNull(alarmTypesToClear)) {
             alarmTypesToClear = new HashSet<>();
@@ -202,6 +275,13 @@ public class DecoderOutput {
         alarmTypesToClear.add(alarmType);
     }
 
+    /**
+     * This method updates the managed object of the device.
+     *
+     * @param deviceManagedObject  A non-null device managed object that is to be updated.
+     * @throws IllegalArgumentException if the alarmType (that is to be cleared) is null or empty.
+     * @see IllegalArgumentException
+     */
     public void setDeviceManagedObjectToUpdate(@NotNull ManagedObjectRepresentation deviceManagedObject) {
         if (Objects.isNull(deviceManagedObject)) {
             throw new IllegalArgumentException("DecoderOutput: 'deviceManagedObject' parameter can't be null.");

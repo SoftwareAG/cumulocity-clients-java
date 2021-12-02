@@ -22,7 +22,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The DecoderInput class represents the format nad content of the request coming in for decoding a device data where it must contain the payload data and the device id.
+ * The <b>DecoderInput</b> class represents the format and content of the request coming in for decoding a device data.
+ *
+ *  @author Bhaskar Reddy Byreddy
+ *  @author Atul Kumar Panda
+ *  @version 1.0
+ *  @since   2021-12-01
  */
 @Data
 @AllArgsConstructor
@@ -47,10 +52,22 @@ public class DecoderInput {
     @NotNull
     private Long updateTime;
 
+    /**
+     * This method converts the device managed object id to a <b>GId</b>.
+     *
+     * @return GId the device managed object id as <b>GId</b>
+     * @see GId.java
+     */
     public GId getDeviceMoIdAsGId() {
         return GId.asGId(deviceMoId);
     }
 
+    /**
+     * This method checks if the fields are null or empty.
+     *
+     * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
+     * @see IllegalArgumentException
+     */
     public void validate() {
         List<String> missingParameters = new ArrayList<>(5);
 

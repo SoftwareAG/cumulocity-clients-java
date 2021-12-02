@@ -14,16 +14,21 @@ import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import javax.validation.constraints.NotNull;
 
 /**
- * This interface will be implemented to provide a decoding logic.
+ * the <b>Decoder</b> interface will be implemented by a codec microservice to provide the decoding logic.
+ *
+ * @author Bhaskar Reddy Byreddy
+ * @author Atul Kumar Panda
+ * @version 1.0
+ * @since 2021 -12-01
  */
 public interface Decoder {
     /**
-     * This method should take the following params and should return the decoded response with mapping.
-     * This method should provide a decoding logic w.r.t the device info.
+     * This method should provide a decoding logic for the payload received and generate a <b>DecoderOutput</b> object.
      *
-     * @param input - represents the payload object that is meant to be decoded.
-     * @return DecodeResponse - represents the response that is formed after decoding the device payload.
-     * @throws DecoderException - represents the custom exception thrown while decoding the payload.
+     * @param input A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
+     * @return DecoderOutput
+     * @throws DecoderException
+     * @see DecoderException
      */
     @NotNull DecoderOutput decode(@NotNull DecoderInput input) throws DecoderException;
 }

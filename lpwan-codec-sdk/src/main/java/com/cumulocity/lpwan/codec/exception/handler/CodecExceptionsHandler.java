@@ -21,10 +21,25 @@ import org.svenson.JSON;
 
 import static com.cumulocity.rest.representation.CumulocityMediaType.ERROR_MESSAGE_TYPE;
 
+/**
+ * The <b>CodecExceptionsHandler</b> is a custom exception handler.
+ *
+ * @author Bhaskar Reddy Byreddy
+ * @author Atul Kumar Panda
+ * @version 1.0
+ * @since 2021 -12-01
+ */
 @ControllerAdvice
 @Slf4j
 public class CodecExceptionsHandler {
 
+    /**
+     * This method handles the custom <b>DecoderException</b> and <b>UnsupportedOperationException</b>.
+     *
+     * @param exception the exception
+     * @return ResponseEntity<String> <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
+     * @see UnsupportedOperationException
+     */
     @ExceptionHandler(value = {DecoderException.class, UnsupportedOperationException.class})
     @ResponseBody
     public ResponseEntity<String> handleExceptionForInternalServerError(Throwable exception) {
@@ -32,6 +47,13 @@ public class CodecExceptionsHandler {
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * This method handles the <b>IllegalArgumentException</b>.
+     *
+     * @param exception the exception
+     * @return ResponseEntity<String> <code>HttpStatus.BAD_REQUEST</code>
+     * @see IllegalArgumentException
+     */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
     public ResponseEntity<String> handleExceptionForBadRequest(Throwable exception) {

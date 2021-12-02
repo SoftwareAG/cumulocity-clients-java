@@ -17,8 +17,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation should be used in the Main class to make the Codec microservice spring boot enabled.
- * And also it helps in inheriting the Rest Controller and Service class.
+ * The <b>CodecMicroserviceApplication</b> annotation should be used in the class having the <b>Main</b> method of the Codec microservice to make it Spring Boot enabled.
+ * And also it helps in inheriting the Spring beans.
+ *
+ * @author Bhaskar Reddy Byreddy
+ * @author  Atul Kumar Panda
+ * @version 1.0
+ * @since   2021-12-01
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
