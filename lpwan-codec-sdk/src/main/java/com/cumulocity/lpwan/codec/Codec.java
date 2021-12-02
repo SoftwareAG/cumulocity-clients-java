@@ -9,6 +9,7 @@ package com.cumulocity.lpwan.codec;
 
 import com.cumulocity.lpwan.codec.model.DeviceInfo;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -25,5 +26,5 @@ public interface Codec {
     /**
      * @return
      */
-    @NotNull @NotEmpty String getMicroserviceContextPath();
+    @NotBlank String getMicroserviceContextPath();
 }

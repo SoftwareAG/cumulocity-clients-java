@@ -11,7 +11,6 @@ import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Slf4j
 public class DeviceInfo {
     @NotBlank
     private String manufacturer;
