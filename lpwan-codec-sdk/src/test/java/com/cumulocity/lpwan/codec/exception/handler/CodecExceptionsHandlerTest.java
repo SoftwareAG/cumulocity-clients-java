@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.codec.exception.handler;
 
-import com.cumulocity.lpwan.codec.exception.DecoderException;
+import com.cumulocity.lpwan.codec.decoder.exception.DecoderException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import org.junit.jupiter.api.Test;

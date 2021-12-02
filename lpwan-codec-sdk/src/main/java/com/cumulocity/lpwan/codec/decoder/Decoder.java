@@ -7,9 +7,9 @@
 
 package com.cumulocity.lpwan.codec.decoder;
 
+import com.cumulocity.lpwan.codec.decoder.exception.DecoderException;
 import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
 import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
-import com.cumulocity.lpwan.codec.exception.DecoderException;
 
 import javax.validation.constraints.NotNull;
 
