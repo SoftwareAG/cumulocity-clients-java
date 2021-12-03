@@ -66,11 +66,12 @@ public class DecoderOutput {
      * @see IllegalArgumentException
      */
     public void addMeasurementToCreate(@NotNull final MeasurementRepresentation measurement) {
-        if (Objects.isNull(measurementsToCreate)) {
-            measurementsToCreate = new ArrayList<>();
-        }
         if (Objects.isNull(measurement)) {
             throw new IllegalArgumentException("DecoderOutput: 'measurement' parameter can't be null.");
+        }
+
+        if (Objects.isNull(measurementsToCreate)) {
+            measurementsToCreate = new ArrayList<>();
         }
 
         measurementsToCreate.add(measurement);
@@ -141,11 +142,12 @@ public class DecoderOutput {
      * @see IllegalArgumentException
      */
     public void addEventToCreate(@NotNull EventRepresentation event) {
-        if (Objects.isNull(eventsToCreate)) {
-            eventsToCreate = new ArrayList<>();
-        }
         if (Objects.isNull(event)) {
             throw new IllegalArgumentException("DecoderOutput: 'event' parameter can't be null.");
+        }
+
+        if (Objects.isNull(eventsToCreate)) {
+            eventsToCreate = new ArrayList<>();
         }
 
         eventsToCreate.add(event);
@@ -200,11 +202,12 @@ public class DecoderOutput {
      * @see IllegalArgumentException
      */
     public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
-        if (Objects.isNull(alarmsToCreate)) {
-            alarmsToCreate = new ArrayList<>();
-        }
         if (Objects.isNull(alarm)) {
             throw new IllegalArgumentException("DecoderOutput: 'alarm' parameter can't be null.");
+        }
+
+        if (Objects.isNull(alarmsToCreate)) {
+            alarmsToCreate = new ArrayList<>();
         }
 
         alarmsToCreate.add(alarm);
@@ -265,11 +268,12 @@ public class DecoderOutput {
      * @see IllegalArgumentException
      */
     public void addAlarmTypeToClear(@NotBlank String alarmType) {
-        if (Objects.isNull(alarmTypesToClear)) {
-            alarmTypesToClear = new HashSet<>();
-        }
         if (Strings.isNullOrEmpty(alarmType)) {
             throw new IllegalArgumentException("DecoderOutput: 'alarmType' parameter can't be null or empty.");
+        }
+
+        if (Objects.isNull(alarmTypesToClear)) {
+            alarmTypesToClear = new HashSet<>();
         }
 
         alarmTypesToClear.add(alarmType);
