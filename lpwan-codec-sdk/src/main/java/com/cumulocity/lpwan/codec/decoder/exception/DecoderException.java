@@ -9,11 +9,6 @@ package com.cumulocity.lpwan.codec.decoder.exception;
 
 /**
  * The <b>DecoderException</b> is a custom exception class that extends the <b>Exception</b> class and can be used to throw custom exceptions.
- *
- *  @author Bhaskar Reddy Byreddy
- *  @author Atul Kumar Panda
- *  @version 1.0
- *  @since   2021-12-01
  */
 public class DecoderException extends Exception {
 

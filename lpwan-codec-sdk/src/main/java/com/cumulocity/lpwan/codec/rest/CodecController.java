@@ -24,11 +24,6 @@ import java.util.Objects;
 
 /**
  * The <b>CodecController</b> is a rest controller that defines the endpoints.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021 -12-01
  */
 @RestController
 @Slf4j
@@ -43,7 +38,7 @@ public class CodecController {
      * @param input A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
      * @return DecoderOutput represents the output that carries the measurement(s)/event(s)/alarm(s) to be created nad/or the managed object to be updated.
      * @throws DecoderException
-     * @see DecoderException
+     * @see DecoderException {@link com.cumulocity.lpwan.codec.decoder.exception.DecoderException}
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull DecoderOutput decode(@RequestBody @NotNull DecoderInput input) throws DecoderException {

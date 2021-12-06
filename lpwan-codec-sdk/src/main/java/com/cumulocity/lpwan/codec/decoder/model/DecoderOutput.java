@@ -30,11 +30,6 @@ import java.util.*;
 /**
  * The <b>DecoderOutput</b> class represents the response format which may contain the Measurements/Events/Alarms to be created.
  * This may also contain the info about the alarm types to clear and the properties that to be added to the device managed object.
- *
- *  @author Bhaskar Reddy Byreddy
- *  @author Atul Kumar Panda
- *  @version 1.0
- *  @since   2021-12-01
  */
 @Data
 public class DecoderOutput {
@@ -63,7 +58,7 @@ public class DecoderOutput {
      *
      * @param measurement  A non-null MeasurementRepresentation object that is to be added to the list.
      * @throws IllegalArgumentException if the MeasurementRepresentation object (that is to be created) is null.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void addMeasurementToCreate(@NotNull final MeasurementRepresentation measurement) {
         if (Objects.isNull(measurement)) {
@@ -89,7 +84,7 @@ public class DecoderOutput {
      * @param time         represents the time at which the measurement is created.
      * @return MeasurementRepresentation
      * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public MeasurementRepresentation addMeasurementToCreate(@NotNull GId sourceId, @NotBlank String type, @NotBlank String fragmentName, @Nullable String seriesName, @NotNull BigDecimal value, @Nullable String unit, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
@@ -139,7 +134,7 @@ public class DecoderOutput {
      *
      * @param event  A non-null EventRepresentation object that is to be added to the list.
      * @throws IllegalArgumentException if the EventRepresentation object (that is to be created) is null.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void addEventToCreate(@NotNull EventRepresentation event) {
         if (Objects.isNull(event)) {
@@ -163,7 +158,7 @@ public class DecoderOutput {
      * @param time       represents the time at which the event is created.
      * @return EventRepresentation
      * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public EventRepresentation addEventToCreate(@NotNull GId sourceId, @NotBlank String type, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
@@ -199,7 +194,7 @@ public class DecoderOutput {
      *
      * @param alarm  A non-null AlarmRepresentation object that is to be added to the list.
      * @throws IllegalArgumentException if the AlarmRepresentation object (that is to be created) is null.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void addAlarmToCreate(@NotNull AlarmRepresentation alarm) {
         if (Objects.isNull(alarm)) {
@@ -224,7 +219,7 @@ public class DecoderOutput {
      * @param time       represents the time at which the alarm is created.
      * @return AlarmRepresentation
      * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public AlarmRepresentation addAlarmToCreate(@NotNull GId sourceId, @NotBlank String type, @NotNull Severity severity, @Nullable String text, @Nullable Map<String, Object> properties, @Nullable DateTime time) {
         if (Objects.isNull(sourceId)) {
@@ -265,7 +260,7 @@ public class DecoderOutput {
      *
      * @param alarmType  A non-null and non-empty alarm type that is to be cleared.
      * @throws IllegalArgumentException if the alarmType (that is to be cleared) is null or empty.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void addAlarmTypeToClear(@NotBlank String alarmType) {
         if (Strings.isNullOrEmpty(alarmType)) {
@@ -284,7 +279,7 @@ public class DecoderOutput {
      *
      * @param deviceManagedObject  A non-null device managed object that is to be updated.
      * @throws IllegalArgumentException if the alarmType (that is to be cleared) is null or empty.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void setDeviceManagedObjectToUpdate(@NotNull ManagedObjectRepresentation deviceManagedObject) {
         if (Objects.isNull(deviceManagedObject)) {

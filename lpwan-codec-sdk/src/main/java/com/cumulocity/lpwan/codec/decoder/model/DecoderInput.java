@@ -24,10 +24,6 @@ import java.util.Objects;
 /**
  * The <b>DecoderInput</b> class represents the format and content of the request coming in for decoding a device data.
  *
- *  @author Bhaskar Reddy Byreddy
- *  @author Atul Kumar Panda
- *  @version 1.0
- *  @since   2021-12-01
  */
 @Data
 @AllArgsConstructor
@@ -35,20 +31,38 @@ import java.util.Objects;
 @Builder
 public class DecoderInput {
 
+    /**
+     * The deviceMoId represents the managed object id of the device.
+     */
     @NotBlank
     private String deviceMoId;
 
+    /**
+     * The deviceInfo contains the information about the device such as Manufacturer or model of the device.
+     */
     @NotNull
     private DeviceInfo deviceInfo;
 
+    /**
+     * The deviceEui represents the EUI (or the external id) of teh device.
+     */
     @NotBlank
     private String deviceEui;
 
+    /**
+     * The fPort represents the port number received as an input.
+     */
     private Integer fPort;
 
+    /**
+     * The payload represents the actual payload data as a HEX string.
+     */
     @NotBlank
     private String payload;
 
+    /**
+     * The updateTime represents the Date and Time when the payload is sent.
+     */
     @NotNull
     private Long updateTime;
 
@@ -56,17 +70,18 @@ public class DecoderInput {
      * This method converts the device managed object id to a <b>GId</b>.
      *
      * @return GId the device managed object id as <b>GId</b>
-     * @see GId.java
+     * @see GId
      */
     public GId getDeviceMoIdAsGId() {
         return GId.asGId(deviceMoId);
     }
 
     /**
-     * This method checks if the fields are null or empty.
+     * This method validates the object fields.
      *
      * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
+     *
      */
     public void validate() {
         List<String> missingParameters = new ArrayList<>(5);

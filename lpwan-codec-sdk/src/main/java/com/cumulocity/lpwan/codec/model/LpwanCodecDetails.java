@@ -20,11 +20,6 @@ import java.util.Map;
 
 /**
  * The <b>LpwanCodecDetails</b> class represents the fragment details that is added in the device type managed object which is created on the codec microservice subscription.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021 -12-01
  */
 @Data
 @AllArgsConstructor
@@ -47,7 +42,7 @@ public class LpwanCodecDetails {
     /**
      * This method returns information about the <b>deviceManufacturer</b>, <b>deviceModel</b> and <b>codecServiceContextPath</b> that are added to the <b>c8y_LpwanCodecDetails</b> fragment.
      *
-     * @return Map<String, String> the attributes
+     * @return Map the attributes
      */
     public Map<String, String> getAttributes() {
         Map<String,String> attributes = new HashMap<>(3);
@@ -60,10 +55,10 @@ public class LpwanCodecDetails {
     }
 
     /**
-     * This method checks if the fields are null or empty.
+     * This method validates the object fields.
      *
      * @throws IllegalArgumentException if the field marked with <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void validate() {
         List<String> missingParameters = new ArrayList<>(3);

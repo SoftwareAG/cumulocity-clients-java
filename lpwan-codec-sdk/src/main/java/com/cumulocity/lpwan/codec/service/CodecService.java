@@ -21,11 +21,6 @@ import java.util.Objects;
 
 /**
  * The <b>CodecService</b> class delegates the decoding request to the <b>Decoder</b> implementer.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021-12-01
  */
 @Service
 @Slf4j
@@ -41,7 +36,7 @@ public class CodecService {
      * @param payload the payload
      * @return DecodedData decoder output
      * @throws DecoderException
-     * @see DecoderException
+     * @see DecoderException {@link com.cumulocity.lpwan.codec.decoder.exception.DecoderException}
      */
     public @NotNull DecoderOutput decode(@NotNull DecoderInput payload) throws DecoderException {
         if(Objects.isNull(payload)) {

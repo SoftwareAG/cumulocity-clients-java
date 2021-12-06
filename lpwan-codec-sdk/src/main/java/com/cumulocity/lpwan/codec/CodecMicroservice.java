@@ -30,45 +30,25 @@ import java.util.Set;
 
 /**
  * The <b>CodecMicroservice</b> class mainly registers a device type when the codec microservice is subscribed.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021-12-01
  */
 @Slf4j
 @ComponentScan
 public class CodecMicroservice {
 
-    /**
-     * {@value #DEVICE_TYPE_DESCRIPTION_FORMAT} The Device type description format.
-     */
     static final String DEVICE_TYPE_DESCRIPTION_FORMAT = "Device protocol that supports device model '%s' manufactured by '%s'";
 
-    /**
-     * {@value #C8Y_SMART_REST_DEVICE_IDENTIFIER} The device type external id type.
-     */
     static final String C8Y_SMART_REST_DEVICE_IDENTIFIER = "c8y_SmartRestDeviceIdentifier";
 
-    /**
-     * {@value #C8Y_LPWAN_CODEC_DETAILS} The fragment name to be put into the device type managed object.
-     */
     static final String C8Y_LPWAN_CODEC_DETAILS = "c8y_LpwanCodecDetails";
 
     static final String FIELDBUS_TYPE = "fieldbusType";
 
     static final String DESCRIPTION = "description";
-    /**
-     * {@value #C8Y_IS_DEVICE_TYPE} The fragment to mark the managed object as a device type.
-     */
+
     static final String C8Y_IS_DEVICE_TYPE = "c8y_IsDeviceType";
-    /**
-     * {@value #C8Y_LPWAN_DEVICE_TYPE} The type assigned to the LPWAN agent supported device types.
-     */
+
     static final String C8Y_LPWAN_DEVICE_TYPE = "c8y_LpwanDeviceType";
-    /**
-     * {@value #LPWAN_FIELDBUS_TYPE} The feildbus type assigned to the LPWAN supoorted device types.
-     */
+
     static final String LPWAN_FIELDBUS_TYPE = "lpwan";
 
     static final String DEVICE_TYPE_NAME_FORMAT = "%s : %s";

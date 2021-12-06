@@ -23,11 +23,6 @@ import static com.cumulocity.rest.representation.CumulocityMediaType.ERROR_MESSA
 
 /**
  * The <b>CodecExceptionsHandler</b> is a custom exception handler.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021 -12-01
  */
 @ControllerAdvice
 @Slf4j
@@ -37,8 +32,8 @@ public class CodecExceptionsHandler {
      * This method handles the custom <b>DecoderException</b> and <b>UnsupportedOperationException</b>.
      *
      * @param exception the exception
-     * @return ResponseEntity<String> <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
-     * @see UnsupportedOperationException
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/UnsupportedOperationException.html">UnsupportedOperationException</a>
      */
     @ExceptionHandler(value = {DecoderException.class, UnsupportedOperationException.class})
     @ResponseBody
@@ -51,8 +46,8 @@ public class CodecExceptionsHandler {
      * This method handles the <b>IllegalArgumentException</b>.
      *
      * @param exception the exception
-     * @return ResponseEntity<String> <code>HttpStatus.BAD_REQUEST</code>
-     * @see IllegalArgumentException
+     * @return ResponseEntity <code>HttpStatus.BAD_REQUEST</code>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody

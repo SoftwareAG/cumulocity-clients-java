@@ -14,12 +14,7 @@ import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
 import javax.validation.constraints.NotNull;
 
 /**
- * the <b>Decoder</b> interface will be implemented by a codec microservice to provide the decoding logic.
- *
- * @author Bhaskar Reddy Byreddy
- * @author Atul Kumar Panda
- * @version 1.0
- * @since 2021 -12-01
+ * the <b>Decoder</b> interface will be implemented by a codec microservice to provide the decoding logic. The class which implements this interface should be annotated with "@Component"
  */
 public interface Decoder {
     /**
@@ -28,7 +23,7 @@ public interface Decoder {
      * @param input A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
      * @return DecoderOutput
      * @throws DecoderException
-     * @see DecoderException
+     * @see DecoderException {@link com.cumulocity.lpwan.codec.decoder.exception.DecoderException}
      */
     @NotNull DecoderOutput decode(@NotNull DecoderInput input) throws DecoderException;
 }
