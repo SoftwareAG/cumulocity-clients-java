@@ -46,7 +46,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
 
-    private Duration webClientTimeout;
+    Duration webClientTimeout;
 
     private WebClient webClient;
 

@@ -41,11 +41,11 @@ public class CodecMicroservice {
 
     static final String C8Y_LPWAN_CODEC_DETAILS = "c8y_LpwanCodecDetails";
 
-    static final String FIELDBUS_TYPE = "fieldbusType";
+    static final String FIELDBUS_TYPE_KEY = "fieldbusType";
 
-    static final String DESCRIPTION = "description";
+    static final String DESCRIPTION_KEY = "description";
 
-    static final String C8Y_IS_DEVICE_TYPE = "c8y_IsDeviceType";
+    static final String C8Y_IS_DEVICE_TYPE_KEY = "c8y_IsDeviceType";
 
     static final String C8Y_LPWAN_DEVICE_TYPE = "c8y_LpwanDeviceType";
 
@@ -98,10 +98,10 @@ public class CodecMicroservice {
                             String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, supportedDevice.getModel(), supportedDevice.getManufacturer());
                             ManagedObjectRepresentation deviceTypeMo = new ManagedObjectRepresentation();
                             deviceTypeMo.setName(supportedDeviceTypeName);
-                            deviceTypeMo.set(description, DESCRIPTION);
-                            deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
+                            deviceTypeMo.set(description, DESCRIPTION_KEY);
+                            deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE_KEY);
                             deviceTypeMo.setType(C8Y_LPWAN_DEVICE_TYPE);
-                            deviceTypeMo.set(LPWAN_FIELDBUS_TYPE, FIELDBUS_TYPE);
+                            deviceTypeMo.set(LPWAN_FIELDBUS_TYPE, FIELDBUS_TYPE_KEY);
                             deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
                             try {
                                 deviceTypeMo = inventoryApi.create(deviceTypeMo);
