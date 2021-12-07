@@ -1,14 +1,13 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
-import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
-import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
+import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -46,7 +45,7 @@ public class PayloadDecoderServiceTest {
     WebClient webClient;
 
     @Mock
-    Mono<DecoderOutput> decoderOutputMono;
+    Mono<DecoderResult> decoderOutputMono;
 
     @Mock
     WebClient.RequestBodyUriSpec post;
@@ -63,7 +62,7 @@ public class PayloadDecoderServiceTest {
     @Mock
     WebClientFactory webClientFactory;
 
-    DecoderOutput decoderOutput = new DecoderOutput();
+    DecoderResult decoderOutput = new DecoderResult();
 
     PayloadMappingService payloadMappingService = spy(new PayloadMappingService());
 
@@ -164,9 +163,9 @@ public class PayloadDecoderServiceTest {
         when(webClient.post()).thenReturn(post);
         when(post.uri(anyString())).thenReturn(uri);
         when(uri.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(uri);
-        when(uri.body(any(Mono.class), eq(DecoderInput.class))).thenReturn(requestHeadersSpec);
+        when(uri.body(any(Mono.class), eq(LpwanCodecDetails.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(DecoderOutput.class)).thenReturn(decoderOutputMono);
+        when(responseSpec.bodyToMono(DecoderResult.class)).thenReturn(decoderOutputMono);
 
         when(decoderOutputMono.block(any(Duration.class))).thenReturn(decoderOutput);
 

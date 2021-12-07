@@ -1,9 +1,5 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.decoder.model.DecoderInput;
-import com.cumulocity.lpwan.codec.decoder.model.DecoderOutput;
-import com.cumulocity.lpwan.codec.model.DeviceInfo;
-import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
@@ -15,6 +11,10 @@ import com.cumulocity.lpwan.payload.uplink.model.MessageIdMapping;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
+import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
+import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
+import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import io.netty.channel.ChannelOption;
@@ -146,18 +146,21 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     }
 
                     DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
-                    DecoderInput decoderInput = DecoderInput.builder()
-                            .deviceMoId(source.getId().getValue())
-                            .deviceInfo(deviceInfo)
-                            .deviceEui(uplinkMessage.getExternalId())
-                            .fPort(uplinkMessage.getFport())
-                            .payload(uplinkMessage.getPayloadHex())
-                            .updateTime(uplinkMessage.getDateTime().getMillis())
-                            .build();
+                    LpwanDecoderInputData decoderInputData = new LpwanDecoderInputData(
+                            source.getId().getValue(),
+                            uplinkMessage.getExternalId(),
+                            deviceInfo,
+                            uplinkMessage.getPayloadHex(),
+                            uplinkMessage.getFport(),
+                            uplinkMessage.getDateTime().getMillis()
+                            );
 
-                    DecoderOutput decoderOutput = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInput);
+                    DecoderResult decoderResult = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInputData);
 
-                    payloadMappingService.handleCodecServiceResponse(decoderOutput, source, uplinkMessage.getExternalId());
+                    if(!decoderResult.isSuccess()) {
+                        log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part. \nMessage: {} \nDecoder Result: {}", uplinkMessage.getExternalId(), decoderResult.getMessage(), decoderResult);
+                    }
+                    payloadMappingService.handleCodecServiceResponse(decoderResult, source, uplinkMessage.getExternalId());
                 } catch (PayloadDecodingFailedException e) {
                     log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part.", uplinkMessage.getExternalId(), e);
                 }
@@ -165,19 +168,19 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         });
     }
 
-    private DecoderOutput invokeCodecMicroservice(String codecServiceContextPath, DecoderInput decoderInput) throws PayloadDecodingFailedException {
+    private DecoderResult invokeCodecMicroservice(String codecServiceContextPath, LpwanDecoderInputData decoderInput) throws PayloadDecodingFailedException {
         String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
                 .toCumulocityCredentials().getAuthenticationString();
         try {
-            Mono<DecoderOutput> decoderOutput = webClient.post()
+            Mono<DecoderResult> decoderOutput = webClient.post()
                     .uri("/service/" + codecServiceContextPath + "/decode")
                     .header(HttpHeaders.AUTHORIZATION, authentication)
-                    .body(Mono.just(decoderInput), DecoderInput.class)
+                    .body(Mono.just(decoderInput), LpwanDecoderInputData.class)
                     .retrieve()
-                    .bodyToMono(DecoderOutput.class);
+                    .bodyToMono(DecoderResult.class);
             return decoderOutput.block(webClientTimeout);
         } catch (Exception e) {
-            String errorMessage = String.format("Error invoking the Codec microservice with context path '%s'", codecServiceContextPath);
+            String errorMessage = String.format("Error invoking the LPWAN Codec microservice with context path '%s'", codecServiceContextPath);
             log.error(errorMessage, e);
             throw new PayloadDecodingFailedException(errorMessage, e);
         }

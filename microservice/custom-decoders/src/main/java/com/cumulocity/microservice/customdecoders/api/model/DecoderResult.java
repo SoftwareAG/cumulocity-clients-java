@@ -10,10 +10,7 @@ import lombok.Setter;
 import org.svenson.JSONTypeHint;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @NoArgsConstructor
 @Setter
@@ -25,11 +22,14 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
 
     private List<AlarmRepresentation> alarms;
 
+    private Set<String> alarmTypesToClear;
+
     private List<EventRepresentation> events;
 
     private List<MeasurementDto> measurements;
 
     private List<DataFragmentUpdate> dataFragments;
+
 
     @Getter
     private String message;
@@ -37,7 +37,7 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
     @Getter
     private boolean success = true;
 
-    public static final DecoderResult empty() {
+    public static DecoderResult empty() {
         return new DecoderResult();
     }
 
@@ -66,6 +66,16 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
             alarms = new ArrayList<>();
         }
         alarms.addAll(alarmRepresentations);
+    }
+
+    public void addAlarmTypeToClear(String... alarmTypes) {
+        if(ObjectUtils.isNull(alarmTypes) || alarmTypes.length == 0) {
+            return;
+        }
+
+        if(ObjectUtils.isNull(alarmTypesToClear)) {
+            alarmTypesToClear = new HashSet<>();
+        }
     }
 
     public void addEvent(EventRepresentation eventRepresentation, boolean internal) {
@@ -117,6 +127,9 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
         if(!ObjectUtils.isNull(alarms)) {
             alarms.clear();
         }
+        if(!ObjectUtils.isNull(alarmTypesToClear)) {
+            alarmTypesToClear.clear();
+        }
         if(!ObjectUtils.isNull(events)) {
             events.clear();
         }
@@ -131,6 +144,11 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
     @JSONTypeHint(AlarmRepresentation.class)
     public List<AlarmRepresentation> getAlarms() {
         return alarms;
+    }
+
+    @JSONTypeHint(String.class)
+    public Set<String> getAlarmTypesToClear() {
+        return alarmTypesToClear;
     }
 
     @JSONTypeHint(EventRepresentation.class)

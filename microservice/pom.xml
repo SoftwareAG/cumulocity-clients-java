@@ -42,6 +42,7 @@
         <module>monitoring</module>
         <module>settings</module>
         <module>custom-decoders</module>
+        <module>lpwan-custom-codec</module>
     </modules>
 
     <dependencyManagement>

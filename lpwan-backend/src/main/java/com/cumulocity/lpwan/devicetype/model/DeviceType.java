@@ -1,13 +1,12 @@
 package com.cumulocity.lpwan.devicetype.model;
 
-import java.util.List;
-
-import com.cumulocity.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.lpwan.payload.uplink.model.MessageIdConfiguration;
+import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Data;
 import lombok.Singular;
+
+import java.util.List;
 
 @Data
 public class DeviceType {
