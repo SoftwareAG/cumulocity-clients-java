@@ -8,6 +8,7 @@
 package com.cumulocity.microservice.lpwan.codec.model;
 
 import com.google.common.base.Strings;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ import java.util.List;
  *
  */
 @Getter
+@EqualsAndHashCode
 public class DeviceInfo {
     @NotBlank
     private String manufacturer;
@@ -29,8 +31,6 @@ public class DeviceInfo {
     public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model) {
         this.manufacturer = manufacturer;
         this.model = model;
-
-        validate();
     }
 
     /**

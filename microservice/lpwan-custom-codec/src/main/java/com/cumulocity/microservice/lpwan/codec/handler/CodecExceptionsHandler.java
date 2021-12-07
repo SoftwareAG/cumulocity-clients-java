@@ -9,6 +9,7 @@ package com.cumulocity.microservice.lpwan.codec.handler;
 
 import com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException;
 import com.cumulocity.microservice.customdecoders.api.exception.InvalidInputDataException;
+import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.svenson.JSON;
 
 import static com.cumulocity.rest.representation.CumulocityMediaType.ERROR_MESSAGE_TYPE;
 
@@ -40,14 +40,13 @@ public class CodecExceptionsHandler {
      */
     @ExceptionHandler(value = DecoderServiceException.class)
     @ResponseBody
-    public ResponseEntity<Object> handleDecoderServiceException(DecoderServiceException exception) {
+    public ResponseEntity<DecoderResult> handleDecoderServiceException(DecoderServiceException exception) {
         log.error(exception.getMessage(), exception);
 
-        String errorJson = JSON.defaultJSON().forValue(exception.getResult());
         if (exception instanceof InvalidInputDataException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(errorJson);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(errorJson);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
         }
     }
 
@@ -60,7 +59,7 @@ public class CodecExceptionsHandler {
      */
     @ExceptionHandler(value = UnsupportedOperationException.class)
     @ResponseBody
-    public ResponseEntity<String> handleExceptionForInternalServerError(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForInternalServerError(Throwable exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -74,15 +73,14 @@ public class CodecExceptionsHandler {
      */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
-    public ResponseEntity<String> handleExceptionForBadRequest(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForBadRequest(Throwable exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
-    private ResponseEntity<String> buildErrorResponse(Throwable exception, HttpStatus status) {
+    private ResponseEntity<ErrorMessageRepresentation> buildErrorResponse(Throwable exception, HttpStatus status) {
         ErrorMessageRepresentation representation = buildErrorMessageRepresentation(exception);
-        String errorJson = JSON.defaultJSON().forValue(representation);
-        return ResponseEntity.status(status).contentType(MediaType.parseMediaType(ERROR_MESSAGE_TYPE)).body(errorJson);
+        return ResponseEntity.status(status).contentType(MediaType.parseMediaType(ERROR_MESSAGE_TYPE)).body(representation);
     }
 
     private ErrorMessageRepresentation buildErrorMessageRepresentation(Throwable exception) {

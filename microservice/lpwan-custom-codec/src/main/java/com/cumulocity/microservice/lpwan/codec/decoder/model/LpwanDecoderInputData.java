@@ -38,7 +38,10 @@ public class LpwanDecoderInputData extends DecoderInputData {
         initializeAndValidate(sourceDeviceId, sourceDeviceEui, sourceDeviceInfo, inputData, fPort, updateTime, null);
     }
 
-    public LpwanDecoderInputData(@NotBlank String inputData, @NotNull GId sourceDeviceId, @NotNull Map<String, String> args) {
+    public LpwanDecoderInputData(@NotBlank String inputData,
+                                 @NotNull GId sourceDeviceId,
+                                 @NotNull Map<String, String> args) {
+
         String sourceDeviceIdString = null;
         if (Objects.nonNull(sourceDeviceId)) {
             sourceDeviceIdString = sourceDeviceId.getValue();
@@ -55,12 +58,20 @@ public class LpwanDecoderInputData extends DecoderInputData {
 
             String updateTimeString = args.get(UPDATE_TIME_KEY);
             if (!Strings.isNullOrEmpty(updateTimeString)) {
-                updateTime = Long.valueOf(updateTimeString);
+                try {
+                    updateTime = Long.valueOf(updateTimeString);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
 
             String fPortString = args.get(F_PORT_KEY);
             if (!Strings.isNullOrEmpty(fPortString)) {
-                fPort = Integer.valueOf(fPortString);
+                try {
+                    fPort = Integer.valueOf(fPortString);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
         }
 
@@ -157,7 +168,7 @@ public class LpwanDecoderInputData extends DecoderInputData {
     private void validate() {
         List<String> missingParameters = new ArrayList<>();
 
-        if (Objects.isNull(getSourceDeviceId())) {
+        if (Strings.isNullOrEmpty(getSourceDeviceId())) {
             missingParameters.add("'sourceDeviceId'");
         }
 
@@ -165,16 +176,23 @@ public class LpwanDecoderInputData extends DecoderInputData {
             missingParameters.add("'sourceDeviceEui'");
         }
 
-        if (Objects.isNull(getSourceDeviceInfo())) {
-            missingParameters.add("'sourceDeviceInfo'");
-        }
-
         if (Strings.isNullOrEmpty(getValue())) {
             missingParameters.add("'inputData'");
         }
 
+        if (Objects.isNull(getSourceDeviceInfo())) {
+            missingParameters.add("'sourceDeviceInfo'");
+        }
+        else {
+            try {
+                getSourceDeviceInfo().validate();
+            } catch (IllegalArgumentException e) {
+                missingParameters.add("'manufacturer and/or model'");
+            }
+        }
+
         if (!missingParameters.isEmpty()) {
-            throw new IllegalArgumentException("LpwanDecoderInputData is missing mandatory fields: " + String.join(", ", missingParameters));
+            throw new IllegalArgumentException("DecoderInputData is missing mandatory fields: " + String.join(", ", missingParameters));
         }
     }
 }

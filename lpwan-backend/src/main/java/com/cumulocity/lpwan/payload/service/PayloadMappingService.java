@@ -267,7 +267,16 @@ public class PayloadMappingService {
 
     public void handleCodecServiceResponse(DecoderResult decoderResult, ManagedObjectRepresentation source, String deviceEui) throws PayloadDecodingFailedException {
         if (Objects.isNull(decoderResult)) {
+            log.error("Error decoding payload for device EUI '{}'. Returned a null output. Skipping the decoding of the payload part.", deviceEui);
             return;
+        }
+
+        if(!decoderResult.isSuccess()) {
+            log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part. \nMessage: {} \nDecoder Result: {}", deviceEui, decoderResult.getMessage(), decoderResult);
+            // Continue processing the Decoder Result by processing any alarms or events the decoder's implementer intended to create.
+        }
+        else {
+            log.debug("Handling the decoder response. DecoderResult: \n{}", decoderResult);
         }
 
         //Create Events

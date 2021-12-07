@@ -137,8 +137,9 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     log.error(e.getMessage());
                 }
             } else {
+                LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
+                DecoderResult decoderResult;
                 try {
-                    LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
                     try {
                         lpwanCodecDetails.validate();
                     } catch (IllegalArgumentException e) {
@@ -155,14 +156,17 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                             uplinkMessage.getDateTime().getMillis()
                             );
 
-                    DecoderResult decoderResult = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInputData);
+                    decoderResult = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInputData);
 
-                    if(!decoderResult.isSuccess()) {
-                        log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part. \nMessage: {} \nDecoder Result: {}", uplinkMessage.getExternalId(), decoderResult.getMessage(), decoderResult);
-                    }
+                } catch (PayloadDecodingFailedException e) {
+                    decoderResult = DecoderResult.empty();
+                    decoderResult.setAsFailed(String.format("Error decoding payload for device EUI '%s'. Skipping the decoding of the payload part. \nCause: %s", uplinkMessage.getExternalId(), e.getMessage()));
+                }
+
+                try {
                     payloadMappingService.handleCodecServiceResponse(decoderResult, source, uplinkMessage.getExternalId());
                 } catch (PayloadDecodingFailedException e) {
-                    log.error("Error decoding payload for device EUI '{}'. Skipping the decoding of the payload part.", uplinkMessage.getExternalId(), e);
+                    log.error("Error handling the decoder response for the device with EUI '{}'.", uplinkMessage.getExternalId(), e);
                 }
             }
         });

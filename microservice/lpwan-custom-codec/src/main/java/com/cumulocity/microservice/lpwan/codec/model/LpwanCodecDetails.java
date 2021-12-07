@@ -27,9 +27,9 @@ import java.util.Map;
 @NoArgsConstructor
 public class LpwanCodecDetails {
 
-    private static final String CODEC_SERVICE_CONTEXT_PATH = "codecServiceContextPath";
-    private static final String DEVICE_MANUFACTURER = "deviceManufacturer";
-    private static final String DEVICE_MODEL = "deviceModel";
+    static final String CODEC_SERVICE_CONTEXT_PATH = "codecServiceContextPath";
+    static final String DEVICE_MANUFACTURER = "deviceManufacturer";
+    static final String DEVICE_MODEL = "deviceModel";
 
     @NotBlank
     private String deviceManufacturer;
