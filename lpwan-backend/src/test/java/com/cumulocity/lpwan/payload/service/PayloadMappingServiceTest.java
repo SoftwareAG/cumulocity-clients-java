@@ -35,6 +35,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -94,6 +95,41 @@ public class PayloadMappingServiceTest {
     public void setup() {
         source = new ManagedObjectRepresentation();
         source.setId(new GId("18001"));
+    }
+
+    @Test
+    void doGenerateNestedMap() {
+        Object[][] pathAndValueTuples = {
+                {"F1/S1/unit_1",        "UNIT_1"},
+                {"F1/S1/value_1",       Integer.valueOf(111)},
+                {"F1/S1",               "SERIES_1 VALUE"},
+                {"/F2/S2",              "SERIES_2 VALUE"},
+                {"F2/S2/unit_2/",       "UNIT_2"},
+                {"/F2/S2/value_2/",     Integer.valueOf(222)}
+        };
+
+        Map<String, Object> attributesMap = new HashMap<>();
+        for (Object[] oneTuple: pathAndValueTuples) {
+            payloadMappingService.generateNestedMap(oneTuple[0].toString(), oneTuple[1].toString(), attributesMap);
+        }
+
+        Map<String, Object> expectedAttributesMap = new HashMap<>();
+        Map<String, Object> F1 = new HashMap<>();
+        expectedAttributesMap.put("F1", F1);
+        Map<String, Object> S1 = new HashMap<>();
+        F1.put("S1", S1);
+        S1.put("unit_1", "UNIT_1");
+        S1.put("value_1", Integer.valueOf(111));
+        S1.put("value", "SERIES_1 VALUE");
+        Map<String, Object> F2 = new HashMap<>();
+        expectedAttributesMap.put("F2", F2);
+        Map<String, Object> S2 = new HashMap<>();
+        F2.put("S2", S2);
+        S2.put("unit_2", "UNIT_2");
+        S2.put("value_2", Integer.valueOf(222));
+        S2.put("value", "SERIES_2 VALUE");
+
+        assertEquals(expectedAttributesMap.toString(), attributesMap.toString());
     }
 
 //    @Test

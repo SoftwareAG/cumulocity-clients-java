@@ -295,7 +295,10 @@ public class PayloadMappingService {
         Set<String> alarmTypesToClear = decoderResult.getAlarmTypesToClear();
         if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
             for (String alarmType : alarmTypesToClear) {
-                Iterable<AlarmRepresentation> alarmMaybe = find(source.getId(), ACTIVE, alarmType);
+                if(Strings.isBlank(alarmType)) {
+                    continue;
+                }
+                Iterable<AlarmRepresentation> alarmMaybe = findAlarmsByTypeAndStatus(source.getId(), alarmType, ACTIVE);
                 for (AlarmRepresentation alarm : alarmMaybe) {
                     alarm.setStatus(CLEARED.name());
                     try {
@@ -344,19 +347,11 @@ public class PayloadMappingService {
                 if (Strings.isBlank(path)) {
                     continue; // Skip processing this DataFragmentUpdate
                 }
-
-                path = path.trim();
-                if (path.startsWith("/")) {
-                    path = path.substring(1);
-                }
-                if (path.endsWith("/")) {
-                    path = path.substring(0, path.length() - 1);
-                }
-
                 Object value = dataFragmentUpdate.getValueAsObject();
                 if (value == null) {
                     value = dataFragmentUpdate.getValue();
                 }
+
                 generateNestedMap(path, value, attributes);
             }
 
@@ -370,7 +365,15 @@ public class PayloadMappingService {
         }
     }
 
-    private void generateNestedMap(String path, Object value, Map<String, Object> attributes) {
+    void generateNestedMap(String path, Object value, Map<String, Object> attributes) {
+        path = path.trim();
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
         final int indexOfSlash = path.indexOf('/');
         if (indexOfSlash < 0) {
             path = path.trim();
@@ -399,7 +402,7 @@ public class PayloadMappingService {
         }
     }
 
-    private Iterable<AlarmRepresentation> find(GId source, CumulocityAlarmStatuses alarmStatus, String alarmType) {
+    Iterable<AlarmRepresentation> findAlarmsByTypeAndStatus(GId source, String alarmType, CumulocityAlarmStatuses alarmStatus) {
         try {
             AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
             if (alarmStatus != null) {
@@ -415,7 +418,7 @@ public class PayloadMappingService {
         return FluentIterable.of();
     }
 
-    private MeasurementRepresentation createMeasurementFromDto(MeasurementDto dto, ManagedObjectRepresentation sourceDevice) {
+    MeasurementRepresentation createMeasurementFromDto(MeasurementDto dto, ManagedObjectRepresentation sourceDevice) {
         MeasurementRepresentation measurement = new MeasurementRepresentation();
         measurement.setSource(sourceDevice);
         //copy defined set of properties

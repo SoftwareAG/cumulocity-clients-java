@@ -22,12 +22,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,7 +44,6 @@ public class PayloadDecoderServiceTest {
 
     @Mock
     Mono<DecoderResult> decoderOutputMono;
-
 
     @Mock
     WebClient.RequestBodyUriSpec post;
@@ -66,7 +65,8 @@ public class PayloadDecoderServiceTest {
 
     PayloadMappingService payloadMappingService = spy(new PayloadMappingService());
 
-    ArgumentCaptor<Runnable> taskCaptor = ArgumentCaptor.forClass(Runnable.class);
+    @Captor
+    ArgumentCaptor<Runnable> taskCaptor;
 
     @InjectMocks
     PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(payloadMappingService, null, Duration.ofMillis(1000));
@@ -194,10 +194,7 @@ public class PayloadDecoderServiceTest {
     public void shouldTestPayloadDecodeAndMap_2() throws PayloadDecodingFailedException {
         DateTime timeNow = DateTime.now();
         UplinkMessage uplinkMessage = Mockito.mock(UplinkMessage.class, Mockito.CALLS_REAL_METHODS);
-//        when(uplinkMessage.getPayloadHex()).thenReturn("ABCDEF1234567");
         when(uplinkMessage.getExternalId()).thenReturn("EUI ID");
-//        when(uplinkMessage.getFport()).thenReturn(999);
-//        when(uplinkMessage.getDateTime()).thenReturn(timeNow);
 
         LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails();
         DeviceType deviceType = new DeviceType();
@@ -206,7 +203,6 @@ public class PayloadDecoderServiceTest {
 
         MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
         when(contextService.getContext()).thenReturn(credentials);
-//        when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
         ManagedObjectRepresentation source = ManagedObjects.asManagedObject(GId.asGId("12345"));
