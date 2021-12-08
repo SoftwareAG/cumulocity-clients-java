@@ -22,22 +22,28 @@ import java.util.List;
 @Getter
 @EqualsAndHashCode
 public class DeviceInfo {
+
     @NotBlank
     private String manufacturer;
 
     @NotBlank
     private String model;
 
+    /**
+     * Instantiates a new DeviceInfo.
+     * @param manufacturer represents the name of the device manufacturer.
+     * @param model        represents the name of the device model.
+     */
     public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model) {
         this.manufacturer = manufacturer;
         this.model = model;
     }
 
     /**
-     * This method checks if the fields are null or empty.
+     * This method validates the object field.
      *
      * @throws IllegalArgumentException if the field marked with <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void validate() {
         List<String> missingParameters = new ArrayList<>(2);

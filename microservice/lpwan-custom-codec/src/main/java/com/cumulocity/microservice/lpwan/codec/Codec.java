@@ -15,20 +15,19 @@ import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 /**
- * The <b>Codec</b> interface exposes methods to provide the uniquely supported devices and the context path.
- *
+ * The <b>Codec</b> interface exposes methods to provide the uniquely supported devices and the context path. The class which implements this interface should be annotated with "@Component".
  */
 public interface Codec {
 
     /**
      * This method returns a set of uniquely supported devices w.r.t the device manufacturer and the device model.
      *
-     * @return Set<DeviceInfo> set
+     * @return Set
      */
     @NotNull @NotEmpty Set<DeviceInfo> supportsDevices();
 
     /**
-     * This method returns the context-path of the codec microservice.
+     * This method returns the context-path of the codec microservice. Context path is the path used for hosted applications. It has to be unique across the tenant.
      *
      * @return String codec microservice context-path
      */

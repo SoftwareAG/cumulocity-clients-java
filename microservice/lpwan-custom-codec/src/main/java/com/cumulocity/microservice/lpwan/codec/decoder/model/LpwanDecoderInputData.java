@@ -18,16 +18,25 @@ import javax.validation.constraints.Null;
 import java.util.*;
 
 /**
- * The <b>DecoderInput</b> class represents the format and content of the request coming in for decoding a device data.
+ * The <b>LpwanDecoderInputData</b> class represents the format and content of the request coming in for decoding a device data.
  */
 public class LpwanDecoderInputData extends DecoderInputData {
-
     public static final String SOURCE_DEVICE_EUI_KEY = "SOURCE_DEVICE_EUI";
     public static final String DEVICE_MANUFACTURER_KEY = "DEVICE_MANUFACTURER";
     public static final String DEVICE_MODEL_KEY = "DEVICE_MODEL";
     public static final String F_PORT_KEY = "F_PORT";
     public static final String UPDATE_TIME_KEY = "UPDATE_TIME";
 
+    /**
+     * Instantiates a new LpwanDecoderInputData.
+     *
+     * @param sourceDeviceId   the managed object id of the device
+     * @param sourceDeviceEui  represents the eui of the device
+     * @param sourceDeviceInfo contains the information about the device such as Manufacturer or model of the device
+     * @param inputData        represents the actual payload data as a HEX string
+     * @param fPort            represents the port number received as an input
+     * @param updateTime       represents the Date and Time when the payload is sent
+     */
     public LpwanDecoderInputData(@NotBlank String sourceDeviceId,
                                  @NotBlank String sourceDeviceEui,
                                  @NotNull DeviceInfo sourceDeviceInfo,
@@ -38,6 +47,13 @@ public class LpwanDecoderInputData extends DecoderInputData {
         initializeAndValidate(sourceDeviceId, sourceDeviceEui, sourceDeviceInfo, inputData, fPort, updateTime, null);
     }
 
+    /**
+     * Instantiates a new LpwanDecoderInputData.
+     *
+     * @param inputData      represents the actual payload data as a HEX string
+     * @param sourceDeviceId the managed object id of the device
+     * @param args           represents the properties
+     */
     public LpwanDecoderInputData(@NotBlank String inputData,
                                  @NotNull GId sourceDeviceId,
                                  @NotNull Map<String, String> args) {
@@ -100,6 +116,11 @@ public class LpwanDecoderInputData extends DecoderInputData {
         validate();
     }
 
+    /**
+     * Gets the source device eui
+     *
+     * @return the source device eui
+     */
     public @NotBlank String getSourceDeviceEui() {
         return getInputArguments().get(SOURCE_DEVICE_EUI_KEY);
     }
@@ -108,6 +129,11 @@ public class LpwanDecoderInputData extends DecoderInputData {
         getInputArguments().put(SOURCE_DEVICE_EUI_KEY, sourceDeviceEui);
     }
 
+    /**
+     * Gets the source device info that contains the information about the device such as Manufacturer or model of the device
+     *
+     * @return the source device info
+     */
     public @NotNull DeviceInfo getSourceDeviceInfo() {
         return new DeviceInfo(getInputArguments().get(DEVICE_MANUFACTURER_KEY), getInputArguments().get(DEVICE_MODEL_KEY));
     }
@@ -119,6 +145,11 @@ public class LpwanDecoderInputData extends DecoderInputData {
         }
     }
 
+    /**
+     * Gets update time.
+     *
+     * @return the update time
+     */
     public @Null Long getUpdateTime() {
         String updateTimeString = getInputArguments().get(UPDATE_TIME_KEY);
         if (!Strings.isNullOrEmpty(updateTimeString)) {
@@ -134,6 +165,11 @@ public class LpwanDecoderInputData extends DecoderInputData {
         }
     }
 
+    /**
+     * Gets f-port.
+     *
+     * @return the f-port
+     */
     public @Null Integer getFPort() {
         String fPortString = getInputArguments().get(F_PORT_KEY);
         if (!Strings.isNullOrEmpty(fPortString)) {
@@ -160,10 +196,10 @@ public class LpwanDecoderInputData extends DecoderInputData {
     }
 
     /**
-     * This method checks if the fields are null or empty.
+     * This method validates the object fields.
      *
      * @throws IllegalArgumentException if the field marked with <b>@NotNull</b> or <b>@NotBlank</b> are either null or blank.
-     * @see IllegalArgumentException
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     private void validate() {
         List<String> missingParameters = new ArrayList<>();

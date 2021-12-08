@@ -27,7 +27,6 @@ import java.util.Objects;
 
 /**
  * The <b>CodecController</b> is a rest controller that defines the endpoints.
- *
  */
 @RestController
 @Slf4j
@@ -39,10 +38,10 @@ public class CodecController {
     /**
      * This REST API should expose '/decode' endpoint
      *
-     * @param inputData A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
-     * @return DecoderResult represents the output that carries the measurement(s)/event(s)/alarm(s) to be created nad/or the managed object to be updated.
+     * @param input A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
+     * @return DecoderResult represents the output that carries the measurement(s)/event(s)/alarm(s) to be created and/or the managed object properties to be updated.
      * @throws DecoderServiceException
-     * @see DecoderServiceException
+     * @see DecoderServiceException {@link com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException}
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull DecoderResult decode(@RequestBody @NotNull DecoderInputData inputData) throws DecoderServiceException {

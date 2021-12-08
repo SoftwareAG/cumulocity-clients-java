@@ -34,9 +34,9 @@ public class CodecExceptionsHandler {
     /**
      * This method handles the custom <b>DecoderServiceException</b>.
      *
-     * @param exception the exception
-     * @return ResponseEntity<String> <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
-     * @see DecoderServiceException
+     * @param exception       represents the exception
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
+     * @see DecoderServiceException {@link com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException}
      */
     @ExceptionHandler(value = DecoderServiceException.class)
     @ResponseBody
@@ -51,11 +51,11 @@ public class CodecExceptionsHandler {
     }
 
     /**
-     * This method handles the custom <b>DecoderException</b> and <b>UnsupportedOperationException</b>.
+     * This method handles the <b>UnsupportedOperationException</b>.
      *
-     * @param exception the exception
-     * @return ResponseEntity<String> <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
-     * @see UnsupportedOperationException
+     * @param exception       represents the exception
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/UnsupportedOperationException.html">UnsupportedOperationException</a>
      */
     @ExceptionHandler(value = UnsupportedOperationException.class)
     @ResponseBody
@@ -67,9 +67,9 @@ public class CodecExceptionsHandler {
     /**
      * This method handles the <b>IllegalArgumentException</b>.
      *
-     * @param exception the exception
-     * @return ResponseEntity<String> <code>HttpStatus.BAD_REQUEST</code>
-     * @see IllegalArgumentException
+     * @param exception       represents the exception
+     * @return ResponseEntity <code>HttpStatus.BAD_REQUEST</code>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
