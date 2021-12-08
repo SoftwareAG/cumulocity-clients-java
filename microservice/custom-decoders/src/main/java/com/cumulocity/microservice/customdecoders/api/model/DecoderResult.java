@@ -76,6 +76,7 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
         if(ObjectUtils.isNull(alarmTypesToClear)) {
             alarmTypesToClear = new HashSet<>();
         }
+        Collections.addAll(alarmTypesToClear, alarmTypes);
     }
 
     public void addEvent(EventRepresentation eventRepresentation, boolean internal) {
