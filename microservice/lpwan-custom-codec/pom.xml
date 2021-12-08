@@ -37,7 +37,7 @@
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>custom-decoders</artifactId>
             <!--TODO: Replace this version with ${c8y.version} before merging it into develop-->
-            <version>${revision}${changelist}</version>
+            <version>1011.12.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>

@@ -12,19 +12,21 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
+import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
+import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.model.ID;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,6 +51,12 @@ public class CodecMicroservice {
     private ContextService<Credentials> contextService;
 
     @Autowired
+    private PlatformProperties platformProperties;
+
+    @Autowired
+    private ApplicationApi applicationApi;
+
+    @Autowired
     private InventoryApi inventoryApi;
 
     @Autowired
@@ -57,6 +65,8 @@ public class CodecMicroservice {
     @Autowired
     private Codec codec;
 
+    private volatile String contextPath;
+
     /**
      * This method should create a device type when the codec microservice subscribed.
      *
@@ -64,14 +74,21 @@ public class CodecMicroservice {
      */
     @EventListener
     void registerDeviceTypes(MicroserviceSubscriptionAddedEvent event) {
+        if (Objects.isNull(contextPath)) {
+            contextPath =
+                    contextService.callWithinContext(platformProperties.getMicroserviceBoostrapUser(),
+                            () -> {
+                                try {
+                                    return applicationApi.currentApplication().get().getContextPath();
+                                } catch (Exception e) {
+                                    log.warn("Error while determining the microservice context path. Defaulting to the application name.", e);
+                                    return platformProperties.getApplicationName();
+                                }
+                            });
+        }
+
         contextService.runWithinContext(event.getCredentials(),
                 () -> {
-                    if (Strings.isNullOrEmpty(codec.getMicroserviceContextPath())) {
-                        log.error("CodecMicroservice#getMicroserviceContextPath method is incorrectly implemented. It is returning a null or an empty string. Skipping the Device Type creation for the tenant {}.",
-                                event.getCredentials().getTenant());
-                        return;
-                    }
-
                     Set<DeviceInfo> supportedDevices = codec.supportsDevices();
                     for (DeviceInfo supportedDevice : supportedDevices) {
                         try {
@@ -82,7 +99,7 @@ public class CodecMicroservice {
                         }
 
                         String supportedDeviceTypeName = formDeviceTypeName(supportedDevice);
-                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), codec.getMicroserviceContextPath());
+                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), contextPath);
                         Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
                         if (!deviceType.isPresent()) {
                             log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
