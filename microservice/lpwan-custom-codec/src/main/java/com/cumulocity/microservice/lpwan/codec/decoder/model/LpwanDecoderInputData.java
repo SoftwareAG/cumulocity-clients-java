@@ -21,11 +21,11 @@ import java.util.*;
  * The <b>LpwanDecoderInputData</b> class represents the format and content of the request coming in for decoding a device data.
  */
 public class LpwanDecoderInputData extends DecoderInputData {
-    public static final String SOURCE_DEVICE_EUI_KEY = "SOURCE_DEVICE_EUI";
-    public static final String DEVICE_MANUFACTURER_KEY = "DEVICE_MANUFACTURER";
-    public static final String DEVICE_MODEL_KEY = "DEVICE_MODEL";
-    public static final String F_PORT_KEY = "F_PORT";
-    public static final String UPDATE_TIME_KEY = "UPDATE_TIME";
+    public static final String SOURCE_DEVICE_EUI_KEY = "sourceDeviceEui";
+    public static final String DEVICE_MANUFACTURER_KEY = "deviceManufacturer";
+    public static final String DEVICE_MODEL_KEY = "deviceModel";
+    public static final String F_PORT_KEY = "fport";
+    public static final String UPDATE_TIME_KEY = "updateTime";
 
     /**
      * Instantiates a new LpwanDecoderInputData.
