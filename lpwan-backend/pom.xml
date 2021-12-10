@@ -8,7 +8,7 @@
     <version>${revision}${changelist}</version>
 
     <properties>
-        <revision>1011.42.0</revision>
+        <revision>1011.12.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <java.version>1.8</java.version>
         <commons-lang3.version>3.11</commons-lang3.version>
@@ -39,9 +39,7 @@
         <dependency>
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>lpwan-custom-codec</artifactId>
-            <!--TODO: Replace this version with ${c8y.version} before merging it into develop-->
-            <version>1011.42.0-SNAPSHOT</version>
-            <!--<version>${c8y.version}</version>-->
+            <version>${c8y.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

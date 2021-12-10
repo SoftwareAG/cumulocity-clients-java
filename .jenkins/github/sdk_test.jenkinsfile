@@ -41,7 +41,8 @@ def job_options()
                 copyArtifactPermission('/*/**'),
                 parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
                             string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'DEPLOY_ENVIRONMENT'),
-                            string(defaultValue: 'Pyi1bo1r', description: 'management tenant password', name: 'MANAGE_PASS')])])
+                            string(defaultValue: 'Pyi1bo1r', description: 'management tenant password', name: 'MANAGE_PASS'),
+                            string(defaultValue: 'admin', description: 'management tenant username', name: 'MANAGE_USER')])])
 }
 
 def scm_checkout()
@@ -49,7 +50,11 @@ def scm_checkout()
 
     try
     {
-        git branch: "${params.TEST_BRANCH}", credentialsId: "jenkins-master", url: "git@github.com:SoftwareAG/cumulocity-clients-java"
+        checkout([
+            $class: 'GitSCM',
+            branches: [[name: "${params.TEST_BRANCH}"]],
+            userRemoteConfigs: [[url: 'git@github.com:SoftwareAG/cumulocity-clients-java.git', credentialsId:'jenkins-master']]
+        ])
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
@@ -66,7 +71,7 @@ def run_sdk_tests()
     {
         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
         {
-            sh ".jenkins/scripts/new_sdk_tests.sh ${DEPLOY_ENVIRONMENT} ${MANAGE_PASS}"
+            sh ".jenkins/scripts/new_sdk_tests.sh ${DEPLOY_ENVIRONMENT} ${MANAGE_PASS} ${params.MANAGE_USER}"
         }
         currentBuild.result = "SUCCESS"
     }
@@ -96,7 +101,12 @@ def publish_results()
 
 def finish_job()
 {
-    if (currentBuild.result != "SUCCESS")
+    //check the trigger job do not want to notify if a PR test run fails, too much noise on the channel
+    upstream = currentBuild.getBuildCauses('hudson.model.Cause$UpstreamCause')
+    //Make string so we can use .contains
+    String trigger = upstream.upstreamProject
+    //If job fails and is not a PR then notify on channel
+    if ((currentBuild.result != "SUCCESS") && !(trigger.contains("PR-")))
     {
         chat 'AAAAvnc5o90'
     }

@@ -37,6 +37,9 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.ManagedObject;
 
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.FIVE_SECONDS;
+
 /**
  * Test created to verify behaviour reported in the bug
  * CDSUP-1249 https://startups.jira.com/browse/CDSUP-1249
@@ -91,6 +94,7 @@ public class ReassignExternalIDIT extends JavaSdkITBase {
         ManagedObjectRepresentation moRep1 = createManagedObjectAndAssignExternalID("object1", xtIDRep);
         ManagedObject retrievedMO1 = getManageObjectByExternalID(getExternalIDBoundToGId(moRep1.getId()));
         retrievedMO1.delete();
+        await().atMost(FIVE_SECONDS).until(() -> identity.getExternalIdsOfGlobalId(moRep1.getId()).get().getExternalIds().isEmpty());
 
         // When
         ManagedObjectRepresentation moRep2 = createManagedObjectAndAssignExternalID("object2", xtIDRep);

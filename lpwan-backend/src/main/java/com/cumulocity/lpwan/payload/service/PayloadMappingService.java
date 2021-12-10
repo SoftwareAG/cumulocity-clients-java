@@ -1,6 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
+import com.cumulocity.lpwan.devicetype.model.UplinkConfigurationMapping;
 import com.cumulocity.lpwan.mapping.model.*;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.AlarmMapping;
@@ -59,25 +60,25 @@ public class PayloadMappingService {
 
 
     public void addMappingsToCollection(MappingCollections mappingCollections, DecodedObject decodedObject,
-                                        UplinkConfiguration uplinkConfiguration) {
-        if (uplinkConfiguration.containsMeasurementMapping()) {
-            addMeasurementFragment(mappingCollections.getMeasurementFragments(), decodedObject, uplinkConfiguration.getMeasurementMapping());
+                                        UplinkConfigurationMapping uplinkConfigurationMapping) {
+        if (uplinkConfigurationMapping.containsMeasurementMapping()) {
+            addMeasurementFragment(mappingCollections.getMeasurementFragments(), decodedObject, uplinkConfigurationMapping.getMeasurementMapping());
         }
-        if (uplinkConfiguration.containsAlarmMapping()) {
-            addAlarmMapping(mappingCollections.getAlarmMappings(), decodedObject, uplinkConfiguration.getAlarmMapping());
+        if (uplinkConfigurationMapping.containsAlarmMapping()) {
+            addAlarmMapping(mappingCollections.getAlarmMappings(), decodedObject, uplinkConfigurationMapping.getAlarmMapping());
         }
-        if (uplinkConfiguration.containsEventMapping()) {
-            EventMapping eventMapping = uplinkConfiguration.getEventMapping();
+        if (uplinkConfigurationMapping.containsEventMapping()) {
+            EventMapping eventMapping = uplinkConfigurationMapping.getEventMapping();
 
             if (StringUtils.isBlank(eventMapping.getFragmentType())) {
                 addEventMapping(mappingCollections.getEventMappings(), eventMapping);
             } else {
-                addEventFragmentObject(mappingCollections.getEventFragments(), decodedObject, uplinkConfiguration.getEventMapping());
+                addEventFragmentObject(mappingCollections.getEventFragments(), decodedObject, uplinkConfigurationMapping.getEventMapping());
             }
         }
-        if (uplinkConfiguration.containsManagedObjectMapping()) {
+        if (uplinkConfigurationMapping.containsManagedObjectMapping()) {
             addManagedObjectFragment(mappingCollections.getManagedObjectFragments(), decodedObject,
-                    uplinkConfiguration.getManagedObjectMapping());
+                    uplinkConfigurationMapping.getManagedObjectMapping());
         }
 
     }
