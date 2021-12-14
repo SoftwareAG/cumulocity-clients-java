@@ -372,7 +372,7 @@ public class PayloadMappingServiceTest {
             when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
             payloadMappingService.handleCodecServiceResponse(decoderResult, ManagedObjects.asManagedObject(GId.asGId("12345")), deviceEui);
         } catch (PayloadDecodingFailedException e) {
-            assertEquals(e.getMessage(), String.format("Unable to clear alarm for device EUI '%s'", deviceEui));
+            assertEquals(e.getMessage(), String.format("Unable to update alarm with status '%s' for device EUI '%s'", "CLEARED", deviceEui));
             assertEquals(e.getCause().getMessage(), "TEST ERROR MESSAGE");
         }
     }
@@ -507,7 +507,7 @@ public class PayloadMappingServiceTest {
     }
 
     private void setUpAlarmTypesToClearProperties(DecoderResult decoderResult) {
-        decoderResult.addAlarmTypeToClear("Type_1");
+        decoderResult.addAlarmTypesToClear("Type_1");
     }
 
     private void setUpEventProperties(DecoderResult decoderResult) {

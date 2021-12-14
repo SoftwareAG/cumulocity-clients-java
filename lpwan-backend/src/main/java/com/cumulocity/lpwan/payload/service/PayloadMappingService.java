@@ -36,11 +36,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.ACTIVE;
-import static com.cumulocity.model.event.CumulocityAlarmStatuses.CLEARED;
 
 @Component
 @AllArgsConstructor
@@ -291,24 +291,23 @@ public class PayloadMappingService {
             }
         }
 
-        //Clear Alarms
-        Set<String> alarmTypesToClear = decoderResult.getAlarmTypesToClear();
-        if (Objects.nonNull(alarmTypesToClear) && !alarmTypesToClear.isEmpty()) {
-            for (String alarmType : alarmTypesToClear) {
-                if(Strings.isBlank(alarmType)) {
-                    continue;
-                }
-                Iterable<AlarmRepresentation> alarmMaybe = findAlarmsByTypeAndStatus(source.getId(), alarmType, ACTIVE);
-                for (AlarmRepresentation alarm : alarmMaybe) {
-                    alarm.setStatus(CLEARED.name());
+        //Update Alarm Status
+        Map<String, List<String>> alarmTypesToUpdate = decoderResult.getAlarmTypesToUpdate();
+        if (Objects.nonNull(alarmTypesToUpdate) && !alarmTypesToUpdate.isEmpty()) {
+            for (String alarmStatus : alarmTypesToUpdate.keySet()) {
+                Iterable<AlarmRepresentation> alarmsMaybe = findAlarmsByTypeAndStatus(source.getId(), alarmTypesToUpdate.get(alarmStatus));
+                for (AlarmRepresentation alarm : alarmsMaybe) {
+                    alarm.setStatus(alarmStatus);
                     try {
                         alarmApi.update(alarm);
                     } catch (SDKException e) {
-                        throw new PayloadDecodingFailedException(String.format("Unable to clear alarm for device EUI '%s'", deviceEui), e);
+                        throw new PayloadDecodingFailedException(String.format("Unable to update alarm with status '%s' for device EUI '%s'", alarmStatus, deviceEui), e);
                     }
                 }
             }
         }
+
+
 
         //Create Alarms
         List<AlarmRepresentation> alarmsToCreate = decoderResult.getAlarms();
@@ -402,17 +401,16 @@ public class PayloadMappingService {
         }
     }
 
-    Iterable<AlarmRepresentation> findAlarmsByTypeAndStatus(GId source, String alarmType, CumulocityAlarmStatuses alarmStatus) {
+    Iterable<AlarmRepresentation> findAlarmsByTypeAndStatus(GId source, List<String> alarmTypes) {
         try {
-            AlarmFilter filter = new AlarmFilter().bySource(source).byType(alarmType);
-            if (alarmStatus != null) {
-                filter.byStatus(alarmStatus);
+            if(!CollectionUtils.isEmpty(alarmTypes)) {
+                AlarmFilter filter = new AlarmFilter().bySource(source).byType(String.join(",", alarmTypes)).byStatus(ACTIVE);
+                AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
+                return alarms.get().allPages();
             }
-            AlarmCollection alarms = alarmApi.getAlarmsByFilter(filter);
-            return alarms.get().allPages();
         } catch (SDKException e) {
             // This exception is caught to only log and return an empty alarms collection.
-            log.debug("Couldn't find any Alarm with type '{}' on source '{}'", alarmType, source.getValue());
+            log.debug("Couldn't find any ACTIVE Alarms with type '{}' on source '{}'", String.join(",", alarmTypes), source.getValue());
         }
 
         return FluentIterable.of();
