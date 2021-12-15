@@ -307,8 +307,6 @@ public class PayloadMappingService {
             }
         }
 
-
-
         //Create Alarms
         List<AlarmRepresentation> alarmsToCreate = decoderResult.getAlarms();
         if (Objects.nonNull(alarmsToCreate) && !alarmsToCreate.isEmpty()) {

@@ -300,28 +300,25 @@ public class PayloadMappingServiceTest {
     }
 
     @Test
-    public void shouldTestExecuteMEAs() throws PayloadDecodingFailedException {
-
-        setUpMeasurementProperties(decoderResult);
-        setUpEventProperties(decoderResult);
-        setUpAlarmProperties(decoderResult);
-
-        AlarmCollectionRepresentation alarmCollectionRepr = new AlarmCollectionRepresentation();
-        alarmCollectionRepr.setAlarms(Arrays.asList(new AlarmRepresentation()));
-        PagedAlarmCollectionRepresentation pagedCollection = new PagedAlarmCollectionRepresentation(alarmCollectionRepr, null);
-        when(alarmCollection.get()).thenReturn(pagedCollection);
-        when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
-
+    public void shouldTestExecuteMEAsWIthClearAlarm() throws PayloadDecodingFailedException {
         setUpAlarmTypesToClearProperties(decoderResult);
-        setUpDeviceManagedObjectToUpdate(decoderResult);
+        setupMEAProperties();
 
         payloadMappingService.handleCodecServiceResponse(decoderResult, ManagedObjects.asManagedObject(GId.asGId("12345")), anyString());
 
-        verifyMeasurements();
-        verifyEvents();
-        verifyAlarm();
-        verifyManagedObjectToUpdate();
         verifyAlarmTypesToClear();
+        verifyMEAs();
+    }
+
+    @Test
+    public void shouldTestExecuteMEAsWIthAckAlarm() throws PayloadDecodingFailedException {
+        setUpAlarmTypesToAcknowledgeProperties(decoderResult);
+        setupMEAProperties();
+
+        payloadMappingService.handleCodecServiceResponse(decoderResult, ManagedObjects.asManagedObject(GId.asGId("12345")), anyString());
+
+        verifyAlarmTypesToAck();
+        verifyMEAs();
     }
 
     @Test
@@ -436,6 +433,18 @@ public class PayloadMappingServiceTest {
         assertEquals(alarm.getStatus(), "CLEARED");
     }
 
+    private void verifyAlarmTypesToAck() {
+        verify(alarmApi).getAlarmsByFilter(alarmFilterCaptor.capture());
+        AlarmFilter filter = alarmFilterCaptor.getValue();
+        assertEquals(filter.getType(), "Type_2,Type_3");
+        assertEquals(filter.getSource(), "12345");
+        assertEquals(filter.getStatus(), "ACTIVE");
+
+        verify(alarmApi).update(alarmRepresentationCaptor.capture());
+        AlarmRepresentation alarm = alarmRepresentationCaptor.getValue();
+        assertEquals(alarm.getStatus(), "ACKNOWLEDGED");
+    }
+
     private void verifyManagedObjectToUpdate() {
         verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
         ManagedObjectRepresentation managedObject = managedObjectRepresentationCaptor.getValue();
@@ -448,8 +457,8 @@ public class PayloadMappingServiceTest {
     private void verifyAlarm() {
         verify(alarmApi).create(alarmRepresentationCaptor.capture());
         AlarmRepresentation alarm = alarmRepresentationCaptor.getValue();
-        assertEquals(alarm.getSource().getId().getValue(), "12345");
-        assertEquals(alarm.getType(), "Type_1");
+        assertEquals(alarm.getSource().getId().getValue(), "123456");
+        assertEquals(alarm.getType(), "Sample_1");
         assertEquals(alarm.getText(), "Alarm_Text");
         assertEquals(alarm.getSeverity(), "WARNING");
         assertEquals(alarm.getStatus(), CumulocityAlarmStatuses.ACTIVE.name());
@@ -497,8 +506,8 @@ public class PayloadMappingServiceTest {
 
     private void setUpAlarmProperties(DecoderResult decoderResult) {
         AlarmRepresentation alarm = new AlarmRepresentation();
-        alarm.setSource(ManagedObjects.asManagedObject(GId.asGId("12345")));
-        alarm.setType("Type_1");
+        alarm.setSource(ManagedObjects.asManagedObject(GId.asGId("123456")));
+        alarm.setType("Sample_1");
         alarm.setSeverity(CumulocitySeverities.WARNING.name());
         alarm.setStatus(CumulocityAlarmStatuses.ACTIVE.name());
         alarm.setText("Alarm_Text");
@@ -508,6 +517,10 @@ public class PayloadMappingServiceTest {
 
     private void setUpAlarmTypesToClearProperties(DecoderResult decoderResult) {
         decoderResult.addAlarmTypesToClear("Type_1");
+    }
+
+    private void setUpAlarmTypesToAcknowledgeProperties(DecoderResult decoderResult) {
+        decoderResult.addAlarmTypesToAcknowledge("Type_2", "Type_3");
     }
 
     private void setUpEventProperties(DecoderResult decoderResult) {
@@ -541,5 +554,26 @@ public class PayloadMappingServiceTest {
         }
         uplinkConfiguration.setEventMapping(eventMapping);
         return uplinkConfiguration;
+    }
+
+    private void setupMEAProperties() {
+        setUpMeasurementProperties(decoderResult);
+        setUpEventProperties(decoderResult);
+
+        AlarmCollectionRepresentation alarmCollectionRepr = new AlarmCollectionRepresentation();
+        alarmCollectionRepr.setAlarms(Arrays.asList(new AlarmRepresentation()));
+        PagedAlarmCollectionRepresentation pagedCollection = new PagedAlarmCollectionRepresentation(alarmCollectionRepr, null);
+        when(alarmCollection.get()).thenReturn(pagedCollection);
+        when(alarmApi.getAlarmsByFilter(any(AlarmFilter.class))).thenReturn(alarmCollection);
+
+        setUpAlarmProperties(decoderResult);
+        setUpDeviceManagedObjectToUpdate(decoderResult);
+    }
+
+    private void verifyMEAs() {
+        verifyMeasurements();
+        verifyEvents();
+        verifyAlarm();
+        verifyManagedObjectToUpdate();
     }
 }
