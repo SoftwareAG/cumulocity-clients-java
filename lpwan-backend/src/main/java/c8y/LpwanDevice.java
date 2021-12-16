@@ -10,5 +10,5 @@ public class LpwanDevice  {
     private String errorMessage;
     private String serviceProvider;
     private String lpwanDeviceType;
-
+    private TypeExternalId typeExternalId;
 }
