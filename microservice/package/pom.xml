@@ -122,16 +122,26 @@
 			<version>3.0.0</version>
 		</dependency>
 
+
+		<!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
 		<dependency>
-			<groupId>com.spotify</groupId>
-			<artifactId>docker-client</artifactId>
-			<version>${docker-client.version}</version>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java-core</artifactId>
+			<version>3.2.12</version>
 		</dependency>
-		<!-- jersey-hk2 dependency below is required by docker-client-->
+
 		<dependency>
-			<groupId>org.glassfish.jersey.inject</groupId>
-			<artifactId>jersey-hk2</artifactId>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java</artifactId>
+			<version>3.2.12</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java-transport-httpclient5</artifactId>
+			<version>3.2.12</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>

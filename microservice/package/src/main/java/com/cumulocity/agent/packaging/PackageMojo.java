@@ -9,7 +9,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -26,12 +28,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Iterator;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.List;
 
-import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
 import static com.google.common.base.Throwables.propagate;
@@ -43,6 +43,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 @Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = false)
+@Slf4j
 public class PackageMojo extends BaseMicroserviceMojo {
 
     public static final String TARGET_FILENAME_PATTERN = "%s-%s.zip";
@@ -126,70 +127,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //@formatter:on
     }
 
-    private Xpp3Dom getDockerBuildConfig() {
-        List<Proxy>  list = mavenSession.getSettings().getProxies();
-        String  httpProxy = null;
-        String httpsProxy = null;
-
-        //loop about Proxy settings
-        for ( Proxy proxy : list ) {
-        	if ( proxy.isActive() ) {
-        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
-        		getLog().info( "Found Proxy settings: " + pS );
-        		if ( proxy.getProtocol().equals( "http" ) )
-        			httpProxy = pS;
-        		if ( proxy.getProtocol().equals( "https" ) )
-        			httpsProxy = pS;
-        	}
-        }
-
-        if ( httpsProxy == null && httpProxy != null ) 
-        	httpsProxy = httpProxy;
-
-        if ( httpProxy == null && httpsProxy != null )
-        	httpProxy = httpsProxy;
-
-        //Set Docker building configuration depending on Proxy settings
-        Xpp3Dom back; 
-        if ( httpProxy != null ) {
-        	
-            getLog().info( "Passing HTTP  proxy setting to Docker : " + httpProxy );
-            getLog().info( "Passing HTTPS proxy setting to Docker : " + httpsProxy );
-
-            back = 
-                configuration(
-                        element(name("imageName"), image),
-                        element("imageTags",
-                                element("imageTag", project.getVersion()),
-                                element("imageTag", "latest")
-                        ),
-                        element("network", dockerBuildNetwork),
-                        element("buildArgs", 
-                        		element("HTTP_PROXY",  httpProxy), 
-                        		element("HTTPS_PROXY", httpsProxy),
-                        		element("http_proxy",  httpProxy), 
-                        		element("https_proxy", httpsProxy) ),
-                        element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-        }
-        else {
-            back = 
-                    configuration(
-                            element(name("imageName"), image),
-                            element("imageTags",
-                                    element("imageTag", project.getVersion()),
-                                    element("imageTag", "latest")
-                            ),
-                            element("network", dockerBuildNetwork),
-                            element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-        }
-    	return back;
-    }
-
     private void dockerContainer() throws MojoExecutionException {
 
         final File dockerWorkResources = new File(dockerWorkDir, "resources");
         try {
-//            copy artifact to docker work directory
+//          copy artifact to docker work directory
             cleanDirectory(dockerWorkResources);
             copyArtifact(dockerWorkResources);
 
@@ -205,18 +147,59 @@ public class PackageMojo extends BaseMicroserviceMojo {
 //            copy content of project src/main/docker to docker work directory replacing placeholders
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcDockerDir.getAbsolutePath()), dockerWorkDir, true);
 
-            //@formatter:off
-            executeMojo(
-                    docker(),
-                    goal("build"),
-                    getDockerBuildConfig(),
-                    executionEnvironment(this.project, this.mavenSession, this.pluginManager));
-            //@formatter:on
+            buildDockerImage();
 
-//            cleaning up directory created by spotify docker plugin
+//           cleaning up directory created by spotify docker plugin
             cleanDirectory(new File(build, "docker"));
         } catch (Exception e) {
             throw propagate(e);
+        }
+    }
+
+    private void buildDockerImage() {
+
+        Map<String, String> buildArgs = new HashMap<>();
+        configureProxyBuildArguments(buildArgs);
+
+        String imageVersionTag = image+":"+project.getVersion();
+        String imageLatestTag = image+":latest";
+
+        Set<String> tags = Sets.newHashSet(imageLatestTag, imageVersionTag);
+
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork);
+
+    }
+
+    private void configureProxyBuildArguments(Map<String, String> buildArgs) {
+        String httpProxy = null;
+        String httpsProxy = null;
+
+        //loop about Proxy settings
+        for (Proxy proxy : mavenSession.getSettings().getProxies() ) {
+            if ( proxy.isActive() ) {
+                String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+                getLog().info( "Found Proxy settings: " + pS );
+                if ( proxy.getProtocol().equals( "http" ) )
+                    httpProxy = pS;
+                if ( proxy.getProtocol().equals( "https" ) )
+                    httpsProxy = pS;
+            }
+        }
+
+        if (httpsProxy == null && httpProxy != null )
+            httpsProxy = httpProxy;
+
+        if (httpProxy == null && httpsProxy != null )
+            httpProxy = httpsProxy;
+
+        if (httpProxy != null ) {
+            buildArgs.put("HTTP_PROXY", httpProxy);
+            buildArgs.put("http_proxy", httpProxy);
+        }
+
+        if (httpsProxy != null ) {
+            buildArgs.put("HTTPS_PROXY", httpsProxy);
+            buildArgs.put("https_proxy", httpsProxy);
         }
     }
 

@@ -6,6 +6,6 @@ import org.apache.maven.model.Plugin;
 
 public final class DockerDsl {
     public static Plugin docker() {
-        return plugin(groupId("com.spotify"), artifactId("docker-maven-plugin"), version("1.2.2"));
+        return plugin(groupId("io.fabric8"), artifactId("docker-maven-plugin"), version("0.39-SNAPSHOT"));
     }
 }
