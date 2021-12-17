@@ -21,6 +21,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 @Mojo(name = "push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
 public class DeployMojo extends BaseMicroserviceMojo {
 
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (skip || containerSkip) {
@@ -39,6 +40,7 @@ public class DeployMojo extends BaseMicroserviceMojo {
         final DockerImage image = DockerImage.ofName(name);
         cleanup(image, tags);
         cleanup(image.withRegistry(registry), tags);
+
 
     }
 

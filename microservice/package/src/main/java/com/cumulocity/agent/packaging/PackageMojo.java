@@ -4,12 +4,12 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.cumulocity.model.application.MicroserviceManifest;
 import com.cumulocity.model.application.microservice.DataSize;
 import com.cumulocity.model.application.microservice.Resources;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.model.Resource;
@@ -21,6 +21,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.svenson.JSON;
 
 import javax.validation.*;
 import java.io.BufferedReader;
@@ -49,6 +50,10 @@ public class PackageMojo extends BaseMicroserviceMojo {
     public static final String TARGET_FILENAME_PATTERN = "%s-%s.zip";
     public static final DataSize MEMORY_MINIMAL_LIMIT = DataSize.parse("178Mi");
 
+    public static final String DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM="amd64";
+    public static final String CUMULOCITY_JSON_IMGARCH_FRAGMENT="imageArch";
+    public static final String DOCKERFILE_TARGETARCH_ARG="ARCH";
+
     @Component
     private MicroserviceDockerClient dockerClient;
 
@@ -63,6 +68,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
     private Boolean deleteImage = true;
+
+    @Parameter(property = "microservice.package.dockerBuildArch")
+    private String targetBuildArch;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -158,19 +166,59 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     private void buildDockerImage() {
 
-        Map<String, String> buildArgs = new HashMap<>();
-        configureProxyBuildArguments(buildArgs);
+        Map<String, String> buildArgs = configureProxyBuildArguments();
+        Set<String> tags = getDockerImageTags();
 
+        //choose target image build architecture;
+        String targetBuildArch = getDockerTargetPlatformArchitecture();
+
+        if (!targetBuildArch.equals(DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+            log.warn("Your target build architecture does not match the default target {}", DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+            log.warn("Currently, Cumulocity only supports hosting microservices build for {}", DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+            log.warn("Your image might be incompatible with cloud hosting!");
+        }
+
+        //the target architecture is passed into the build arguments, because the dockerfile
+        //contains a docker argument to choose different architectures
+        buildArgs.put(DOCKERFILE_TARGETARCH_ARG,targetBuildArch);
+
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork);
+
+
+    }
+
+    @SneakyThrows
+    private String getDockerTargetPlatformArchitecture() {
+
+        if (Objects.nonNull(targetBuildArch)) {
+            log.info("Using custom target build architecture from maven configuration (overriding microservice manifest): {}", targetBuildArch);
+            return targetBuildArch;
+        }
+
+        final File file = filterResourceFile(manifestFile);
+        ObjectMapper mapper = new ObjectMapper();
+        Map<?,?> jsonManifest = mapper.readValue(file, Map.class);
+
+        if (jsonManifest.containsKey(CUMULOCITY_JSON_IMGARCH_FRAGMENT)) {
+            String imageArch = jsonManifest.get(CUMULOCITY_JSON_IMGARCH_FRAGMENT).toString();
+            log.info("Using target image architecture from microservice manifest: {}", imageArch);
+            return imageArch;
+        }
+
+        log.info("Using default target image architecture: {}", DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+
+        return DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM;
+    }
+
+    private Set<String> getDockerImageTags() {
         String imageVersionTag = image+":"+project.getVersion();
         String imageLatestTag = image+":latest";
 
         Set<String> tags = Sets.newHashSet(imageLatestTag, imageVersionTag);
-
-        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork);
-
+        return tags;
     }
 
-    private void configureProxyBuildArguments(Map<String, String> buildArgs) {
+    private Map<String, String> configureProxyBuildArguments() {
         String httpProxy = null;
         String httpsProxy = null;
 
@@ -192,6 +240,8 @@ public class PackageMojo extends BaseMicroserviceMojo {
         if (httpProxy == null && httpsProxy != null )
             httpProxy = httpsProxy;
 
+        Map<String, String> buildArgs = Maps.newHashMap();
+
         if (httpProxy != null ) {
             buildArgs.put("HTTP_PROXY", httpProxy);
             buildArgs.put("http_proxy", httpProxy);
@@ -201,6 +251,8 @@ public class PackageMojo extends BaseMicroserviceMojo {
             buildArgs.put("HTTPS_PROXY", httpsProxy);
             buildArgs.put("https_proxy", httpsProxy);
         }
+
+        return buildArgs;
     }
 
     private void microserviceZip() {
@@ -219,7 +271,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             }
             if(deleteImage!= null && deleteImage) {
                 dockerClient.deleteAll(image);
-            }else{
+            } else{
                 getLog().info("Skipping docker image cleanup");
             }
 

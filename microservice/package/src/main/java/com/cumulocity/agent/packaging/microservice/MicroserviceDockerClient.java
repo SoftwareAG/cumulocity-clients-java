@@ -9,7 +9,7 @@ import java.util.Set;
 public interface MicroserviceDockerClient {
     void saveDockerImage(final String image, final File targetFile) throws IOException;
 
-    void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode);
+    void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String targetArchitecture,  String networkMode);
 
     void deleteAll(String image);
 }

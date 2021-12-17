@@ -4,6 +4,7 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -32,15 +33,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 @Component(role = MicroserviceDockerClient.class)
-@Slf4j
+@Slf4j(topic = "MicroserviceDockerClient")
 public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements MicroserviceDockerClient, Startable {
 
     DockerClient dockerClient;
 
     @SneakyThrows
-    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode) {
+    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String targetArchitecture, String networkMode) {
 
-        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags);
+        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags).withPlatform(targetArchitecture);
 
         for (Map.Entry<String, String> buildArgument : buildArgs.entrySet()) {
             buildImageCmd = buildImageCmd.withBuildArg(buildArgument.getKey(), buildArgument.getValue());
@@ -68,6 +69,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     }
 
+
     protected class ImageBuildCompletionWaiter extends BuildImageResultCallback {
 
         //As the image build is asynchronous, we use active waiting for simplicity reasons
@@ -80,7 +82,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         //this logs out the build progress
         @Override
         public void onNext(BuildResponseItem item) {
-            log.info(item.getStream());
+            if (Objects.nonNull(item.getStream())){
+                log.info(item.getStream());
+            }
         }
 
         @Override
@@ -96,7 +100,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     }
 
     public void saveDockerImage(final String image, final File targetFile) throws IOException {
-
 
         log.info("Saving Image {} to file {}", image, targetFile.getAbsoluteFile().toString());
 
@@ -140,17 +143,21 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             log.info("Removing {} {}", image.getId(), image.getRepoTags());
 
             try {
-                RemoveImageCmd removeImageCmd = dockerClient.removeImageCmd(image.getId());
+                RemoveImageCmd removeImageCmd = dockerClient.removeImageCmd(image.getId()).withForce(true);
                 removeImageCmd.exec();
                 log.info(" -> Successfully removed image {} ", removeImageCmd.getImageId());
             } catch (Exception e) {
                 log.error("Failed to remove image {}, reason: ", e);
             }
-
         }
 
 
     }
+
+    public void pushImage() {
+
+    }
+
 
     @Override
     public void start() throws StartingException {
