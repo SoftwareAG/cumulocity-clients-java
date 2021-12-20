@@ -272,6 +272,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 addFileToZip(zipOutputStream, dockerImage, "image.tar");
             }
             if(deleteImage!= null && deleteImage) {
+                log.info("Deleting all images named {}", image);
                 dockerClient.deleteAll( image);
             } else{
                 getLog().info("Skipping docker image cleanup");

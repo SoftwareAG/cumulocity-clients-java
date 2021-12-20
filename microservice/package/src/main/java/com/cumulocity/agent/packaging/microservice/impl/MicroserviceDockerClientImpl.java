@@ -13,9 +13,11 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -135,7 +137,10 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     public void deleteAll(String imageName)  {
         log.info("Cleaning up all docker images for {} ", imageName);
 
-        ListImagesCmd listImagesCmd = dockerClient.listImagesCmd().withImageNameFilter(imageName);
+        ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
+        
+        listImagesCmd.getFilters().putAll(getImageNameFilter(imageName));
+
         List<Image> images = listImagesCmd.exec();
         log.info("Found the following images for deletion {}", images);
 
@@ -152,6 +157,12 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         }
 
 
+    }
+
+    private Map<String,List<String>> getImageNameFilter(String imageName) {
+        Map<String,List<String>> imageFilters = Maps.newHashMap();
+        imageFilters.put("reference", Arrays.asList(imageName));
+        return imageFilters;
     }
 
     @Override
