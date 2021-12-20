@@ -41,7 +41,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     @SneakyThrows
     public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String targetArchitecture, String networkMode) {
 
-        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags).withPlatform(targetArchitecture);
+        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags);
 
         for (Map.Entry<String, String> buildArgument : buildArgs.entrySet()) {
             buildImageCmd = buildImageCmd.withBuildArg(buildArgument.getKey(), buildArgument.getValue());
@@ -153,11 +153,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
 
     }
-
-    public void pushImage() {
-
-    }
-
 
     @Override
     public void start() throws StartingException {

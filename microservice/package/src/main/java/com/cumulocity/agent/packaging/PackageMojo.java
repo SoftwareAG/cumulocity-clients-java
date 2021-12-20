@@ -5,10 +5,14 @@ import com.cumulocity.model.application.MicroserviceManifest;
 import com.cumulocity.model.application.microservice.DataSize;
 import com.cumulocity.model.application.microservice.Resources;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
+import com.google.common.io.ByteSource;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +28,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.svenson.JSON;
 
 import javax.validation.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -52,7 +53,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     public static final String DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM="amd64";
     public static final String CUMULOCITY_JSON_IMGARCH_FRAGMENT="imageArch";
-    public static final String DOCKERFILE_TARGETARCH_ARG="ARCH";
+    public static final String MANIFEST_JSON_FILENAME = "cumulocity.json";
 
     @Component
     private MicroserviceDockerClient dockerClient;
@@ -173,14 +174,15 @@ public class PackageMojo extends BaseMicroserviceMojo {
         String targetBuildArch = getDockerTargetPlatformArchitecture();
 
         if (!targetBuildArch.equals(DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
-            log.warn("Your target build architecture does not match the default target {}", DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+            log.warn("Your target build architecture {} does not match the default target {}", targetBuildArch, DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
             log.warn("Currently, Cumulocity only supports hosting microservices build for {}", DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
             log.warn("Your image might be incompatible with cloud hosting!");
         }
 
         //the target architecture is passed into the build arguments, because the dockerfile
-        //contains a docker argument to choose different architectures
-        buildArgs.put(DOCKERFILE_TARGETARCH_ARG,targetBuildArch);
+        //contains an uppercase docker argument to choose different architectures
+        //We also append a / to the buildarg to make the docker file work if it should be unset.
+        buildArgs.put(CUMULOCITY_JSON_IMGARCH_FRAGMENT.toUpperCase(Locale.ROOT),targetBuildArch+"/");
 
         dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork);
 
@@ -188,7 +190,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     }
 
     @SneakyThrows
-    private String getDockerTargetPlatformArchitecture() {
+    public String getDockerTargetPlatformArchitecture() {
 
         if (Objects.nonNull(targetBuildArch)) {
             log.info("Using custom target build architecture from maven configuration (overriding microservice manifest): {}", targetBuildArch);
@@ -266,11 +268,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
                     new File(build, targetFilename)))) {
                 final File file = filterResourceFile(manifestFile);
                 validateManifest(file);
-                addFileToZip(zipOutputStream, file, "cumulocity.json");
+                addPlatformTaggedMicroserviceManifestToZipFile(filterResourceFile(manifestFile), zipOutputStream);
                 addFileToZip(zipOutputStream, dockerImage, "image.tar");
             }
             if(deleteImage!= null && deleteImage) {
-                dockerClient.deleteAll(image);
+                dockerClient.deleteAll( image);
             } else{
                 getLog().info("Skipping docker image cleanup");
             }
@@ -280,6 +282,25 @@ public class PackageMojo extends BaseMicroserviceMojo {
             propagate(e);
         }
     }
+
+    private void addPlatformTaggedMicroserviceManifestToZipFile(File manifestFile, ZipOutputStream zipOutputStream) throws IOException {
+
+        log.info("Tagging microservice manifest with image platform");
+        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        ObjectNode manifest = (ObjectNode) mapper.readTree(manifestFile);
+        manifest.put(CUMULOCITY_JSON_IMGARCH_FRAGMENT, getDockerTargetPlatformArchitecture());
+        String jsonString = mapper.writeValueAsString(manifest);
+
+        final ZipEntry ze = new ZipEntry(MANIFEST_JSON_FILENAME);
+        zipOutputStream.putNextEntry(ze);
+
+        BufferedWriter zipStringWriter = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
+        zipStringWriter.write(jsonString);
+        zipStringWriter.flush();
+
+        zipOutputStream.closeEntry();
+    }
+
 
     private void validateManifest(File file) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), Charsets.UTF_8)) {
@@ -305,6 +326,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             }
         }
     }
+
 
     private ImmutableList<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
         final Resources resources = manifest.getResources();
