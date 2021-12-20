@@ -4,15 +4,12 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.cumulocity.model.application.MicroserviceManifest;
 import com.cumulocity.model.application.microservice.DataSize;
 import com.cumulocity.model.application.microservice.Resources;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
-import com.google.common.io.ByteSource;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +21,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.svenson.JSON;
 
 import javax.validation.*;
 import java.io.*;
@@ -168,7 +163,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     private void buildDockerImage() {
 
         Map<String, String> buildArgs = configureProxyBuildArguments();
-        Set<String> tags = getDockerImageTags();
+        Set<String> tags = getDockerImageNameExpandedWithTags();
 
         //choose target image build architecture;
         String targetBuildArch = getDockerTargetPlatformArchitecture();
@@ -212,7 +207,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         return DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM;
     }
 
-    private Set<String> getDockerImageTags() {
+    private Set<String> getDockerImageNameExpandedWithTags() {
         String imageVersionTag = image+":"+project.getVersion();
         String imageLatestTag = image+":latest";
 
@@ -272,8 +267,12 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 addFileToZip(zipOutputStream, dockerImage, "image.tar");
             }
             if(deleteImage!= null && deleteImage) {
-                log.info("Deleting all images named {}", image);
-                dockerClient.deleteAll( image);
+                Set<String> imageNameWithTags = getDockerImageNameExpandedWithTags();
+                log.info("Deleting all images named {} and imageNameWithTags {}", image);
+                imageNameWithTags.forEach(imageNameWithTag -> {
+                    dockerClient.deleteAll(imageNameWithTag, true);
+                } );
+
             } else{
                 getLog().info("Skipping docker image cleanup");
             }

@@ -1,12 +1,12 @@
 package com.cumulocity.agent.packaging.microservice.impl;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
-
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PushResponseItem;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -17,7 +17,6 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -25,10 +24,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,10 +53,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         ImageBuildCompletionWaiter imageBuildCompletionWaiter = new ImageBuildCompletionWaiter();
         buildImageCmd.exec(imageBuildCompletionWaiter);
         log.info("Waiting for image build to complete.");
-
-        while ((!imageBuildCompletionWaiter.getImageBuildOperationCompleted().get())) {
-            Thread.sleep(250);
-        }
+        imageBuildCompletionWaiter.waitUntilCompletionOrFailure();
 
         if (Objects.nonNull(imageBuildCompletionWaiter.getImageBuildError())) {
             log.error("Image build failed", imageBuildCompletionWaiter.getImageBuildError());
@@ -74,9 +67,17 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     protected class ImageBuildCompletionWaiter extends BuildImageResultCallback {
 
+
         //As the image build is asynchronous, we use active waiting for simplicity reasons
         @Getter
         private AtomicBoolean imageBuildOperationCompleted = new AtomicBoolean(false);
+
+        @SneakyThrows
+        public void waitUntilCompletionOrFailure() {
+            while (imageBuildOperationCompleted.get()==false) {
+                Thread.sleep(250);
+            }
+        }
 
         @Getter
         private Throwable imageBuildError = null;
@@ -134,11 +135,11 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     }
 
     @Override
-    public void deleteAll(String imageName)  {
+    public void deleteAll(String imageName, boolean withForce)  {
         log.info("Cleaning up all docker images for {} ", imageName);
 
         ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
-        
+
         listImagesCmd.getFilters().putAll(getImageNameFilter(imageName));
 
         List<Image> images = listImagesCmd.exec();
@@ -148,7 +149,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             log.info("Removing {} {}", image.getId(), image.getRepoTags());
 
             try {
-                RemoveImageCmd removeImageCmd = dockerClient.removeImageCmd(image.getId()).withForce(true);
+                RemoveImageCmd removeImageCmd = dockerClient.removeImageCmd(image.getId()).withForce(withForce);
                 removeImageCmd.exec();
                 log.info(" -> Successfully removed image {} ", removeImageCmd.getImageId());
             } catch (Exception e) {
@@ -158,6 +159,70 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
 
     }
+
+
+
+    @Override
+    public void tagImage(String image, String imageNameWithRepository, String tag) {
+        log.info("Tagging image {} image / {} with tag {}", image, imageNameWithRepository, tag);
+        TagImageCmd tagImageCmd = dockerClient.tagImageCmd(image,imageNameWithRepository, tag);
+        tagImageCmd.exec();
+    }
+
+    @Override
+    public void pushImage(String name) {
+        log.info("Pushing docker image to registry");
+        PushImageCmd pushImageCmd = dockerClient.pushImageCmd(name);
+
+        PushImageResponseCallBack callBack = new PushImageResponseCallBack();
+        pushImageCmd.exec(callBack);
+        callBack.waitForCompletionOrFailure();
+    }
+
+
+    private class PushImageResponseCallBack implements ResultCallback<PushResponseItem> {
+
+        AtomicBoolean pushProcessDone = new AtomicBoolean(false);
+
+        @SneakyThrows
+        private void waitForCompletionOrFailure() {
+            while (pushProcessDone.get()==false) {
+                Thread.sleep(250);
+            }
+        }
+
+        @Override
+        public void onStart(Closeable closeable) {
+            log.info("Started pushing image to registry");
+        }
+
+        @Override
+        public void onNext(PushResponseItem object) {
+            if (Objects.nonNull(object.getStream())) {
+                log.info(object.getStream());
+            }
+        }
+
+        @SneakyThrows
+        @Override
+        public void onError(Throwable throwable) {
+            pushProcessDone.set(true);
+            log.error("Could not push image");
+            throw throwable;
+        }
+
+        @Override
+        public void onComplete() {
+            pushProcessDone.set(true);
+            log.info("Successfully pushed image to registry");
+        }
+
+        @Override
+        public void close() throws IOException {
+            log.info("Push closed");
+        }
+    }
+
 
     private Map<String,List<String>> getImageNameFilter(String imageName) {
         Map<String,List<String>> imageFilters = Maps.newHashMap();

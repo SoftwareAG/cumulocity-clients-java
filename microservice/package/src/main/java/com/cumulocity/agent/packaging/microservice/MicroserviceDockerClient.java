@@ -11,5 +11,9 @@ public interface MicroserviceDockerClient {
 
     void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String targetArchitecture,  String networkMode);
 
-    void deleteAll(String image);
+    void deleteAll(String image, boolean withForce);
+
+    void tagImage(String image, String imageNameWithRepository, String tag);
+
+    void pushImage(String name);
 }
