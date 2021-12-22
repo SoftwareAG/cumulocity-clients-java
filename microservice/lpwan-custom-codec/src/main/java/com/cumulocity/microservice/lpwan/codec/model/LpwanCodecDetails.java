@@ -13,10 +13,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * The <b>LpwanCodecDetails</b> class represents the fragment details that is added in the device type managed object which is created on the codec microservice subscription.
@@ -27,29 +26,23 @@ import java.util.Map;
 public class LpwanCodecDetails {
 
     static final String CODEC_SERVICE_CONTEXT_PATH = "codecServiceContextPath";
-    static final String DEVICE_MANUFACTURER = "deviceManufacturer";
-    static final String DEVICE_MODEL = "deviceModel";
-
-    @NotBlank
-    private String deviceManufacturer;
-
-    @NotBlank
-    private String deviceModel;
+    static final String SUPPORTED_DEVICE = "supportedDevice";
 
     @NotBlank
     private String codecServiceContextPath;
+
+    @NotNull
+    private DeviceInfo supportedDevice;
 
     /**
      * This method returns information about the <b>deviceManufacturer</b>, <b>deviceModel</b> and <b>codecServiceContextPath</b> that are added to the <b>c8y_LpwanCodecDetails</b> fragment.
      *
      * @return Map the attributes
      */
-    public Map<String, String> getAttributes() {
-        Map<String,String> attributes = new HashMap<>(3);
-
-        attributes.put(DEVICE_MANUFACTURER, deviceManufacturer);
-        attributes.put(DEVICE_MODEL, deviceModel);
+    public Map<String, Object> getAttributes() {
+        Map<String,Object> attributes = new HashMap<>(3);
         attributes.put(CODEC_SERVICE_CONTEXT_PATH, codecServiceContextPath);
+        attributes.put(SUPPORTED_DEVICE, supportedDevice.getAttributes());
 
         return attributes;
     }
@@ -61,18 +54,20 @@ public class LpwanCodecDetails {
      * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void validate() {
-        List<String> missingParameters = new ArrayList<>(3);
-
-        if (Strings.isNullOrEmpty(deviceManufacturer)) {
-            missingParameters.add("'deviceManufacturer'");
-        }
-
-        if (Strings.isNullOrEmpty(deviceModel)) {
-            missingParameters.add("'deviceModel'");
-        }
+        List<String> missingParameters = new ArrayList<>(2);
 
         if (Strings.isNullOrEmpty(codecServiceContextPath)) {
             missingParameters.add("'codecServiceContextPath'");
+        }
+
+        if(Objects.isNull(supportedDevice) ) {
+            missingParameters.add("'supportedDevices'");
+        } else {
+            try {
+                supportedDevice.validate();
+            } catch (IllegalArgumentException e) {
+                missingParameters.add("'manufacturer, model and/or supportedCommands'");
+            }
         }
 
         if(!missingParameters.isEmpty()) {

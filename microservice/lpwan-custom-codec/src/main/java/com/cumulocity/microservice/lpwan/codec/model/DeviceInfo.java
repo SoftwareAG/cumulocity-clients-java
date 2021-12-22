@@ -12,22 +12,31 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.constraints.Null;
+import java.util.*;
 
 /**
  * The <b>DeviceInfo</b> class uniquely represents one device with the device manufacturer name, the device model.
  *
  */
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DeviceInfo {
+    static final String DEVICE_MANUFACTURER = "deviceManufacturer";
+    static final String DEVICE_MODEL = "deviceModel";
+
+    private static final String SUPPORTED_DEVICE_COMMANDS = "supportedDeviceCommands";
 
     @NotBlank
+    @EqualsAndHashCode.Include
     private String manufacturer;
 
     @NotBlank
+    @EqualsAndHashCode.Include
     private String model;
+
+    @Null
+    private Set<DeviceCommand> supportedCommands;
 
     /**
      * Instantiates a new DeviceInfo.
@@ -35,10 +44,28 @@ public class DeviceInfo {
      * @param model        represents the name of the device model.
      */
     public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model) {
-        this.manufacturer = manufacturer;
-        this.model = model;
+        this(manufacturer, model, null);
     }
 
+    public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model, @Null Set<DeviceCommand> supportedCommands) {
+        this.manufacturer = manufacturer;
+        this.model = model;
+        this.supportedCommands = supportedCommands;
+    }
+
+    public Map<String, Object> getAttributes() {
+        Map<String,Object> attributes = new HashMap<>(3);
+        attributes.put(DEVICE_MANUFACTURER, manufacturer);
+        attributes.put(DEVICE_MODEL, model);
+        if(Objects.nonNull(supportedCommands)) {
+            List<Map<String, Object>> supportedCommandsAttributesList = new ArrayList<>();
+            attributes.put(SUPPORTED_DEVICE_COMMANDS, supportedCommandsAttributesList);
+            for(DeviceCommand supportedCommand: supportedCommands) {
+                supportedCommandsAttributesList.add(supportedCommand.getAttributes());
+            }
+        }
+        return attributes;
+    }
     /**
      * This method validates the object field.
      *
@@ -46,7 +73,7 @@ public class DeviceInfo {
      * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     public void validate() {
-        List<String> missingParameters = new ArrayList<>(2);
+        List<String> missingParameters = new ArrayList<>(3);
 
         if (Strings.isNullOrEmpty(manufacturer)) {
             missingParameters.add("'manufacturer'");
@@ -54,6 +81,16 @@ public class DeviceInfo {
 
         if (Strings.isNullOrEmpty(model)) {
             missingParameters.add("'model'");
+        }
+
+        if(Objects.nonNull(supportedCommands) && !supportedCommands.isEmpty()) {
+            for(DeviceCommand supportedCommand: supportedCommands) {
+                try {
+                    supportedCommand.validate();
+                } catch (IllegalArgumentException e) {
+                    missingParameters.add("'name, category and/or command'");
+                }
+            }
         }
 
         if(!missingParameters.isEmpty()) {

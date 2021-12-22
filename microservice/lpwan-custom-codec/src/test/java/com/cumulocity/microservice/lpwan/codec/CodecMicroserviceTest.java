@@ -138,14 +138,16 @@ public class CodecMicroserviceTest {
         assertEquals(C8Y_LPWAN_DEVICE_TYPE, deviceInfo_1_DeviceType_MO.getType());
         assertEquals(LPWAN_FIELDBUS_TYPE, deviceInfo_1_DeviceType_MO.get(FIELDBUS_TYPE));
 
-        LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel(), "testServiceContextPath");
+        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel());
+        LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_1_supportedDevice);
         assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 
         verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
         ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
         assertEquals(deviceInfo_2_deviceTypeName + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
 
-        LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel(), "testServiceContextPath");
+        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel());
+        LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_2_supportedDevice);
         assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
     }
 

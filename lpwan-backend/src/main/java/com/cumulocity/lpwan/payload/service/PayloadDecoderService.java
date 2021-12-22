@@ -1,5 +1,7 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.exception.LpwanCodecServiceException;
+import com.cumulocity.lpwan.codec.service.LpwanCodecService;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.mapping.model.DecodedObject;
@@ -12,62 +14,33 @@ import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
-import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
-import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
-import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class PayloadDecoderService<T extends UplinkMessage> {
-
-    private static final Duration WEBCLIENT_DEFAULT_TIMEOUT_IN_MILLIS = Duration.ofMillis(5000);
-
     @Autowired
     private MicroserviceSubscriptionsService subscriptionsService;
 
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
 
-    Duration webClientTimeout;
-
-    private WebClient webClient;
+    @Autowired
+    private LpwanCodecService lpwanCodecService;
 
     private final PayloadMappingService payloadMappingService;
 
     private final MessageIdReader<T> messageIdReader;
 
     public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader){
-        this(payloadMappingService, messageIdReader, WEBCLIENT_DEFAULT_TIMEOUT_IN_MILLIS);
-    }
-
-    public PayloadDecoderService(PayloadMappingService payloadMappingService, MessageIdReader<T> messageIdReader, Duration webClientTimeout){
         this.payloadMappingService =  payloadMappingService;
         this.messageIdReader =  messageIdReader;
-        this.webClientTimeout = webClientTimeout;
-        this.webClient = WebClientFactory.builder()
-                .timeout(webClientTimeout)
-                .baseUrl(System.getenv("C8Y_BASEURL"))
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .build();
     }
 
     public interface MessageIdReader<T> {
@@ -137,28 +110,10 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     log.error(e.getMessage());
                 }
             } else {
-                LpwanCodecDetails lpwanCodecDetails = deviceType.getLpwanCodecDetails();
                 DecoderResult decoderResult;
                 try {
-                    try {
-                        lpwanCodecDetails.validate();
-                    } catch (IllegalArgumentException e) {
-                        throw new PayloadDecodingFailedException(String.format("'c8y_LpwanCodecDetails' fragment in the device type associated with device EUI '%s' is invalid.", uplinkMessage.getExternalId()), e);
-                    }
-
-                    DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getDeviceManufacturer(), lpwanCodecDetails.getDeviceModel());
-                    LpwanDecoderInputData decoderInputData = new LpwanDecoderInputData(
-                            source.getId().getValue(),
-                            uplinkMessage.getExternalId(),
-                            deviceInfo,
-                            uplinkMessage.getPayloadHex(),
-                            uplinkMessage.getFport(),
-                            uplinkMessage.getDateTime().getMillis()
-                            );
-
-                    decoderResult = invokeCodecMicroservice(lpwanCodecDetails.getCodecServiceContextPath(), decoderInputData);
-
-                } catch (PayloadDecodingFailedException e) {
+                    decoderResult = lpwanCodecService.decode(deviceType, source, uplinkMessage);
+                } catch (LpwanCodecServiceException e) {
                     decoderResult = DecoderResult.empty();
                     decoderResult.setAsFailed(String.format("Error decoding payload for device EUI '%s'. Skipping the decoding of the payload part. \nCause: %s", uplinkMessage.getExternalId(), e.getMessage()));
                 }
@@ -170,24 +125,6 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                 }
             }
         });
-    }
-
-    private DecoderResult invokeCodecMicroservice(String codecServiceContextPath, LpwanDecoderInputData decoderInput) throws PayloadDecodingFailedException {
-        String authentication = subscriptionsService.getCredentials(subscriptionsService.getTenant()).get()
-                .toCumulocityCredentials().getAuthenticationString();
-        try {
-            Mono<DecoderResult> decoderOutput = webClient.post()
-                    .uri("/service/" + codecServiceContextPath + "/decode")
-                    .header(HttpHeaders.AUTHORIZATION, authentication)
-                    .body(Mono.just(decoderInput), LpwanDecoderInputData.class)
-                    .retrieve()
-                    .bodyToMono(DecoderResult.class);
-            return decoderOutput.block(webClientTimeout);
-        } catch (Exception e) {
-            String errorMessage = String.format("Error invoking the LPWAN Codec microservice with context path '%s'", codecServiceContextPath);
-            log.error(errorMessage, e);
-            throw new PayloadDecodingFailedException(errorMessage, e);
-        }
     }
 
     private DecodedObject generateDecodedData(T uplinkMessage, UplinkConfiguration uplinkConfiguration)
@@ -233,48 +170,5 @@ public class PayloadDecoderService<T extends UplinkMessage> {
         value = DecoderUtil.offset(value, offset);
 
         return value;
-    }
-}
-
-class WebClientFactory {
-
-    private Duration timeout;
-    private String baseUrl;
-    private String contentType;
-    private String accept;
-
-    public static WebClientFactory builder() {
-        return new WebClientFactory();
-    }
-
-    public WebClientFactory timeout(Duration duration) {
-        this.timeout = duration;
-        return this;
-    }
-
-    public WebClientFactory baseUrl(String url) {
-        this.baseUrl = url;
-        return this;
-    }
-
-    public WebClientFactory contentType(String mediaType) {
-        this.contentType = mediaType;
-        return this;
-    }
-
-    public WebClientFactory accept(String mediaType) {
-        this.accept = mediaType;
-        return this;
-    }
-
-    public WebClient build() {
-        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) timeout.toMillis())
-                .responseTimeout(timeout)
-                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(timeout.toMillis(), TimeUnit.MILLISECONDS)));
-        return WebClient.builder().baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, contentType)
-                .defaultHeader(HttpHeaders.ACCEPT, accept)
-                .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
     }
 }

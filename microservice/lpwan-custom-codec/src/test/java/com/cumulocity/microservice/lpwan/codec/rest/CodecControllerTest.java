@@ -6,6 +6,7 @@ import com.cumulocity.microservice.customdecoders.api.exception.InvalidInputData
 import com.cumulocity.microservice.customdecoders.api.model.DecoderInputData;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
+import com.cumulocity.microservice.customencoders.api.service.EncoderService;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
 import com.cumulocity.model.idtype.GId;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,9 @@ public class CodecControllerTest {
 
     @MockBean
     private DecoderService decoderService;
+
+    @MockBean
+    private EncoderService encoderService;
 
     @Captor
     private ArgumentCaptor<DecoderInputData> decoderInputCapture;

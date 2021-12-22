@@ -12,7 +12,13 @@ import com.cumulocity.microservice.customdecoders.api.exception.InvalidInputData
 import com.cumulocity.microservice.customdecoders.api.model.DecoderInputData;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
+import com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException;
+import com.cumulocity.microservice.customencoders.api.exception.InvalidCommandDataException;
+import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
+import com.cumulocity.microservice.customencoders.api.service.EncoderService;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
+import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderInputData;
+import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderResult;
 import com.cumulocity.model.idtype.GId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +40,9 @@ public class CodecController {
 
     @Autowired
     private DecoderService decoderService;
+
+    @Autowired
+    private EncoderService encoderService;
 
     /**
      * This REST API should expose '/decode' endpoint
@@ -58,6 +67,22 @@ public class CodecController {
         } catch (IllegalArgumentException e) {
             log.error("Decoder failed as it received invalid input.", e);
             throw new InvalidInputDataException(e, e.getMessage(), DecoderResult.empty());
+        }
+    }
+
+    @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @NotNull EncoderResult encode(@RequestBody @NotNull LpwanEncoderInputData inputData) throws EncoderServiceException {
+        try {
+            if(Objects.isNull(inputData)) {
+                throw new IllegalArgumentException("Encoder is invoked with null input data.");
+            }
+            else {
+                log.debug("Encoder is invoked with the following input data \\n {}", inputData);
+            }
+            return encoderService.encode(inputData);
+        } catch (IllegalArgumentException e) {
+            log.error("Encoder failed as it received invalid input.", e);
+            throw new InvalidCommandDataException(e, e.getMessage(), EncoderResult.empty());
         }
     }
 }

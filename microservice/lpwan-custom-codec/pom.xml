@@ -79,6 +79,11 @@
             <version>2.13.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>custom-encoders</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
     </dependencies>
 

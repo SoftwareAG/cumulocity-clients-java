@@ -13,32 +13,35 @@ class LpwanCodecDetailsTest {
 
     @Test
     void doValidate_FailForNullParameters() {
-        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(null, null, null);
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(null, null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, lpwanCodecDetails::validate);
 
-        List<String> missingParameters = Arrays.asList("'deviceManufacturer'", "'deviceModel', 'codecServiceContextPath'");
+        List<String> missingParameters = Arrays.asList("'codecServiceContextPath', 'supportedDevices'");
         assertEquals("LpwanCodecDetails is missing mandatory parameters: " + String.join(", ", missingParameters), exception.getMessage());
     }
 
     @Test
     void doValidate_FailForNullAndEmptyParameters() {
-        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("", null, "");
+        DeviceInfo deviceInfo = new DeviceInfo("", null, null);
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("", deviceInfo);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, lpwanCodecDetails::validate);
 
-        List<String> missingParameters = Arrays.asList("'deviceManufacturer'", "'deviceModel', 'codecServiceContextPath'");
+        List<String> missingParameters = Arrays.asList("'codecServiceContextPath', 'manufacturer, model and/or supportedCommands'");
         assertEquals("LpwanCodecDetails is missing mandatory parameters: " + String.join(", ", missingParameters), exception.getMessage());
     }
 
     @Test
     void doGetAttributes_success() {
-        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("Manufacturer_1", "Model_1", "lpwan-custom-codec-service-path");
+        DeviceInfo deviceInfo = new DeviceInfo("Manufacturer_1", "Model_1", null);
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("lpwan-custom-codec-service-path", deviceInfo);
 
-        Map<String, String> attributes = lpwanCodecDetails.getAttributes();
+        Map<String, Object> attributes = lpwanCodecDetails.getAttributes();
 
-        assertEquals("Manufacturer_1", attributes.get(LpwanCodecDetails.DEVICE_MANUFACTURER));
-        assertEquals("Model_1", attributes.get(LpwanCodecDetails.DEVICE_MODEL));
+        Map<String, Object> supportedDevicesAttributes = (Map<String, Object>) attributes.get(LpwanCodecDetails.SUPPORTED_DEVICE);
+        assertEquals("Manufacturer_1", supportedDevicesAttributes.get(DeviceInfo.DEVICE_MANUFACTURER));
+        assertEquals("Model_1", supportedDevicesAttributes.get(DeviceInfo.DEVICE_MODEL));
         assertEquals("lpwan-custom-codec-service-path", attributes.get(LpwanCodecDetails.CODEC_SERVICE_CONTEXT_PATH));
     }
 }

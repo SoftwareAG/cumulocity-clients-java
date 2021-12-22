@@ -10,6 +10,9 @@ package com.cumulocity.microservice.lpwan.codec.handler;
 import com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException;
 import com.cumulocity.microservice.customdecoders.api.exception.InvalidInputDataException;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
+import com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException;
+import com.cumulocity.microservice.customencoders.api.exception.InvalidCommandDataException;
+import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +47,18 @@ public class CodecExceptionsHandler {
         log.error(exception.getMessage(), exception);
 
         if (exception instanceof InvalidInputDataException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+        }
+    }
+
+    @ExceptionHandler(value = EncoderServiceException.class)
+    @ResponseBody
+    public ResponseEntity<EncoderResult> handleEncoderServiceException(EncoderServiceException exception) {
+        log.error(exception.getMessage(), exception);
+
+        if (exception instanceof InvalidCommandDataException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());

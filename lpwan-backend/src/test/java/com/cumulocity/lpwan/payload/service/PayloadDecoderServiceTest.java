@@ -1,5 +1,8 @@
 package com.cumulocity.lpwan.payload.service;
 
+import com.cumulocity.lpwan.codec.exception.LpwanCodecServiceException;
+import com.cumulocity.lpwan.codec.service.LpwanCodecService;
+import com.cumulocity.lpwan.codec.service.WebClientFactory;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.devicetype.model.UplinkConfiguration;
 import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
@@ -8,11 +11,13 @@ import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
+import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
+import com.cumulocity.sdk.client.inventory.InventoryApi;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,13 +41,19 @@ public class PayloadDecoderServiceTest {
     private MicroserviceSubscriptionsService subscriptionsService;
 
     @Mock
+    private InventoryApi inventoryApi;
+
+    @Mock
     private ContextService<MicroserviceCredentials> contextService;
 
     @Mock
     WebClient webClient;
 
+    @InjectMocks
+    LpwanCodecService lpwanCodecService = spy(new LpwanCodecService());
+
     @Mock
-    Mono<DecoderResult> decoderOutputMono;
+    Mono<DecoderResult> decoderResultMono;
 
     @Mock
     WebClient.RequestBodyUriSpec post;
@@ -69,7 +79,7 @@ public class PayloadDecoderServiceTest {
     ArgumentCaptor<Runnable> taskCaptor;
 
     @InjectMocks
-    PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(payloadMappingService, null, Duration.ofMillis(1000));
+    PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(payloadMappingService, null);
 
 
     @Test
@@ -150,7 +160,8 @@ public class PayloadDecoderServiceTest {
         when(uplinkMessage.getFport()).thenReturn(999);
         when(uplinkMessage.getDateTime()).thenReturn(timeNow);
 
-        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("Manufacturer_X", "Model_X", "lpwanContextPath");
+        DeviceInfo supportedDevice = new DeviceInfo("Manufacturer_X", "Model_X");
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("lpwanContextPath", supportedDevice);
         DeviceType deviceType = new DeviceType();
         deviceType.setLpwanCodecDetails(lpwanCodecDetails);
         deviceType.setFieldbusType("lpwan");
@@ -165,10 +176,10 @@ public class PayloadDecoderServiceTest {
         when(uri.header(eq(HttpHeaders.AUTHORIZATION), eq(credentials.toCumulocityCredentials().getAuthenticationString()))).thenReturn(uri);
         when(uri.body(inputMonoCaptor.capture(), eq(LpwanDecoderInputData.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(DecoderResult.class)).thenReturn(decoderOutputMono);
+        when(responseSpec.bodyToMono(DecoderResult.class)).thenReturn(decoderResultMono);
 
         DecoderResult decoderResult = new DecoderResult();
-        when(decoderOutputMono.block(eq(payloadDecoderService.webClientTimeout))).thenReturn(decoderResult);
+        when(decoderResultMono.block(eq(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS))).thenReturn(decoderResult);
 
         ManagedObjectRepresentation source = ManagedObjects.asManagedObject(GId.asGId("12345"));
 
@@ -177,13 +188,13 @@ public class PayloadDecoderServiceTest {
         taskCaptor.getValue().run();
 
         // Verify if the invokeCodecMicroservice was invoked with the correct DecoderInputData
-        LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(payloadDecoderService.webClientTimeout);
+        LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(uplinkMessage.getExternalId(), capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getDeviceModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
         assertEquals(uplinkMessage.getPayloadHex(), capturedInputData.getValue());
-        assertEquals(uplinkMessage.getFport(), capturedInputData.getFPort());
+        assertEquals(uplinkMessage.getFport(), capturedInputData.getFport());
         assertEquals(uplinkMessage.getDateTime().getMillis(), capturedInputData.getUpdateTime());
 
         // Verify if the handleCodecServiceResponse is invoked with the correct data
@@ -227,7 +238,8 @@ public class PayloadDecoderServiceTest {
         when(uplinkMessage.getFport()).thenReturn(999);
         when(uplinkMessage.getDateTime()).thenReturn(timeNow);
 
-        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("Manufacturer_X", "Model_X", "lpwanContextPath");
+        DeviceInfo supportedDevice = new DeviceInfo("Manufacturer_X", "Model_X");
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails("lpwanContextPath", supportedDevice);
         DeviceType deviceType = new DeviceType();
         deviceType.setLpwanCodecDetails(lpwanCodecDetails);
         deviceType.setFieldbusType("lpwan");
@@ -242,10 +254,10 @@ public class PayloadDecoderServiceTest {
         when(uri.header(eq(HttpHeaders.AUTHORIZATION), eq(credentials.toCumulocityCredentials().getAuthenticationString()))).thenReturn(uri);
         when(uri.body(inputMonoCaptor.capture(), eq(LpwanDecoderInputData.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(DecoderResult.class)).thenReturn(decoderOutputMono);
+        when(responseSpec.bodyToMono(DecoderResult.class)).thenReturn(decoderResultMono);
 
         DecoderResult decoderResult = new DecoderResult();
-        when(decoderOutputMono.block(eq(payloadDecoderService.webClientTimeout))).thenThrow(new RuntimeException("Failed to invoke Decoder service."));
+        when(decoderResultMono.block(eq(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS))).thenThrow(new RuntimeException("Failed to invoke Decoder service."));
 
         ManagedObjectRepresentation source = ManagedObjects.asManagedObject(GId.asGId("12345"));
 
@@ -254,18 +266,18 @@ public class PayloadDecoderServiceTest {
         taskCaptor.getValue().run();
 
         // Verify if the invokeCodecMicroservice was invoked with the correct DecoderInputData
-        LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(payloadDecoderService.webClientTimeout);
+        LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(uplinkMessage.getExternalId(), capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getDeviceModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
         assertEquals(uplinkMessage.getPayloadHex(), capturedInputData.getValue());
-        assertEquals(uplinkMessage.getFport(), capturedInputData.getFPort());
+        assertEquals(uplinkMessage.getFport(), capturedInputData.getFport());
         assertEquals(uplinkMessage.getDateTime().getMillis(), capturedInputData.getUpdateTime());
 
         // Verify if the handleCodecServiceResponse is invoked with the correct data
         verify(payloadMappingService).handleCodecServiceResponse(decoderResultCaptor.capture(), any(ManagedObjectRepresentation.class), any(String.class));
-        assertEquals(String.format("Error decoding payload for device EUI '%s'. Skipping the decoding of the payload part. \nCause: %s", uplinkMessage.getExternalId(), String.format("Error invoking the LPWAN Codec microservice with context path '%s'", lpwanCodecDetails.getCodecServiceContextPath())), decoderResultCaptor.getValue().getMessage());
+        assertEquals(String.format("Error decoding payload for device EUI '%s'. Skipping the decoding of the payload part. \nCause: %s", uplinkMessage.getExternalId(), String.format("Error invoking the LPWAN /decode service with context path '%s'", lpwanCodecDetails.getCodecServiceContextPath())), decoderResultCaptor.getValue().getMessage());
         assertFalse(decoderResultCaptor.getValue().isSuccess());
     }
 }

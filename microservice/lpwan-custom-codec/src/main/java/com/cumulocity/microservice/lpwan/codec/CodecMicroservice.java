@@ -9,6 +9,7 @@ package com.cumulocity.microservice.lpwan.codec;
 
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.lpwan.codec.model.DeviceCommand;
 import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -20,6 +21,7 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.inventory.InventoryFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -46,6 +48,11 @@ public class CodecMicroservice {
     static final String C8Y_LPWAN_DEVICE_TYPE = "c8y_LpwanDeviceType";
     static final String LPWAN_FIELDBUS_TYPE = "lpwan";
     static final String DEVICE_TYPE_NAME_FORMAT = "%s : %s";
+    static final String C8Y_DEVICE_SHELL_TEMPLATE = "c8y_DeviceShellTemplate";
+    static final String DEVICE_TYPE = "deviceType";
+    static final String COMMAND = "command";
+    static final String CATEGORY = "category";
+    static final String DELIVERY_TYPES = "deliveryTypes";
 
     @Autowired
     private ContextService<Credentials> contextService;
@@ -91,60 +98,75 @@ public class CodecMicroservice {
                 () -> {
                     Set<DeviceInfo> supportedDevices = codec.supportsDevices();
                     for (DeviceInfo supportedDevice : supportedDevices) {
-                        try {
-                            supportedDevice.validate();
-                        } catch (IllegalArgumentException e) {
-                            log.error("Device manufacturer and model are mandatory fields in the supported device. Skipping the Device Type creation.", e);
-                            return;
-                        }
+                        ManagedObjectRepresentation deviceTypeMo = registerDeviceType(supportedDevice);
 
-                        String supportedDeviceTypeName = formDeviceTypeName(supportedDevice);
-                        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(supportedDevice.getManufacturer(), supportedDevice.getModel(), contextPath);
-                        Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(supportedDevice);
-                        if (!deviceType.isPresent()) {
-                            log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
-
-                            String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, supportedDevice.getModel(), supportedDevice.getManufacturer());
-                            ManagedObjectRepresentation deviceTypeMo = new ManagedObjectRepresentation();
-                            deviceTypeMo.setName(supportedDeviceTypeName);
-                            deviceTypeMo.set(description, DESCRIPTION);
-                            deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
-                            deviceTypeMo.setType(C8Y_LPWAN_DEVICE_TYPE);
-                            deviceTypeMo.set(LPWAN_FIELDBUS_TYPE, FIELDBUS_TYPE);
-                            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
-                            try {
-                                deviceTypeMo = inventoryApi.create(deviceTypeMo);
-
-                                //Register the External Id
-                                ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
-                                deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
-                                deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
-                                deviceTypeExternalId.setManagedObject(deviceTypeMo);
-                                try {
-                                    identityApi.create(deviceTypeExternalId);
-                                } catch (Exception e) {
-                                    log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
-                                }
-                            } catch (Exception e) {
-                                log.error("Unable create device type with name '{}'", supportedDeviceTypeName, e);
-                            }
-
-                            log.info("Created device type '{}' on codec microservice subscription", supportedDeviceTypeName);
-                        } else {
-                            log.info("Updating the device type with name '{}' as it already exists", supportedDeviceTypeName);
-
-                            ManagedObjectRepresentation deviceTypeMo = ManagedObjects.asManagedObject(deviceType.get().getManagedObject().getId());
-                            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
-                            try {
-                                inventoryApi.update(deviceTypeMo);
-                            } catch (Exception e) {
-                                log.error("Unable update device type with name '{}'", supportedDeviceTypeName, e);
-                            }
-
-                            log.info("Updated the device type with name '{}' as it already exists", supportedDeviceTypeName);
+                        if(Objects.nonNull(deviceTypeMo)) {
+                            createPredefinedCommandTemplates(deviceTypeMo, supportedDevice.getSupportedCommands());
                         }
                     }
                 });
+    }
+
+    private ManagedObjectRepresentation registerDeviceType(DeviceInfo deviceInfo) {
+        try {
+            deviceInfo.validate();
+        } catch (IllegalArgumentException e) {
+            log.error("Device manufacturer and model are mandatory fields in the supported device. Skipping the Device Type creation.", e);
+            return null;
+        }
+
+        String supportedDeviceTypeName = formDeviceTypeName(deviceInfo);
+        LpwanCodecDetails lpwanCodecDetails = new LpwanCodecDetails(contextPath, deviceInfo);
+        Optional<ExternalIDRepresentation> deviceType = isDeviceTypeExists(deviceInfo);
+        ManagedObjectRepresentation deviceTypeMo = null;
+        if (!deviceType.isPresent()) {
+            log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
+
+            String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo.getModel(), deviceInfo.getManufacturer());
+
+            deviceTypeMo = new ManagedObjectRepresentation();
+            deviceTypeMo.setName(supportedDeviceTypeName);
+            deviceTypeMo.set(description, DESCRIPTION);
+            deviceTypeMo.set(Collections.EMPTY_MAP, C8Y_IS_DEVICE_TYPE);
+            deviceTypeMo.setType(C8Y_LPWAN_DEVICE_TYPE);
+            deviceTypeMo.set(LPWAN_FIELDBUS_TYPE, FIELDBUS_TYPE);
+            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
+            try {
+                deviceTypeMo = inventoryApi.create(deviceTypeMo);
+
+                //Register the External Id
+                ExternalIDRepresentation deviceTypeExternalId = new ExternalIDRepresentation();
+                deviceTypeExternalId.setExternalId(supportedDeviceTypeName);
+                deviceTypeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
+                deviceTypeExternalId.setManagedObject(deviceTypeMo);
+                try {
+                    identityApi.create(deviceTypeExternalId);
+                } catch (Exception e) {
+                    log.error("Unable create External Id for device type with name '{}'", supportedDeviceTypeName, e);
+                    return null;
+                }
+            } catch (Exception e) {
+                log.error("Unable create device type with name '{}'", supportedDeviceTypeName, e);
+                return null;
+            }
+
+            log.info("Created device type '{}' on codec microservice subscription", supportedDeviceTypeName);
+        } else {
+            log.info("Updating the device type with name '{}' as it already exists", supportedDeviceTypeName);
+
+            deviceTypeMo = ManagedObjects.asManagedObject(deviceType.get().getManagedObject().getId());
+            deviceTypeMo.set(lpwanCodecDetails.getAttributes(), C8Y_LPWAN_CODEC_DETAILS);
+            try {
+                inventoryApi.update(deviceTypeMo);
+            } catch (Exception e) {
+                log.error("Unable update device type with name '{}'", supportedDeviceTypeName, e);
+                return null;
+            }
+
+            log.info("Updated the device type with name '{}' as it already exists", supportedDeviceTypeName);
+        }
+
+        return deviceTypeMo;
     }
 
     private Optional<ExternalIDRepresentation> isDeviceTypeExists(DeviceInfo deviceInfo) {
@@ -163,6 +185,50 @@ public class CodecMicroservice {
      */
     String formDeviceTypeName(DeviceInfo deviceInfo) {
         return String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo.getManufacturer(), deviceInfo.getModel());
+    }
+
+    private void createPredefinedCommandTemplates(ManagedObjectRepresentation deviceTypeMo, Set<DeviceCommand> supportedCommands) {
+        try {
+            log.info("Creating predefined command templates for the device type '{}' on codec microservice subscription", deviceTypeMo.getName());
+            // Fetch all the pre-existing autogenerated commands registered for this deviceType
+            Iterable<ManagedObjectRepresentation> allPredefinedCommands =
+                    inventoryApi.getManagedObjectsByFilter(new InventoryFilter() {
+                        private String deviceType;
+
+                        public InventoryFilter byDeviceType(String PredefinedCommandFilter) {
+                            this.deviceType = PredefinedCommandFilter;
+                            return this;
+                        }
+                    }.byDeviceType(deviceTypeMo.getName())
+                     .byType("c8y_DeviceShellTemplate")).get().allPages();
+
+            // Delete all the pre-existing autogenerated commands
+            for (ManagedObjectRepresentation predefinedCommand : allPredefinedCommands) {
+                inventoryApi.delete(predefinedCommand.getId());
+                log.debug("Deleted existing predefined command template '{}' for the device type '{}'", predefinedCommand.getName(), deviceTypeMo.getName());
+            }
+            // For every supported operation, create a predefined operation template
+            for (DeviceCommand oneSupportedCommand : supportedCommands) {
+                ManagedObjectRepresentation predefinedCommand = new ManagedObjectRepresentation();
+                predefinedCommand.setName(oneSupportedCommand.getName());
+                predefinedCommand.setType(C8Y_DEVICE_SHELL_TEMPLATE);
+                predefinedCommand.set(new String[]{deviceTypeMo.getName()}, DEVICE_TYPE);
+                predefinedCommand.set(oneSupportedCommand.getCommand(), COMMAND);
+                predefinedCommand.set(oneSupportedCommand.getCategory(), CATEGORY);
+                predefinedCommand.set(oneSupportedCommand.getDeliveryTypes(), DELIVERY_TYPES);
+
+                try {
+                    inventoryApi.create(predefinedCommand);
+                    log.debug("Created predefined command template '{}' for device type '{}'", predefinedCommand.getName(), deviceTypeMo.getName());
+                } catch (Exception e) {
+                    // This exception is caught to only log the error.
+                    log.error("Failed to create the predefined command named '{}', for the device type '{}'", oneSupportedCommand.getName(), deviceTypeMo.getName());
+                }
+            }
+        } catch (Exception e) {
+            // This exception is caught to only log the error.
+            log.error("Failed to create the predefined commands for the device type '{}'", deviceTypeMo.getName());
+        }
     }
 
 //    /**

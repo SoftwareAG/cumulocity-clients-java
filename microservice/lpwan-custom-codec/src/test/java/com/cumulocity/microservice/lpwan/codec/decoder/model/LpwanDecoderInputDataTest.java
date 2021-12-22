@@ -2,7 +2,6 @@ package com.cumulocity.microservice.lpwan.codec.decoder.model;
 
 import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.model.idtype.GId;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -26,7 +25,7 @@ class LpwanDecoderInputDataTest {
         assertEquals("EUI_ID", inputData.getSourceDeviceEui());
         assertEquals(sourceDeviceInfo, inputData.getSourceDeviceInfo());
         assertEquals("HEX INPUT", inputData.getValue());
-        assertEquals(999, inputData.getFPort());
+        assertEquals(999, inputData.getFport());
         assertEquals(currentTimeMillis, inputData.getUpdateTime());
     }
 
@@ -68,7 +67,7 @@ class LpwanDecoderInputDataTest {
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "EUI_ID");
         args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
         args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
-        args.put(LpwanDecoderInputData.F_PORT_KEY, "999");
+        args.put(LpwanDecoderInputData.FPORT_KEY, "999");
         args.put(LpwanDecoderInputData.UPDATE_TIME_KEY, String.valueOf(currentTimeMillis));
 
         LpwanDecoderInputData inputData = new LpwanDecoderInputData("HEX INPUT", GId.asGId("SOURCE_ID"), args);
@@ -78,7 +77,7 @@ class LpwanDecoderInputDataTest {
         assertEquals("MANUFACTURER_1", inputData.getSourceDeviceInfo().getManufacturer());
         assertEquals("MODEL_1", inputData.getSourceDeviceInfo().getModel());
         assertEquals("HEX INPUT", inputData.getValue());
-        assertEquals(999, inputData.getFPort());
+        assertEquals(999, inputData.getFport());
         assertEquals(currentTimeMillis, inputData.getUpdateTime());
         assertEquals(args, inputData.getArgs());
     }
@@ -109,7 +108,7 @@ class LpwanDecoderInputDataTest {
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "EUI_ID");
         args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
         args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
-        args.put(LpwanDecoderInputData.F_PORT_KEY, "aaa");
+        args.put(LpwanDecoderInputData.FPORT_KEY, "aaa");
         args.put(LpwanDecoderInputData.UPDATE_TIME_KEY, String.valueOf(currentTimeMillis));
 
         exception = assertThrows(IllegalArgumentException.class, () ->
@@ -117,7 +116,7 @@ class LpwanDecoderInputDataTest {
 
         assertEquals("java.lang.NumberFormatException: For input string: \"aaa\"", exception.getMessage());
 
-        args.put(LpwanDecoderInputData.F_PORT_KEY, "999");
+        args.put(LpwanDecoderInputData.FPORT_KEY, "999");
         args.put(LpwanDecoderInputData.UPDATE_TIME_KEY, "TIME");
 
         exception = assertThrows(IllegalArgumentException.class, () ->

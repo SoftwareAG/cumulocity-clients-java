@@ -149,6 +149,7 @@ public class DeviceTypePayloadConfigurerTest {
         when(deviceTypeMapper.convertManagedObjectToDeviceType(dummyDeviceTypeObject)).thenReturn(new DeviceType());
 
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
+        managedObject.setId(new GId("18002"));
         LpwanDevice lpwanDevice = new LpwanDevice();
         lpwanDevice.setType("inventory/managedObjects/18002");
         managedObject.set(lpwanDevice);
@@ -182,16 +183,20 @@ public class DeviceTypePayloadConfigurerTest {
 
     private ManagedObjectRepresentation getDeviceMo(String oldDeviceId, String newDeviceId, boolean isTypeExternalIdSet) throws DeviceTypeObjectNotFoundException {
         ManagedObjectRepresentation dummyDeviceTypeObject = new ManagedObjectRepresentation();
+
         when(inventoryApi.get(any(GId.class))).thenReturn(dummyDeviceTypeObject);
 
         when(deviceTypeMapper.convertManagedObjectToDeviceType(dummyDeviceTypeObject)).thenReturn(new DeviceType());
 
         ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
+        managedObject.setId(new GId(oldDeviceId));
         LpwanDevice lpwanDevice = new LpwanDevice();
         lpwanDevice.setType("inventory/managedObjects/"+oldDeviceId);
         managedObject.set(lpwanDevice);
 
         if(isTypeExternalIdSet) {
+            managedObject.setId(new GId(newDeviceId));
+            dummyDeviceTypeObject.setId(new GId(newDeviceId));
             TypeExternalId typeExternalId = new TypeExternalId();
             typeExternalId.setExternalId("DeviceType_ExternalId");
             typeExternalId.setType("c8y_SmartRestDeviceIdentifier");
