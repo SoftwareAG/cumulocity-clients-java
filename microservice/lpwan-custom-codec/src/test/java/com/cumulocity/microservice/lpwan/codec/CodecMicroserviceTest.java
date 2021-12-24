@@ -10,6 +10,7 @@ package com.cumulocity.microservice.lpwan.codec;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.lpwan.codec.model.DeviceCommand;
 import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
@@ -22,10 +23,12 @@ import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
-import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.inventory.InventoryFilter;
+import com.cumulocity.sdk.client.inventory.ManagedObjectCollection;
+import com.cumulocity.sdk.client.inventory.PagedManagedObjectCollectionRepresentation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,12 +36,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,6 +73,9 @@ public class CodecMicroserviceTest {
     @Mock
     private Callable<String> mockCallable;
 
+    @Mock
+    private InventoryFilter mockInventoryFilter;
+
     private DeviceInfo deviceInfo_1 = new DeviceInfo("Manufacturer_1", "Model_1");
     private String deviceInfo_1_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1.getManufacturer(), deviceInfo_1.getModel());
     private DeviceInfo deviceInfo_2 = new DeviceInfo("Manufacturer_2", "Model_2");
@@ -85,6 +88,9 @@ public class CodecMicroserviceTest {
 
     @Captor
     private ArgumentCaptor<ID> idCaptor;
+
+    @Captor
+    private ArgumentCaptor<GId> gIdCaptor;
 
     @Captor
     private ArgumentCaptor<ExternalIDRepresentation> externalIDRepresentationCaptor;
@@ -149,6 +155,125 @@ public class CodecMicroserviceTest {
         DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel());
         LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_2_supportedDevice);
         assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
+    }
+
+    @Test
+    public void doRegisterDeviceTypes_AndCreatePredefinedCommandTemplates_BothCreateAndUpdate_Success() throws Exception {
+        DeviceCommand deviceCommand1 = new DeviceCommand("set config", "TestCategory", "{\"set config\":{\"breakpoint\":\"false\",\"selfadapt\":\"true\",\"oneoff\":\"false\",\"alreport\":\"false\",\"pos\":\"0\",\"hb\":\"10\"}}");
+        DeviceCommand deviceCommand2 = new DeviceCommand("position request", "TestCategory", "{\"request pos\":{\"latitude\":\"10.35\",\"selfadapt\":\"-1.36\"");
+        Set<DeviceCommand> supportedCommands = new HashSet<>();
+        supportedCommands.addAll(Arrays.asList(deviceCommand1, deviceCommand2));
+
+        DeviceInfo deviceInfo_1_withSupportedCommands = new DeviceInfo("Manufacturer_1", "Model_1", supportedCommands);
+        String deviceInfo_1_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1_withSupportedCommands.getManufacturer(), deviceInfo_1_withSupportedCommands.getModel());
+        DeviceInfo deviceInfo_2_withSupportedCommands = new DeviceInfo("Manufacturer_2", "Model_2", supportedCommands);
+        String deviceInfo_2_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_2_withSupportedCommands.getManufacturer(), deviceInfo_2_withSupportedCommands.getModel());
+
+        ManagedObjectRepresentation predefinedCommand1 = new ManagedObjectRepresentation();
+        predefinedCommand1.setId(GId.asGId(1988));
+        predefinedCommand1.setName(deviceCommand2.getName());
+        predefinedCommand1.setType(C8Y_DEVICE_SHELL_TEMPLATE);
+        predefinedCommand1.set(new String[] {deviceInfo_2_deviceTypeName_withSupportedCommands}, DEVICE_TYPE);
+        predefinedCommand1.set(deviceCommand2.getCommand(), COMMAND);
+        predefinedCommand1.set(deviceCommand2.getCategory(), CATEGORY);
+        predefinedCommand1.set(deviceCommand2.getDeliveryTypes(), DELIVERY_TYPES);
+
+        Iterable<ManagedObjectRepresentation> allPredefinedCommands = Arrays.asList(predefinedCommand1);
+
+        //when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class).byType(anyString()))).thenReturn(mock(ManagedObjectCollection.class).get().allPages());
+
+        setupIdentityApi(deviceInfo_1_withSupportedCommands, deviceInfo_1_deviceTypeName_withSupportedCommands, false, false);
+        setupInventoryApi(deviceInfo_1_withSupportedCommands, deviceInfo_1_deviceTypeName_withSupportedCommands,false, false);
+
+        setupIdentityApi(deviceInfo_2_withSupportedCommands, deviceInfo_2_deviceTypeName_withSupportedCommands, true, false);
+        setupInventoryApi(deviceInfo_2_withSupportedCommands, deviceInfo_2_deviceTypeName_withSupportedCommands, true, false);
+
+        ManagedObjectCollection mockManagedObjectCollection = mock(ManagedObjectCollection.class);
+        PagedManagedObjectCollectionRepresentation pagedManagedObjectCollectionRepresentation = mock(PagedManagedObjectCollectionRepresentation.class);
+
+        when(pagedManagedObjectCollectionRepresentation.allPages()).thenReturn(allPredefinedCommands);
+        when(mockManagedObjectCollection.get()).thenReturn(pagedManagedObjectCollectionRepresentation);
+        when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class))).thenReturn(mockManagedObjectCollection);
+
+        when(contextService.callWithinContext(eq(credentials),any(Callable.class))).thenReturn("testServiceContextPath");
+        when(codec.supportsDevices()).thenReturn(Stream.of(new DeviceInfo[] {deviceInfo_1_withSupportedCommands, deviceInfo_2_withSupportedCommands})
+                .collect(Collectors.toCollection(HashSet::new)));
+
+        invokeRegisterDeviceTypes(codecMicroservice);
+
+        verify(identityApi, times(2)).getExternalId(idCaptor.capture());
+        List<ID> allIds = idCaptor.getAllValues();
+        ID deviceInfo_1_ID = allIds.get(0);
+        ID deviceInfo_2_ID = allIds.get(1);
+
+        assertEquals(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo_1_ID.getType());
+        assertEquals(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo_2_ID.getType());
+
+        assertTrue(deviceInfo_1_ID.getValue().equals(deviceInfo_1_deviceTypeName_withSupportedCommands) || deviceInfo_1_ID.getValue().equals(deviceInfo_2_deviceTypeName_withSupportedCommands));
+        assertTrue(deviceInfo_2_ID.getValue().equals(deviceInfo_1_deviceTypeName_withSupportedCommands) || deviceInfo_2_ID.getValue().equals(deviceInfo_2_deviceTypeName_withSupportedCommands));
+
+        verify(identityApi).create(externalIDRepresentationCaptor.capture());
+        ExternalIDRepresentation deviceInfo_1_externalId = externalIDRepresentationCaptor.getValue();
+        assertEquals(C8Y_SMART_REST_DEVICE_IDENTIFIER, deviceInfo_1_externalId.getType());
+        assertEquals(deviceInfo_1_deviceTypeName_withSupportedCommands, deviceInfo_1_externalId.getExternalId());
+
+        verify(inventoryApi, times(5)).create(managedObjectRepresentationCaptor.capture());
+        List<ManagedObjectRepresentation> allMOs = managedObjectRepresentationCaptor.getAllValues();
+        ManagedObjectRepresentation deviceInfo_1_DeviceType_MO = allMOs.get(0);
+        assertEquals(deviceInfo_1_deviceTypeName_withSupportedCommands, deviceInfo_1_DeviceType_MO.getName());
+        assertEquals(String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo_1_withSupportedCommands.getModel(), deviceInfo_1_withSupportedCommands.getManufacturer()), deviceInfo_1_DeviceType_MO.get(DESCRIPTION));
+        assertEquals(Collections.EMPTY_MAP, deviceInfo_1_DeviceType_MO.get(C8Y_IS_DEVICE_TYPE));
+        assertEquals(C8Y_LPWAN_DEVICE_TYPE, deviceInfo_1_DeviceType_MO.getType());
+        assertEquals(LPWAN_FIELDBUS_TYPE, deviceInfo_1_DeviceType_MO.get(FIELDBUS_TYPE));
+
+        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1_withSupportedCommands.getManufacturer(), deviceInfo_1_withSupportedCommands.getModel(), deviceInfo_1_withSupportedCommands.getSupportedCommands());
+        LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_1_supportedDevice);
+        assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
+
+        verify(inventoryApi).update(managedObjectRepresentationCaptor.capture());
+        ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
+        assertEquals(deviceInfo_2_deviceTypeName_withSupportedCommands + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
+
+        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2_withSupportedCommands.getManufacturer(), deviceInfo_2_withSupportedCommands.getModel(), deviceInfo_2_withSupportedCommands.getSupportedCommands());
+        LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_2_supportedDevice);
+        assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
+
+        // Verify deletion of predefined commands
+        verify(inventoryApi, times(2)).delete(gIdCaptor.capture());
+        List<GId> gidList = gIdCaptor.getAllValues();
+        assertEquals(GId.asGId(1988), gidList.get(0));
+        assertEquals(GId.asGId(1988), gidList.get(1));
+
+        // verify creation of predefined templates for every operation
+        // For device 1
+        ManagedObjectRepresentation predefCommand1_device1 = allMOs.get(1);
+        assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand1_device1.getType());
+        assertEquals(deviceCommand2.getName(), predefCommand1_device1.getName());
+        assertEquals(deviceCommand2.getCommand(), predefCommand1_device1.get(COMMAND));
+        assertEquals(deviceCommand2.getCategory(), predefCommand1_device1.get(CATEGORY));
+        assertEquals(deviceCommand2.getDeliveryTypes(), predefCommand1_device1.get(DELIVERY_TYPES));
+
+        ManagedObjectRepresentation predefCommand2_device1 = allMOs.get(2);
+        assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand2_device1.getType());
+        assertEquals(deviceCommand1.getName(), predefCommand2_device1.getName());
+        assertEquals(deviceCommand1.getCommand(), predefCommand2_device1.get(COMMAND));
+        assertEquals(deviceCommand1.getCategory(), predefCommand2_device1.get(CATEGORY));
+        assertEquals(deviceCommand1.getDeliveryTypes(), predefCommand2_device1.get(DELIVERY_TYPES));
+
+        // For device 2
+        ManagedObjectRepresentation predefCommand1_device2 = allMOs.get(3);
+        assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand1_device2.getType());
+        assertEquals(deviceCommand2.getName(), predefCommand1_device2.getName());
+        assertEquals(deviceCommand2.getCommand(), predefCommand1_device2.get(COMMAND));
+        assertEquals(deviceCommand2.getCategory(), predefCommand1_device2.get(CATEGORY));
+        assertEquals(deviceCommand2.getDeliveryTypes(), predefCommand1_device2.get(DELIVERY_TYPES));
+
+        ManagedObjectRepresentation predefCommand2_device2 = allMOs.get(4);
+        assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand2_device2.getType());
+        assertEquals(deviceCommand1.getName(), predefCommand2_device2.getName());
+        assertEquals(deviceCommand1.getCommand(), predefCommand2_device2.get(COMMAND));
+        assertEquals(deviceCommand1.getCategory(), predefCommand2_device2.get(CATEGORY));
+        assertEquals(deviceCommand1.getDeliveryTypes(), predefCommand2_device2.get(DELIVERY_TYPES));
     }
 
     @Test

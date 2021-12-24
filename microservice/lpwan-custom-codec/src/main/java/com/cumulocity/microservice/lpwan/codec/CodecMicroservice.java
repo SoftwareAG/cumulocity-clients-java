@@ -195,8 +195,8 @@ public class CodecMicroservice {
                     inventoryApi.getManagedObjectsByFilter(new InventoryFilter() {
                         private String deviceType;
 
-                        public InventoryFilter byDeviceType(String PredefinedCommandFilter) {
-                            this.deviceType = PredefinedCommandFilter;
+                        public InventoryFilter byDeviceType(String predefinedCommandFilter) {
+                            this.deviceType = predefinedCommandFilter;
                             return this;
                         }
                     }.byDeviceType(deviceTypeMo.getName())

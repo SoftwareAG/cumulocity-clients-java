@@ -14,11 +14,10 @@ import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
 import com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException;
 import com.cumulocity.microservice.customencoders.api.exception.InvalidCommandDataException;
+import com.cumulocity.microservice.customencoders.api.model.EncoderInputData;
 import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.cumulocity.microservice.customencoders.api.service.EncoderService;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
-import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderInputData;
-import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderResult;
 import com.cumulocity.model.idtype.GId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +70,7 @@ public class CodecController {
     }
 
     @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @NotNull EncoderResult encode(@RequestBody @NotNull LpwanEncoderInputData inputData) throws EncoderServiceException {
+    public @NotNull EncoderResult encode(@RequestBody @NotNull EncoderInputData inputData) throws EncoderServiceException {
         try {
             if(Objects.isNull(inputData)) {
                 throw new IllegalArgumentException("Encoder is invoked with null input data.");

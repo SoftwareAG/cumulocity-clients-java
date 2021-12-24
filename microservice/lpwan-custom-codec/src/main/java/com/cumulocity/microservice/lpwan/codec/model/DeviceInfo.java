@@ -25,7 +25,7 @@ public class DeviceInfo {
     static final String DEVICE_MANUFACTURER = "deviceManufacturer";
     static final String DEVICE_MODEL = "deviceModel";
 
-    private static final String SUPPORTED_DEVICE_COMMANDS = "supportedDeviceCommands";
+    static final String SUPPORTED_DEVICE_COMMANDS = "supportedDeviceCommands";
 
     @NotBlank
     @EqualsAndHashCode.Include

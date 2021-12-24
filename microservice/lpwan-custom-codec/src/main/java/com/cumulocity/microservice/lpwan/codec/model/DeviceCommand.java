@@ -13,10 +13,10 @@ import java.util.*;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DeviceCommand {
-    private static final String NAME = "name";
-    private static final String CATEGORY = "category";
-    private static final String COMMAND = "command";
-    private static final String DELIVERY_TYPES = "deliveryTypes";
+    static final String NAME = "name";
+    static final String CATEGORY = "category";
+    static final String COMMAND = "command";
+    static final String DELIVERY_TYPES = "deliveryTypes";
 
     @NotBlank
     @EqualsAndHashCode.Include

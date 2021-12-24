@@ -3,10 +3,8 @@ package com.cumulocity.lpwan.codec.service;
 import c8y.Command;
 import com.cumulocity.lpwan.codec.exception.LpwanCodecServiceException;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
-import com.cumulocity.lpwan.payload.exception.PayloadDecodingFailedException;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
-import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
 import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderInputData;
 import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderResult;
@@ -26,8 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotBlank;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 

@@ -4,9 +4,11 @@ import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.model.idtype.GId;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LpwanDecoderInputDataTest {
 

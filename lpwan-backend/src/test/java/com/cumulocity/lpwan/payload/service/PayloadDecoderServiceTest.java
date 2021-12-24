@@ -1,6 +1,5 @@
 package com.cumulocity.lpwan.payload.service;
 
-import com.cumulocity.lpwan.codec.exception.LpwanCodecServiceException;
 import com.cumulocity.lpwan.codec.service.LpwanCodecService;
 import com.cumulocity.lpwan.codec.service.WebClientFactory;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
