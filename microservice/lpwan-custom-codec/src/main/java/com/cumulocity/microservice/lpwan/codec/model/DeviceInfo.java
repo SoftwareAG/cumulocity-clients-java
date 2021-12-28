@@ -7,9 +7,11 @@
 
 package com.cumulocity.microservice.lpwan.codec.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Null;
@@ -19,6 +21,7 @@ import java.util.*;
  * The <b>DeviceInfo</b> class uniquely represents one device with the device manufacturer name, the device model.
  *
  */
+@NoArgsConstructor
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DeviceInfo {
@@ -29,10 +32,12 @@ public class DeviceInfo {
 
     @NotBlank
     @EqualsAndHashCode.Include
+    @JsonProperty("deviceManufacturer")
     private String manufacturer;
 
     @NotBlank
     @EqualsAndHashCode.Include
+    @JsonProperty("deviceModel")
     private String model;
 
     @Null
