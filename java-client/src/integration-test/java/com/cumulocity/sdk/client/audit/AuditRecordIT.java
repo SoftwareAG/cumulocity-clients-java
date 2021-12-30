@@ -23,14 +23,11 @@ import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentat
 import com.cumulocity.rest.representation.audit.AuditRecordRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
-import com.cumulocity.sdk.client.common.TenantCreator;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
 import java.util.*;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -38,15 +35,9 @@ import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepr
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-//TODO speed up execution time by creating tenant and alarms only once in @BeforeAll
-//Tests disabled till resolving issue MTM-42208
-@Disabled
-public class AuditRecordIT {
+public class AuditRecordIT extends JavaSdkITBase{
 
-    private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<ManagedObjectRepresentation>();
-
-    private static TenantCreator tenantCreator;
-    protected static PlatformImpl platform;
+    private static final List<ManagedObjectRepresentation> managedObjects = new ArrayList<>();
 
     private static final int OK = 200;
 
@@ -59,36 +50,26 @@ public class AuditRecordIT {
     private int status;
 
     @BeforeAll
-    public static void createTenantWithApplication() throws Exception {
-        platform = JavaSdkITBase.createPlatform(false);
-    }
-
-    @BeforeEach
-    public void setup() throws Exception {
-        tenantCreator = new TenantCreator(platform);
-        tenantCreator.createTenant();
-
-        auditRecordsApi = platform.getAuditRecordApi();
-        status = OK;
-        input = new ArrayList<>();
-        result1 = new ArrayList<>();
-        result2 = new ArrayList<>();
-
+    public static void createManagedObjects() {
         for (int i = 0; i < 3; ++i) {
             ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().withName("MO" + i).build());
             managedObjects.add(mo);
         }
     }
 
-    @AfterEach
-    public void removeTenantAndApplication() throws IOException {
-        tenantCreator.removeTenant();
+    @BeforeEach
+    public void setup() throws Exception {
+        auditRecordsApi = platform.getAuditRecordApi();
+        status = OK;
+        input = new ArrayList<>();
+        result1 = new ArrayList<>();
+        result2 = new ArrayList<>();
     }
 
     @Test
     public void createAndGetAuditRecords() {
         // given
-        iHaveAuditRecord(3, "com.type1", "app1", "user1");
+        iHaveAuditRecord(3, "com.type0", "app0", "user0");
         // when
         iCreateAll();
         // then
@@ -118,24 +99,24 @@ public class AuditRecordIT {
     @Test
     public void queryByUser() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type1", "app1", "user2");
+        iHaveAuditRecord(1, "com.type2", "app2", "user2");
+        iHaveAuditRecord(3, "com.type2", "app2", "user3");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByUser("user2");
+        iQueryByUser("user3");
         // then
         shouldBeSuccess();
         // when
         iShouldGetNumberOfAudits(3);
-        iQueryByUser("user1");
+        iQueryByUser("user2");
         // then
         shouldBeSuccess();
         // when
         iShouldGetNumberOfAudits(1);
-        iQueryByUser("user3");
+        iQueryByUser("user4");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
@@ -144,24 +125,24 @@ public class AuditRecordIT {
     @Test
     public void queryByType() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type2", "app1", "user1");
+        iHaveAuditRecord(1, "com.type5", "app5", "user5");
+        iHaveAuditRecord(3, "com.type6", "app5", "user5");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByType("com.type2");
+        iQueryByType("com.type6");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(3);
         // when
-        iQueryByType("com.type1");
+        iQueryByType("com.type5");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(1);
         // when
-        iQueryByType("com.type3");
+        iQueryByType("com.type7");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
@@ -170,24 +151,24 @@ public class AuditRecordIT {
     @Test
     public void queryByApplication() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type1", "app2", "user1");
+        iHaveAuditRecord(1, "com.type8", "app8", "user8");
+        iHaveAuditRecord(3, "com.type8", "app9", "user8");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByApp("app2");
+        iQueryByApp("app9");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(3);
         // when
-        iQueryByApp("app1");
+        iQueryByApp("app8");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(1);
         // when
-        iQueryByApp("app3");
+        iQueryByApp("app10");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
@@ -196,50 +177,50 @@ public class AuditRecordIT {
     @Test
     public void queryByUserAndType() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type1", "app1", "user2");
+        iHaveAuditRecord(1, "com.type11", "app11", "user11");
+        iHaveAuditRecord(3, "com.type11", "app11", "user12");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByUserAndType("user2", "com.type1");
+        iQueryByUserAndType("user12", "com.type11");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(3);
         // when
-        iQueryByUserAndType("user1", "com.type1");
+        iQueryByUserAndType("user11", "com.type11");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(1);
         // when
-        iQueryByUserAndType("user3", "com.type1");
+        iQueryByUserAndType("user13", "com.type11");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
     }
 
     @Test
-    public void queryByUserAndApplication() throws Exception {
+    public void queryByUserAndApplication() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type1", "app1", "user2");
+        iHaveAuditRecord(1, "com.type14", "app14", "user14");
+        iHaveAuditRecord(3, "com.type14", "app14", "user15");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByUserAndApp("user2", "app1");
+        iQueryByUserAndApp("user15", "app14");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(3);
         // when
-        iQueryByUserAndApp("user1", "app1");
+        iQueryByUserAndApp("user14", "app14");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(1);
         // when
-        iQueryByUserAndApp("user3", "app1");
+        iQueryByUserAndApp("user16", "app14");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
@@ -248,23 +229,23 @@ public class AuditRecordIT {
     @Test
     public void queryByUserApplicationAndType() {
         // given
-        iHaveAuditRecord(1, "com.type1", "app1", "user1");
-        iHaveAuditRecord(3, "com.type1", "app1", "user2");
+        iHaveAuditRecord(1, "com.type17", "app17", "user17");
+        iHaveAuditRecord(3, "com.type17", "app17", "user18");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
-        iQueryByUserAndAppAndType("user2", "app1", "com.type1");
+        iQueryByUserAndAppAndType("user18", "app17", "com.type17");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(3);
         // when
-        iQueryByUserAndAppAndType("user1", "app1", "com.type1");
+        iQueryByUserAndAppAndType("user17", "app17", "com.type17");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(1);
         // when
-        iQueryByUserAndAppAndType("user3", "app1", "com.type1");
+        iQueryByUserAndAppAndType("user19", "app17", "com.type17");
         // then
         shouldBeSuccess();
         iShouldGetNumberOfAudits(0);
@@ -273,14 +254,14 @@ public class AuditRecordIT {
     @Test
     public void queryToTestThePagingWithUser() {
         // given
-        iHaveAuditRecord(10, "com.type1", "app1", "user1");
-        iHaveAuditRecord(10, "com.type1", "app1", "user2");
+        iHaveAuditRecord(10, "com.type20", "app20", "user20");
+        iHaveAuditRecord(10, "com.type20", "app20", "user21");
         // when
         iCreateAll();
         // then
         shouldBeSuccess();
         // when
-        iQueryByUser("user2");
+        iQueryByUser("user21");
         // then
         shouldBeSuccess();
     }
@@ -288,8 +269,8 @@ public class AuditRecordIT {
     @Test
     public void queryToTestThePagingToGetAllAuditRecords() {
         // given
-        iHaveAuditRecord(10, "com.type1", "app1", "user1");
-        iHaveAuditRecord(10, "com.type1", "app1", "user2");
+        iHaveAuditRecord(10, "com.type22", "app22", "user22");
+        iHaveAuditRecord(10, "com.type22", "app22", "user23");
         // when
         iCreateAll();
         // then
@@ -437,6 +418,4 @@ public class AuditRecordIT {
     private static ManagedObjectRepresentationBuilder aSampleMo() {
         return anMoRepresentationLike(MO_REPRESENTATION);
     }
-
 }
-
