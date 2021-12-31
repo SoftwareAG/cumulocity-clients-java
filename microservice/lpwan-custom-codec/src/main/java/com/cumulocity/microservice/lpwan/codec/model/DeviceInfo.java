@@ -41,6 +41,7 @@ public class DeviceInfo {
     private String model;
 
     @Null
+    @JsonProperty("supportedDeviceCommands")
     private Set<DeviceCommand> supportedCommands;
 
     /**
@@ -58,6 +59,11 @@ public class DeviceInfo {
         this.supportedCommands = supportedCommands;
     }
 
+    /**
+     * This method returns the manufacturer, model and the supported commands for a device
+     *
+     * @return Map<String, Object> The resultant map consisting of the attributes of the device
+     */
     public Map<String, Object> getAttributes() {
         Map<String,Object> attributes = new HashMap<>(3);
         attributes.put(DEVICE_MANUFACTURER, manufacturer);

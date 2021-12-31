@@ -2,12 +2,14 @@ package com.cumulocity.microservice.lpwan.codec.encoder.model;
 
 import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.google.common.base.Strings;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.util.*;
 
+@NoArgsConstructor
 public class LpwanEncoderResult extends EncoderResult {
     public static final String FPORT_KEY = "fport";
 

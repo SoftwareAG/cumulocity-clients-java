@@ -69,6 +69,14 @@ public class CodecController {
         }
     }
 
+    /**
+     * This REST API should expose '/encode' endpoint
+     *
+     * @param inputData A non-null input parameter that carries the command to be encoded
+     * @return EncoderResult represents the output that carries the encoded hexadecimal command to be executed and/or the accompanying properties like fport
+     * @throws EncoderServiceException
+     * @see EncoderServiceException {@link com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException}
+     */
     @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull EncoderResult encode(@RequestBody @NotNull EncoderInputData inputData) throws EncoderServiceException {
         try {

@@ -53,6 +53,13 @@ public class CodecExceptionsHandler {
         }
     }
 
+    /**
+     * This method handles the custom <b>EncoderServiceException</b>.
+     *
+     * @param exception represents the exception
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
+     * @see EncoderServiceException {@link com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException}
+     */
     @ExceptionHandler(value = EncoderServiceException.class)
     @ResponseBody
     public ResponseEntity<EncoderResult> handleEncoderServiceException(EncoderServiceException exception) {

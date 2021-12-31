@@ -167,7 +167,6 @@ public class LpwanCodecServiceTest {
         operation.setProperty("description", "Execute shell command:position request");
 
         MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
-        when(contextService.getContext()).thenReturn(credentials);
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 
@@ -209,11 +208,6 @@ public class LpwanCodecServiceTest {
         operation.setProperty("c8y_Command", new Command());
         operation.setProperty("description", "Execute shell command:position request");
 
-        MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
-        when(contextService.getContext()).thenReturn(credentials);
-        when(subscriptionsService.getTenant()).thenReturn("tenant");
-        when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
-
         LpwanCodecServiceException exception = assertThrows(LpwanCodecServiceException.class,
                 () ->  { lpwanCodecService.encode(deviceType, source, devEui, operation); });
         assertEquals(String.format("'c8y_LpwanCodecDetails' fragment in the device type associated with device EUI '%s' is invalid.", devEui), exception.getMessage());
@@ -243,7 +237,6 @@ public class LpwanCodecServiceTest {
         operation.setProperty("description", "Execute shell command:position request");
 
         MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
-        when(contextService.getContext()).thenReturn(credentials);
         when(subscriptionsService.getTenant()).thenReturn("tenant");
         when(subscriptionsService.getCredentials(eq("tenant"))).thenReturn(Optional.of(credentials));
 

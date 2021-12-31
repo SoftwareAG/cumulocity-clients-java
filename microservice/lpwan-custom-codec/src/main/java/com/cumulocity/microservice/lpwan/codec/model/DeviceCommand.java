@@ -3,6 +3,7 @@ package com.cumulocity.microservice.lpwan.codec.model;
 import com.google.common.base.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor
 public class DeviceCommand {
     static final String NAME = "name";
     static final String CATEGORY = "category";
@@ -20,19 +22,26 @@ public class DeviceCommand {
 
     @NotBlank
     @EqualsAndHashCode.Include
-    private final String name;
+    private String name;
 
     @NotBlank
-    private final String category;
+    private String category;
 
     @Null
-    private final String command;
+    private String command;
 
     @Null
-    private final Set<DeliveryType> deliveryTypes;
+    private Set<DeliveryType> deliveryTypes;
 
+    /**
+     * Instantiates a new DeviceCommand
+     *
+     * @param name represents the name of the device command
+     * @param category represents the category of the device command
+     * @param command represents the command text of the device command
+     */
     public DeviceCommand(@NotBlank String name, @NotBlank String category, @Null String command) {
-        this(name, category, command, DeliveryType.DEFAULT);
+        this(name, category, command, DeliveryType.Default);
     }
 
     public DeviceCommand(@NotBlank String name, @NotBlank String category, @Null String command, @NotNull DeliveryType... deliveryTypes) {
@@ -42,6 +51,11 @@ public class DeviceCommand {
         this.deliveryTypes = new HashSet<DeliveryType>(Arrays.asList(deliveryTypes));
     }
 
+    /**
+     * This method returns the name, category, command and the delivery types associated with the Device Command
+     *
+     * @return Map<String, Object> The resultant map containing the attributes associated with the Device Command
+     */
     public Map<String, Object> getAttributes() {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put(NAME, name);
@@ -51,7 +65,12 @@ public class DeviceCommand {
         return attributes;
     }
 
-
+    /**
+     * This method validates the object field.
+     *
+     * @throws IllegalArgumentException if the field marked with <b>@NotBlank</b> are either null or blank.
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
+     */
     public void validate() {
         List<String> missingParameters = new ArrayList<>(3);
 

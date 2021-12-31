@@ -17,11 +17,23 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.util.*;
 
+/**
+ * The <b>LpwanEncoderInputData</b> class represents the format and content of the request coming in for encoding a device command.
+ */
 public class LpwanEncoderInputData extends EncoderInputData {
     public static final String SOURCE_DEVICE_EUI_KEY = "sourceDeviceEui";
     public static final String DEVICE_MANUFACTURER_KEY = "deviceManufacturer";
     public static final String DEVICE_MODEL_KEY = "deviceModel";
 
+    /**
+     * Instantiates a new LpwanEncoderInputData.
+     *
+     * @param sourceDeviceId the managed object id of the device
+     * @param sourceDeviceEui represents the eui of the device
+     * @param sourceDeviceInfo contains the information about the device such as Manufacturer or model and/or the supported commands of the device
+     * @param commandName the name of the command to be encoded
+     * @param commandData the text of the command to be encoded
+     */
     public LpwanEncoderInputData(@NotBlank String sourceDeviceId,
                                  @NotBlank String sourceDeviceEui,
                                  @NotNull DeviceInfo sourceDeviceInfo,
@@ -31,6 +43,14 @@ public class LpwanEncoderInputData extends EncoderInputData {
         initializeAndValidate(sourceDeviceId, sourceDeviceEui, sourceDeviceInfo, commandName, commandData, null);
     }
 
+    /**
+     * Instantiates a new LpwanEncoderInputData.
+     *
+     * @param sourceDeviceId the managed object id of the device
+     * @param commandName the name of the command to be encoded
+     * @param commandData the text of the command to be encoded
+     * @param args represents the properties
+     */
     public LpwanEncoderInputData(@NotBlank GId sourceDeviceId,
                                  @NotBlank String commandName,
                                  @Null String commandData,
