@@ -5,7 +5,7 @@
     <parent>
         <artifactId>clients-java</artifactId>
         <groupId>com.nsn.cumulocity.clients-java</groupId>
-        <version>1011.67.0-SNAPSHOT</version>
+        <version>${revision}${changelist}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
