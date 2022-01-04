@@ -76,8 +76,8 @@ class LpwanDecoderInputDataTest {
 
         assertEquals("SOURCE_ID", inputData.getSourceDeviceId());
         assertEquals("EUI_ID", inputData.getSourceDeviceEui());
-        assertEquals("MANUFACTURER_1", inputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals("MODEL_1", inputData.getSourceDeviceInfo().getModel());
+        assertEquals("MANUFACTURER_1", inputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals("MODEL_1", inputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals("HEX INPUT", inputData.getValue());
         assertEquals(999, inputData.getFport());
         assertEquals(currentTimeMillis, inputData.getUpdateTime());

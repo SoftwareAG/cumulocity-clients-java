@@ -190,8 +190,8 @@ public class PayloadDecoderServiceTest {
         LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(uplinkMessage.getExternalId(), capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceModel(), capturedInputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals(uplinkMessage.getPayloadHex(), capturedInputData.getValue());
         assertEquals(uplinkMessage.getFport(), capturedInputData.getFport());
         assertEquals(uplinkMessage.getDateTime().getMillis(), capturedInputData.getUpdateTime());
@@ -268,8 +268,8 @@ public class PayloadDecoderServiceTest {
         LpwanDecoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(uplinkMessage.getExternalId(), capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceModel(), capturedInputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals(uplinkMessage.getPayloadHex(), capturedInputData.getValue());
         assertEquals(uplinkMessage.getFport(), capturedInputData.getFport());
         assertEquals(uplinkMessage.getDateTime().getMillis(), capturedInputData.getUpdateTime());
