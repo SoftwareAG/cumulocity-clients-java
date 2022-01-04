@@ -12,6 +12,7 @@ import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.cumulocity.microservice.customencoders.api.service.EncoderService;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
 import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderInputData;
+import com.cumulocity.microservice.lpwan.codec.model.DeviceInfo;
 import com.cumulocity.model.idtype.GId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -65,8 +66,8 @@ public class CodecControllerTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "SOURCE_DEVICE_EUI_ID");
-        args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         decoderInputData.setArgs(args);
 
         DecoderResult decoderResult = new DecoderResult();
@@ -93,8 +94,8 @@ public class CodecControllerTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanEncoderInputData.SOURCE_DEVICE_EUI_KEY, "SOURCE_DEVICE_EUI_ID");
-        args.put(LpwanEncoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanEncoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         encoderInputData.setArgs(args);
 
         EncoderResult encoderResult = new EncoderResult();
@@ -120,8 +121,8 @@ public class CodecControllerTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "SOURCE_DEVICE_EUI_ID");
-        args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         decoderInputData.setArgs(args);
 
         DecoderResult decoderResult = new DecoderResult();
@@ -156,8 +157,8 @@ public class CodecControllerTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanEncoderInputData.SOURCE_DEVICE_EUI_KEY, "SOURCE_DEVICE_EUI_ID");
-        args.put(LpwanEncoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanEncoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         encoderInputData.setArgs(args);
 
         EncoderResult encoderResult = new EncoderResult();
