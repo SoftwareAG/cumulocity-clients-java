@@ -69,8 +69,8 @@ class LpwanEncoderInputDataTest {
 
         assertEquals("SOURCE_ID", inputData.getSourceDeviceId());
         assertEquals("EUI_ID", inputData.getSourceDeviceEui());
-        assertEquals("MANUFACTURER_1", inputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals("MODEL_1", inputData.getSourceDeviceInfo().getModel());
+        assertEquals("MANUFACTURER_1", inputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals("MODEL_1", inputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals(commandName, inputData.getCommandName());
         assertEquals(commandData, inputData.getCommandData());
         assertEquals(args, inputData.getArgs());

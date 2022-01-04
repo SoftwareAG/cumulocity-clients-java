@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.util.*;
 
@@ -25,20 +26,18 @@ import java.util.*;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DeviceInfo {
-    static final String DEVICE_MANUFACTURER = "deviceManufacturer";
-    static final String DEVICE_MODEL = "deviceModel";
+    public static final String DEVICE_MANUFACTURER = "deviceManufacturer";
+    public static final String DEVICE_MODEL = "deviceModel";
 
     static final String SUPPORTED_DEVICE_COMMANDS = "supportedDeviceCommands";
 
     @NotBlank
     @EqualsAndHashCode.Include
-    @JsonProperty("deviceManufacturer")
-    private String manufacturer;
+    private String deviceManufacturer;
 
     @NotBlank
     @EqualsAndHashCode.Include
-    @JsonProperty("deviceModel")
-    private String model;
+    private String deviceModel;
 
     @Null
     @JsonProperty("supportedDeviceCommands")
@@ -46,17 +45,21 @@ public class DeviceInfo {
 
     /**
      * Instantiates a new DeviceInfo.
-     * @param manufacturer represents the name of the device manufacturer.
-     * @param model        represents the name of the device model.
+     * @param deviceManufacturer represents the name of the device manufacturer.
+     * @param deviceModel        represents the name of the device model.
      */
-    public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model) {
-        this(manufacturer, model, null);
+    public DeviceInfo(@NotBlank String deviceManufacturer, @NotBlank String deviceModel) {
+        this(deviceManufacturer, deviceModel, null);
     }
 
-    public DeviceInfo(@NotBlank String manufacturer, @NotBlank String model, @Null Set<DeviceCommand> supportedCommands) {
-        this.manufacturer = manufacturer;
-        this.model = model;
+    public DeviceInfo(@NotBlank String deviceManufacturer, @NotBlank String deviceModel, @Null Set<DeviceCommand> supportedCommands) {
+        this.deviceManufacturer = deviceManufacturer;
+        this.deviceModel = deviceModel;
         this.supportedCommands = supportedCommands;
+    }
+
+    public DeviceInfo(@NotNull Map<String, String> properties) {
+        this(properties.get(DEVICE_MANUFACTURER), properties.get(DEVICE_MODEL));
     }
 
     /**
@@ -66,8 +69,8 @@ public class DeviceInfo {
      */
     public Map<String, Object> getAttributes() {
         Map<String,Object> attributes = new HashMap<>(3);
-        attributes.put(DEVICE_MANUFACTURER, manufacturer);
-        attributes.put(DEVICE_MODEL, model);
+        attributes.put(DEVICE_MANUFACTURER, deviceManufacturer);
+        attributes.put(DEVICE_MODEL, deviceModel);
         if(Objects.nonNull(supportedCommands)) {
             List<Map<String, Object>> supportedCommandsAttributesList = new ArrayList<>();
             attributes.put(SUPPORTED_DEVICE_COMMANDS, supportedCommandsAttributesList);
@@ -86,11 +89,11 @@ public class DeviceInfo {
     public void validate() {
         List<String> missingParameters = new ArrayList<>(3);
 
-        if (Strings.isNullOrEmpty(manufacturer)) {
+        if (Strings.isNullOrEmpty(deviceManufacturer)) {
             missingParameters.add("'manufacturer'");
         }
 
-        if (Strings.isNullOrEmpty(model)) {
+        if (Strings.isNullOrEmpty(deviceModel)) {
             missingParameters.add("'model'");
         }
 

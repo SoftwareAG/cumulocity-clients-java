@@ -66,7 +66,7 @@ public class LpwanCodecService {
             throw new LpwanCodecServiceException(String.format("'c8y_LpwanCodecDetails' fragment in the device type associated with device EUI '%s' is invalid.", uplinkMessage.getExternalId()), e);
         }
 
-        DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getSupportedDevice().getManufacturer(), lpwanCodecDetails.getSupportedDevice().getModel(), lpwanCodecDetails.getSupportedDevice().getSupportedCommands());
+        DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), lpwanCodecDetails.getSupportedDevice().getDeviceModel(), lpwanCodecDetails.getSupportedDevice().getSupportedCommands());
         LpwanDecoderInputData decoderInputData = new LpwanDecoderInputData(
                 source.getId().getValue(),
                 uplinkMessage.getExternalId(),
@@ -118,7 +118,7 @@ public class LpwanCodecService {
         }
 
         String codecServiceContextPath = lpwanCodecDetails.getCodecServiceContextPath();
-        DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getSupportedDevice().getManufacturer(), lpwanCodecDetails.getSupportedDevice().getModel(), lpwanCodecDetails.getSupportedDevice().getSupportedCommands());
+        DeviceInfo deviceInfo = new DeviceInfo(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), lpwanCodecDetails.getSupportedDevice().getDeviceModel(), lpwanCodecDetails.getSupportedDevice().getSupportedCommands());
 
         String commandName = getCommandName(operation);
         String commandData = getCommandData(operation);

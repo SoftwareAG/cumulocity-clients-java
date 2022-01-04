@@ -77,9 +77,9 @@ public class CodecMicroserviceTest {
     private InventoryFilter mockInventoryFilter;
 
     private DeviceInfo deviceInfo_1 = new DeviceInfo("Manufacturer_1", "Model_1");
-    private String deviceInfo_1_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1.getManufacturer(), deviceInfo_1.getModel());
+    private String deviceInfo_1_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1.getDeviceManufacturer(), deviceInfo_1.getDeviceModel());
     private DeviceInfo deviceInfo_2 = new DeviceInfo("Manufacturer_2", "Model_2");
-    private String deviceInfo_2_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_2.getManufacturer(), deviceInfo_2.getModel());
+    private String deviceInfo_2_deviceTypeName = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_2.getDeviceManufacturer(), deviceInfo_2.getDeviceModel());
 
     private DeviceInfo deviceInfo_invalid = new DeviceInfo(null, "Model_1");
 
@@ -139,12 +139,12 @@ public class CodecMicroserviceTest {
         List<ManagedObjectRepresentation> allMOs = managedObjectRepresentationCaptor.getAllValues();
         ManagedObjectRepresentation deviceInfo_1_DeviceType_MO = allMOs.get(0);
         assertEquals(deviceInfo_1_deviceTypeName, deviceInfo_1_DeviceType_MO.getName());
-        assertEquals(String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo_1.getModel(), deviceInfo_1.getManufacturer()), deviceInfo_1_DeviceType_MO.get(DESCRIPTION));
+        assertEquals(String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo_1.getDeviceModel(), deviceInfo_1.getDeviceManufacturer()), deviceInfo_1_DeviceType_MO.get(DESCRIPTION));
         assertEquals(Collections.EMPTY_MAP, deviceInfo_1_DeviceType_MO.get(C8Y_IS_DEVICE_TYPE));
         assertEquals(C8Y_LPWAN_DEVICE_TYPE, deviceInfo_1_DeviceType_MO.getType());
         assertEquals(LPWAN_FIELDBUS_TYPE, deviceInfo_1_DeviceType_MO.get(FIELDBUS_TYPE));
 
-        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1.getManufacturer(), deviceInfo_1.getModel());
+        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1.getDeviceManufacturer(), deviceInfo_1.getDeviceModel());
         LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_1_supportedDevice);
         assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 
@@ -152,7 +152,7 @@ public class CodecMicroserviceTest {
         ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
         assertEquals(deviceInfo_2_deviceTypeName + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
 
-        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2.getManufacturer(), deviceInfo_2.getModel());
+        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2.getDeviceManufacturer(), deviceInfo_2.getDeviceModel());
         LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_2_supportedDevice);
         assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
     }
@@ -165,9 +165,9 @@ public class CodecMicroserviceTest {
         supportedCommands.addAll(Arrays.asList(deviceCommand1, deviceCommand2));
 
         DeviceInfo deviceInfo_1_withSupportedCommands = new DeviceInfo("Manufacturer_1", "Model_1", supportedCommands);
-        String deviceInfo_1_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1_withSupportedCommands.getManufacturer(), deviceInfo_1_withSupportedCommands.getModel());
+        String deviceInfo_1_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_1_withSupportedCommands.getDeviceManufacturer(), deviceInfo_1_withSupportedCommands.getDeviceModel());
         DeviceInfo deviceInfo_2_withSupportedCommands = new DeviceInfo("Manufacturer_2", "Model_2", supportedCommands);
-        String deviceInfo_2_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_2_withSupportedCommands.getManufacturer(), deviceInfo_2_withSupportedCommands.getModel());
+        String deviceInfo_2_deviceTypeName_withSupportedCommands = String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo_2_withSupportedCommands.getDeviceManufacturer(), deviceInfo_2_withSupportedCommands.getDeviceModel());
 
         ManagedObjectRepresentation predefinedCommand1 = new ManagedObjectRepresentation();
         predefinedCommand1.setId(GId.asGId(1988));
@@ -221,12 +221,12 @@ public class CodecMicroserviceTest {
         List<ManagedObjectRepresentation> allMOs = managedObjectRepresentationCaptor.getAllValues();
         ManagedObjectRepresentation deviceInfo_1_DeviceType_MO = allMOs.get(0);
         assertEquals(deviceInfo_1_deviceTypeName_withSupportedCommands, deviceInfo_1_DeviceType_MO.getName());
-        assertEquals(String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo_1_withSupportedCommands.getModel(), deviceInfo_1_withSupportedCommands.getManufacturer()), deviceInfo_1_DeviceType_MO.get(DESCRIPTION));
+        assertEquals(String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo_1_withSupportedCommands.getDeviceModel(), deviceInfo_1_withSupportedCommands.getDeviceManufacturer()), deviceInfo_1_DeviceType_MO.get(DESCRIPTION));
         assertEquals(Collections.EMPTY_MAP, deviceInfo_1_DeviceType_MO.get(C8Y_IS_DEVICE_TYPE));
         assertEquals(C8Y_LPWAN_DEVICE_TYPE, deviceInfo_1_DeviceType_MO.getType());
         assertEquals(LPWAN_FIELDBUS_TYPE, deviceInfo_1_DeviceType_MO.get(FIELDBUS_TYPE));
 
-        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1_withSupportedCommands.getManufacturer(), deviceInfo_1_withSupportedCommands.getModel(), deviceInfo_1_withSupportedCommands.getSupportedCommands());
+        DeviceInfo deviceInfo_1_supportedDevice = new DeviceInfo(deviceInfo_1_withSupportedCommands.getDeviceManufacturer(), deviceInfo_1_withSupportedCommands.getDeviceModel(), deviceInfo_1_withSupportedCommands.getSupportedCommands());
         LpwanCodecDetails deviceInfo_1_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_1_supportedDevice);
         assertEquals(deviceInfo_1_LpwanCodecDetails.getAttributes(), deviceInfo_1_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 
@@ -234,7 +234,7 @@ public class CodecMicroserviceTest {
         ManagedObjectRepresentation deviceInfo_2_DeviceType_MO = managedObjectRepresentationCaptor.getValue();
         assertEquals(deviceInfo_2_deviceTypeName_withSupportedCommands + "_ID", deviceInfo_2_DeviceType_MO.getId().getValue());
 
-        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2_withSupportedCommands.getManufacturer(), deviceInfo_2_withSupportedCommands.getModel(), deviceInfo_2_withSupportedCommands.getSupportedCommands());
+        DeviceInfo deviceInfo_2_supportedDevice = new DeviceInfo(deviceInfo_2_withSupportedCommands.getDeviceManufacturer(), deviceInfo_2_withSupportedCommands.getDeviceModel(), deviceInfo_2_withSupportedCommands.getSupportedCommands());
         LpwanCodecDetails deviceInfo_2_LpwanCodecDetails = new LpwanCodecDetails("testServiceContextPath", deviceInfo_2_supportedDevice);
         assertEquals(deviceInfo_2_LpwanCodecDetails.getAttributes(), deviceInfo_2_DeviceType_MO.get(C8Y_LPWAN_CODEC_DETAILS));
 

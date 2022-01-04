@@ -22,8 +22,6 @@ import java.util.*;
  */
 public class LpwanEncoderInputData extends EncoderInputData {
     public static final String SOURCE_DEVICE_EUI_KEY = "sourceDeviceEui";
-    public static final String DEVICE_MANUFACTURER_KEY = "deviceManufacturer";
-    public static final String DEVICE_MODEL_KEY = "deviceModel";
 
     /**
      * Instantiates a new LpwanEncoderInputData.
@@ -65,7 +63,7 @@ public class LpwanEncoderInputData extends EncoderInputData {
 
         if (Objects.nonNull(args)) {
             sourceDeviceEui = args.get(SOURCE_DEVICE_EUI_KEY);
-            sourceDeviceInfo = new DeviceInfo(args.get(DEVICE_MANUFACTURER_KEY), args.get(DEVICE_MODEL_KEY));
+            sourceDeviceInfo = new DeviceInfo(args);
         }
 
         initializeAndValidate(sourceDeviceIdString, sourceDeviceEui, sourceDeviceInfo, commandName, commandData, args);
@@ -110,13 +108,13 @@ public class LpwanEncoderInputData extends EncoderInputData {
      * @return the source device info
      */
     public @NotNull DeviceInfo getSourceDeviceInfo() {
-        return new DeviceInfo(getInputArguments().get(DEVICE_MANUFACTURER_KEY), getInputArguments().get(DEVICE_MODEL_KEY));
+        return new DeviceInfo(getInputArguments());
     }
 
     private void setSourceDeviceInfo(@NotNull DeviceInfo sourceDeviceInfo) {
         if (Objects.nonNull(sourceDeviceInfo)) {
-            getInputArguments().put(DEVICE_MANUFACTURER_KEY, sourceDeviceInfo.getManufacturer());
-            getInputArguments().put(DEVICE_MODEL_KEY, sourceDeviceInfo.getModel());
+            getInputArguments().put(DeviceInfo.DEVICE_MANUFACTURER, sourceDeviceInfo.getDeviceManufacturer());
+            getInputArguments().put(DeviceInfo.DEVICE_MODEL, sourceDeviceInfo.getDeviceModel());
         }
     }
 

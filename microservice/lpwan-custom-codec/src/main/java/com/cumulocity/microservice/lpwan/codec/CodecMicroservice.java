@@ -125,7 +125,7 @@ public class CodecMicroservice {
         if (!deviceType.isPresent()) {
             log.info("Creating device type '{}' on codec microservice subscription", supportedDeviceTypeName);
 
-            String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo.getModel(), deviceInfo.getManufacturer());
+            String description = String.format(DEVICE_TYPE_DESCRIPTION_FORMAT, deviceInfo.getDeviceModel(), deviceInfo.getDeviceManufacturer());
 
             deviceTypeMo = new ManagedObjectRepresentation();
             deviceTypeMo.setName(supportedDeviceTypeName);
@@ -187,7 +187,7 @@ public class CodecMicroservice {
      * @return string device type name
      */
     String formDeviceTypeName(DeviceInfo deviceInfo) {
-        return String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo.getManufacturer(), deviceInfo.getModel());
+        return String.format(DEVICE_TYPE_NAME_FORMAT, deviceInfo.getDeviceManufacturer(), deviceInfo.getDeviceModel());
     }
 
     private void createPredefinedCommandTemplates(ManagedObjectRepresentation deviceTypeMo, Set<DeviceCommand> supportedCommands) {

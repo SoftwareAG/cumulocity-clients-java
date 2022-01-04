@@ -185,8 +185,8 @@ public class LpwanCodecServiceTest {
         LpwanEncoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(devEui, capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceModel(), capturedInputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals(deviceCommand2.getName(), capturedInputData.getCommandName());
         assertEquals(deviceCommand2.getCommand(), capturedInputData.getCommandData());
     }
@@ -255,8 +255,8 @@ public class LpwanCodecServiceTest {
         LpwanEncoderInputData capturedInputData = inputMonoCaptor.getValue().block(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS);
         assertEquals(source.getId().getValue(), capturedInputData.getSourceDeviceId());
         assertEquals(devEui, capturedInputData.getSourceDeviceEui());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getManufacturer(), capturedInputData.getSourceDeviceInfo().getManufacturer());
-        assertEquals(lpwanCodecDetails.getSupportedDevice().getModel(), capturedInputData.getSourceDeviceInfo().getModel());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceManufacturer(), capturedInputData.getSourceDeviceInfo().getDeviceManufacturer());
+        assertEquals(lpwanCodecDetails.getSupportedDevice().getDeviceModel(), capturedInputData.getSourceDeviceInfo().getDeviceModel());
         assertEquals(deviceCommand2.getName(), capturedInputData.getCommandName());
         assertEquals(deviceCommand2.getCommand(), capturedInputData.getCommandData());
 
