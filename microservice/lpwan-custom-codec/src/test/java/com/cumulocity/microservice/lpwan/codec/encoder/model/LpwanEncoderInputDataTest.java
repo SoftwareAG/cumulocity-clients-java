@@ -59,8 +59,8 @@ class LpwanEncoderInputDataTest {
     void doCreateLpwanEncoderInputData_FromMap_Success() {
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "EUI_ID");
-        args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
 
         String commandName = "set config";
         String commandData = "{\"set config\":{\"breakpoint\":\"false\",\"selfadapt\":\"true\",\"oneoff\":\"false\",\"alreport\":\"false\",\"pos\":\"0\",\"hb\":\"10\"}}";

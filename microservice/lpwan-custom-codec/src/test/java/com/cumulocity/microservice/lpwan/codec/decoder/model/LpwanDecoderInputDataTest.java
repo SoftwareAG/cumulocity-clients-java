@@ -67,8 +67,8 @@ class LpwanDecoderInputDataTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "EUI_ID");
-        args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         args.put(LpwanDecoderInputData.FPORT_KEY, "999");
         args.put(LpwanDecoderInputData.UPDATE_TIME_KEY, String.valueOf(currentTimeMillis));
 
@@ -108,8 +108,8 @@ class LpwanDecoderInputDataTest {
 
         HashMap<String, String> args = new HashMap<>();
         args.put(LpwanDecoderInputData.SOURCE_DEVICE_EUI_KEY, "EUI_ID");
-        args.put(LpwanDecoderInputData.DEVICE_MANUFACTURER_KEY, "MANUFACTURER_1");
-        args.put(LpwanDecoderInputData.DEVICE_MODEL_KEY, "MODEL_1");
+        args.put(DeviceInfo.DEVICE_MANUFACTURER, "MANUFACTURER_1");
+        args.put(DeviceInfo.DEVICE_MODEL, "MODEL_1");
         args.put(LpwanDecoderInputData.FPORT_KEY, "aaa");
         args.put(LpwanDecoderInputData.UPDATE_TIME_KEY, String.valueOf(currentTimeMillis));
 
