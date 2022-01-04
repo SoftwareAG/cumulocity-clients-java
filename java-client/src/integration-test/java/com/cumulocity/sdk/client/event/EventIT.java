@@ -36,6 +36,8 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.TEN_SECONDS;
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
 public class EventIT extends JavaSdkITBase {
@@ -247,9 +249,8 @@ public class EventIT extends JavaSdkITBase {
         iShouldGetNumberOfEvents(5);
         // when
         iDeleteEventCollection();
-        iGetAllEvents();
         // then
-        iShouldGetNumberOfEvents(0);
+        iShouldGetNumberOfEventsInTenSecond(0);
     }
 
     @Test
@@ -506,5 +507,9 @@ public class EventIT extends JavaSdkITBase {
 
     private List<EventRepresentation> getEventsFrom1stPage() throws SDKException {
         return eventApi.getEvents().get().getEvents();
+    }
+
+    private void iShouldGetNumberOfEventsInTenSecond(int count) {
+        await().atMost(TEN_SECONDS).until(() -> eventApi.getEvents().get().getEvents().size() == count);
     }
 }
