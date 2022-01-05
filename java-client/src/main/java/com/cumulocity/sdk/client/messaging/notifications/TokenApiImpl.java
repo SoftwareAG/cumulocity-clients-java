@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.svenson.JSONParser;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import java.util.Base64;
 
 @Slf4j
@@ -83,11 +86,13 @@ public class TokenApiImpl implements TokenApi {
             throw new IllegalArgumentException("token is null");
         }
 
-        restConnector.postWithoutResponse(
-                getTokenUnsubscribeUri(),
-                TOKEN_MEDIA_TYPE,
-                token
-        );
+        Client client = restConnector.getClient();
+        Response response = client.target(getTokenUnsubscribeUri())
+                .queryParam("token", token.getTokenString())
+                .request()
+                .post(Entity.text(""));
+        response.close();
+        client.close();
     }
 
     private String getTokenRequestUri() {
