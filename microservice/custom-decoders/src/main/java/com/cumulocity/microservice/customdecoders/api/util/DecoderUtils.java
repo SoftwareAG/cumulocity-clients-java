@@ -87,7 +87,7 @@ public final class DecoderUtils {
      * Converts byte[] from Big Endian to Little Endian
      * @param raw input byte array
      * @param reverseBitEndianness flag for endian mode (Big/Little Endian)
-     * @return
+     * @return byte[]
      */
     public static byte[] reverseBitEndianness(byte[] raw, boolean reverseBitEndianness) {
         if(reverseBitEndianness) {

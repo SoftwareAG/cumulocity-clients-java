@@ -61,7 +61,7 @@ public class DeviceCommand {
     /**
      * This method returns the name, category, command and the delivery types associated with the Device Command
      *
-     * @return Map<String, Object> The resultant map containing the attributes associated with the Device Command
+     * @return Map The resultant map containing the attributes associated with the Device Command
      */
     public Map<String, Object> getAttributes() {
         Map<String, Object> attributes = new HashMap<>();

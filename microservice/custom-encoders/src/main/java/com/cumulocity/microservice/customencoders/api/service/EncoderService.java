@@ -19,7 +19,7 @@ public interface EncoderService {
      *
      * @param encoderInputData the EncoderInputData object containing the source device id, command name, command data and the properties
      * @return EncoderResult the EncoderResult object that contains the encoded hexadecimal command and/or additional properties like fport
-     * @throws EncoderServiceException
+     * @throws EncoderServiceException EncoderServiceException
      */
     EncoderResult encode(EncoderInputData encoderInputData) throws EncoderServiceException;
 }

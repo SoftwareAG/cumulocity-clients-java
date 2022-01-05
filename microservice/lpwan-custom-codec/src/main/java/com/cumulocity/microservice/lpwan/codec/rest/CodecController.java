@@ -48,7 +48,7 @@ public class CodecController {
      *
      * @param inputData A non-null input parameter that is carries the payload to be decoded along with other supporting elements.
      * @return DecoderResult represents the output that carries the measurement(s)/event(s)/alarm(s) to be created and/or the managed object properties to be updated.
-     * @throws DecoderServiceException
+     * @throws DecoderServiceException DecoderServiceException
      * @see DecoderServiceException {@link com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException}
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -74,7 +74,7 @@ public class CodecController {
      *
      * @param inputData A non-null input parameter that carries the command to be encoded
      * @return EncoderResult represents the output that carries the encoded hexadecimal command to be executed and/or the accompanying properties like fport
-     * @throws EncoderServiceException
+     * @throws EncoderServiceException EncoderServiceException
      * @see EncoderServiceException {@link com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException}
      */
     @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
