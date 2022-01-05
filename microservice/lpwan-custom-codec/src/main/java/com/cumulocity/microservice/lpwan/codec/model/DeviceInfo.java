@@ -65,7 +65,7 @@ public class DeviceInfo {
     /**
      * This method returns the manufacturer, model and the supported commands for a device
      *
-     * @return Map<String, Object> The resultant map consisting of the attributes of the device
+     * @return Map The resultant map consisting of the attributes of the device
      */
     public Map<String, Object> getAttributes() {
         Map<String,Object> attributes = new HashMap<>(3);
