@@ -86,13 +86,11 @@ public class TokenApiImpl implements TokenApi {
             throw new IllegalArgumentException("token is null");
         }
 
-        Client client = restConnector.getClient();
-        Response response = client.target(getTokenUnsubscribeUri())
+        final Response response = restConnector.getClient().target(getTokenUnsubscribeUri())
                 .queryParam("token", token.getTokenString())
                 .request()
                 .post(Entity.text(""));
         response.close();
-        client.close();
     }
 
     private String getTokenRequestUri() {
