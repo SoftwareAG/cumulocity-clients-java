@@ -14,11 +14,10 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
+
+@Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@ToString
 public class EncoderInputData extends BaseResourceRepresentation implements Serializable {
 
     private String commandName;
@@ -39,22 +38,5 @@ public class EncoderInputData extends BaseResourceRepresentation implements Seri
             data.setStatus(ExecutionEventStatus.valueOf(status));
         }
         return data;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EncoderInputData that = (EncoderInputData) o;
-        return Objects.equals(commandName, that.commandName) &&
-                Objects.equals(commandData, that.commandData) &&
-                Objects.equals(args, that.args) &&
-                Objects.equals(sourceDeviceId, that.sourceDeviceId) &&
-                status == that.status;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(commandName, commandData, args, sourceDeviceId, status);
     }
 }
