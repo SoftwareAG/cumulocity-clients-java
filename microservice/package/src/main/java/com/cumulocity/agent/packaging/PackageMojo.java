@@ -40,13 +40,12 @@ import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
-@Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = false)
 @Slf4j
+@Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = false)
 public class PackageMojo extends BaseMicroserviceMojo {
 
     public static final String TARGET_FILENAME_PATTERN = "%s-%s-%s.zip";
     public static final DataSize MEMORY_MINIMAL_LIMIT = DataSize.parse("178Mi");
-
 
     public static final String BUILD_SPEC_FRAGMENT="buildSpec";
     public static final String DOCKER_IMGARCH_BUILDARG ="imageArch";
