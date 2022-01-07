@@ -512,6 +512,10 @@ public class LansitecEncoder implements EncoderService {
     }
 ```
 
+## Developing microservice without lpwan-custom-codec
+
+If the user does not use the lpwan-custom-codec library, then the microservice must be able to create the device types and pre-defined commands on MicroserviceSubscriptionAddedEvent
+
 ## Deploying the example codec microservice
 
 In order to build and deploy the sample codec microservice, follow the [Microservice SDK guide](http://www.cumulocity.com/guides/microservice-sdk/java/).

@@ -61,8 +61,7 @@ public class CodecController {
                 log.debug("Decoder is invoked with the following input data \\n {}", inputData);
             }
 
-            LpwanDecoderInputData lpwanDecoderInputData = new LpwanDecoderInputData(inputData.getValue(), GId.asGId(inputData.getSourceDeviceId()), inputData.getArgs());
-            return decoderService.decode(lpwanDecoderInputData.getValue(), GId.asGId(lpwanDecoderInputData.getSourceDeviceId()), lpwanDecoderInputData.getArgs());
+            return decoderService.decode(inputData.getValue(), GId.asGId(inputData.getSourceDeviceId()), inputData.getArgs());
         } catch (IllegalArgumentException e) {
             log.error("Decoder failed as it received invalid input.", e);
             throw new InvalidInputDataException(e, e.getMessage(), DecoderResult.empty());

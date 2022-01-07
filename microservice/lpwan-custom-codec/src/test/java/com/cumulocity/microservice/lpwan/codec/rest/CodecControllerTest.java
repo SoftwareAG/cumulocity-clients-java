@@ -183,29 +183,6 @@ public class CodecControllerTest {
     }
 
     @Test
-    public void doCallDecodeAPI_withInvalidJSONInput_Fail() throws Exception {
-        DecoderInputData decoderInputData = new DecoderInputData();
-
-        DecoderResult decoderResult = new DecoderResult();
-        decoderResult.setSuccess(true);
-
-        try {
-            this.mockMvc.perform(post("/decode")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(jsonObjectMapper.writeValueAsString(decoderInputData)))
-                    .andDo(print())
-                    .andExpect(status().isOk())
-                    .andExpect(content().json(jsonObjectMapper.writeValueAsString(decoderResult), true));
-        } catch (NestedServletException e) {
-            Assert.assertNotNull(e.getCause());
-            Assert.assertEquals(InvalidInputDataException.class, e.getCause().getClass());
-            Assert.assertEquals("DecoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'inputData', 'manufacturer and/or model'", e.getCause().getMessage());
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    @Test
     public void doCallEncodeAPI_withInvalidJSONInput_Fail() throws Exception {
         EncoderInputData encoderInputData = new EncoderInputData();
 
