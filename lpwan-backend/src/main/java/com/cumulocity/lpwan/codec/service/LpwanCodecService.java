@@ -49,7 +49,7 @@ public class LpwanCodecService {
     public LpwanCodecService() {
         this.webClient = WebClientFactory.builder()
                 .timeout(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS)
-                .baseUrl("http://localhost:30080")
+                .baseUrl(System.getenv("C8Y_BASEURL"))
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .build();
