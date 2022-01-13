@@ -1,27 +1,19 @@
-/*
- * Copyright (c) 2012-2020 Cumulocity GmbH
- * Copyright (c) 2020-2022 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
- *
- * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
- */
-
 package com.cumulocity.microservice.customdecoders.api.model;
 
 import com.cumulocity.microservice.customdecoders.api.util.ObjectUtils;
-import com.cumulocity.model.event.AlarmStatus;
-import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.svenson.JSONTypeHint;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Setter
@@ -33,14 +25,11 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
 
     private List<AlarmRepresentation> alarms;
 
-    private Map<String, List<String>> alarmTypesToUpdate;
-
     private List<EventRepresentation> events;
 
     private List<MeasurementDto> measurements;
 
     private List<DataFragmentUpdate> dataFragments;
-
 
     @Getter
     private String message;
@@ -48,12 +37,7 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
     @Getter
     private boolean success = true;
 
-    static {
-        // Registering the Joda module to serialize/deserialize the org.joda.time.DateTime
-        new ObjectMapper().registerModule(new JodaModule());
-    }
-
-    public static DecoderResult empty() {
+    public static final DecoderResult empty() {
         return new DecoderResult();
     }
 
@@ -82,30 +66,6 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
             alarms = new ArrayList<>();
         }
         alarms.addAll(alarmRepresentations);
-    }
-
-    public void addAlarmTypesToClear(String... alarmTypes){
-        addAlarmTypesToUpdate(CumulocityAlarmStatuses.CLEARED, alarmTypes);
-    }
-
-    public void addAlarmTypesToAcknowledge(String... alarmTypes){
-        addAlarmTypesToUpdate(CumulocityAlarmStatuses.ACKNOWLEDGED, alarmTypes);
-    }
-
-    public void addAlarmTypesToUpdate(AlarmStatus status, String... alarmTypes){
-        if(ObjectUtils.isNull(alarmTypes) || ObjectUtils.isEmpty(alarmTypes) || ObjectUtils.isNull(status)){
-            return;
-        }
-
-        if(ObjectUtils.isNull(alarmTypesToUpdate)){
-            alarmTypesToUpdate = new HashMap<>();
-        }
-
-        if(!alarmTypesToUpdate.containsKey(status.name())) {
-            alarmTypesToUpdate.put(status.name(), new ArrayList<>());
-        }
-
-        Collections.addAll(alarmTypesToUpdate.get(status.name()), alarmTypes);
     }
 
     public void addEvent(EventRepresentation eventRepresentation, boolean internal) {
@@ -157,9 +117,6 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
         if(!ObjectUtils.isNull(alarms)) {
             alarms.clear();
         }
-        if(!ObjectUtils.isNull(alarmTypesToUpdate)) {
-            alarmTypesToUpdate.clear();
-        }
         if(!ObjectUtils.isNull(events)) {
             events.clear();
         }
@@ -191,10 +148,6 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
         return dataFragments;
     }
 
-    public Map<String, List<String>> getAlarmTypesToUpdate() {
-        return alarmTypesToUpdate;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -204,7 +157,6 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
                 Objects.equals(internalServiceAlarms, that.internalServiceAlarms) &&
                 Objects.equals(internalServiceEvents, that.internalServiceEvents) &&
                 Objects.equals(alarms, that.alarms) &&
-                Objects.equals(alarmTypesToUpdate, that.alarmTypesToUpdate) &&
                 Objects.equals(events, that.events) &&
                 Objects.equals(measurements, that.measurements) &&
                 Objects.equals(dataFragments, that.dataFragments) &&
@@ -213,6 +165,6 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
 
     @Override
     public int hashCode() {
-        return Objects.hash(internalServiceAlarms, internalServiceEvents, alarms, alarmTypesToUpdate, events, measurements, dataFragments, message, success);
+        return Objects.hash(internalServiceAlarms, internalServiceEvents, alarms, events, measurements, dataFragments, message, success);
     }
 }

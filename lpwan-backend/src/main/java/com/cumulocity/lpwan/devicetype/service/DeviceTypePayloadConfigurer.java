@@ -1,22 +1,10 @@
-/*
- * Copyright (c) 2012-2020 Cumulocity GmbH
- * Copyright (c) 2020-2022 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
- *
- * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
- */
-
 package com.cumulocity.lpwan.devicetype.service;
 
 import c8y.LpwanDevice;
-import c8y.TypeExternalId;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.payload.exception.DeviceTypeObjectNotFoundException;
-import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
-import com.cumulocity.rest.representation.inventory.ManagedObjects;
-import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -27,16 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DeviceTypePayloadConfigurer {
-
-    static final String C8Y_SMART_REST_DEVICE_IDENTIFIER = "c8y_SmartRestDeviceIdentifier";
-
-    protected final IdentityApi identityApi;
 
     protected final InventoryApi inventoryApi;
 
@@ -58,8 +41,7 @@ public class DeviceTypePayloadConfigurer {
                     }
             );
 
-    public DeviceTypePayloadConfigurer(IdentityApi identityApi, InventoryApi inventoryApi, DeviceTypeMapper deviceTypeMapper) {
-        this.identityApi = identityApi;
+    public DeviceTypePayloadConfigurer(InventoryApi inventoryApi, DeviceTypeMapper deviceTypeMapper) {
         this.inventoryApi = inventoryApi;
         this.deviceTypeMapper = deviceTypeMapper;
     }
@@ -73,41 +55,7 @@ public class DeviceTypePayloadConfigurer {
                 throw new DeviceTypeObjectNotFoundException("LpwanDevice.type field is missing for device " + device.getId());
             } else {
                 GId deviceTypeId = LpwanDeviceTypeUtil.getTypeId(lpwanDevice);
-
-                if (Objects.nonNull(lpwanDevice.getTypeExternalId()) && Objects.nonNull(lpwanDevice.getTypeExternalId().getType()) && Objects.nonNull(lpwanDevice.getTypeExternalId().getExternalId())) {
-                    ExternalIDRepresentation externalIDRepresentation = identityApi.getExternalId(new ID(lpwanDevice.getTypeExternalId().getType(), lpwanDevice.getTypeExternalId().getExternalId()));
-                    if (Objects.nonNull(externalIDRepresentation)) {
-                        deviceTypeId = externalIDRepresentation.getManagedObject().getId();
-
-                        // Updating the device with the device type MO Id.
-                        if(!deviceTypeId.getValue().equals(LpwanDeviceTypeUtil.getTypeId(lpwanDevice).getValue())){
-                            ManagedObjectRepresentation deviceMoToUpdate = ManagedObjects.asManagedObject(device.getId());
-                            LpwanDeviceTypeUtil.setTypePath(lpwanDevice, deviceTypeId.getValue());
-                            deviceMoToUpdate.set(lpwanDevice);
-                            inventoryApi.update(deviceMoToUpdate);
-                            log.info("Updated the device fragment 'c8y_LpwanDevice' having the Managed object ID '{}' with the new device type Managed object ID '%s'", device.getId().getValue(), deviceTypeId.getValue());
-                        }
-                    }
-                } else {
-                    // Updating the devices without the typeExternalId fragment.
-                    Optional<DeviceType> deviceType = deviceTypes.get(new ImmutablePair<>(tenantId, deviceTypeId));
-                    if (deviceType.isPresent()) {
-                        TypeExternalId typeExternalId = new TypeExternalId();
-                        typeExternalId.setExternalId(deviceType.get().getName());
-                        typeExternalId.setType(C8Y_SMART_REST_DEVICE_IDENTIFIER);
-                        lpwanDevice.setTypeExternalId(typeExternalId);
-
-                        ManagedObjectRepresentation deviceMoToUpdate = ManagedObjects.asManagedObject(device.getId());
-                        deviceMoToUpdate.set(lpwanDevice);
-                        inventoryApi.update(deviceMoToUpdate);
-                        log.info("Updated the device fragment 'c8y_LpwanDevice' having the Managed object ID '{}' with the external id information.", device.getId().getValue());
-                    }
-                }
-
-                // Along with updating the inventory we're also updating the in memory cached device.
-                device.set(lpwanDevice);
-
-                if (Objects.isNull(deviceTypeId)) {
+                if (deviceTypeId == null) {
                     throw new DeviceTypeObjectNotFoundException("Device type id could not be parsed" + lpwanDevice.getType());
                 }
                 ImmutablePair<String, GId> tenantAndDeviceTypePair = new ImmutablePair<>(tenantId, deviceTypeId);
