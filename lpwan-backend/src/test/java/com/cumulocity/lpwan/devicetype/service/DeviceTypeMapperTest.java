@@ -1,12 +1,13 @@
 package com.cumulocity.lpwan.devicetype.service;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.HashMap;
+
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
