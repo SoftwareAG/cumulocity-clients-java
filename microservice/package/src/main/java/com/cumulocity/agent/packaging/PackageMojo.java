@@ -218,7 +218,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         Map<String, String> buildArgs = configureProxyBuildArguments();
         Set<String> tags = getDockerImageNameExpandedWithTags();
 
-        if (targetBuildArch.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+        if (!targetBuildArch.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
             log.warn("Your target build architecture {} does not match the default target {}", targetBuildArch, DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
             log.warn("Currently, Cumulocity only supports hosting microservices build for {}", DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
             log.warn("Your image might be incompatible with cloud hosting!");
