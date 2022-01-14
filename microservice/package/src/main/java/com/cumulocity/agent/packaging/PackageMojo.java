@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -54,13 +56,13 @@ public class PackageMojo extends BaseMicroserviceMojo {
     public static final String IMAGE_FILENAME_PATTERN = "image-%s.tar";
 
     @Component
-    private MicroserviceDockerClient dockerClient;
+    protected MicroserviceDockerClient dockerClient;
 
     @Parameter(defaultValue = "${basedir}/src/main/configuration/cumulocity.json")
-    private File manifestFile;
+    protected File manifestFile;
 
     @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
-    private String image;
+    protected String image;
 
     @Parameter(defaultValue = "")
     private String dockerBuildNetwork;
@@ -69,7 +71,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     private Boolean deleteImage = true;
 
     @Parameter(property = "microservice.package.dockerBuildArchs")
-    private String targetBuildArchs;
+    protected String targetBuildArchs;
 
     @Parameter(defaultValue = "${mojoExecution}")
     protected MojoExecution mojoExecution;
@@ -227,7 +229,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //We also append a / to the buildarg to make the docker file work if it should be unset.
         buildArgs.put(DOCKER_IMGARCH_BUILDARG.toUpperCase(Locale.ROOT),targetBuildArch+"/");
 
-        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork);
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork);
 
 
     }
@@ -306,7 +308,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             }
             if(deleteImage!= null && deleteImage) {
                 Set<String> imageNameWithTags = getDockerImageNameExpandedWithTags();
-                log.info("Deleting all images named {} and imageNameWithTags {}", image);
+                log.info("Deleting all images named {} and imageNameWithTags {}", image, imageNameWithTags);
                 imageNameWithTags.forEach(imageNameWithTag -> {
                     dockerClient.deleteAll(imageNameWithTag, true);
                 } );
@@ -329,7 +331,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
         DockerBuildInfo updated = getDockerBuildInfo(targetArchitecture);
         manifest.putPOJO(DOCKER_BUILD_INFO_FRAGMENT, updated);
-
         String jsonString = mapper.writeValueAsString(manifest);
 
         final ZipEntry ze = new ZipEntry(MANIFEST_JSON_FILENAME);

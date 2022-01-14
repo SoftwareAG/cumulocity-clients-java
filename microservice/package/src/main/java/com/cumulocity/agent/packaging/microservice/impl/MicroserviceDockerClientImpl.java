@@ -16,6 +16,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.component.annotations.Component;
@@ -37,7 +38,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     DockerClient dockerClient;
 
     @SneakyThrows
-    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String targetArchitecture, String networkMode) {
+    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs,  String networkMode) {
 
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags);
 
@@ -79,8 +80,16 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             }
         }
 
-        @Getter
+        public synchronized Throwable getImageBuildError() {
+            return imageBuildError;
+        }
+
+        public synchronized void setImageBuildError(Throwable imageBuildError) {
+            this.imageBuildError = imageBuildError;
+        }
+
         private Throwable imageBuildError = null;
+
 
         //this logs out the build progress
         @Override
@@ -120,7 +129,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
 
-        System.out.println(config.toString());
+        log.debug("Docker Configuration used: {}", config);
 
         DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                 .dockerHost(config.getDockerHost())
