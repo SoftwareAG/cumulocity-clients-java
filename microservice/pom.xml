@@ -25,7 +25,7 @@
         <googleauth.version>1.1.1</googleauth.version>
         <jackson.version>2.12.5</jackson.version>
         <jersey.version>2.35</jersey.version>
-
+        <mockito.version>2.23.0</mockito.version>
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
     </properties>
