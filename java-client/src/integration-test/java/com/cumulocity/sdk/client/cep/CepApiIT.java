@@ -8,6 +8,7 @@ import java.net.URL;
 import com.google.common.io.Resources;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;
@@ -29,6 +30,8 @@ public class CepApiIT  extends JavaSdkITBase {
         }
     }
 
+//  Ignored till resolving issue: MTM-42839
+    @Disabled
     @Test
     public void shouldCreateCepModule() throws IOException {
         //Given
@@ -40,8 +43,8 @@ public class CepApiIT  extends JavaSdkITBase {
         assertThat(cepModule.getId()).isNotNull().isNotEmpty();
     }
 
-
-
+//  Ignored till resolving issue: MTM-42839
+    @Disabled
     @Test
     public void shouldDeleteCepModule() throws IOException {
         //Given
