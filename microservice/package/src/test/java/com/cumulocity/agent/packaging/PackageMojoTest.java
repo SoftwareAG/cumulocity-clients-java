@@ -34,6 +34,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -172,7 +173,48 @@ public class PackageMojoTest{
     }
 
 
-    private void validateZipFileForArchitecture(String buildArch) throws IOException {
+    @SneakyThrows
+    @Test
+    public void testDockerBuildSpec() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
+
+        //When I modify the docker build spec in the cumulocity.json for three architectures
+        String[] targetArgs = new String[]{"C64","QNX","mainframe"};
+        mockDockerImageFileForArchitectures(targetArgs);
+
+        DockerBuildSpec dockerBuildSpec = new DockerBuildSpec();
+        dockerBuildSpec.setTargetBuildArchitectures(Lists.newArrayList(targetArgs));
+
+        ObjectMapper mapper = new ObjectMapper();
+        Path manifestPathTarget = Paths.get(temporaryFolder.getRoot().getAbsolutePath(),"filtered-resources",MANIFEST_FILENAME);
+        ObjectNode jsonManifest = (ObjectNode)  mapper.readValue( new File(manifestPathTarget.toUri()), ObjectNode.class);
+         jsonManifest.putPOJO("buildSpec",dockerBuildSpec);
+
+        FileWriter fileWriter = new FileWriter(manifestPathTarget.toFile());
+        mapper.writeValue(fileWriter, jsonManifest);
+
+        //and I run package
+        packageMojo.execute();
+
+        //three docker images should have been built
+        //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
+        for (String expected: dockerBuildSpec.getTargetBuildArchitectures()) {
+            validateZipFileForArchitecture(expected, jsonManifest);
+            verify(dockerClient,times(1)).buildDockerImage(eq(resources.toString()),eq(getExpectedTags(expected)),eq(getExpectedBuildArgs(expected)),any());
+        }
+
+        //3 Images saved
+        verify(dockerClient,times(3)).saveDockerImage(eq(ARTIFACT_NAME+":"+TEST_VERSION),any());
+
+
+    }
+
+    @SneakyThrows
+    private void validateZipFileForArchitecture(String buildArch) {
+        validateZipFileForArchitecture(buildArch, getOriginalManifestJson());
+    }
+
+    @SneakyThrows
+    private void validateZipFileForArchitecture(String buildArch, JsonNode originalManifest) throws IOException {
 
         //first, check if there is a properly named zip file
         String expectedZipFileName=String.format("%s-%s-%s.zip",ARTIFACT_NAME,TEST_VERSION, buildArch);
@@ -202,8 +244,8 @@ public class PackageMojoTest{
 
         //Let us make sure there are no unwanted mutations to the cumulocity.json by the package plugin
         //If we remove the docker build info fragment, the cumulocity.json must be equivalent to original file again.
-        ObjectNode manifestWithoutDockerBuildinfo=((ObjectNode) manifest).remove(Lists.newArrayList("dockerBuildInfo"));
-        assertEquals("There seem to be extra mutations in the json by package",getOriginalManifestJson(),manifestWithoutDockerBuildinfo);
+        ObjectNode manifestWithoutDockerBuildinfo=((ObjectNode) originalManifest).remove(Lists.newArrayList("dockerBuildInfo"));
+        assertEquals("There seem to be extra mutations in the json by package",originalManifest ,manifestWithoutDockerBuildinfo);
 
     }
 

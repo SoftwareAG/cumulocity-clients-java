@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +66,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     private String dockerBuildNetwork;
 
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
-    private Boolean deleteImage = true;
+    private final Boolean deleteImage = true;
 
     @Parameter(property = "microservice.package.dockerBuildArchs")
     protected String targetBuildArchs;
@@ -209,11 +207,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         }
 
         }
-
-
-
-
-    private void buildDockerImage(String targetBuildArch) {
+   private void buildDockerImage(String targetBuildArch) {
         log.info("Building microservice image for target architecture {}", targetBuildArch);
         Map<String, String> buildArgs = configureProxyBuildArguments();
         Set<String> tags = getDockerImageNameExpandedWithTags();
@@ -234,7 +228,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     }
 
-    private DockerBuildInfo getDockerBuildInfo(String targetBuildArch) {;
+    private DockerBuildInfo getDockerBuildInfo(String targetBuildArch) {
         return DockerBuildInfo.defaultInfo()
                 .withImageArch(targetBuildArch)
                 .withCurrentBuildDate()
@@ -397,8 +391,8 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 filteredDir,
                 project,
                 encoding,
-                ImmutableList.<String>of(),
-                ImmutableList.<String>of(),
+                ImmutableList.of(),
+                ImmutableList.of(),
                 mavenSession);
         createDirectories(filteredDir.toPath());
         execution.setOverwrite(true);
@@ -411,7 +405,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         resource.setDirectory(file.getParent());
         resource.setFiltering(true);
         resource.setIncludes(ImmutableList.of(file.getName()));
-        resource.setExcludes(ImmutableList.<String>of());
+        resource.setExcludes(ImmutableList.of());
         return resource;
     }
 
