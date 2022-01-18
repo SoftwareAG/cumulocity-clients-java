@@ -38,10 +38,12 @@
         <module>properties</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>custom-decoders</module>
+        <module>custom-encoders</module>
+        <module>lpwan-custom-codec</module>
         <module>package</module>
         <module>monitoring</module>
         <module>settings</module>
-        <module>custom-decoders</module>
     </modules>
 
     <dependencyManagement>
