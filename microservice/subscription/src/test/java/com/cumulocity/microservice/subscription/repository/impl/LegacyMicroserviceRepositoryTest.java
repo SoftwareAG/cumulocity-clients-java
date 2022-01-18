@@ -5,6 +5,7 @@ import com.cumulocity.microservice.subscription.repository.MicroserviceRepositor
 import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
+import com.cumulocity.rest.representation.application.microservice.ExtensibleDeviceRegistrationRepresentation;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -318,6 +319,86 @@ public class LegacyMicroserviceRepositoryTest {
         assertThat(firstSubscription)
                 .isNotNull()
                 .isSameAs(user);
+    }
+
+    @Test
+    public void shouldAddProvidesDeviceRegToAppIfMetadataContains() {
+        repository.register(
+                microserviceMetadataRepresentation()
+                        .providesDeviceRegistration(new ExtensibleDeviceRegistrationRepresentation())
+                        .build());
+
+        assertThat(platform.take(byMethod(POST)))
+                .hasSize(1)
+                .extracting("body")
+                .have(new Condition<Object>() {
+                    @Override
+                    public boolean matches(Object value) {
+                        if (value instanceof ApplicationRepresentation) {
+                            assertThat(((ApplicationRepresentation) value).getProvidesDeviceRegistration()).isNotNull();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        assertThat(platform.take(byMethod(PUT))).isEmpty();
+
+        repository.register(
+                microserviceMetadataRepresentation()
+                        .providesDeviceRegistration(new ExtensibleDeviceRegistrationRepresentation())
+                        .build());
+
+        assertThat(platform.take(byMethod(PUT)))
+                .hasSize(1)
+                .extracting("body")
+                .have(new Condition<Object>() {
+                    @Override
+                    public boolean matches(Object value) {
+                        if (value instanceof ApplicationRepresentation) {
+                            assertThat(((ApplicationRepresentation) value).getProvidesDeviceRegistration()).isNotNull();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        assertThat(platform.take(byMethod(POST))).isEmpty();
+    }
+
+    @Test
+    public void shouldNotAddProvidesDeviceRegToAppIfMetadataNotContains() {
+        repository.register(microserviceMetadataRepresentation().build());
+
+        assertThat(platform.take(byMethod(POST)))
+                .hasSize(1)
+                .extracting("body")
+                .have(new Condition<Object>() {
+                    @Override
+                    public boolean matches(Object value) {
+                        if (value instanceof ApplicationRepresentation) {
+                            assertThat(((ApplicationRepresentation) value).getProvidesDeviceRegistration()).isNull();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        assertThat(platform.take(byMethod(PUT))).isEmpty();
+
+        repository.register(microserviceMetadataRepresentation().build());
+
+        assertThat(platform.take(byMethod(PUT)))
+                .hasSize(1)
+                .extracting("body")
+                .have(new Condition<Object>() {
+                    @Override
+                    public boolean matches(Object value) {
+                        if (value instanceof ApplicationRepresentation) {
+                            assertThat(((ApplicationRepresentation) value).getProvidesDeviceRegistration()).isNull();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        assertThat(platform.take(byMethod(POST))).isEmpty();
     }
 
     private Predicate<FakeCredentialsSwitchingPlatform.Request> byMethod(final HttpMethod method) {

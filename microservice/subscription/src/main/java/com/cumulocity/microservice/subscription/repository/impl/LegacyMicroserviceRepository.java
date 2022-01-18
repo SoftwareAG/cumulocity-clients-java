@@ -13,6 +13,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_USER_COLLECTION_MEDIA_TYPE;
@@ -111,6 +112,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
             application.setRequiredRoles(representation.getRequiredRoles());
             application.setRoles(representation.getRoles());
             application.setUrl(representation.getUrl());
+            application.setProvidesDeviceRegistration(representation.getProvidesDeviceRegistration());
             return applicationApi().create(application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("POST", api.getCollectionUrl(), ex);
@@ -124,6 +126,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
             application.setRequiredRoles(metadata.getRequiredRoles());
             application.setRoles(metadata.getRoles());
             application.setUrl(metadata.getUrl());
+            application.setProvidesDeviceRegistration(metadata.getProvidesDeviceRegistration());
             return applicationApi().update(application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("PUT", api.getByIdUrl(source.getId()), ex);
