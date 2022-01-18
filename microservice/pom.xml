@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1011.131.0</revision>
+        <revision>1011.140.0</revision>
         <changelist>-SNAPSHOT</changelist>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,10 +38,12 @@
         <module>properties</module>
         <module>subscription</module>
         <module>logging</module>
+        <module>custom-decoders</module>
+        <module>custom-encoders</module>
+        <module>lpwan-custom-codec</module>
         <module>package</module>
         <module>monitoring</module>
         <module>settings</module>
-        <module>custom-decoders</module>
     </modules>
 
     <dependencyManagement>
