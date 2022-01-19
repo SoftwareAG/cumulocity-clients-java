@@ -66,7 +66,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
     private String dockerBuildNetwork;
 
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
-    private final Boolean deleteImage = true;
+    protected Boolean deleteImage = true;
 
     @Parameter(property = "microservice.package.dockerBuildArchs")
     protected String targetBuildArchs;

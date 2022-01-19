@@ -129,6 +129,10 @@ public class PackageMojoTest{
 
         //and there is a zip file with the expected name for the microservice
         validateZipFileForArchitecture(expectedBuildArch);
+
+        //and the container is deleted
+        verify(dockerClient,times(1)).deleteAll(ARTIFACT_NAME+":"+TEST_VERSION, true);
+
     }
 
     @SneakyThrows
@@ -146,6 +150,30 @@ public class PackageMojoTest{
 
         //and there is a zip file with the expected name for the microservice
         validateZipFileForArchitecture(expectedBuildArch);
+
+        //and the container is deleted
+        verify(dockerClient,times(1)).deleteAll(ARTIFACT_NAME+":"+TEST_VERSION, true);
+
+    }
+
+    @SneakyThrows
+    @Test
+    public void testContainerNoDelete() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
+        String expectedBuildArch="amd64";
+
+        //When I turn off docker image deletion
+        packageMojo.deleteImage = false;
+        //and I package
+        packageMojo.execute();
+        //Validate Docker client invocations
+        verify(dockerClient,times(1)).buildDockerImage(eq(resources.toString()),eq(getExpectedTags(expectedBuildArch)),eq(getExpectedBuildArgs(expectedBuildArch)),any());
+        verify(dockerClient,times(1)).saveDockerImage(eq(ARTIFACT_NAME+":"+TEST_VERSION),any());
+
+        //and there is a zip file with the expected name for the microservice
+        validateZipFileForArchitecture(expectedBuildArch);
+
+        //and the container is deleted
+        verify(dockerClient,never()).deleteAll(ARTIFACT_NAME+":"+TEST_VERSION, true);
 
     }
 
@@ -168,6 +196,7 @@ public class PackageMojoTest{
 
         //3 Images saved
         verify(dockerClient,times(3)).saveDockerImage(eq(ARTIFACT_NAME+":"+TEST_VERSION),any());
+        verify(dockerClient,times(3)).deleteAll(ARTIFACT_NAME+":"+TEST_VERSION, true);
 
 
     }
@@ -205,6 +234,8 @@ public class PackageMojoTest{
         //3 Images saved
         verify(dockerClient,times(3)).saveDockerImage(eq(ARTIFACT_NAME+":"+TEST_VERSION),any());
 
+        //and containers are deleted again
+        verify(dockerClient,times(3)).deleteAll(ARTIFACT_NAME+":"+TEST_VERSION, true);
 
     }
 

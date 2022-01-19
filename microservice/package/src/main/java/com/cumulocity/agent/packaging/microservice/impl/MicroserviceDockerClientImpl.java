@@ -56,18 +56,12 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         log.info("Waiting for image build to complete.");
         imageBuildCompletionWaiter.waitUntilCompletionOrFailure();
 
-        if (Objects.nonNull(imageBuildCompletionWaiter.getImageBuildError())) {
-            log.error("Image build failed", imageBuildCompletionWaiter.getImageBuildError());
-            throw imageBuildCompletionWaiter.getImageBuildError();
-        } else {
-            log.info("Image build success");
-        }
+        log.info("Image build success");
+
 
     }
 
-
     protected class ImageBuildCompletionWaiter extends BuildImageResultCallback {
-
 
         //As the image build is asynchronous, we use active waiting for simplicity reasons
         @Getter
@@ -78,10 +72,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             while (imageBuildOperationCompleted.get()==false) {
                 Thread.sleep(250);
             }
-        }
-
-        public synchronized Throwable getImageBuildError() {
-            return imageBuildError;
         }
 
         public synchronized void setImageBuildError(Throwable imageBuildError) {
@@ -101,8 +91,8 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         @Override
         public void onError(Throwable throwable) {
-            imageBuildError=throwable;
-            imageBuildOperationCompleted.set(true);
+            log.error("Could not complete build");
+            throw new RuntimeException("Docker build failed", throwable);
         }
 
         @Override
