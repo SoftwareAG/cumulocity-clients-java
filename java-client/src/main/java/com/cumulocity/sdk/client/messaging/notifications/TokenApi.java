@@ -36,4 +36,12 @@ public interface TokenApi {
      * @throws SDKException if the Token wasn't valid or the operation fails
      */
     Token refresh(Token token) throws IllegalArgumentException, SDKException;
+
+    /**
+     * Unsubscribe a subscriber using supplied Token.
+     * @param token
+     * @throws SDKException
+     */
+    void unsubscribe(Token token) throws SDKException;
+
 }
