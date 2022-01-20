@@ -1,7 +1,7 @@
 package com.cumulocity.microservice.subscription.model;
 
+import com.cumulocity.microservice.subscription.model.application.ExtensibleDeviceRegistrationRepresentation;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.application.microservice.ExtensibleDeviceRegistrationRepresentation;
 import org.svenson.JSONProperty;
 
 import java.util.*;
@@ -14,7 +14,7 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
 
     private String url;
 
-    private ExtensibleDeviceRegistrationRepresentation providesDeviceRegistration;
+    private ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration;
 
     @java.beans.ConstructorProperties({"requiredRoles", "roles", "url"})
     public MicroserviceMetadataRepresentation(List<String> requiredRoles, List<String> roles, String url) {
@@ -23,13 +23,13 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         this.url = url;
     }
 
-    @java.beans.ConstructorProperties({"requiredRoles", "roles", "url", "providesDeviceRegistration"})
+    @java.beans.ConstructorProperties({"requiredRoles", "roles", "url", ExtensibleDeviceRegistrationRepresentation.FIELD_NAME})
     public MicroserviceMetadataRepresentation(List<String> requiredRoles, List<String> roles, String url,
-                                              ExtensibleDeviceRegistrationRepresentation providesDeviceRegistration) {
+                                              ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
         this.requiredRoles = requiredRoles;
         this.roles = roles;
         this.url = url;
-        this.providesDeviceRegistration = providesDeviceRegistration;
+        this.extensibleDeviceRegistration = extensibleDeviceRegistration;
     }
 
     public MicroserviceMetadataRepresentation() {
@@ -55,8 +55,8 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
     }
 
     @JSONProperty(ignoreIfNull = true)
-    public ExtensibleDeviceRegistrationRepresentation getProvidesDeviceRegistration() {
-        return providesDeviceRegistration;
+    public ExtensibleDeviceRegistrationRepresentation getExtensibleDeviceRegistration() {
+        return extensibleDeviceRegistration;
     }
 
 
@@ -72,8 +72,8 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         this.url = url;
     }
 
-    public void setProvidesDeviceRegistration(ExtensibleDeviceRegistrationRepresentation providesDeviceRegistration) {
-        this.providesDeviceRegistration = providesDeviceRegistration;
+    public void setExtensibleDeviceRegistration(ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
+        this.extensibleDeviceRegistration = extensibleDeviceRegistration;
     }
 
     public String toString() {
@@ -85,10 +85,12 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
                 .append(this.getRoles())
                 .append(", url=")
                 .append(this.getUrl());
-        if (!Objects.isNull(this.getProvidesDeviceRegistration())) {
+        if (!Objects.isNull(this.getExtensibleDeviceRegistration())) {
             stringBuilder
-                    .append(", providesDeviceRegistration=")
-                    .append(this.getProvidesDeviceRegistration());
+                    .append(", ")
+                    .append(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)
+                    .append("=")
+                    .append(this.getExtensibleDeviceRegistration());
         }
         stringBuilder.append(")");
         return stringBuilder.toString();
@@ -134,7 +136,7 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         private ArrayList<String> requiredRoles;
         private ArrayList<String> roles;
         private String url;
-        private ExtensibleDeviceRegistrationRepresentation providesDeviceRegistration;
+        private ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration;
 
         MicroserviceMetadataRepresentationBuilder() {
         }
@@ -182,9 +184,9 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
             return this;
         }
 
-        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder providesDeviceRegistration(
-                ExtensibleDeviceRegistrationRepresentation providesDeviceRegistration) {
-            this.providesDeviceRegistration = providesDeviceRegistration;
+        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder extensibleDeviceRegistration(
+                ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
+            this.extensibleDeviceRegistration = extensibleDeviceRegistration;
             return this;
         }
 
@@ -212,7 +214,7 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
                     roles = java.util.Collections.unmodifiableList(new ArrayList<String>(this.roles));
             }
 
-            return new MicroserviceMetadataRepresentation(requiredRoles, roles, url, providesDeviceRegistration);
+            return new MicroserviceMetadataRepresentation(requiredRoles, roles, url, extensibleDeviceRegistration);
         }
 
         public String toString() {
@@ -224,10 +226,12 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
                     .append(this.roles)
                     .append(", url=")
                     .append(this.url);
-            if (!Objects.isNull(this.providesDeviceRegistration)) {
+            if (!Objects.isNull(this.extensibleDeviceRegistration)) {
                 stringBuilder
-                        .append(", providesDeviceRegistration=")
-                        .append(this.providesDeviceRegistration);
+                        .append(", ")
+                        .append(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)
+                        .append("=")
+                        .append(this.extensibleDeviceRegistration);
             }
             stringBuilder.append(")");
             return stringBuilder.toString();
