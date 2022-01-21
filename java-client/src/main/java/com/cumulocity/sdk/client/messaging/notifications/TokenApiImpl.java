@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.svenson.JSONParser;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import java.util.Base64;
 
 @Slf4j
@@ -17,6 +20,7 @@ public class TokenApiImpl implements TokenApi {
     public static final CumulocityMediaType TOKEN_MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
     public static final String TOKEN_REQUEST_URI = "notification2/token";
+    public static final String UNSUBSCRIBE_REQUEST_URI = "notification2/unsubscribe";
     private static final String JWT_TOKEN_SPLIT = "\\.";
     private static final String TOPIC_SPLIT = "/";
 
@@ -76,8 +80,24 @@ public class TokenApiImpl implements TokenApi {
                 validityPeriodMinutes, false));
     }
 
+    @Override
+    public void unsubscribe(Token token) throws SDKException {
+        if (token == null || token.getTokenString() == null) {
+            throw new IllegalArgumentException("token is null");
+        }
+
+        final Response response = restConnector.getClient().target(getTokenUnsubscribeUri())
+                .queryParam("token", token.getTokenString())
+                .request()
+                .post(Entity.text(""));
+        response.close();
+    }
 
     private String getTokenRequestUri() {
         return platformParameters.getHost() + TOKEN_REQUEST_URI;
+    }
+
+    private String getTokenUnsubscribeUri() {
+        return platformParameters.getHost() + UNSUBSCRIBE_REQUEST_URI;
     }
 }
