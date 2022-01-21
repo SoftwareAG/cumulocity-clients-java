@@ -54,7 +54,6 @@ public class MicroserviceDockerClientImplTest {
     @Mock
     BuildImageCmd buildImageCmd;
 
-
     private String dockerDir;
     private String networkeMode;
     private Map<String, String> buildArgs;

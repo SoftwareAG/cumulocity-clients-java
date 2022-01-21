@@ -34,6 +34,7 @@ import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.Files.asByteSource;
+import static com.google.common.io.Files.map;
 import static java.nio.file.Files.createDirectories;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
@@ -73,6 +74,13 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
     @Parameter(defaultValue = "${mojoExecution}")
     protected MojoExecution mojoExecution;
+
+    ObjectMapper mapper;
+
+    public PackageMojo() {
+        super();
+        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    }
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -194,7 +202,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
             throw e;
         }
 
-        ObjectMapper mapper = new ObjectMapper();
         Map<String,String> jsonManifest = mapper.readValue(file, Map.class);
 
         if (jsonManifest.containsKey(BUILD_SPEC_FRAGMENT)) {
@@ -320,7 +327,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
     private void addPlatformTaggedMicroserviceManifestToZipFile(String targetArchitecture, File manifestFile, ZipOutputStream zipOutputStream) throws IOException {
 
         log.info("Tagging microservice manifest with image platform");
-        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         ObjectNode manifest = (ObjectNode) mapper.readTree(manifestFile);
 
         DockerBuildInfo updated = getDockerBuildInfo(targetArchitecture);
@@ -424,4 +430,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
         private final String path;
         private final String message;
     }
+
+
 }
