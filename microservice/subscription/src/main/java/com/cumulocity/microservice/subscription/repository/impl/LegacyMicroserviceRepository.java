@@ -1,14 +1,11 @@
 package com.cumulocity.microservice.subscription.repository.impl;
 
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
-import com.cumulocity.microservice.subscription.model.application.ExtensibleDeviceRegistrationRepresentation;
 import com.cumulocity.microservice.subscription.repository.CredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApiRepresentation;
-import com.cumulocity.rest.representation.application.ApplicationRepresentation;
-import com.cumulocity.rest.representation.application.ApplicationUserCollectionRepresentation;
-import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
+import com.cumulocity.rest.representation.application.*;
 import com.cumulocity.sdk.client.RestOperations;
 import com.cumulocity.sdk.client.SDKException;
 import com.google.common.base.Preconditions;
@@ -112,7 +109,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
             application.setRequiredRoles(representation.getRequiredRoles());
             application.setRoles(representation.getRoles());
             application.setUrl(representation.getUrl());
-            application.set(representation.getExtensibleDeviceRegistration(), ExtensibleDeviceRegistrationRepresentation.FIELD_NAME);
+            application.set(representation.getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
             return applicationApi().create(application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("POST", api.getCollectionUrl(), ex);
@@ -126,7 +123,7 @@ public class LegacyMicroserviceRepository implements MicroserviceRepository {
             application.setRequiredRoles(metadata.getRequiredRoles());
             application.setRoles(metadata.getRoles());
             application.setUrl(metadata.getUrl());
-            application.set(metadata.getExtensibleDeviceRegistration(), ExtensibleDeviceRegistrationRepresentation.FIELD_NAME);
+            application.set(metadata.getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
             return applicationApi().update(application);
         } catch (final Exception ex) {
             return (ApplicationRepresentation) handleException("PUT", api.getByIdUrl(source.getId()), ex);

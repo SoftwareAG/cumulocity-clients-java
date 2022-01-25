@@ -1,12 +1,14 @@
 package com.cumulocity.microservice.subscription.model;
 
-import com.cumulocity.microservice.subscription.model.application.ExtensibleDeviceRegistrationRepresentation;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
+import com.cumulocity.rest.representation.application.microservice.ExtensionRepresentation;
 import org.svenson.JSONProperty;
 
 import java.util.*;
 
 public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepresentation {
+
+    public static final String EXTENSIONS_FIELD_NAME = "extensions";
 
     private List<String> requiredRoles;
 
@@ -14,22 +16,14 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
 
     private String url;
 
-    private ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration;
+    private List<ExtensionRepresentation> extensions;
 
-    @java.beans.ConstructorProperties({"requiredRoles", "roles", "url"})
-    public MicroserviceMetadataRepresentation(List<String> requiredRoles, List<String> roles, String url) {
+    @java.beans.ConstructorProperties({"requiredRoles", "roles", "url", EXTENSIONS_FIELD_NAME})
+    public MicroserviceMetadataRepresentation(List<String> requiredRoles, List<String> roles, String url, List<ExtensionRepresentation> extensions) {
         this.requiredRoles = requiredRoles;
         this.roles = roles;
         this.url = url;
-    }
-
-    @java.beans.ConstructorProperties({"requiredRoles", "roles", "url", ExtensibleDeviceRegistrationRepresentation.FIELD_NAME})
-    public MicroserviceMetadataRepresentation(List<String> requiredRoles, List<String> roles, String url,
-                                              ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
-        this.requiredRoles = requiredRoles;
-        this.roles = roles;
-        this.url = url;
-        this.extensibleDeviceRegistration = extensibleDeviceRegistration;
+        this.extensions = extensions;
     }
 
     public MicroserviceMetadataRepresentation() {
@@ -55,8 +49,8 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
     }
 
     @JSONProperty(ignoreIfNull = true)
-    public ExtensibleDeviceRegistrationRepresentation getExtensibleDeviceRegistration() {
-        return extensibleDeviceRegistration;
+    public List<ExtensionRepresentation> getExtensions() {
+        return extensions;
     }
 
 
@@ -72,8 +66,8 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         this.url = url;
     }
 
-    public void setExtensibleDeviceRegistration(ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
-        this.extensibleDeviceRegistration = extensibleDeviceRegistration;
+    public void setExtensions(List<ExtensionRepresentation> extensions) {
+        this.extensions = extensions;
     }
 
     public String toString() {
@@ -85,12 +79,12 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
                 .append(this.getRoles())
                 .append(", url=")
                 .append(this.getUrl());
-        if (!Objects.isNull(this.getExtensibleDeviceRegistration())) {
+        if (!Objects.isNull(this.getExtensions())) {
             stringBuilder
                     .append(", ")
-                    .append(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)
+                    .append(EXTENSIONS_FIELD_NAME)
                     .append("=")
-                    .append(this.getExtensibleDeviceRegistration());
+                    .append(this.getExtensions());
         }
         stringBuilder.append(")");
         return stringBuilder.toString();
@@ -112,6 +106,9 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         final Object this$url = this.getUrl();
         final Object other$url = other.getUrl();
         if (this$url == null ? other$url != null : !this$url.equals(other$url)) return false;
+        final Object this$extensions = this.getExtensions();
+        final Object other$extensions = other.getExtensions();
+        if (this$extensions == null ? other$extensions != null : !this$extensions.equals(other$extensions)) return false;
         return true;
     }
 
@@ -125,6 +122,8 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         result = result * PRIME + ($roles == null ? 43 : $roles.hashCode());
         final Object $url = this.getUrl();
         result = result * PRIME + ($url == null ? 43 : $url.hashCode());
+        final Object $extensions = this.getExtensions();
+        result = result * PRIME + ($extensions == null ? 43 : $extensions.hashCode());
         return result;
     }
 
@@ -136,7 +135,7 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
         private ArrayList<String> requiredRoles;
         private ArrayList<String> roles;
         private String url;
-        private ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration;
+        private List<ExtensionRepresentation> extensions;
 
         MicroserviceMetadataRepresentationBuilder() {
         }
@@ -184,37 +183,43 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
             return this;
         }
 
-        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder extensibleDeviceRegistration(
-                ExtensibleDeviceRegistrationRepresentation extensibleDeviceRegistration) {
-            this.extensibleDeviceRegistration = extensibleDeviceRegistration;
+        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder extension(
+                ExtensionRepresentation extension) {
+            if (extension == null) {
+                return this;
+            }
+            if (this.extensions == null) {
+                this.extensions = new ArrayList<ExtensionRepresentation>();
+            }
+            this.extensions.add(extension);
+            return this;
+        }
+
+        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder extensions(
+                Collection<? extends ExtensionRepresentation> extensions) {
+            if (extensions == null) {
+                return this;
+            }
+            if (this.extensions == null) {
+                this.extensions = new ArrayList<ExtensionRepresentation>();
+            }
+            this.extensions.addAll(extensions);
+            return this;
+        }
+
+        public MicroserviceMetadataRepresentation.MicroserviceMetadataRepresentationBuilder clearExtensions() {
+            if (this.extensions != null) {
+                this.extensions.clear();
+            }
             return this;
         }
 
         public MicroserviceMetadataRepresentation build() {
-            List<String> requiredRoles;
-            switch (this.requiredRoles == null ? 0 : this.requiredRoles.size()) {
-                case 0:
-                    requiredRoles = java.util.Collections.emptyList();
-                    break;
-                case 1:
-                    requiredRoles = java.util.Collections.singletonList(this.requiredRoles.get(0));
-                    break;
-                default:
-                    requiredRoles = java.util.Collections.unmodifiableList(new ArrayList<String>(this.requiredRoles));
-            }
-            List<String> roles;
-            switch (this.roles == null ? 0 : this.roles.size()) {
-                case 0:
-                    roles = java.util.Collections.emptyList();
-                    break;
-                case 1:
-                    roles = java.util.Collections.singletonList(this.roles.get(0));
-                    break;
-                default:
-                    roles = java.util.Collections.unmodifiableList(new ArrayList<String>(this.roles));
-            }
+            List<String> requiredRoles = constructList(this.requiredRoles);
+            List<String> roles = constructList(this.roles);
+            List<ExtensionRepresentation> extensions = (this.extensions == null)? null : constructList(this.extensions);
 
-            return new MicroserviceMetadataRepresentation(requiredRoles, roles, url, extensibleDeviceRegistration);
+            return new MicroserviceMetadataRepresentation(requiredRoles, roles, url, extensions);
         }
 
         public String toString() {
@@ -226,15 +231,30 @@ public class MicroserviceMetadataRepresentation extends AbstractExtensibleRepres
                     .append(this.roles)
                     .append(", url=")
                     .append(this.url);
-            if (!Objects.isNull(this.extensibleDeviceRegistration)) {
+            if (!Objects.isNull(this.extensions)) {
                 stringBuilder
                         .append(", ")
-                        .append(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)
+                        .append(EXTENSIONS_FIELD_NAME)
                         .append("=")
-                        .append(this.extensibleDeviceRegistration);
+                        .append(this.extensions);
             }
             stringBuilder.append(")");
             return stringBuilder.toString();
+        }
+
+        private <T> List<T> constructList(List<T> list) {
+            List<T> constructedList;
+            switch (list == null ? 0 : list.size()) {
+                case 0:
+                    constructedList = java.util.Collections.emptyList();
+                    break;
+                case 1:
+                    constructedList = java.util.Collections.singletonList(list.get(0));
+                    break;
+                default:
+                    constructedList = java.util.Collections.unmodifiableList(new ArrayList<T>(list));
+            }
+            return constructedList;
         }
     }
 }

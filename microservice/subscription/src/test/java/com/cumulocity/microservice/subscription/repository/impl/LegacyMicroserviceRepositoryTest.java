@@ -1,11 +1,12 @@
 package com.cumulocity.microservice.subscription.repository.impl;
 
-import com.cumulocity.microservice.subscription.model.application.ExtensibleDeviceRegistrationRepresentation;
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
+import com.cumulocity.rest.representation.application.microservice.ExtensionRepresentation;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -322,10 +323,10 @@ public class LegacyMicroserviceRepositoryTest {
     }
 
     @Test
-    public void shouldAddProvidesDeviceRegToAppIfMetadataContains() {
+    public void shouldAddExtensionsToAppIfMetadataContains() {
         repository.register(
                 microserviceMetadataRepresentation()
-                        .extensibleDeviceRegistration(new ExtensibleDeviceRegistrationRepresentation())
+                        .extensions(Arrays.asList(new ExtensionRepresentation()))
                         .build());
 
         assertThat(platform.take(byMethod(POST)))
@@ -335,7 +336,7 @@ public class LegacyMicroserviceRepositoryTest {
                     @Override
                     public boolean matches(Object value) {
                         if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)).isNotNull();
+                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
                             return true;
                         }
                         return false;
@@ -345,7 +346,7 @@ public class LegacyMicroserviceRepositoryTest {
 
         repository.register(
                 microserviceMetadataRepresentation()
-                        .extensibleDeviceRegistration(new ExtensibleDeviceRegistrationRepresentation())
+                        .extensions(Arrays.asList(new ExtensionRepresentation()))
                         .build());
 
         assertThat(platform.take(byMethod(PUT)))
@@ -355,7 +356,7 @@ public class LegacyMicroserviceRepositoryTest {
                     @Override
                     public boolean matches(Object value) {
                         if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)).isNotNull();
+                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
                             return true;
                         }
                         return false;
@@ -365,7 +366,7 @@ public class LegacyMicroserviceRepositoryTest {
     }
 
     @Test
-    public void shouldNotAddProvidesDeviceRegToAppIfMetadataNotContains() {
+    public void shouldNotAddExtensionsToAppIfMetadataNotContains() {
         repository.register(microserviceMetadataRepresentation().build());
 
         assertThat(platform.take(byMethod(POST)))
@@ -375,7 +376,7 @@ public class LegacyMicroserviceRepositoryTest {
                     @Override
                     public boolean matches(Object value) {
                         if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)).isNull();
+                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
                             return true;
                         }
                         return false;
@@ -392,7 +393,7 @@ public class LegacyMicroserviceRepositoryTest {
                     @Override
                     public boolean matches(Object value) {
                         if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)).isNull();
+                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
                             return true;
                         }
                         return false;

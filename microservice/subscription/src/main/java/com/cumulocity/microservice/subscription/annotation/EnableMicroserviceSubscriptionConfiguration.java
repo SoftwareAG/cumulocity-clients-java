@@ -4,7 +4,6 @@ import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.properties.ConfigurationFileProvider;
 import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
-import com.cumulocity.microservice.subscription.model.application.ExtensibleDeviceRegistrationRepresentation;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.DefaultCredentialsSwitchingPlatform;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
@@ -33,8 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -90,9 +88,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
                         .requiredRoles(MoreObjects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
                         .roles(MoreObjects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
-                        .extensibleDeviceRegistration(
-                                ExtensibleDeviceRegistrationRepresentation
-                                        .toExtensibleDeviceRegistration((Map<String, Object>) manifest.get(ExtensibleDeviceRegistrationRepresentation.FIELD_NAME)))
+                        .extensions((List) manifest.getExtensions())
                         .build();
             }
         }
