@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1011.144.0</revision>
+        <revision>1011.156.0</revision>
         <changelist>-SNAPSHOT</changelist>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,7 +19,7 @@
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
-        <spring-boot-dependencies.version>2.5.5</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.5.8</spring-boot-dependencies.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <guava.version>29.0-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
