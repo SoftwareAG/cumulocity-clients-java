@@ -8,3 +8,4 @@ ExecStart=/usr/lib/@package.directory@/start
 Restart=on-abort
 
 [Install]
+WantedBy=multi-user.target
