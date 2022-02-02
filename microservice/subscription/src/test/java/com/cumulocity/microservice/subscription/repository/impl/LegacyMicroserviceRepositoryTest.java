@@ -324,22 +324,14 @@ public class LegacyMicroserviceRepositoryTest {
 
     @Test
     public void shouldCreateAppWithExtensionsIfMetadataContains() {
-        repository.register(
-                getMetadataWithExtensions());
+        MicroserviceMetadataRepresentation metadata = givenMicroserviceMetadataWithExtensions();
+
+        repository.register(metadata);
 
         assertThat(platform.take(byMethod(POST)))
                 .hasSize(1)
                 .extracting("body")
-                .have(new Condition<Object>() {
-                    @Override
-                    public boolean matches(Object value) {
-                        if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+                .have(appRepresentationConditionWithExtensions());
         assertThat(platform.take(byMethod(PUT))).isEmpty();
     }
 
@@ -351,22 +343,14 @@ public class LegacyMicroserviceRepositoryTest {
                 .name(CURRENT_APPLICATION_NAME)
                 .build();
         givenApplications(existing);
+        MicroserviceMetadataRepresentation metadata = givenMicroserviceMetadataWithExtensions();
 
-        repository.register(getMetadataWithExtensions());
+        repository.register(metadata);
 
         assertThat(platform.take(byMethod(PUT)))
                 .hasSize(1)
                 .extracting("body")
-                .have(new Condition<Object>() {
-                    @Override
-                    public boolean matches(Object value) {
-                        if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+                .have(appRepresentationConditionWithExtensions());
         assertThat(platform.take(byMethod(POST))).isEmpty();
     }
 
@@ -377,16 +361,7 @@ public class LegacyMicroserviceRepositoryTest {
         assertThat(platform.take(byMethod(POST)))
                 .hasSize(1)
                 .extracting("body")
-                .have(new Condition<Object>() {
-                    @Override
-                    public boolean matches(Object value) {
-                        if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+                .have(appRepresentationConditionWithoutExtensions());
         assertThat(platform.take(byMethod(PUT))).isEmpty();
     }
 
@@ -397,7 +372,7 @@ public class LegacyMicroserviceRepositoryTest {
                 .type(MICROSERVICE)
                 .name(CURRENT_APPLICATION_NAME)
                 .build();
-        existing.set(getMetadataWithExtensions().getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
+        existing.set(givenMicroserviceMetadataWithExtensions().getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
         givenApplications(existing);
 
         repository.register(microserviceMetadataRepresentation().build());
@@ -405,16 +380,7 @@ public class LegacyMicroserviceRepositoryTest {
         assertThat(platform.take(byMethod(PUT)))
                 .hasSize(1)
                 .extracting("body")
-                .have(new Condition<Object>() {
-                    @Override
-                    public boolean matches(Object value) {
-                        if (value instanceof ApplicationRepresentation) {
-                            assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+                .have(appRepresentationConditionWithoutExtensions());
         assertThat(platform.take(byMethod(POST))).isEmpty();
     }
 
@@ -453,10 +419,35 @@ public class LegacyMicroserviceRepositoryTest {
         return (LegacyMicroserviceRepository) builder.build();
     }
 
-    private MicroserviceMetadataRepresentation getMetadataWithExtensions() {
+    private MicroserviceMetadataRepresentation givenMicroserviceMetadataWithExtensions() {
         return microserviceMetadataRepresentation()
                 .extensions(Arrays.asList(new ExtensionRepresentation()))
                 .build();
     }
 
+    private Condition<? super Object> appRepresentationConditionWithExtensions() {
+        return new Condition<Object>() {
+            @Override
+            public boolean matches(Object value) {
+                if (value instanceof ApplicationRepresentation) {
+                    assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
+    private Condition<? super Object> appRepresentationConditionWithoutExtensions() {
+        return new Condition<Object>() {
+            @Override
+            public boolean matches(Object value) {
+                if (value instanceof ApplicationRepresentation) {
+                    assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
 }
