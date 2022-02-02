@@ -88,7 +88,7 @@ public class EnableMicroserviceSubscriptionConfiguration {
                 return MicroserviceMetadataRepresentation.microserviceMetadataRepresentation()
                         .requiredRoles(MoreObjects.firstNonNull(manifest.getRequiredRoles(), ImmutableList.<String>of()))
                         .roles(MoreObjects.firstNonNull(manifest.getRoles(), ImmutableList.<String>of()))
-                        .extensions((List) manifest.getExtensions())
+                        .extensions(manifest.getExtensions())
                         .build();
             }
         }

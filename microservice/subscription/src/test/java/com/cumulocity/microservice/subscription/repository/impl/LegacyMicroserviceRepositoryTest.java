@@ -323,11 +323,9 @@ public class LegacyMicroserviceRepositoryTest {
     }
 
     @Test
-    public void shouldAddExtensionsToAppIfMetadataContains() {
+    public void shouldCreateAppWithExtensionsIfMetadataContains() {
         repository.register(
-                microserviceMetadataRepresentation()
-                        .extensions(Arrays.asList(new ExtensionRepresentation()))
-                        .build());
+                getMetadataWithExtensions());
 
         assertThat(platform.take(byMethod(POST)))
                 .hasSize(1)
@@ -343,11 +341,18 @@ public class LegacyMicroserviceRepositoryTest {
                     }
                 });
         assertThat(platform.take(byMethod(PUT))).isEmpty();
+    }
 
-        repository.register(
-                microserviceMetadataRepresentation()
-                        .extensions(Arrays.asList(new ExtensionRepresentation()))
-                        .build());
+    @Test
+    public void shouldUpdateAppWithExtensionsIfMetadataContains() {
+        ApplicationRepresentation existing = applicationRepresentation()
+                .id("3")
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        givenApplications(existing);
+
+        repository.register(getMetadataWithExtensions());
 
         assertThat(platform.take(byMethod(PUT)))
                 .hasSize(1)
@@ -366,7 +371,7 @@ public class LegacyMicroserviceRepositoryTest {
     }
 
     @Test
-    public void shouldNotAddExtensionsToAppIfMetadataNotContains() {
+    public void shouldCreateAppWithoutExtensionsIfMetadataNotContains() {
         repository.register(microserviceMetadataRepresentation().build());
 
         assertThat(platform.take(byMethod(POST)))
@@ -383,6 +388,17 @@ public class LegacyMicroserviceRepositoryTest {
                     }
                 });
         assertThat(platform.take(byMethod(PUT))).isEmpty();
+    }
+
+    @Test
+    public void shouldUpdateAppWithoutExtensionsIfMetadataNotContains() {
+        ApplicationRepresentation existing = applicationRepresentation()
+                .id("3")
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        existing.set(getMetadataWithExtensions().getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
+        givenApplications(existing);
 
         repository.register(microserviceMetadataRepresentation().build());
 
@@ -435,6 +451,12 @@ public class LegacyMicroserviceRepositoryTest {
                 .applicationName(applicationName)
                 .applicationKey(applicationKey);
         return (LegacyMicroserviceRepository) builder.build();
+    }
+
+    private MicroserviceMetadataRepresentation getMetadataWithExtensions() {
+        return microserviceMetadataRepresentation()
+                .extensions(Arrays.asList(new ExtensionRepresentation()))
+                .build();
     }
 
 }
