@@ -248,8 +248,7 @@ public class PackageMojoTest{
     private void validateZipFileForArchitecture(String buildArch, JsonNode originalManifest) throws IOException {
 
         //first, check if there is a properly named zip file
-        String expectedZipFileName=String.format("%s-%s-%s.zip",ARTIFACT_NAME,TEST_VERSION, buildArch);
-        Path zipFilePath = Paths.get(build.getAbsolutePath(),expectedZipFileName);
+        Path zipFilePath = getExpectedZipFilePath(buildArch);
         assertTrue(Files.exists(zipFilePath));
 
         //and the zip file contains a cumulocity.json and an image tar
@@ -278,6 +277,17 @@ public class PackageMojoTest{
         ObjectNode manifestWithoutDockerBuildinfo=((ObjectNode) originalManifest).remove(Lists.newArrayList("dockerBuildInfo"));
         assertEquals("There seem to be extra mutations in the json by package",originalManifest ,manifestWithoutDockerBuildinfo);
 
+    }
+
+    private Path getExpectedZipFilePath(String buildArch) {
+        String expectedZipFileName;
+        if (!buildArch.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+           expectedZipFileName = String.format("%s-%s-%s.zip",ARTIFACT_NAME,TEST_VERSION, buildArch);
+        } else {
+            expectedZipFileName = String.format("%s-%s.zip",ARTIFACT_NAME,TEST_VERSION);
+        }
+        Path zipFilePath = Paths.get(build.getAbsolutePath(),expectedZipFileName);
+        return zipFilePath;
     }
 
 

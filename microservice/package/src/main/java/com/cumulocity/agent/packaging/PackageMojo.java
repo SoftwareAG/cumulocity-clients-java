@@ -26,6 +26,8 @@ import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import javax.validation.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -45,7 +47,6 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 @Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = false)
 public class PackageMojo extends BaseMicroserviceMojo {
 
-    public static final String TARGET_FILENAME_PATTERN = "%s-%s-%s.zip";
     public static final DataSize MEMORY_MINIMAL_LIMIT = DataSize.parse("178Mi");
 
     public static final String BUILD_SPEC_FRAGMENT="buildSpec";
@@ -69,11 +70,13 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
     protected Boolean deleteImage = true;
 
+
     @Parameter(property = "microservice.package.dockerBuildArchs")
     protected String targetBuildArchs;
 
     @Parameter(defaultValue = "${mojoExecution}")
     protected MojoExecution mojoExecution;
+
 
     ObjectMapper mapper;
 
@@ -293,7 +296,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         try {
 
             String dockerImageFileName=String.format(IMAGE_FILENAME_PATTERN,targetArchitecture);
-            final String targetFilename = String.format(TARGET_FILENAME_PATTERN, name, project.getVersion(), targetArchitecture);
+            String targetFilename = getTargetFilename(targetArchitecture);
             log.info("Saving microservice to {}", targetFilename);
 
             final File dockerImage = new File(build, dockerImageFileName);

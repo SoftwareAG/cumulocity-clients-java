@@ -18,7 +18,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 
-import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
+import static com.cumulocity.agent.packaging.BaseMicroserviceMojo.TARGET_FILENAME_PATTERN_DEFAULT_ARCH;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
@@ -58,7 +58,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             return;
         }
 
-        final String targetFilename = format(TARGET_FILENAME_PATTERN, name, project.getVersion());
+        final String targetFilename = format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, name, project.getVersion());
         final File file = new File(build, targetFilename);
         try {
             final Repository repository = new Repository(serviceId, serverUrl.get());

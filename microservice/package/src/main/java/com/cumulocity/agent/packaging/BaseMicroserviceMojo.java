@@ -37,6 +37,9 @@ import static org.apache.commons.lang3.StringUtils.firstNonEmpty;
 
 public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
+    public static final String TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH = "%s-%s-%s.zip";
+    public static final String TARGET_FILENAME_PATTERN_DEFAULT_ARCH = "%s-%s.zip";
+
     @Parameter(property = "agent-package.container.registry")
     protected String registry;
 
@@ -254,5 +257,17 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return javaRuntime.substring(2);
         }
         return javaRuntime;
+    }
+
+    protected String getTargetFilename(String targetArchitecture) {
+        if (targetArchitecture.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+            return getDefaultTargetFilename();
+        } else {
+            return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture);
+        }
+    }
+
+    protected String getDefaultTargetFilename() {
+        return String.format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, name, project.getVersion());
     }
 }
