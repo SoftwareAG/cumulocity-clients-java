@@ -16,13 +16,16 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -40,6 +43,9 @@ public class PayloadDecoderServiceTest {
     private MicroserviceSubscriptionsService subscriptionsService;
 
     @Mock
+    PlatformParameters platformParameters;
+
+    @Mock
     private InventoryApi inventoryApi;
 
     @Mock
@@ -49,7 +55,7 @@ public class PayloadDecoderServiceTest {
     WebClient webClient;
 
     @InjectMocks
-    LpwanCodecService lpwanCodecService = spy(new LpwanCodecService());
+    LpwanCodecService lpwanCodecService;
 
     @Mock
     Mono<DecoderResult> decoderResultMono;
@@ -80,6 +86,11 @@ public class PayloadDecoderServiceTest {
     @InjectMocks
     PayloadDecoderService<UplinkMessage> payloadDecoderService = new PayloadDecoderService<>(payloadMappingService, null);
 
+    @Before
+    public void setup() {
+        ReflectionTestUtils.setField(lpwanCodecService, "webClient", webClient);
+        ReflectionTestUtils.setField(payloadDecoderService, "lpwanCodecService", lpwanCodecService);
+    }
 
     @Test
     public void decodeLittleEndianHex() {
