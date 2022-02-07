@@ -11,6 +11,7 @@ import c8y.Command;
 import com.cumulocity.lpwan.codec.exception.LpwanCodecServiceException;
 import com.cumulocity.lpwan.devicetype.model.DeviceType;
 import com.cumulocity.lpwan.payload.uplink.model.UplinkMessage;
+import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.customdecoders.api.model.DecoderResult;
 import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
 import com.cumulocity.microservice.lpwan.codec.encoder.model.LpwanEncoderInputData;
@@ -21,6 +22,7 @@ import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
@@ -37,19 +39,25 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@TenantScope
 public class LpwanCodecService {
-    @Autowired
+
     private MicroserviceSubscriptionsService subscriptionsService;
 
-    @Autowired
+    private PlatformParameters platformParameters;
+
     private InventoryApi inventoryApi;
 
     private WebClient webClient;
 
-    public LpwanCodecService() {
+    @Autowired
+    public LpwanCodecService(MicroserviceSubscriptionsService subscriptionsService, PlatformParameters platformParameters, InventoryApi inventoryApi) {
+        this.subscriptionsService = subscriptionsService;
+        this.platformParameters = platformParameters;
+        this.inventoryApi = inventoryApi;
         this.webClient = WebClientFactory.builder()
                 .timeout(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS)
-                .baseUrl(System.getenv("C8Y_BASEURL"))
+                .baseUrl(platformParameters.getHost())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .build();
