@@ -265,9 +265,8 @@ public class EventIT extends JavaSdkITBase {
         iShouldGetNumberOfEvents(5);
         // when
         iDeleteAllByType("type2");
-        iGetAllEvents();
         // then
-        iShouldGetNumberOfEvents(3);
+        iShouldGetNumberOfEventsInTenSecond(3);
         // when
         iQueryAllByType("type1");
         // then

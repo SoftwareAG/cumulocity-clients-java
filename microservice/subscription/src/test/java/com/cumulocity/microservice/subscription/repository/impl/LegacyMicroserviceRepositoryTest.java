@@ -1,10 +1,12 @@
 package com.cumulocity.microservice.subscription.repository.impl;
 
+import com.cumulocity.microservice.subscription.model.MicroserviceMetadataRepresentation;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepository;
 import com.cumulocity.microservice.subscription.repository.MicroserviceRepositoryBuilder;
 import com.cumulocity.rest.representation.application.ApplicationCollectionRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.rest.representation.application.ApplicationUserRepresentation;
+import com.cumulocity.rest.representation.application.microservice.ExtensionRepresentation;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -320,6 +322,68 @@ public class LegacyMicroserviceRepositoryTest {
                 .isSameAs(user);
     }
 
+    @Test
+    public void shouldCreateAppWithExtensionsIfMetadataContains() {
+        MicroserviceMetadataRepresentation metadata = givenMicroserviceMetadataWithExtensions();
+
+        repository.register(metadata);
+
+        assertThat(platform.take(byMethod(POST)))
+                .hasSize(1)
+                .extracting("body")
+                .have(appRepresentationConditionWithExtensions());
+        assertThat(platform.take(byMethod(PUT))).isEmpty();
+    }
+
+    @Test
+    public void shouldUpdateAppWithExtensionsIfMetadataContains() {
+        ApplicationRepresentation existing = applicationRepresentation()
+                .id("3")
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        givenApplications(existing);
+        MicroserviceMetadataRepresentation metadata = givenMicroserviceMetadataWithExtensions();
+
+        repository.register(metadata);
+
+        assertThat(platform.take(byMethod(PUT)))
+                .hasSize(1)
+                .extracting("body")
+                .have(appRepresentationConditionWithExtensions());
+        assertThat(platform.take(byMethod(POST))).isEmpty();
+    }
+
+    @Test
+    public void shouldCreateAppWithoutExtensionsIfMetadataNotContains() {
+        repository.register(microserviceMetadataRepresentation().build());
+
+        assertThat(platform.take(byMethod(POST)))
+                .hasSize(1)
+                .extracting("body")
+                .have(appRepresentationConditionWithoutExtensions());
+        assertThat(platform.take(byMethod(PUT))).isEmpty();
+    }
+
+    @Test
+    public void shouldUpdateAppWithoutExtensionsIfMetadataNotContains() {
+        ApplicationRepresentation existing = applicationRepresentation()
+                .id("3")
+                .type(MICROSERVICE)
+                .name(CURRENT_APPLICATION_NAME)
+                .build();
+        existing.set(givenMicroserviceMetadataWithExtensions().getExtensions(), MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME);
+        givenApplications(existing);
+
+        repository.register(microserviceMetadataRepresentation().build());
+
+        assertThat(platform.take(byMethod(PUT)))
+                .hasSize(1)
+                .extracting("body")
+                .have(appRepresentationConditionWithoutExtensions());
+        assertThat(platform.take(byMethod(POST))).isEmpty();
+    }
+
     private Predicate<FakeCredentialsSwitchingPlatform.Request> byMethod(final HttpMethod method) {
         return request -> request.getMethod().equals(method);
     }
@@ -355,4 +419,35 @@ public class LegacyMicroserviceRepositoryTest {
         return (LegacyMicroserviceRepository) builder.build();
     }
 
+    private MicroserviceMetadataRepresentation givenMicroserviceMetadataWithExtensions() {
+        return microserviceMetadataRepresentation()
+                .extensions(Arrays.asList(new ExtensionRepresentation()))
+                .build();
+    }
+
+    private Condition<? super Object> appRepresentationConditionWithExtensions() {
+        return new Condition<Object>() {
+            @Override
+            public boolean matches(Object value) {
+                if (value instanceof ApplicationRepresentation) {
+                    assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNotNull();
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
+    private Condition<? super Object> appRepresentationConditionWithoutExtensions() {
+        return new Condition<Object>() {
+            @Override
+            public boolean matches(Object value) {
+                if (value instanceof ApplicationRepresentation) {
+                    assertThat(((ApplicationRepresentation) value).get(MicroserviceMetadataRepresentation.EXTENSIONS_FIELD_NAME)).isNull();
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
 }

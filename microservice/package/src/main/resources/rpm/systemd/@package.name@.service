@@ -5,6 +5,8 @@ After=network.target
 [Service]
 PIDFile=/var/run/@package.name@.pid
 ExecStart=/usr/lib/@package.directory@/start
-Restart=on-abort
+Restart=on-failure
+RestartSec=5s
 
 [Install]
+WantedBy=multi-user.target

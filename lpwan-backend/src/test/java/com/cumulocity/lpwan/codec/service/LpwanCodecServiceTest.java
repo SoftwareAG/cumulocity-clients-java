@@ -15,7 +15,9 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
+import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -34,13 +37,15 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LpwanCodecServiceTest {
     @Mock
     private MicroserviceSubscriptionsService subscriptionsService;
+
+    @Mock
+    private PlatformParameters platformParameters;
 
     @Mock
     private InventoryApi inventoryApi;
@@ -52,7 +57,7 @@ public class LpwanCodecServiceTest {
     WebClient webClient;
 
     @InjectMocks
-    LpwanCodecService lpwanCodecService = spy(new LpwanCodecService());
+    private LpwanCodecService lpwanCodecService;
 
     @Mock
     Mono<LpwanEncoderResult> lpwanEncoderResultMono;
@@ -71,6 +76,11 @@ public class LpwanCodecServiceTest {
 
     @Captor
     ArgumentCaptor<Mono<LpwanEncoderInputData>> inputMonoCaptor;
+
+    @Before
+    public void setup() {
+        ReflectionTestUtils.setField(lpwanCodecService, "webClient", webClient);
+    }
 
     @Test
     public void commandShouldBeCodecGenerated() {
