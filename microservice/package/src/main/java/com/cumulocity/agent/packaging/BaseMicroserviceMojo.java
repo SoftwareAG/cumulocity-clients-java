@@ -262,9 +262,9 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     protected String getTargetFilename(String targetArchitecture) {
         if (targetArchitecture.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
             return getDefaultTargetFilename();
-        } else {
-            return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture);
         }
+
+        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture);
     }
 
     protected String getDefaultTargetFilename() {
