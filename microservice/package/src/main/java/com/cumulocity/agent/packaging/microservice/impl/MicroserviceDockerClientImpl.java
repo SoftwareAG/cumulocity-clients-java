@@ -14,11 +14,10 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.MavenExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
@@ -28,6 +27,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 import java.io.*;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -38,7 +38,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     DockerClient dockerClient;
 
     @SneakyThrows
-    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs,  String networkMode) {
+    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode) {
 
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags);
 
@@ -54,7 +54,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         ImageBuildCompletionWaiter imageBuildCompletionWaiter = new ImageBuildCompletionWaiter();
         buildImageCmd.exec(imageBuildCompletionWaiter);
         log.info("Waiting for image build to complete.");
-        imageBuildCompletionWaiter.waitUntilCompletionOrFailure();
+        imageBuildCompletionWaiter.awaitWithTimeout(60);
 
         log.info("Image build success");
 
@@ -63,41 +63,56 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     protected class ImageBuildCompletionWaiter extends BuildImageResultCallback {
 
-        //As the image build is asynchronous, we use active waiting for simplicity reasons
-        @Getter
-        private AtomicBoolean imageBuildOperationCompleted = new AtomicBoolean(false);
+        String completedImageId;
+        boolean buildFailed;
+        private Future f;
 
-        @SneakyThrows
-        public void waitUntilCompletionOrFailure() {
-            while (imageBuildOperationCompleted.get()==false) {
-                Thread.sleep(250);
+        public void awaitWithTimeout(int seconds) throws MavenExecutionException {
+
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            f = executorService.submit(() -> {
+
+                while (Objects.isNull(completedImageId)) {
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                log.info("Build successful, imageId: {}", completedImageId);
+            });
+
+            try {
+                f.get(seconds, TimeUnit.SECONDS);
+            } catch (TimeoutException timeoutException) {
+                throw new MavenExecutionException("Docker build timed out", timeoutException);
+            } catch (ExecutionException e) {
+                throw new MavenExecutionException("Docker build execution failed", e);
+            } catch (CancellationException c) {
+                throw new MavenExecutionException("Docker image build failed. See logs above", c);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
         }
 
-        public synchronized void setImageBuildError(Throwable imageBuildError) {
-            this.imageBuildError = imageBuildError;
-        }
 
-        private Throwable imageBuildError = null;
-
-
-        //this logs out the build progress
-        @Override
         public void onNext(BuildResponseItem item) {
-            if (Objects.nonNull(item.getStream())){
+
+            if (Objects.nonNull(item.getStream())) {
                 log.info(item.getStream());
             }
-        }
 
-        @Override
-        public void onError(Throwable throwable) {
-            log.error("Could not complete build");
-            throw new RuntimeException("Docker build failed", throwable);
-        }
+            if (item.isBuildSuccessIndicated()) {
+                this.completedImageId = item.getImageId();
+            } else if (item.isErrorIndicated()) {
+                this.buildFailed = true;
+                String errorMessage = String.format("Docker build error: %s %s", item.getErrorDetail().getCode(), item.getErrorDetail().getMessage());
+                log.info(errorMessage);
+                f.cancel(true);
+            }
 
-        @Override
-        public void onComplete() {
-            imageBuildOperationCompleted.set(true);
         }
     }
 
@@ -105,12 +120,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         log.info("Saving Image {} to file {}", image, targetFile.getAbsoluteFile().toString());
 
-        try (
-                SaveImageCmd saveImageCmd = dockerClient.saveImageCmd(image);
+        try (SaveImageCmd saveImageCmd = dockerClient.saveImageCmd(image);
 
-                final InputStream inputStream = saveImageCmd.exec();
-                final FileOutputStream outputStream = new FileOutputStream(targetFile)
-        ) {
+             final InputStream inputStream = saveImageCmd.exec(); final FileOutputStream outputStream = new FileOutputStream(targetFile)) {
             IOUtils.copyLarge(inputStream, outputStream);
         }
     }
@@ -121,20 +133,14 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         log.debug("Docker Configuration used: {}", config);
 
-        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
-                .dockerHost(config.getDockerHost())
-                .sslConfig(config.getSSLConfig())
-                .maxConnections(100)
-                .connectionTimeout(Duration.ofSeconds(30))
-                .responseTimeout(Duration.ofSeconds(45))
-                .build();
+        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder().dockerHost(config.getDockerHost()).sslConfig(config.getSSLConfig()).maxConnections(100).connectionTimeout(Duration.ofSeconds(30)).responseTimeout(Duration.ofSeconds(45)).build();
 
 
-        return DockerClientImpl.getInstance(config,httpClient);
+        return DockerClientImpl.getInstance(config, httpClient);
     }
 
     @Override
-    public void deleteAll(String imageName, boolean withForce)  {
+    public void deleteAll(String imageName, boolean withForce) {
         log.info("Cleaning up all docker images for {} ", imageName);
 
         ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
@@ -160,11 +166,10 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     }
 
 
-
     @Override
     public void tagImage(String image, String imageNameWithRepository, String tag) {
         log.info("Tagging image {} image / {} with tag {}", image, imageNameWithRepository, tag);
-        TagImageCmd tagImageCmd = dockerClient.tagImageCmd(image,imageNameWithRepository, tag);
+        TagImageCmd tagImageCmd = dockerClient.tagImageCmd(image, imageNameWithRepository, tag);
         tagImageCmd.exec();
     }
 
@@ -185,7 +190,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         @SneakyThrows
         private void waitForCompletionOrFailure() {
-            while (pushProcessDone.get()==false) {
+            while (pushProcessDone.get() == false) {
                 Thread.sleep(250);
             }
         }
@@ -223,8 +228,8 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     }
 
 
-    private Map<String,List<String>> getImageNameFilter(String imageName) {
-        Map<String,List<String>> imageFilters = Maps.newHashMap();
+    private Map<String, List<String>> getImageNameFilter(String imageName) {
+        Map<String, List<String>> imageFilters = Maps.newHashMap();
         imageFilters.put("reference", Arrays.asList(imageName));
         return imageFilters;
     }
@@ -252,6 +257,4 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             }
         }
     }
-
-
 }

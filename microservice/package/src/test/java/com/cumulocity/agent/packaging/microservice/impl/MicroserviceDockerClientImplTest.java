@@ -3,9 +3,7 @@ package com.cumulocity.agent.packaging.microservice.impl;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.BuildResponseItem;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.PushResponseItem;
+import com.github.dockerjava.api.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
@@ -112,9 +110,9 @@ public class MicroserviceDockerClientImplTest {
             imageResultCallback.onNext(mockBuildProgressItem("Progress 2"));
             imageResultCallback.onNext(mockBuildProgressItem("Progress 3"));
             if (!generateError) {
-                imageResultCallback.onComplete();
+                imageResultCallback.onNext(mockCompleteProgressItem("Finished"));
             } else {
-                imageResultCallback.onError(new RuntimeException("Mock Docker Execution Error"));
+                imageResultCallback.onNext(mockErrorItem("Simulated Docker Error"));
             }
             return null;
 
@@ -140,6 +138,28 @@ public class MicroserviceDockerClientImplTest {
     private BuildResponseItem mockBuildProgressItem(String text) {
         BuildResponseItem buildResponseItem = mock(BuildResponseItem.class);
         when(buildResponseItem.getStream()).thenReturn(text);
+        return buildResponseItem;
+    }
+
+    private BuildResponseItem mockCompleteProgressItem(String text) {
+        BuildResponseItem buildResponseItem = mock(BuildResponseItem.class);
+        when(buildResponseItem.getStream()).thenReturn(text);
+        when(buildResponseItem.isBuildSuccessIndicated()).thenReturn(true);
+        when(buildResponseItem.getImageId()).thenReturn("ABCDEF4");
+        return buildResponseItem;
+    }
+
+
+
+    private BuildResponseItem mockErrorItem(String text) {
+        BuildResponseItem buildResponseItem = mock(BuildResponseItem.class);
+        when(buildResponseItem.getStream()).thenReturn(text);
+        when(buildResponseItem.isErrorIndicated()).thenReturn(true);
+        ResponseItem.ErrorDetail errorDetail = mock(ResponseItem.ErrorDetail.class);
+        when(errorDetail.getMessage()).thenReturn(text);
+        when(errorDetail.getCode()).thenReturn(777);
+        when(buildResponseItem.getErrorDetail()).thenReturn(errorDetail);
+
         return buildResponseItem;
     }
 
