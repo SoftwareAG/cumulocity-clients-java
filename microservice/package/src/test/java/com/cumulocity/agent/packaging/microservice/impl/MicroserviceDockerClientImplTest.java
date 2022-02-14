@@ -76,7 +76,7 @@ public class MicroserviceDockerClientImplTest {
         pepareBuildCommandMock(false);
 
         //and I build the image with our client
-        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode);
+        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode, 60);
 
         //then docker was instructed to build the file
         //dockerClientMock.buildImageCmd(eq(new File(dockerDir)));
@@ -94,7 +94,7 @@ public class MicroserviceDockerClientImplTest {
         //and I build the image with our client, then the docker error is propagated
 
         assertThrows(RuntimeException.class, () -> {
-            dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode);
+            dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode, 60);
         });
 
         verify(dockerClientMock, times(1)).buildImageCmd(eq(new File(dockerDir)));
@@ -102,7 +102,7 @@ public class MicroserviceDockerClientImplTest {
 
     private void pepareBuildCommandMock(boolean generateError) {
         //mock a three step build process, possibly with an error in the end.
-        when (buildImageCmd.exec(any(BuildImageResultCallback.class))).thenAnswer(mockInvocation -> {
+        when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenAnswer(mockInvocation -> {
 
             BuildImageResultCallback imageResultCallback = (BuildImageResultCallback) mockInvocation.getArgument(0);
 
@@ -124,10 +124,10 @@ public class MicroserviceDockerClientImplTest {
 
     private void prepareDockerClientMockForBuild() {
         dockerDir = "/foo/bar";
-        tags = Sets.newHashSet("tag1","tag2","tag3");
+        tags = Sets.newHashSet("tag1", "tag2", "tag3");
         buildArgs = Maps.newHashMap();
-        buildArgs.put("IMAGEARCH","amd64");
-        buildArgs.put("hey","yolo");
+        buildArgs.put("IMAGEARCH", "amd64");
+        buildArgs.put("hey", "yolo");
         networkeMode = "none";
 
         when(buildImageCmd.withBuildArg(any(), any())).thenReturn(buildImageCmd);
@@ -148,7 +148,6 @@ public class MicroserviceDockerClientImplTest {
         when(buildResponseItem.getImageId()).thenReturn("ABCDEF4");
         return buildResponseItem;
     }
-
 
 
     private BuildResponseItem mockErrorItem(String text) {
@@ -185,7 +184,7 @@ public class MicroserviceDockerClientImplTest {
 
         //then the target file contains the exact bytes and the hashes are the same.
         File savedImage = new File(targetFile.getAbsolutePath());
-        String targetImageDigest = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(),savedImage));
+        String targetImageDigest = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), savedImage));
 
         assertEquals("Image corrupted by save method!", sourceImageDigest, targetImageDigest);
 
@@ -205,9 +204,9 @@ public class MicroserviceDockerClientImplTest {
         when(dockerClientMock.listImagesCmd()).thenReturn(listImagesCmd);
 
         //and I delete it
-        dockerClient.deleteAll("testimage",true);
+        dockerClient.deleteAll("testimage", true);
         //then our client calls the corresponding remove command.
-        verify(removeImageCmd,times(1)).exec();
+        verify(removeImageCmd, times(1)).exec();
 
 
     }
@@ -223,7 +222,7 @@ public class MicroserviceDockerClientImplTest {
     private Image getMockedImage(String imageName) {
         Image image = mock(Image.class);
         when(image.getId()).thenReturn(imageName);
-        when(image.getRepoTags()).thenReturn(new String[]{"A","B","C"});
+        when(image.getRepoTags()).thenReturn(new String[]{"A", "B", "C"});
         return image;
     }
 
@@ -236,8 +235,8 @@ public class MicroserviceDockerClientImplTest {
         });
 
         //make sure our docker client passes the tagging command to docker and executes it
-        dockerClient.tagImage("hello","bla/hello","world");
-        verify(tagImageCmd,times(1)).exec();
+        dockerClient.tagImage("hello", "bla/hello", "world");
+        verify(tagImageCmd, times(1)).exec();
 
     }
 
@@ -259,7 +258,7 @@ public class MicroserviceDockerClientImplTest {
         //and I then ask our client to push this image
         dockerClient.pushImage("testimage2");
         //then our push image command is executed on the docker side
-        verify(pushImageCmd,times(1)).exec(any());
+        verify(pushImageCmd, times(1)).exec(any());
 
     }
 
@@ -280,7 +279,7 @@ public class MicroserviceDockerClientImplTest {
             dockerClient.pushImage("testimage2");
         });
         //then our push image command is executed on the docker side
-        verify(pushImageCmd,times(1)).exec(any());
+        verify(pushImageCmd, times(1)).exec(any());
 
     }
 

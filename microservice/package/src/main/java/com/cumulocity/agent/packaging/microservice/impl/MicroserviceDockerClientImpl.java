@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.MavenExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
@@ -38,7 +39,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     DockerClient dockerClient;
 
     @SneakyThrows
-    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode) {
+    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode, Integer dockerBuildTimeout) {
 
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags);
 
@@ -53,8 +54,8 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         log.info("Building Docker image. Docker dir={},tags={}, build arguments={}", dockerDirectory, tags, buildArgs);
         ImageBuildCompletionWaiter imageBuildCompletionWaiter = new ImageBuildCompletionWaiter();
         buildImageCmd.exec(imageBuildCompletionWaiter);
-        log.info("Waiting for image build to complete.");
-        imageBuildCompletionWaiter.awaitWithTimeout(60);
+        log.info("Waiting for image build to complete (timeout={}s)", dockerBuildTimeout);
+        imageBuildCompletionWaiter.awaitWithTimeout(dockerBuildTimeout);
 
         log.info("Image build success");
 
@@ -109,7 +110,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             } else if (item.isErrorIndicated()) {
                 this.buildFailed = true;
                 String errorMessage = String.format("Docker build error: %s %s", item.getErrorDetail().getCode(), item.getErrorDetail().getMessage());
-                log.info(errorMessage);
+                log.error(errorMessage);
                 f.cancel(true);
             }
 

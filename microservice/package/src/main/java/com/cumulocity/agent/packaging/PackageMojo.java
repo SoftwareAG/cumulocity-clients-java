@@ -70,13 +70,14 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
     protected Boolean deleteImage = true;
 
-
     @Parameter(property = "microservice.package.dockerBuildArchs")
     protected String targetBuildArchs;
 
     @Parameter(defaultValue = "${mojoExecution}")
     protected MojoExecution mojoExecution;
 
+    @Parameter(property= "microservice.package.dockerBuildTimeout",defaultValue = "240")
+    public int dockerBuildTimeout = 240;
 
     ObjectMapper mapper;
 
@@ -233,8 +234,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //We also append a / to the buildarg to make the docker file work if it should be unset.
         buildArgs.put(DOCKER_IMGARCH_BUILDARG.toUpperCase(Locale.ROOT),targetBuildArch+"/");
 
-        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork);
-
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork, dockerBuildTimeout);
 
     }
 
