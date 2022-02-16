@@ -24,8 +24,6 @@ import java.util.*;
 public class DeviceCommand {
     static final String NAME = "name";
     static final String CATEGORY = "category";
-    static final String COMMAND = "command";
-    static final String DELIVERY_TYPES = "deliveryTypes";
 
     @NotBlank
     @EqualsAndHashCode.Include
@@ -37,9 +35,6 @@ public class DeviceCommand {
     @Null
     private String command;
 
-    @Null
-    private Set<DeliveryType> deliveryTypes;
-
     /**
      * Instantiates a new DeviceCommand
      *
@@ -48,14 +43,9 @@ public class DeviceCommand {
      * @param command represents the command text of the device command
      */
     public DeviceCommand(@NotBlank String name, @NotBlank String category, @Null String command) {
-        this(name, category, command, DeliveryType.Default);
-    }
-
-    public DeviceCommand(@NotBlank String name, @NotBlank String category, @Null String command, @NotNull DeliveryType... deliveryTypes) {
         this.name = name;
         this.category = category;
         this.command = command;
-        this.deliveryTypes = new HashSet<DeliveryType>(Arrays.asList(deliveryTypes));
     }
 
     /**
@@ -67,8 +57,6 @@ public class DeviceCommand {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put(NAME, name);
         attributes.put(CATEGORY, category);
-        attributes.put(COMMAND, command);
-        attributes.put(DELIVERY_TYPES, deliveryTypes);
         return attributes;
     }
 
