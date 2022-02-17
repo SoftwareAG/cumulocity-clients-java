@@ -218,7 +218,7 @@ public class CodecMicroservice {
                     predefinedCommand.set(new String[]{deviceTypeMo.getName()}, DEVICE_TYPE);
                     predefinedCommand.set(oneSupportedCommand.getCommand(), COMMAND);
                     predefinedCommand.set(oneSupportedCommand.getCategory(), CATEGORY);
-                    predefinedCommand.set(oneSupportedCommand.getDeliveryTypes(), DELIVERY_TYPES);
+                    predefinedCommand.set(new String[] { "Default" }, DELIVERY_TYPES);
 
                     try {
                         inventoryApi.create(predefinedCommand);
