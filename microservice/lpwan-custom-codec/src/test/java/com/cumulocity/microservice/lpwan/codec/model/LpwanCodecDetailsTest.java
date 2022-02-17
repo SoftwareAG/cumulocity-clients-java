@@ -62,9 +62,7 @@ class LpwanCodecDetailsTest {
 
         assertEquals("TestCategory", supportedCommandsAttributesList.get(0).get(DeviceCommand.CATEGORY));
         assertEquals(deviceCommand2.getName(), supportedCommandsAttributesList.get(0).get(DeviceCommand.NAME));
-        assertEquals(deviceCommand2.getCommand(), supportedCommandsAttributesList.get(0).get(DeviceCommand.COMMAND));
         assertEquals(deviceCommand1.getName(), supportedCommandsAttributesList.get(1).get(DeviceCommand.NAME));
-        assertEquals(deviceCommand1.getCommand(), supportedCommandsAttributesList.get(1).get(DeviceCommand.COMMAND));
 
         assertEquals("lpwan-custom-codec-service-path", attributes.get(LpwanCodecDetails.CODEC_SERVICE_CONTEXT_PATH));
     }

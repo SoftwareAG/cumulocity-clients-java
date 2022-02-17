@@ -44,8 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.cumulocity.microservice.lpwan.codec.CodecMicroservice.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -176,7 +175,6 @@ public class CodecMicroserviceTest {
         predefinedCommand1.set(new String[] {deviceInfo_2_deviceTypeName_withSupportedCommands}, DEVICE_TYPE);
         predefinedCommand1.set(deviceCommand2.getCommand(), COMMAND);
         predefinedCommand1.set(deviceCommand2.getCategory(), CATEGORY);
-        predefinedCommand1.set(deviceCommand2.getDeliveryTypes(), DELIVERY_TYPES);
 
         Iterable<ManagedObjectRepresentation> allPredefinedCommands = Arrays.asList(predefinedCommand1);
 
@@ -244,6 +242,8 @@ public class CodecMicroserviceTest {
         assertEquals(GId.asGId(1988), gidList.get(0));
         assertEquals(GId.asGId(1988), gidList.get(1));
 
+        String[] deliveryTypes = new String[] { "Default" };
+
         // verify creation of predefined templates for every operation
         // For device 1
         ManagedObjectRepresentation predefCommand1_device1 = allMOs.get(1);
@@ -251,14 +251,14 @@ public class CodecMicroserviceTest {
         assertEquals(deviceCommand2.getName(), predefCommand1_device1.getName());
         assertEquals(deviceCommand2.getCommand(), predefCommand1_device1.get(COMMAND));
         assertEquals(deviceCommand2.getCategory(), predefCommand1_device1.get(CATEGORY));
-        assertEquals(deviceCommand2.getDeliveryTypes(), predefCommand1_device1.get(DELIVERY_TYPES));
+        assertArrayEquals(deliveryTypes, (String[])predefCommand1_device1.get(DELIVERY_TYPES));
 
         ManagedObjectRepresentation predefCommand2_device1 = allMOs.get(2);
         assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand2_device1.getType());
         assertEquals(deviceCommand1.getName(), predefCommand2_device1.getName());
         assertEquals(deviceCommand1.getCommand(), predefCommand2_device1.get(COMMAND));
         assertEquals(deviceCommand1.getCategory(), predefCommand2_device1.get(CATEGORY));
-        assertEquals(deviceCommand1.getDeliveryTypes(), predefCommand2_device1.get(DELIVERY_TYPES));
+        assertArrayEquals(deliveryTypes, (String[])predefCommand2_device1.get(DELIVERY_TYPES));
 
         // For device 2
         ManagedObjectRepresentation predefCommand1_device2 = allMOs.get(3);
@@ -266,14 +266,14 @@ public class CodecMicroserviceTest {
         assertEquals(deviceCommand2.getName(), predefCommand1_device2.getName());
         assertEquals(deviceCommand2.getCommand(), predefCommand1_device2.get(COMMAND));
         assertEquals(deviceCommand2.getCategory(), predefCommand1_device2.get(CATEGORY));
-        assertEquals(deviceCommand2.getDeliveryTypes(), predefCommand1_device2.get(DELIVERY_TYPES));
+        assertArrayEquals(deliveryTypes, (String[])predefCommand1_device2.get(DELIVERY_TYPES));
 
         ManagedObjectRepresentation predefCommand2_device2 = allMOs.get(4);
         assertEquals(C8Y_DEVICE_SHELL_TEMPLATE, predefCommand2_device2.getType());
         assertEquals(deviceCommand1.getName(), predefCommand2_device2.getName());
         assertEquals(deviceCommand1.getCommand(), predefCommand2_device2.get(COMMAND));
         assertEquals(deviceCommand1.getCategory(), predefCommand2_device2.get(CATEGORY));
-        assertEquals(deviceCommand1.getDeliveryTypes(), predefCommand2_device2.get(DELIVERY_TYPES));
+        assertArrayEquals(deliveryTypes, (String[])predefCommand2_device2.get(DELIVERY_TYPES));
     }
 
     @Test
