@@ -8,6 +8,7 @@
 package com.cumulocity.microservice.lpwan.codec.encoder.model;
 
 import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +34,7 @@ public class LpwanEncoderResult extends EncoderResult {
      *
      * @return the f-port
      */
+    @JsonIgnore
     public @Null Integer getFport() {
         String fportstring = getPropertiesMap().get(FPORT_KEY);
         if (!Strings.isNullOrEmpty(fportstring)) {
