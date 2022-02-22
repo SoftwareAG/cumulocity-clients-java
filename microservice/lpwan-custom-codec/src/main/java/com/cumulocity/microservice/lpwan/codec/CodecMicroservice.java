@@ -222,7 +222,7 @@ public class CodecMicroservice {
 
                     try {
                         inventoryApi.create(predefinedCommand);
-                        log.debug("Created predefined command template '{}' for device type '{}'", predefinedCommand.getName(), deviceTypeMo.getName());
+                        log.info("Created predefined command template '{}' for device type '{}'", predefinedCommand.getName(), deviceTypeMo.getName());
                     } catch (Exception e) {
                         // This exception is caught to only log the error.
                         log.error("Failed to create the predefined command named '{}', for the device type '{}'", oneSupportedCommand.getName(), deviceTypeMo.getName());
