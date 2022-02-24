@@ -1,6 +1,6 @@
 package c8y;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public enum RemoteAccessCredentialsType {
 
