@@ -83,6 +83,12 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
         return getAll().get(key);
     }
 
+    @Override
+    public void evict(){
+        final MicroserviceCredentials credentials = getCurrentCredentials();
+        cachedSettings.invalidate(credentials.getTenant());
+    }
+
     private MicroserviceCredentials getCurrentCredentials() {
         if (contextService.isInContext()) {
             return contextService.getContext();
