@@ -18,7 +18,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.MavenExecutionException;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
@@ -68,24 +67,35 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         boolean buildFailed;
         private Future f;
 
+        private ExecutorService executorService;
+
+        private ExecutorService getExecutorInstance() {
+           if (Objects.isNull(executorService)) {
+               this.executorService = Executors.newSingleThreadExecutor();;
+           }
+           return executorService;
+        }
+
         public void awaitWithTimeout(int seconds) throws MavenExecutionException {
 
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            f = executorService.submit(() -> {
-
-                while (Objects.isNull(completedImageId)) {
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                log.info("Build successful, imageId: {}", completedImageId);
-            });
-
             try {
+
+                ExecutorService executorService = getExecutorInstance();
+                f = executorService.submit(() -> {
+
+                    while (Objects.isNull(completedImageId)) {
+                        try {
+                            Thread.sleep(250);
+                        } catch (InterruptedException e) {
+                            log.error("Waiting for Docker completion was interrupted");
+                        }
+                    }
+                    log.info("Build successful, imageId: {}", completedImageId);
+                });
+
                 f.get(seconds, TimeUnit.SECONDS);
+                executorService.shutdown();
+
             } catch (TimeoutException timeoutException) {
                 throw new MavenExecutionException("Docker build timed out", timeoutException);
             } catch (ExecutionException e) {
@@ -93,11 +103,11 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             } catch (CancellationException c) {
                 throw new MavenExecutionException("Docker image build failed. See logs above", c);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+               Thread.currentThread().interrupt();
+               throw new MavenExecutionException("Docker build execution was interrupted", e);
             }
 
         }
-
 
         public void onNext(BuildResponseItem item) {
 

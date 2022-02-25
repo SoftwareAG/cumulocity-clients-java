@@ -315,7 +315,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 log.info("Deleting all images named {} and imageNameWithTags {}", image, imageNameWithTags);
                 imageNameWithTags.forEach(imageNameWithTag -> {
                     dockerClient.deleteAll(imageNameWithTag, true);
-                } );
+                });
 
             } else{
                 getLog().info("Skipping docker image cleanup");
