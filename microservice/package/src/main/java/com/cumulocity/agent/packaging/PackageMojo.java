@@ -26,8 +26,6 @@ import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import javax.validation.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -36,7 +34,6 @@ import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.Files.asByteSource;
-import static com.google.common.io.Files.map;
 import static java.nio.file.Files.createDirectories;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
@@ -233,7 +230,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //contains an uppercase docker argument to choose different architectures
         //We also append a / to the buildarg to make the docker file work if it should be unset.
         buildArgs.put(DOCKER_IMGARCH_BUILDARG.toUpperCase(Locale.ROOT),targetBuildArch+"/");
-
         dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, dockerBuildNetwork, dockerBuildTimeout);
 
     }

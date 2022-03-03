@@ -4,9 +4,7 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.BuildResponseItem;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.PushResponseItem;
+import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -36,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements MicroserviceDockerClient, Startable {
 
     DockerClient dockerClient;
+    private final static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @SneakyThrows
     public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String networkMode, Integer dockerBuildTimeout) {
@@ -67,20 +66,10 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         boolean buildFailed;
         private Future f;
 
-        private ExecutorService executorService;
-
-        private ExecutorService getExecutorInstance() {
-           if (Objects.isNull(executorService)) {
-               this.executorService = Executors.newSingleThreadExecutor();;
-           }
-           return executorService;
-        }
-
         public void awaitWithTimeout(int seconds) throws MavenExecutionException {
 
             try {
 
-                ExecutorService executorService = getExecutorInstance();
                 f = executorService.submit(() -> {
 
                     while (Objects.isNull(completedImageId)) {
@@ -94,7 +83,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
                 });
 
                 f.get(seconds, TimeUnit.SECONDS);
-                executorService.shutdown();
 
             } catch (TimeoutException timeoutException) {
                 throw new MavenExecutionException("Docker build timed out", timeoutException);
@@ -103,8 +91,8 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             } catch (CancellationException c) {
                 throw new MavenExecutionException("Docker image build failed. See logs above", c);
             } catch (InterruptedException e) {
-               Thread.currentThread().interrupt();
-               throw new MavenExecutionException("Docker build execution was interrupted", e);
+                Thread.currentThread().interrupt();
+                throw new MavenExecutionException("Docker build execution was interrupted", e);
             }
 
         }
@@ -172,8 +160,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
                 log.error("Failed to remove image {}, reason: ", e);
             }
         }
-
-
     }
 
 
@@ -213,6 +199,12 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
         @Override
         public void onNext(PushResponseItem object) {
+
+            if (object.isErrorIndicated()) {
+                ResponseItem.ErrorDetail errorDetail = object.getErrorDetail();
+                throw new RuntimeException(errorDetail.getMessage());
+            }
+
             if (Objects.nonNull(object.getStream())) {
                 log.info(object.getStream());
             }
@@ -268,4 +260,5 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
             }
         }
     }
+
 }
