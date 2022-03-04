@@ -24,8 +24,6 @@ import com.cumulocity.model.authentication.CumulocityCredentials;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.rest.representation.tenant.TenantMediaType;
 import com.cumulocity.sdk.client.PlatformImpl;
-import javax.ws.rs.core.Response;
-
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,8 +31,10 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,6 +44,8 @@ public class TenantCreator {
     private static final String TENANT_URI = "tenant/tenants";
 
     private final PlatformImpl platform;
+
+    private final Random random = new Random();
 
     @Autowired
     public TenantCreator(PlatformImpl platform) {
@@ -86,7 +88,7 @@ public class TenantCreator {
             public Response visit(CumulocityBasicCredentials credentials) {
                 String tenantJson = "{ " +
                         "\"id\": \"" + platform.getTenantId() + "\", " +
-                        "\"domain\": \"sample-tenant.cumulocity.com\", " +
+                        "\"domain\": \"sample-tenant-" + random.nextInt(10000) + ".cumulocity.com\", " +
                         "\"company\": \"sample-tenant\", " +
                         "\"adminName\": \"" + credentials.getUsername() + "\", " +
                         "\"adminPass\": \"" + credentials.getPassword() + "\" " +
@@ -95,8 +97,8 @@ public class TenantCreator {
                 String newTenant = result.readEntity(String.class);
                 Gson gson = new Gson();
                 HashMap map = gson.fromJson(newTenant, HashMap.class);
-                String newTenantId = (String)map.get("id");
-                ((CumulocityBasicCredentials)platform.getCumulocityCredentials()).setTenantId(newTenantId);
+                String newTenantId = (String) map.get("id");
+                ((CumulocityBasicCredentials) platform.getCumulocityCredentials()).setTenantId(newTenantId);
                 return result;
             }
 
