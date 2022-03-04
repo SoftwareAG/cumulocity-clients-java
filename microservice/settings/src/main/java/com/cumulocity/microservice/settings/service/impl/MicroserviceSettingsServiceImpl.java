@@ -85,6 +85,10 @@ public class MicroserviceSettingsServiceImpl implements MicroserviceSettingsServ
 
     @Override
     public void evict(){
+        if(!contextService.isInContext()){
+            throw new IllegalStateException("Cannot evict tenant settings when not in scope");
+        }
+
         final MicroserviceCredentials credentials = getCurrentCredentials();
         cachedSettings.invalidate(credentials.getTenant());
     }
