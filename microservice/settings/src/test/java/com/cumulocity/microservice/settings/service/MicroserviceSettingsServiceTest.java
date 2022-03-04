@@ -7,6 +7,7 @@ import com.cumulocity.microservice.settings.service.impl.MicroserviceSettingsSer
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.rest.representation.tenant.OptionsRepresentation;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.Callable;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +34,7 @@ public class MicroserviceSettingsServiceTest {
 
     @BeforeEach
     public void setUp() {
-        doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));
+        lenient().doReturn(new OptionsRepresentation()).when(contextService).callWithinContext(any(MicroserviceCredentials.class), any(Callable.class));
         microserviceSettingsService = new MicroserviceSettingsServiceImpl(platformProperties, contextService, currentApplicationSettingsApi);
     }
 
@@ -56,6 +58,14 @@ public class MicroserviceSettingsServiceTest {
         microserviceSettingsService.getAll();
         // then
         verify(contextService).callWithinContext(argThat(new TenantMatcher("management")), any(Callable.class));
+    }
+
+    @Test
+    public void mustThrowWhenEvictCalledWithoutScope(){
+        // given
+        doReturn(false).when(contextService).isInContext();
+        // when
+        Exception exception = assertThrows(IllegalStateException.class, () -> microserviceSettingsService.evict());
     }
 
     private MicroserviceCredentials context(String tenantId) {
