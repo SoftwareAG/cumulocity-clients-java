@@ -20,4 +20,6 @@ public interface TenantOptionRepository {
     String getOptionValue(OptionPK optionPK) throws TenantOptionNotFoundException;
 
     void setOption(OptionRepresentation option);
+
+    void removeTenantOption(OptionPK optionPK);
 }
