@@ -13,4 +13,6 @@ public interface MicroserviceSettingsService {
     String getCredential(String key);
 
     String get(@NonNull String key);
+
+    void evict();
 }
