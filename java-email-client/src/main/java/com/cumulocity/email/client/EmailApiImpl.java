@@ -21,7 +21,7 @@ public class EmailApiImpl implements EmailApi {
 
     public int sendEmail(Email email) {
         try {
-            final String url = host + "email/emails/";
+            final String url = host + "/email/emails/";
             final Request request = Post(url).bodyString(defaultJSON().forValue(email), APPLICATION_JSON);
             final Response response = authorizedTemplate.execute(request);
             return response.returnResponse().getStatusLine().getStatusCode();
