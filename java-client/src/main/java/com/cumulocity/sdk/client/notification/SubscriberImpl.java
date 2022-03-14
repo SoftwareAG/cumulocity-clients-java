@@ -20,6 +20,7 @@
 package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.SDKException;
+import org.apache.commons.collections.CollectionUtils;
 import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.Message.Mutable;
@@ -30,7 +31,6 @@ import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.cometd.client.BayeuxClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;

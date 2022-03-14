@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1013.36.0</revision>
+        <revision>1013.98.0</revision>
         <changelist>-SNAPSHOT</changelist>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,13 +19,13 @@
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
-        <spring-boot-dependencies.version>2.5.8</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.5.9</spring-boot-dependencies.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <guava.version>31.0.1-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
         <jackson.version>2.12.5</jackson.version>
-        <jersey.version>2.35</jersey.version>
         <mockito.version>2.23.0</mockito.version>
+
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
     </properties>
@@ -65,16 +65,6 @@
                 <scope>import</scope>
                 <type>pom</type>
                 <version>${jetty.version}</version>
-            </dependency>
-
-            <!-- jersey -->
-            <!-- remove when spring boot is upgraded: jersey 2.30 is required -->
-            <dependency>
-                <groupId>org.glassfish.jersey</groupId>
-                <artifactId>jersey-bom</artifactId>
-                <scope>import</scope>
-                <type>pom</type>
-                <version>${jersey.version}</version>
             </dependency>
 
             <!-- spring boot -->
@@ -233,7 +223,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.10.0</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>

@@ -31,7 +31,7 @@
     </modules>
 
     <properties>
-        <revision>1013.36.0</revision>
+        <revision>1013.98.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,17 +47,16 @@
         <guava.version>29.0-jre</guava.version>
         <hamcrest.version>2.2</hamcrest.version>
         <jaxrs.version>2.1.6</jaxrs.version>
-        <jetty.version>9.4.31.v20200723</jetty.version>
+        <jetty.version>9.4.45.v20220203</jetty.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <junit.version>5.7.1</junit.version>
+        <junit.version>5.8.2</junit.version>
         <logback.version>1.2.3</logback.version>
         <lombok.version>1.18.20</lombok.version>
         <lombok-plugin.version>${lombok.version}.0</lombok-plugin.version>
         <microemu.version>2.0.4</microemu.version>
         <mockito.version>3.10.0</mockito.version>
         <slf4j.version>1.7.32</slf4j.version>
-        <spring.version>5.2.9.RELEASE</spring.version>
-        <spring.security.version>5.3.9.RELEASE</spring.security.version>
+        <spring.version>5.3.16</spring.version>
         <svenson.version>1.5.8</svenson.version>
         <osgi.svenson.version>${svenson.version}-${cumulocity.core.version}</osgi.svenson.version>
 
@@ -439,6 +438,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -581,20 +581,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-framework-bom</artifactId>
-                <version>${spring.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-bom</artifactId>
-                <version>${spring.security.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
             <!-- COMPILE DEPENDENCIES END -->
 
