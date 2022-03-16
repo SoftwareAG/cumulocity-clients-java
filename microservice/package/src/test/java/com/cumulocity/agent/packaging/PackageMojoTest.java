@@ -22,12 +22,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-import org.junit.Rule;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -84,8 +82,8 @@ public class PackageMojoTest {
     @InjectMocks
     PackageMojo packageMojo;
 
-    @Rule
-    TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File tempDir;
 
     File filteredResources;
 
@@ -107,13 +105,6 @@ public class PackageMojoTest {
         mockVersion(TEST_VERSION);
         configurePojo();
     }
-
-    @AfterEach
-    public void cleanUp() {
-        log.info("Deleting temporary folder {}", temporaryFolder.getRoot());
-        temporaryFolder.delete();
-    }
-
 
     @SneakyThrows
     @Test
@@ -214,7 +205,7 @@ public class PackageMojoTest {
         dockerBuildSpec.setTargetBuildArchitectures(Lists.newArrayList(targetArgs));
 
         ObjectMapper mapper = new ObjectMapper();
-        Path manifestPathTarget = Paths.get(temporaryFolder.getRoot().getAbsolutePath(), "filtered-resources", MANIFEST_FILENAME);
+        Path manifestPathTarget = Paths.get(tempDir.getAbsolutePath(), "filtered-resources", MANIFEST_FILENAME);
         ObjectNode jsonManifest = (ObjectNode) mapper.readValue(new File(manifestPathTarget.toUri()), ObjectNode.class);
         jsonManifest.putPOJO("buildSpec", dockerBuildSpec);
 
@@ -317,8 +308,10 @@ public class PackageMojoTest {
     }
 
     private void initializeMockedResources() throws IOException {
-        temporaryFolder.create();
-        this.filteredResources = temporaryFolder.newFolder("filtered-resources");
+
+        Path filteredResourcePath = Paths.get(tempDir.getAbsolutePath(), "filtered-resources");
+        filteredResources = filteredResourcePath.toFile();
+
         log.info("Creating temp directory {}", filteredResources.getAbsoluteFile().toString());
         Files.createDirectories(Paths.get(filteredResources.getAbsolutePath()));
 
@@ -327,9 +320,12 @@ public class PackageMojoTest {
         log.info("Copying {} -> {}", source, target);
         Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 
-        build = temporaryFolder.getRoot();
+        build = tempDir.getAbsoluteFile();
         log.info("Test Build folder: {}", build);
-        resources = temporaryFolder.newFolder("docker-work");
+
+        Path dockerWorkPath = Paths.get(tempDir.getAbsolutePath(), "docker-work");
+        Files.createDirectories(dockerWorkPath);
+        resources = dockerWorkPath.toFile();
         log.info("Test resources folder: {}", resources);
 
         createDummyJARFile(build);

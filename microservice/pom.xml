@@ -24,7 +24,6 @@
         <guava.version>31.0.1-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
         <jackson.version>2.12.5</jackson.version>
-        <mockito.version>2.23.0</mockito.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
@@ -206,12 +205,6 @@
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
                 <version>1.8.13</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>6.1.5.Final</version>
             </dependency>
 
         </dependencies>
