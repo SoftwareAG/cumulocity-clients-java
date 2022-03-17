@@ -132,7 +132,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
                         element("group", "C8Y/Agent"),
                         element("distribution", "Cumulocity GmbH " + currentYear()),
                         element("packager", "Cumulocity GmbH"),
-                        element("requires", element(name("require"), "java >= " + javaRuntime)),
+                        element("requires", element(name("require"), requireJava() +" >= " + javaRuntime)),
                         element("repackJars", String.valueOf(false)),
                         mappings(
                                 mapping(directory("/usr/lib/" + directory),
@@ -412,6 +412,13 @@ public class PackageMojo extends BaseMicroserviceMojo {
         resource.setIncludes(ImmutableList.of(file.getName()));
         resource.setExcludes(ImmutableList.of());
         return resource;
+    }
+
+    private String requireJava() {
+        if ("8".equals(getJavaVersion())) {
+            return "java";
+        }
+        return "java-" + getJavaVersion();
     }
 
     private void addFileToZip(final ZipOutputStream zipOutputStream, final File file, String name) throws IOException {
