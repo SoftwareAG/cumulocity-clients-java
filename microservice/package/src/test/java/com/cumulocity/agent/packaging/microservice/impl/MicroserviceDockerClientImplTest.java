@@ -3,7 +3,10 @@ package com.cumulocity.agent.packaging.microservice.impl;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.BuildResponseItem;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PushResponseItem;
+import com.github.dockerjava.api.model.ResponseItem;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
@@ -12,24 +15,21 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.utils.Sets;
 import org.codehaus.plexus.util.FileUtils;
-import org.junit.Rule;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -46,8 +46,8 @@ public class MicroserviceDockerClientImplTest {
     @InjectMocks
     MicroserviceDockerClientImpl dockerClient;
 
-    @Rule
-    TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryDirectory;
 
     @Mock
     BuildImageCmd buildImageCmd;
@@ -56,16 +56,6 @@ public class MicroserviceDockerClientImplTest {
     private String networkeMode;
     private Map<String, String> buildArgs;
     private Set<String> tags;
-
-    @BeforeEach
-    public void init() throws IOException {
-        temporaryFolder.create();
-    }
-
-    @AfterEach
-    public void cleanUp() {
-        temporaryFolder.delete();
-    }
 
     @Test
     void buildDockerImageWithoutError() {
@@ -177,14 +167,13 @@ public class MicroserviceDockerClientImplTest {
         SaveImageCmd saveImageCmd = mock(SaveImageCmd.class);
         when(saveImageCmd.exec()).thenReturn(new ByteArrayInputStream(mockImage));
         when(dockerClientMock.saveImageCmd("test-image")).thenReturn(saveImageCmd);
+        File targetFile = new File(temporaryDirectory.getAbsoluteFile(),"test-image.tar");
 
         //and I tell our implementation client to save this image to a temporary target file.
-        File targetFile = temporaryFolder.newFile();
         dockerClient.saveDockerImage("test-image", targetFile);
 
         //then the target file contains the exact bytes and the hashes are the same.
-        File savedImage = new File(targetFile.getAbsolutePath());
-        String targetImageDigest = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), savedImage));
+        String targetImageDigest = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), targetFile));
 
         assertEquals("Image corrupted by save method!", sourceImageDigest, targetImageDigest);
 
