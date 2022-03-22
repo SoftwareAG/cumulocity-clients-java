@@ -1,12 +1,13 @@
-package com.cumulocity.lpwan.connectivity.rest;
+package com.cumulocity.lpwan.lns.instance.rest;
 
-import com.cumulocity.lpwan.connectivity.service.LnsInstanceService;
+import com.cumulocity.lpwan.lns.instance.model.LnsInstance;
+import com.cumulocity.lpwan.lns.instance.service.LnsInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.util.Map;
+import java.util.List;
 
 @RestController
 public class LNSInstanceController {
@@ -15,27 +16,27 @@ public class LNSInstanceController {
     LnsInstanceService lnsInstanceService;
 
     @PostMapping(value = "/lns-instance", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void createAnLnsInstance(@RequestBody @NotNull Map<String, Map<String, String>> lnsInstance) {
+    public void createAnLnsInstance(@RequestBody @NotNull LnsInstance lnsInstance) throws Exception {
         lnsInstanceService.createLnsInstance(lnsInstance);
     }
 
     @GetMapping(value = "/lns-instance", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Map<String, String>> getLnsInstances(){
+    public List<LnsInstance> getLnsInstances() throws Exception {
         return lnsInstanceService.getLnsInstances();
     }
 
     @GetMapping(value = "/lns-instance/{lnsInstanceName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Map<String, String>> getAnLnsInstance(@PathVariable String lnsInstanceName){
+    public LnsInstance getAnLnsInstance(@PathVariable String lnsInstanceName) throws Exception {
         return lnsInstanceService.getAnLnsInstance(lnsInstanceName);
     }
 
     @PutMapping(value = "/lns-instance/{lnsInstanceName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void updateAnLnsInstance(@PathVariable String existingLnsInstanceName, @RequestBody @NotNull Map<String, Map<String, String>> lnsInstanceToUpdate){
+    public void updateAnLnsInstance(@PathVariable String existingLnsInstanceName, @RequestBody @NotNull LnsInstance lnsInstanceToUpdate) throws Exception {
         lnsInstanceService.updateAnLnsInstance(existingLnsInstanceName, lnsInstanceToUpdate);
     }
 
     @DeleteMapping(value = "/lns-instance/{lnsInstanceName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteAnLnsInstance(@PathVariable String lnsInstanceName){
+    public void deleteAnLnsInstance(@PathVariable String lnsInstanceName) throws Exception {
         lnsInstanceService.deleteAnLnsInstance(lnsInstanceName);
     }
 }
