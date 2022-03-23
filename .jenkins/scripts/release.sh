@@ -41,12 +41,12 @@ cd -
 echo "Update version to ${version}"
 call-mvn -s $MVN_SETTINGS versions:set -DnewVersion=${version}
 call-mvn -s $MVN_SETTINGS clean deploy -Dmaven.javadoc.skip=true
-./mvnw -s $MVN_SETTINGS generate-resources -Pjavadoc
+./mvnw -B -s $MVN_SETTINGS generate-resources -Pjavadoc
 cd microservice
-../mvnw -s $MVN_SETTINGS javadoc:aggregate-jar
+../mvnw -B -s $MVN_SETTINGS javadoc:aggregate-jar
 cd -
 cd lpwan-backend
-../mvnw -s $MVN_SETTINGS javadoc:aggregate-jar
+../mvnw -B -s $MVN_SETTINGS javadoc:aggregate-jar
 cd -
 
 echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${version}.tar.gz to resources tmp "

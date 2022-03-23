@@ -16,12 +16,12 @@ function call-mvn {
 
     MVNW_BIN=$(pwd)/mvnw
 
-    $MVNW_BIN ${@}
+    $MVNW_BIN -B ${@}
     if [ -f microservice/pom.xml ] ;
     then
         cd microservice
         echo `pwd`
-        $MVNW_BIN ${@}
+        $MVNW_BIN -B ${@}
         cd -
     else
         echo "Skipping microservice"
@@ -30,7 +30,7 @@ function call-mvn {
     then
         cd lpwan-backend
         echo `pwd`
-        $MVNW_BIN ${@}
+        $MVNW_BIN -B ${@}
         cd -
     else
         echo "Skipping lpwan-backend"
@@ -39,7 +39,7 @@ function call-mvn {
     then
         cd cumulocity-sdk
         echo `pwd`
-        $MVNW_BIN ${@}
+        $MVNW_BIN -B ${@}
         cd -
     else
         echo "Skipping cumulocity-sdk"
