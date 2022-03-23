@@ -239,7 +239,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         return resource;
     }
 
-    private String getJavaVersion() {
+    String getJavaVersion() {
         Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
         Matcher matcher = pattern.matcher(javaRuntime);
 
