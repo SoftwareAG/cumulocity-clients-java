@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.lpwan.codec.rest;
+package com.cumulocity.microservice.lpwan.codec.sample;
 
 import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
 import com.cumulocity.microservice.customencoders.api.service.EncoderService;
