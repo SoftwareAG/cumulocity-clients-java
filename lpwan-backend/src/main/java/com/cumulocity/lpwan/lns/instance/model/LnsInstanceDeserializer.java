@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2012-2020 Cumulocity GmbH
+ * Copyright (c) 2020-2022 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
+ *
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
+ */
+
 package com.cumulocity.lpwan.lns.instance.model;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -8,18 +15,16 @@ import java.io.IOException;
 
 public class LnsInstanceDeserializer extends StdDeserializer<LnsInstance> {
 
-    private static volatile Class<? extends LnsInstance> lnsInstanceClass;
+    public static volatile Class<? extends LnsInstance> lnsInstanceClass;
+    public static volatile String agentName;
 
     protected LnsInstanceDeserializer() {
         super(LnsInstance.class);
     }
 
-    public static void registerLnsInstancePojoClass(String subLnsInstanceClass){
-        try {
-            lnsInstanceClass = (Class<? extends LnsInstance>) Class.forName(subLnsInstanceClass);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public static void registerLnsInstanceConcreteClass(String agentName, Class<? extends LnsInstance> lnsInstanceClass){
+        LnsInstanceDeserializer.agentName = agentName;
+        LnsInstanceDeserializer.lnsInstanceClass = lnsInstanceClass;
     }
 
     @Override
