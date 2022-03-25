@@ -11,7 +11,10 @@ import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.validation.constraints.NotBlank;
@@ -69,8 +72,23 @@ public abstract class LnsInstance {
         return true;
     }
 
+    /**
+     * Invoked by isValid().
+     * Implementors are expected validate the fields and throw InputDataValidationException
+     * is the instance data is semantically invalid.
+     *
+     * @throws InputDataValidationException Thrown if the instance is semantically invalid.
+     */
     protected abstract void validate() throws InputDataValidationException;
 
-    protected abstract void update(LnsInstance lnsInstance);
+    /**
+     * Invoked by initializeWith().
+     * Implementors are expected to update this instance with the contents from the passed-in instance and also
+     * ensure that the passwords and other sensitive data is updated only if the corresponding contents of the
+     * passed-in instance is non null and not blank.
+     *
+     * @param lnsInstanceWithNewData LNS Instance with updated data
+     */
+    protected abstract void update(LnsInstance lnsInstanceWithNewData);
 }
 
