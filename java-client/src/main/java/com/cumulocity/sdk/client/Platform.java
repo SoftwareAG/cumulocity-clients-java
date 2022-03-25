@@ -30,13 +30,14 @@ import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.BinariesApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
+import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
-import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.user.UserApi;
-import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
 
-public interface Platform extends AutoCloseable{
+public interface Platform extends AutoCloseable {
+
     RestOperations rest();
 
     InventoryApi getInventoryApi() throws SDKException;

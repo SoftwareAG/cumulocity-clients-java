@@ -31,7 +31,7 @@
     </modules>
 
     <properties>
-        <revision>1013.116.0</revision>
+        <revision>1013.123.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -54,7 +54,7 @@
         <lombok.version>1.18.20</lombok.version>
         <lombok-plugin.version>${lombok.version}.0</lombok-plugin.version>
         <microemu.version>2.0.4</microemu.version>
-        <mockito.version>3.10.0</mockito.version>
+        <mockito.version>3.12.4</mockito.version>
         <slf4j.version>1.7.32</slf4j.version>
         <spring.version>5.3.16</spring.version>
         <svenson.version>1.5.8</svenson.version>
@@ -140,6 +140,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
                     <systemPropertyVariables>
                         <security.mode>disabled</security.mode>
                     </systemPropertyVariables>

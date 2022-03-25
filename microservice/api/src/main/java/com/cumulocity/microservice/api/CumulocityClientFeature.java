@@ -11,6 +11,7 @@ import com.cumulocity.model.authentication.CumulocityCredentialsFactory;
 import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
+import com.cumulocity.sdk.client.base.Supplier;
 import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
@@ -24,43 +25,353 @@ import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.user.UserApi;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.ResolvableType;
+
+import javax.annotation.PreDestroy;
+import java.util.Optional;
 
 @Configuration
+@EnableConfigurationProperties(CumulocityClientProperties.class)
 public class CumulocityClientFeature {
 
-    @Value("${C8Y.baseURL:${platform.url:http://localhost:8181}}")
-    private String host;
+    // only for backwards compatibility with platform.url
+    // use CumulocityClientProperties directly instead
+    @Value("${platform.url:http://localhost:8181}")
+    private String baseUrlFallback;
 
-    @Value("${C8Y.proxy:}")
-    private String proxyHost;
-
-    @Value("${C8Y.proxyPort:0}")
-    private Integer proxyPort;
-
-    //in milliseconds, 0 = infinite
-    @Value("${C8Y.httpReadTimeout:}")
-    private Integer httpReadTimeout;
-
-    @Bean
-    @ConfigurationProperties(prefix = "c8y.httpclient")
-    public HttpClientConfig httpClientConfig() {
-        return HttpClientConfig.httpConfig().build();
-    }
+    @Autowired
+    private CumulocityClientProperties clientProperties;
 
     @Autowired(required = false)
     private ResponseMapper responseMapper;
 
-    @Bean
+    @Primary
+    @TenantScope
+    @Configuration("tenantPlatform")
+    class TenantPlatformConfig implements Platform {
+
+        private PlatformImpl delegate;
+
+        /**
+         * Using setter injection over preferred constructor injection as due to double proxy on this class
+         * (scoped & configuration) it's loosing generic parameter info on CGLib extended class constructor
+         * and causing NoUniqueBeanDefinitionException looking up ContextService&lt;?&gt;.
+         */
+        @Autowired
+        void setContextService(ContextService<MicroserviceCredentials> microserviceContextService) {
+            this.delegate = platformFor(microserviceContextService::getContext);
+        }
+
+        PlatformImpl getDelegate() {
+            return delegate;
+        }
+
+        @Primary
+        @TenantScope
+        @Bean(name = "tenantCredentials")
+        public CumulocityCredentials credentials() {
+            return delegate.getCumulocityCredentials();
+        }
+
+        @Primary
+        @TenantScope
+        @Bean(destroyMethod = "close")
+        public RestConnector tenantRestConnector() {
+            return delegate.createRestConnector();
+        }
+
+        @Override
+        public RestOperations rest() {
+            return delegate.rest();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"inventoryApi", "tenantInventoryApi"})
+        public InventoryApi getInventoryApi() throws SDKException {
+            return delegate.getInventoryApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"identityApi", "tenantIdentityApi"})
+        public IdentityApi getIdentityApi() throws SDKException {
+            return delegate.getIdentityApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"measurementApi", "tenantMeasurementApi"})
+        public MeasurementApi getMeasurementApi() throws SDKException {
+            return delegate.getMeasurementApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"deviceControlApi", "tenantDeviceControlApi"})
+        public DeviceControlApi getDeviceControlApi() throws SDKException {
+            return delegate.getDeviceControlApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"alarmApi", "tenantAlarmApi"})
+        public AlarmApi getAlarmApi() throws SDKException {
+            return delegate.getAlarmApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"eventApi", "tenantEventApi"})
+        public EventApi getEventApi() throws SDKException {
+            return delegate.getEventApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"auditRecordApi", "tenantAuditRecordApi"})
+        public AuditRecordApi getAuditRecordApi() throws SDKException {
+            return delegate.getAuditRecordApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"cepApi", "tenantCepApi"})
+        public CepApi getCepApi() throws SDKException {
+            return delegate.getCepApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"deviceCredentialsApi", "tenantDeviceCredentialsApi"})
+        public DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException {
+            return delegate.getDeviceCredentialsApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"binariesApi", "tenantBinariesApi"})
+        public BinariesApi getBinariesApi() throws SDKException {
+            return delegate.getBinariesApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"userApi", "tenantUserApi"})
+        public UserApi getUserApi() throws SDKException {
+            return delegate.getUserApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"tenantOptionApi", "tenantTenantOptionApi"})
+        public TenantOptionApi getTenantOptionApi() throws SDKException {
+            return delegate.getTenantOptionApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"systemOptionApi", "tenantSystemOptionApi"})
+        public SystemOptionApi getSystemOptionApi() throws SDKException {
+            return delegate.getSystemOptionApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"tokenApi", "tenantTokenApi"})
+        public TokenApi getTokenApi() throws SDKException {
+            return delegate.getTokenApi();
+        }
+
+        @Override
+        @Primary
+        @TenantScope
+        @Bean(name = {"notificationSubscriptionApi", "tenantNotificationSubscriptionApi"})
+        public NotificationSubscriptionApi getNotificationSubscriptionApi() throws SDKException {
+            return delegate.getNotificationSubscriptionApi();
+        }
+
+        @Override
+        @PreDestroy
+        public void close() {
+            delegate.close();
+        }
+    }
+
     @UserScope
-    public PlatformImpl userPlatform(ContextService<UserCredentials> contextService) {
-        final Credentials login = contextService.getContext();
+    @Configuration("userPlatform")
+    class UserPlatformConfig implements Platform {
+
+        private PlatformImpl delegate;
+
+        /**
+         * Using setter injection over preferred constructor injection as due to double proxy on this class
+         * (scoped & configuration) it's loosing generic parameter info on CGLib extended class constructor
+         * and causing NoUniqueBeanDefinitionException looking up ContextService&lt;?&gt;.
+         */
+        @Autowired
+        void setContextService(ContextService<UserCredentials> userContextService) {
+            this.delegate = platformFor(userContextService::getContext);
+        }
+
+        PlatformImpl getDelegate() {
+            return delegate;
+        }
+
+        @UserScope
+        @Bean(name = "userCredentials")
+        public CumulocityCredentials credentials() {
+            return delegate.getCumulocityCredentials();
+        }
+
+        @UserScope
+        @Bean(destroyMethod = "close")
+        public RestConnector userRestConnector() {
+            return delegate.createRestConnector();
+        }
+
+        @Override
+        public RestOperations rest() {
+            return delegate.rest();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userInventoryApi")
+        public InventoryApi getInventoryApi() throws SDKException {
+            return delegate.getInventoryApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userIdentityApi")
+        public IdentityApi getIdentityApi() throws SDKException {
+            return delegate.getIdentityApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userMeasurementApi")
+        public MeasurementApi getMeasurementApi() throws SDKException {
+            return delegate.getMeasurementApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userDeviceControlApi")
+        public DeviceControlApi getDeviceControlApi() throws SDKException {
+            return delegate.getDeviceControlApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userAlarmApi")
+        public AlarmApi getAlarmApi() throws SDKException {
+            return delegate.getAlarmApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userEventApi")
+        public EventApi getEventApi() throws SDKException {
+            return delegate.getEventApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userAuditRecordApi")
+        public AuditRecordApi getAuditRecordApi() throws SDKException {
+            return delegate.getAuditRecordApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userCepApi")
+        public CepApi getCepApi() throws SDKException {
+            return delegate.getCepApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userDeviceCredentialsApi")
+        public DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException {
+            return delegate.getDeviceCredentialsApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userBinariesApi")
+        public BinariesApi getBinariesApi() throws SDKException {
+            return delegate.getBinariesApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userUserApi")
+        public UserApi getUserApi() throws SDKException {
+            return delegate.getUserApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userTenantOptionApi")
+        public TenantOptionApi getTenantOptionApi() throws SDKException {
+            return delegate.getTenantOptionApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userSystemOptionApi")
+        public SystemOptionApi getSystemOptionApi() throws SDKException {
+            return delegate.getSystemOptionApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userTokenApi")
+        public TokenApi getTokenApi() throws SDKException {
+            return delegate.getTokenApi();
+        }
+
+        @Override
+        @UserScope
+        @Bean(name = "userNotificationSubscriptionApi")
+        public NotificationSubscriptionApi getNotificationSubscriptionApi() throws SDKException {
+            return delegate.getNotificationSubscriptionApi();
+        }
+
+        @Override
+        @PreDestroy
+        public void close() {
+            delegate.close();
+        }
+    }
+
+    private PlatformImpl platformFor(Supplier<Credentials> credentialsSupplier) {
+        final Credentials login = credentialsSupplier.get();
         CumulocityCredentials credentials = new CumulocityCredentialsFactory()
                 .withTenant(login.getTenant())
                 .withUsername(login.getUsername())
@@ -70,9 +381,9 @@ public class CumulocityClientFeature {
                 .withApplicationKey(login.getAppKey())
                 .getCredentials();
         PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
-                .withBaseUrl(host)
-                .withProxyHost(proxyHost)
-                .withProxyPort(proxyPort)
+                .withBaseUrl(getBaseUrl())
+                .withProxyHost(clientProperties.getProxy())
+                .withProxyPort(clientProperties.getProxyPort())
                 .withCredentials(credentials)
                 .withTfaToken(login.getTfaToken())
                 .withResponseMapper(responseMapper)
@@ -82,153 +393,14 @@ public class CumulocityClientFeature {
         return platform;
     }
 
-    @Bean
-    @Primary
-    @TenantScope
-    public PlatformImpl tenantPlatform(ContextService<MicroserviceCredentials> contextService) {
-        final Credentials login = contextService.getContext();
-        CumulocityCredentials credentials = new CumulocityCredentialsFactory()
-                .withTenant(login.getTenant())
-                .withUsername(login.getUsername())
-                .withPassword(login.getPassword())
-                .withOAuthAccessToken(login.getOAuthAccessToken())
-                .withXsrfToken(login.getXsrfToken())
-                .withApplicationKey(login.getAppKey())
-                .getCredentials();
-        PlatformImpl platform = (PlatformImpl) PlatformBuilder.platform()
-                .withBaseUrl(host)
-                .withProxyHost(proxyHost)
-                .withProxyPort(proxyPort)
-                .withCredentials(credentials)
-                .withTfaToken(login.getTfaToken())
-                .withResponseMapper(responseMapper)
-                .withForceInitialHost(true)
-                .build();
-        setHttpClientConfig(platform);
-        return platform;
-    }
-
-    @Bean
-    @UserScope
-    public RestConnector userRestConnector(@Qualifier("userPlatform") PlatformParameters platformParameters) {
-        return new RestConnector(platformParameters, new ResponseParser(responseMapper));
-    }
-
-    @Bean
-    @Primary
-    @TenantScope
-    public RestConnector tenantRestConnector(@Qualifier("tenantPlatform") PlatformParameters platformParameters) {
-        return new RestConnector(platformParameters, new ResponseParser(responseMapper));
-    }
-
-    @Bean
-    @UserScope
-    public InventoryApi userInventoryApi(@Qualifier("userPlatform") Platform userPlatform) throws SDKException {
-        return userPlatform.getInventoryApi();
-    }
-
-    @Bean
-    @Primary
-    @TenantScope
-    public InventoryApi inventoryApi(Platform platform) throws SDKException {
-        return platform.getInventoryApi();
-    }
-
-    @Bean
-    @TenantScope
-    public DeviceCredentialsApi deviceCredentialsApi(Platform platform) throws SDKException {
-        return platform.getDeviceCredentialsApi();
-    }
-
-    @Bean
-    @TenantScope
-    public EventApi eventApi(Platform platform) throws SDKException {
-        return platform.getEventApi();
-    }
-
-    @Bean
-    @TenantScope
-    public MeasurementApi measurementApi(Platform platform) throws SDKException {
-        return platform.getMeasurementApi();
-    }
-
-    @Bean
-    @TenantScope
-    public IdentityApi identityApi(Platform platform) throws SDKException {
-        return platform.getIdentityApi();
-    }
-
-    @Bean
-    @TenantScope
-    public AlarmApi alarmApi(Platform platform) throws SDKException {
-        return platform.getAlarmApi();
-    }
-
-    @Bean
-    @TenantScope
-    public AuditRecordApi auditRecordApi(Platform platform) throws SDKException {
-        return platform.getAuditRecordApi();
-    }
-
-    @Bean
-    @TenantScope
-    public DeviceControlApi deviceControlApi(Platform platform) throws SDKException {
-        return platform.getDeviceControlApi();
-    }
-
-    @Bean
-    @TenantScope
-    public CepApi cepApi(Platform platform) throws SDKException {
-        return platform.getCepApi();
-    }
-
-    @Bean
-    @TenantScope
-    public BinariesApi binariesApi(Platform platform) throws SDKException {
-        return platform.getBinariesApi();
-    }
-
-    @Bean
-    @TenantScope
-    public UserApi userApi(Platform platform) throws SDKException {
-        return platform.getUserApi();
-    }
-
-    @Bean
-    @UserScope
-    public TenantOptionApi userTenantOptionApi(@Qualifier("userPlatform") Platform userPlatform) throws SDKException {
-        return userPlatform.getTenantOptionApi();
-    }
-
-    @Bean
-    @TenantScope
-    @Primary
-    public TenantOptionApi tenantOptionApi(Platform platform) throws SDKException {
-        return platform.getTenantOptionApi();
-    }
-
-    @Bean
-    @TenantScope
-    public SystemOptionApi systemOptionApi(Platform platform) throws SDKException {
-        return platform.getSystemOptionApi();
-    }
-
-    @Bean
-    @TenantScope
-    public TokenApi tokenApi(Platform platform) throws SDKException {
-        return platform.getTokenApi();
-    }
-
-    @Bean
-    @TenantScope
-    public NotificationSubscriptionApi notificationSubscriptionApi(Platform platform) throws SDKException {
-        return platform.getNotificationSubscriptionApi();
+    private String getBaseUrl() {
+        return Optional.ofNullable(clientProperties.getBaseURL()).orElse(baseUrlFallback);
     }
 
     private void setHttpClientConfig(PlatformImpl platform) {
-        HttpClientConfig httpClientConfig = httpClientConfig();
-        if (httpReadTimeout != null) {
-            httpClientConfig.setHttpReadTimeout(httpReadTimeout);
+        HttpClientConfig httpClientConfig = clientProperties.getHttpclient();
+        if (clientProperties.getHttpReadTimeout() != null) {
+            httpClientConfig.setHttpReadTimeout(clientProperties.getHttpReadTimeout());
         }
         platform.setHttpClientConfig(httpClientConfig);
     }
