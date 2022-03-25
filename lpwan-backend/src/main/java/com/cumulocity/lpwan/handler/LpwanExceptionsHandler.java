@@ -7,8 +7,8 @@
 
 package com.cumulocity.lpwan.handler;
 
-import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
-import com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException;
+import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.lpwan.exception.LpwanServiceException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import lombok.extern.slf4j.Slf4j;
@@ -31,20 +31,21 @@ import static com.cumulocity.rest.representation.CumulocityMediaType.ERROR_MESSA
 public class LpwanExceptionsHandler {
 
     /**
-     * This method handles the custom <b>{@link com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException}</b>.
+     * This method handles the custom <b>{@link com.cumulocity.lpwan.exception.LpwanServiceException}</b>.
      *
      * @param exception       represents the exception
      * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
-     * @see LnsInstanceServiceException {@link LnsInstanceServiceException}
+     * @see com.cumulocity.lpwan.exception.LpwanServiceException {@link com.cumulocity.lpwan.exception.LpwanServiceException}
      */
-    @ExceptionHandler(value = LnsInstanceServiceException.class)
+    @ExceptionHandler(value = LpwanServiceException.class)
     @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleLnsInstanceServiceException(LnsInstanceServiceException exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleLpwanServiceException(LpwanServiceException exception) {
         log.error(exception.getMessage(), exception);
 
         if (exception instanceof InputDataValidationException) {
             return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
-        } else {
+        }
+        else {
             return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

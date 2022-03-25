@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.lns.instance.model;
 
-import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
+import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

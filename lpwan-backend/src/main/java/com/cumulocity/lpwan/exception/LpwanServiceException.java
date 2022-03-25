@@ -5,15 +5,14 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.lns.instance.exception;
+package com.cumulocity.lpwan.exception;
 
-public class InputDataValidationException extends LnsInstanceServiceException {
-
-    public InputDataValidationException(String message) {
+public class LpwanServiceException extends Exception {
+    public LpwanServiceException(String message) {
         super(message);
     }
 
-    public InputDataValidationException(String message, Throwable throwable) {
-        super(message, throwable);
+    public LpwanServiceException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

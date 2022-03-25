@@ -7,6 +7,8 @@
 
 package com.cumulocity.lpwan.handler;
 
+import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.lpwan.exception.LpwanServiceException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,46 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class LpwanExceptionsHandlerTest {
+
+    @Test
+    void doHandleException_InvalidInputDataException() {
+        InputDataValidationException exception = new InputDataValidationException("LnsInstanceService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleLpwanServiceException(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getHeaders().getContentType());
+        assertEquals(ERROR_MESSAGE_TYPE, responseEntity.getHeaders().getContentType().toString());
+
+        assertNotNull(responseEntity.getBody());
+        ErrorMessageRepresentation errorMessageRepresentation = responseEntity.getBody();
+        assertEquals("Lpwan Backend Error", errorMessageRepresentation.getError());
+        assertEquals(exception.getMessage(), errorMessageRepresentation.getMessage());
+
+        ErrorDetails details = errorMessageRepresentation.getDetails();
+        assertNotNull(details);
+        assertEquals(InputDataValidationException.class.getCanonicalName(), details.getExpectionClass());
+        assertEquals(exception.getMessage(), details.getExceptionMessage());
+    }
+
+    @Test
+    void doHandleException_LpwanServiceException() {
+        LpwanServiceException exception = new LpwanServiceException("LnsInstanceService failed with internal service error.", new Exception("Some internal error."));
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleLpwanServiceException(exception);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getHeaders().getContentType());
+        assertEquals(ERROR_MESSAGE_TYPE, responseEntity.getHeaders().getContentType().toString());
+
+        assertNotNull(responseEntity.getBody());
+        ErrorMessageRepresentation errorMessageRepresentation = responseEntity.getBody();
+        assertEquals("Lpwan Backend Error", errorMessageRepresentation.getError());
+        assertEquals(exception.getMessage(), errorMessageRepresentation.getMessage());
+
+        ErrorDetails details = errorMessageRepresentation.getDetails();
+        assertNotNull(details);
+        assertEquals(LpwanServiceException.class.getCanonicalName(), details.getExpectionClass());
+        assertEquals(exception.getMessage(), details.getExceptionMessage());
+    }
 
     @Test
     void doHandleException_IllegalArgumentException() {

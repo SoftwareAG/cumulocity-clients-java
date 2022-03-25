@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.lns.instance.rest;
 
-import com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException;
+import com.cumulocity.lpwan.exception.LpwanServiceException;
 import com.cumulocity.lpwan.lns.instance.model.LnsInstance;
 import com.cumulocity.lpwan.lns.instance.service.LnsInstanceService;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -34,26 +34,26 @@ public class LnsInstanceController {
 
     @GetMapping(value = "/lns-instance/{lnsInstanceName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @JsonView(LnsInstance.PublicView.class)
-    public @ResponseBody @NotNull LnsInstance getByName(@PathVariable @NotBlank String lnsInstanceName) throws LnsInstanceServiceException {
+    public @ResponseBody @NotNull LnsInstance getByName(@PathVariable @NotBlank String lnsInstanceName) throws LpwanServiceException {
         return lnsInstanceService.getByName(lnsInstanceName);
     }
 
     @PostMapping(value = "/lns-instance", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @JsonView(LnsInstance.PublicView.class)
-    public @ResponseBody @NotNull LnsInstance create(@RequestBody @NotNull LnsInstance lnsInstance) throws LnsInstanceServiceException {
+    public @ResponseBody @NotNull LnsInstance create(@RequestBody @NotNull LnsInstance lnsInstance) throws LpwanServiceException {
         return lnsInstanceService.create(lnsInstance);
     }
 
     @PutMapping(value = "/lns-instance/{existingLnsInstanceName}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @JsonView(LnsInstance.PublicView.class)
-    public @ResponseBody @NotNull LnsInstance updateAnLnsInstance(@PathVariable @NotBlank String existingLnsInstanceName, @RequestBody @NotNull LnsInstance lnsInstanceToUpdate) throws LnsInstanceServiceException {
+    public @ResponseBody @NotNull LnsInstance updateAnLnsInstance(@PathVariable @NotBlank String existingLnsInstanceName, @RequestBody @NotNull LnsInstance lnsInstanceToUpdate) throws LpwanServiceException {
         return lnsInstanceService.update(existingLnsInstanceName, lnsInstanceToUpdate);
     }
 
     @DeleteMapping(value = "/lns-instance/{lnsInstanceName}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAnLnsInstance(@PathVariable @NotNull String lnsInstanceName) throws LnsInstanceServiceException {
+    public void deleteAnLnsInstance(@PathVariable @NotNull String lnsInstanceName) throws LpwanServiceException {
         lnsInstanceService.delete(lnsInstanceName);
     }
 }
