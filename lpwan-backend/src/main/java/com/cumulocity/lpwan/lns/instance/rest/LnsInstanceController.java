@@ -28,7 +28,7 @@ public class LnsInstanceController {
 
     @GetMapping(value = "/lns-instance", produces = MediaType.APPLICATION_JSON_VALUE)
     @JsonView(LnsInstance.PublicView.class)
-    public @ResponseBody @NotNull Collection<LnsInstance> getAll() {
+    public @ResponseBody @NotNull Collection<LnsInstance> getAll() throws LpwanServiceException {
         return lnsInstanceService.getAll();
     }
 

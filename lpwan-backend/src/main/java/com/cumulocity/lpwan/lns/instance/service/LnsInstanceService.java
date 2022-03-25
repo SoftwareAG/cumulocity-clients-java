@@ -18,34 +18,50 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 @TenantScope
 public class LnsInstanceService {
 
-    private static final String LNS_INSTANCE_MAP_KEY = "credentials.lns.instance.map";
+    private static final String LNS_INSTANCES_KEY = "credentials.lns.instances.map";
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     @Autowired
     private TenantOptionApi tenantOptionApi;
 
-    private OptionPK tenantOptionKeyForLnsInstanceMap;
+    private OptionPK lnsInstancesTenantOptionKey;
 
-    private Map<String, LnsInstance> cachedLnsInstances = new ConcurrentHashMap<>();
+    private LoadingCache<OptionPK, Map<String, LnsInstance>> lnsInstancesCache = CacheBuilder.newBuilder()
+            .maximumSize(1) // Only one key, as we are keeping the Map which is loaded from the tenant options
+            .expireAfterAccess(10, TimeUnit.MINUTES) // Evict when not accessed for 10 mins
+            .build(
+                    new CacheLoader<OptionPK, Map<String, LnsInstance>>() {
+                        @Override
+                        public @Nonnull
+                        Map<String, LnsInstance> load(@Nonnull OptionPK key) throws Exception {
+                            return loadLnsInstancesFromTenantOptions(key);
+                        }
+                    }
+            );
 
     public @NotNull LnsInstance getByName(@NotBlank String lnsInstanceName) throws LpwanServiceException {
         if (StringUtils.isBlank(lnsInstanceName)) {
@@ -54,17 +70,18 @@ public class LnsInstanceService {
             throw new InputDataValidationException(message);
         }
 
-        if (!cachedLnsInstances.containsKey(lnsInstanceName)) {
+        Map<String, LnsInstance> lnsInstances = getLnsInstances();
+        if (!lnsInstances.containsKey(lnsInstanceName)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", lnsInstanceName);
             log.error(message);
             throw new InputDataValidationException(message);
         }
 
-        return cachedLnsInstances.get(lnsInstanceName);
+        return lnsInstances.get(lnsInstanceName);
     }
 
-    public Collection<LnsInstance> getAll() {
-        return cachedLnsInstances.values();
+    public Collection<LnsInstance> getAll() throws LpwanServiceException {
+        return getLnsInstances().values();
     }
 
     public synchronized @NotNull LnsInstance create(@NotNull LnsInstance newLnsInstance) throws LpwanServiceException {
@@ -74,16 +91,18 @@ public class LnsInstanceService {
             throw new InputDataValidationException(message);
         }
 
+        // Validate new LnsInstance
         newLnsInstance.isValid();
 
+        Map<String, LnsInstance> lnsInstances = getLnsInstances();
         String newLnsInstanceName = newLnsInstance.getName();
-        if (cachedLnsInstances.containsKey(newLnsInstanceName)) {
+        if (lnsInstances.containsKey(newLnsInstanceName)) {
             String message = String.format("LNS instance named '%s' already exists.", newLnsInstanceName);
             log.error(message);
             throw new InputDataValidationException(message);
         }
 
-        cachedLnsInstances.put(newLnsInstanceName, newLnsInstance);
+        lnsInstances.put(newLnsInstanceName, newLnsInstance);
 
         flushCache();
 
@@ -99,7 +118,8 @@ public class LnsInstanceService {
             throw new InputDataValidationException(message);
         }
 
-        if (!cachedLnsInstances.containsKey(existingLnsInstanceName)) {
+        Map<String, LnsInstance> lnsInstances = getLnsInstances();
+        if (!lnsInstances.containsKey(existingLnsInstanceName)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", existingLnsInstanceName);
             log.error(message);
             throw new InputDataValidationException(message);
@@ -111,21 +131,22 @@ public class LnsInstanceService {
             throw new InputDataValidationException(message);
         }
 
+        // Validate LnsInstance to update
         lnsInstanceToUpdate.isValid();
 
         String updatedLnsInstanceName = lnsInstanceToUpdate.getName();
         if (!existingLnsInstanceName.equals(updatedLnsInstanceName)) {
-            if (cachedLnsInstances.containsKey(updatedLnsInstanceName)) {
+            if (lnsInstances.containsKey(updatedLnsInstanceName)) {
                 String message = String.format("LNS instance named '%s' already exists.", updatedLnsInstanceName);
                 log.error(message);
                 throw new InputDataValidationException(message);
             }
         }
 
-        LnsInstance existingLnsInstance = cachedLnsInstances.remove(existingLnsInstanceName);
+        LnsInstance existingLnsInstance = lnsInstances.remove(existingLnsInstanceName);
         existingLnsInstance.initializeWith(lnsInstanceToUpdate);
 
-        cachedLnsInstances.put(updatedLnsInstanceName, existingLnsInstance);
+        lnsInstances.put(updatedLnsInstanceName, existingLnsInstance);
 
         flushCache();
 
@@ -145,61 +166,63 @@ public class LnsInstanceService {
             throw new InputDataValidationException(message);
         }
 
-        if (!cachedLnsInstances.containsKey(lnsInstanceNametoDelete)) {
+        Map<String, LnsInstance> lnsInstances = getLnsInstances();
+        if (!lnsInstances.containsKey(lnsInstanceNametoDelete)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", lnsInstanceNametoDelete);
             log.error(message);
             throw new InputDataValidationException(message);
         }
 
-        cachedLnsInstances.remove(lnsInstanceNametoDelete);
+        lnsInstances.remove(lnsInstanceNametoDelete);
 
         flushCache();
 
         log.info("LNS instance named '{}' is deleted.", lnsInstanceNametoDelete);
     }
 
-    @PostConstruct
-    private void loadCache() throws LpwanServiceException {
-        this.tenantOptionKeyForLnsInstanceMap = new OptionPK(LnsInstanceDeserializer.agentName, LNS_INSTANCE_MAP_KEY);
-
+    private Map<String, LnsInstance> loadLnsInstancesFromTenantOptions(OptionPK tenantOptionKeyForLnsInstanceMap) throws LpwanServiceException {
         String lnsInstancesString = null;
         try {
-            lnsInstancesString = tenantOptionApi.getOption(this.tenantOptionKeyForLnsInstanceMap).getValue();
+            lnsInstancesString = tenantOptionApi.getOption(getLnsInstancesTenantOptionKey()).getValue();
         } catch (SDKException e) {
             if (e.getHttpStatus() != HttpStatus.NOT_FOUND.value()) {
                 String message = String.format("Error while fetching the tenant option with key '%s'.", tenantOptionKeyForLnsInstanceMap);
-                log.error(message);
+                log.error(message, e);
                 throw new LpwanServiceException(message, e);
             } else {
-                log.debug("No LNS instances found in the tenant options with key {}", LNS_INSTANCE_MAP_KEY);
+                log.debug("No LNS instances found in the tenant options with key {}", LNS_INSTANCES_KEY);
             }
         }
 
+        Map<String, LnsInstance> lnsInstancesMap = new ConcurrentHashMap<>();
         if (!StringUtils.isBlank(lnsInstancesString)) {
             try {
-                cachedLnsInstances = JSON_MAPPER
+                lnsInstancesMap = JSON_MAPPER
                         .readerWithView(LnsInstance.InternalView.class)
                         .forType(ConcurrentHashMap.class)
                         .readValue(lnsInstancesString);
             } catch (JsonProcessingException e) {
                 String message = String.format("Error unmarshalling the below JSON string containing LNS instance map stored as a tenant option with key '%s'. \n%s", tenantOptionKeyForLnsInstanceMap, lnsInstancesString);
-                log.error(message);
+                log.error(message, e);
                 throw new LpwanServiceException(message, e);
             }
         }
 
-        log.debug("LNS instances loaded from the tenant options with key '{}'. Cached LNS instance count is {}.", tenantOptionKeyForLnsInstanceMap, cachedLnsInstances.size());
+        log.debug("LNS instances loaded from the tenant options with key '{}'. Cached LNS instance count is {}.", tenantOptionKeyForLnsInstanceMap, lnsInstancesMap.size());
+
+        return lnsInstancesMap;
     }
 
     private void flushCache() throws LpwanServiceException {
-        String lnsInstancesString = null;
+        Map<String, LnsInstance> lnsInstances = getLnsInstances();
+        String lnsInstancesString;
         try {
             lnsInstancesString = JSON_MAPPER
                     .writerWithView(LnsInstance.InternalView.class)
-                    .writeValueAsString(cachedLnsInstances);
+                    .writeValueAsString(lnsInstances);
         } catch (JsonProcessingException e) {
-            String message = String.format("Error unmarshalling the below JSON string containing LNS instance map stored as a tenant option with key '%s'. \n%s", tenantOptionKeyForLnsInstanceMap, lnsInstancesString);
-            log.error(message);
+            String message = String.format("Error marshaling the LNS instances map and store as a tenant option with key '%s'.", getLnsInstancesTenantOptionKey());
+            log.error(message, e);
             throw new LpwanServiceException(message, e);
         }
 
@@ -207,12 +230,30 @@ public class LnsInstanceService {
             try {
                 tenantOptionApi.save(new OptionRepresentation());
             } catch (SDKException e) {
-                String message = String.format("Error saving the below LNS instance map as a tenant option with key '%s'. \n%s", tenantOptionKeyForLnsInstanceMap, lnsInstancesString);
-                log.error(message);
+                String message = String.format("Error saving the below LNS instance map as a tenant option with key '%s'. \n%s", getLnsInstancesTenantOptionKey(), lnsInstancesString);
+                log.error(message, e);
                 throw new LpwanServiceException(message, e);
             }
         }
 
-        log.debug("LNS instances saved in the tenant options with key '{}'. Cached LNS instance count is {}.", tenantOptionKeyForLnsInstanceMap, cachedLnsInstances.size());
+        log.debug("LNS instances saved in the tenant options with key '{}'. Cached LNS instance count is {}.", getLnsInstancesTenantOptionKey(), lnsInstances.size());
+    }
+
+    private Map<String, LnsInstance> getLnsInstances() throws LpwanServiceException {
+        try {
+            return lnsInstancesCache.get(getLnsInstancesTenantOptionKey());
+        } catch (ExecutionException e) {
+            String message = String.format("Unexpected error occurred while accessing the cached LNS instances map with key '%s'.", getLnsInstancesTenantOptionKey());
+            log.error(message, e);
+            throw new LpwanServiceException(message, e);
+        }
+    }
+
+    private OptionPK getLnsInstancesTenantOptionKey() {
+        if (lnsInstancesTenantOptionKey == null) {
+            lnsInstancesTenantOptionKey = new OptionPK(LnsInstanceDeserializer.agentName, LNS_INSTANCES_KEY);
+        }
+
+        return lnsInstancesTenantOptionKey;
     }
 }
