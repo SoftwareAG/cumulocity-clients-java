@@ -39,6 +39,7 @@ import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -98,10 +99,17 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (client != null) {
             client.close();
         }
+    }
+
+    public boolean isClosed() {
+        if (client instanceof JerseyClient) {
+            return ((JerseyClient) client).isClosed();
+        }
+        return false;
     }
 
     @Override
