@@ -56,8 +56,7 @@ public class LnsInstanceService {
             .build(
                     new CacheLoader<OptionPK, Map<String, LnsInstance>>() {
                         @Override
-                        public @Nonnull
-                        Map<String, LnsInstance> load(@Nonnull OptionPK key) throws Exception {
+                        public @Nonnull Map<String, LnsInstance> load(@Nonnull OptionPK key) throws Exception {
                             return loadLnsInstancesFromTenantOptions(key);
                         }
                     }
