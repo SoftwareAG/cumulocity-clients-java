@@ -1,8 +1,9 @@
 package com.cumulocity.microservice.lpwan.codec.rest;
 
+import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
+import com.cumulocity.microservice.customencoders.api.service.EncoderService;
 import com.cumulocity.microservice.lpwan.codec.sample.Application;
 import com.cumulocity.microservice.lpwan.codec.sample.SwaggerConfiguration;
-import com.cumulocity.microservice.lpwan.codec.sample.TestBeanConfiguration;
 import io.github.robwin.swagger.test.SwaggerAssertions;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
@@ -13,6 +14,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -25,12 +27,17 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 @RunWith(SpringRunner.class)
-// TestBeanConfiguration is required, as the DecoderService and EncoderService beans are required to startup the application and are required by the CodecController.
-@SpringBootTest(classes = {Application.class, TestBeanConfiguration.class, SwaggerConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = {Application.class, SwaggerConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestPropertySource(properties = "server.port=9192")
 @TestPropertySource(properties = "spring.main.allow-bean-definition-overriding=true")
 public class CodecControllerContractTest {
     private final String applicationUrl = "http://localhost:9192";
+
+    @MockBean
+    DecoderService decoderService;
+
+    @MockBean
+    EncoderService encoderService;
 
     @Test
     public void validateThatImplementationSatisfiesConsumerSpecification() throws URISyntaxException {
