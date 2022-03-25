@@ -50,7 +50,7 @@ public class CodecControllerContractTest {
             Swagger swagger = new SwaggerParser().parse(contractContents);
             String yamlOutput = Yaml.pretty().writeValueAsString(swagger);
             // write to file
-            File file = new File("goldenContract.yaml");
+            File file = new File("src/test/java/com/cumulocity/microservice/lpwan/codec/rest/goldenContract.yaml");
             FileUtils.writeStringToFile(file, yamlOutput);
         } catch (IOException e) {
             e.printStackTrace();
