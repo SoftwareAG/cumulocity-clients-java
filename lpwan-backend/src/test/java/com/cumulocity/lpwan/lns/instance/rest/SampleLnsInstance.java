@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.lns.instance.rest;
 
-import com.cumulocity.lpwan.lns.instance.exception.InvalidInputDataException;
+import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
 import com.cumulocity.lpwan.lns.instance.model.LnsInstance;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -45,7 +45,7 @@ public class SampleLnsInstance extends LnsInstance {
     }
 
     @Override
-    protected void validate() throws InvalidInputDataException {
+    protected void validate() throws InputDataValidationException {
         List<String> missingFields = new ArrayList<>(3);
 
         if (StringUtils.isBlank(user)) {
@@ -53,7 +53,7 @@ public class SampleLnsInstance extends LnsInstance {
         }
 
         if(!missingFields.isEmpty()) {
-            throw new InvalidInputDataException("SampleLnsInstance is missing mandatory fields: " + String.join(", ", missingFields));
+            throw new InputDataValidationException("SampleLnsInstance is missing mandatory fields: " + String.join(", ", missingFields));
         }
     }
 

@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.lns.instance.service;
 
-import com.cumulocity.lpwan.lns.instance.exception.InvalidInputDataException;
+import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
 import com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException;
 import com.cumulocity.lpwan.lns.instance.model.LnsInstance;
 import com.cumulocity.lpwan.lns.instance.model.LnsInstanceDeserializer;
@@ -51,13 +51,13 @@ public class LnsInstanceService {
         if (StringUtils.isBlank(lnsInstanceName)) {
             String message = "LNS instance name can't be null or blank.";
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         if (!cachedLnsInstances.containsKey(lnsInstanceName)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", lnsInstanceName);
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         return cachedLnsInstances.get(lnsInstanceName);
@@ -71,7 +71,7 @@ public class LnsInstanceService {
         if (newLnsInstance == null) {
             String message = "New LNS instance can't be null.";
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         newLnsInstance.isValid();
@@ -80,7 +80,7 @@ public class LnsInstanceService {
         if (cachedLnsInstances.containsKey(newLnsInstanceName)) {
             String message = String.format("LNS instance named '%s' already exists.", newLnsInstanceName);
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         cachedLnsInstances.put(newLnsInstanceName, newLnsInstance);
@@ -96,19 +96,19 @@ public class LnsInstanceService {
         if (StringUtils.isBlank(existingLnsInstanceName)) {
             String message = "Existing LNS instance name can't be null or blank.";
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         if (!cachedLnsInstances.containsKey(existingLnsInstanceName)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", existingLnsInstanceName);
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         if (lnsInstanceToUpdate == null) {
             String message = "LNS instance to update can't be null.";
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         lnsInstanceToUpdate.isValid();
@@ -118,7 +118,7 @@ public class LnsInstanceService {
             if (cachedLnsInstances.containsKey(updatedLnsInstanceName)) {
                 String message = String.format("LNS instance named '%s' already exists.", updatedLnsInstanceName);
                 log.error(message);
-                throw new InvalidInputDataException(message);
+                throw new InputDataValidationException(message);
             }
         }
 
@@ -142,13 +142,13 @@ public class LnsInstanceService {
         if (StringUtils.isBlank(lnsInstanceNametoDelete)) {
             String message = "LNS instance name to delete can't be null or blank.";
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         if (!cachedLnsInstances.containsKey(lnsInstanceNametoDelete)) {
             String message = String.format("LNS instance named '%s' doesn't exist.", lnsInstanceNametoDelete);
             log.error(message);
-            throw new InvalidInputDataException(message);
+            throw new InputDataValidationException(message);
         }
 
         cachedLnsInstances.remove(lnsInstanceNametoDelete);

@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.lns.instance.handler;
 
-import com.cumulocity.lpwan.lns.instance.exception.InvalidInputDataException;
+import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
 import com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
@@ -23,7 +23,7 @@ class LnsInstanceServiceExceptionsHandlerTest {
 
     @Test
     void doHandleException_InvalidInputDataException() {
-        InvalidInputDataException exception = new InvalidInputDataException("LnsInstanceService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
+        InputDataValidationException exception = new InputDataValidationException("LnsInstanceService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
         ResponseEntity<ErrorMessageRepresentation> responseEntity = new LnsInstanceServiceExceptionsHandler().handleLnsInstanceServiceException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -37,7 +37,7 @@ class LnsInstanceServiceExceptionsHandlerTest {
 
         ErrorDetails details = errorMessageRepresentation.getDetails();
         assertNotNull(details);
-        assertEquals(InvalidInputDataException.class.getCanonicalName(), details.getExpectionClass());
+        assertEquals(InputDataValidationException.class.getCanonicalName(), details.getExpectionClass());
         assertEquals(exception.getMessage(), details.getExceptionMessage());
     }
 

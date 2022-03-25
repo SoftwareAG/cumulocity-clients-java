@@ -7,13 +7,13 @@
 
 package com.cumulocity.lpwan.lns.instance.exception;
 
-public class InvalidInputDataException extends LnsInstanceServiceException {
+public class InputDataValidationException extends LnsInstanceServiceException {
 
-    public InvalidInputDataException(String message) {
+    public InputDataValidationException(String message) {
         super(message);
     }
 
-    public InvalidInputDataException(String message, Throwable throwable) {
+    public InputDataValidationException(String message, Throwable throwable) {
         super(message, throwable);
     }
 }

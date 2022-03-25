@@ -7,7 +7,7 @@
 
 package com.cumulocity.lpwan.handler;
 
-import com.cumulocity.lpwan.lns.instance.exception.InvalidInputDataException;
+import com.cumulocity.lpwan.lns.instance.exception.InputDataValidationException;
 import com.cumulocity.lpwan.lns.instance.exception.LnsInstanceServiceException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
@@ -42,7 +42,7 @@ public class LpwanExceptionsHandler {
     public ResponseEntity<ErrorMessageRepresentation> handleLnsInstanceServiceException(LnsInstanceServiceException exception) {
         log.error(exception.getMessage(), exception);
 
-        if (exception instanceof InvalidInputDataException) {
+        if (exception instanceof InputDataValidationException) {
             return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
         } else {
             return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
