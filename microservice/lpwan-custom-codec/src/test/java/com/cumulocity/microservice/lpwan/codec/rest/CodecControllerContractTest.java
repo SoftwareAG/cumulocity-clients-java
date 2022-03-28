@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -27,11 +28,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {Application.class, SwaggerConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@TestPropertySource(properties = "server.port=9192")
-@TestPropertySource(properties = "spring.main.allow-bean-definition-overriding=true")
+@SpringBootTest(classes = {Application.class, SwaggerConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CodecControllerContractTest {
-    private final String applicationUrl = "http://localhost:9192";
+    @LocalServerPort
+    private int port;
 
     @MockBean
     DecoderService decoderService;
@@ -41,6 +41,7 @@ public class CodecControllerContractTest {
 
     @Test
     public void validateThatImplementationSatisfiesConsumerSpecification() throws URISyntaxException {
+        String applicationUrl = "http://localhost:" + port;
         File designFirstSwagger = new File("src/test/java/com/cumulocity/microservice/lpwan/codec/rest/goldenContract.yaml");
         SwaggerAssertions.assertThat(applicationUrl + "/v2/api-docs")
                 .isEqualTo(designFirstSwagger.getAbsolutePath());
@@ -50,6 +51,7 @@ public class CodecControllerContractTest {
     @Ignore
     @Test
     public void generateGoldenContract() throws MalformedURLException {
+        String applicationUrl = "http://localhost:" + port;
         URL url = new URL(applicationUrl + "/v2/api-docs");
         try(InputStream in = url.openStream()) {
             String contractContents = IOUtils.toString(in, StandardCharsets.UTF_8);
