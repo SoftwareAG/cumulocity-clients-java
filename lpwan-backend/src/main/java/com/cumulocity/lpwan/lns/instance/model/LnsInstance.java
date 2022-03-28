@@ -8,6 +8,7 @@
 package com.cumulocity.lpwan.lns.instance.model;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.sdk.client.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -15,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -58,14 +58,25 @@ public abstract class LnsInstance {
 
     @JsonIgnore
     public boolean isValid() throws InputDataValidationException {
-        List<String> missingFields = new ArrayList<>(3);
+
+//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+//        Validator validator = factory.getValidator();
+//
+//
+//        Set<ConstraintViolation<LnsInstance>> constraintViolations = validator.validate(this);
+//        if (!constraintViolations.isEmpty()) {
+//            String message = constraintViolations.stream().map((cv) -> cv.getMessage()).collect(Collectors.joining(", "));
+//            throw new InputDataValidationException(message);
+//        }
+
+        List<String> missingFields = new ArrayList<>(1);
 
         if (StringUtils.isBlank(name)) {
             missingFields.add("'name'");
         }
 
         if(!missingFields.isEmpty()) {
-            throw new InputDataValidationException("LnsInstance is missing mandatory fields: " + String.join(", ", missingFields));
+            throw new InputDataValidationException(this.getClass().getSimpleName() + " is missing mandatory fields: " + String.join(", ", missingFields));
         }
 
         this.validate();

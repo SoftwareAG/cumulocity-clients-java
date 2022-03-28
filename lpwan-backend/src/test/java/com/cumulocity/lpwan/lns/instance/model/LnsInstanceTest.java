@@ -42,7 +42,7 @@ class LnsInstanceTest {
                                             .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_instance::isValid);
-        assertEquals("LnsInstance is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
+        assertEquals("SampleInstance is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
     }
 
     @Test
@@ -55,7 +55,7 @@ class LnsInstanceTest {
                                             .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_instance::isValid);
-        assertEquals("LnsInstance is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
+        assertEquals("SampleInstance is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
     }
 
     @Test
