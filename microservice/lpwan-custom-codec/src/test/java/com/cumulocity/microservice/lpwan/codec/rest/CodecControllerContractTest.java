@@ -2,8 +2,6 @@ package com.cumulocity.microservice.lpwan.codec.rest;
 
 import com.cumulocity.microservice.customdecoders.api.service.DecoderService;
 import com.cumulocity.microservice.customencoders.api.service.EncoderService;
-import com.cumulocity.microservice.lpwan.codec.sample.Application;
-import com.cumulocity.microservice.lpwan.codec.sample.SwaggerConfiguration;
 import io.github.robwin.swagger.test.SwaggerAssertions;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
@@ -13,11 +11,22 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,11 +36,33 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {Application.class, SwaggerConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 public class CodecControllerContractTest {
+
+    @EnableSwagger2
+    @Import(CodecController.class)
+    @EnableAutoConfiguration(exclude = {
+            UserDetailsServiceAutoConfiguration.class,
+            SecurityAutoConfiguration.class,
+            ManagementWebSecurityAutoConfiguration.class
+    })
+    @SpringBootConfiguration(proxyBeanMethods = false)
+    static class TestSwaggerConfiguration {
+        @Bean
+        Docket apiDocketDecode() {
+            return new Docket(DocumentationType.SWAGGER_2)
+                    .select()
+                    .apis(RequestHandlerSelectors.basePackage("com.cumulocity.microservice.lpwan.codec.rest"))
+                    .paths(PathSelectors.any())
+                    .build();
+        }
+    }
+
     @LocalServerPort
-    private int port;
+    int port;
 
     @MockBean
     DecoderService decoderService;
