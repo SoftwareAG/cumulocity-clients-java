@@ -213,6 +213,7 @@ public class LnsInstanceService {
     }
 
     private void flushCache() throws LpwanServiceException {
+        OptionPK lnsInstancesTenantOptionKey = getLnsInstancesTenantOptionKey();
         Map<String, LnsInstance> lnsInstances = getLnsInstances();
         String lnsInstancesString;
         try {
@@ -220,22 +221,27 @@ public class LnsInstanceService {
                     .writerWithView(LnsInstance.InternalView.class)
                     .writeValueAsString(lnsInstances);
         } catch (JsonProcessingException e) {
-            String message = String.format("Error marshaling the LNS instances map and store as a tenant option with key '%s'.", getLnsInstancesTenantOptionKey());
+            String message = String.format("Error marshaling the LNS instances map and store as a tenant option with key '%s'.", lnsInstancesTenantOptionKey);
             log.error(message, e);
             throw new LpwanServiceException(message, e);
         }
 
         if (!StringUtils.isBlank(lnsInstancesString)) {
             try {
-                tenantOptionApi.save(new OptionRepresentation());
+                OptionRepresentation tenantOption = OptionRepresentation.asOptionRepresentation(
+                        lnsInstancesTenantOptionKey.getCategory(),
+                        lnsInstancesTenantOptionKey.getKey(),
+                        lnsInstancesString);
+
+                tenantOptionApi.save(tenantOption);
             } catch (SDKException e) {
-                String message = String.format("Error saving the below LNS instance map as a tenant option with key '%s'. \n%s", getLnsInstancesTenantOptionKey(), lnsInstancesString);
+                String message = String.format("Error saving the below LNS instance map as a tenant option with key '%s'. \n%s", lnsInstancesTenantOptionKey, lnsInstancesString);
                 log.error(message, e);
                 throw new LpwanServiceException(message, e);
             }
         }
 
-        log.debug("LNS instances saved in the tenant options with key '{}'. Cached LNS instance count is {}.", getLnsInstancesTenantOptionKey(), lnsInstances.size());
+        log.debug("LNS instances saved in the tenant options with key '{}'. Cached LNS instance count is {}.", lnsInstancesTenantOptionKey, lnsInstances.size());
     }
 
     private Map<String, LnsInstance> getLnsInstances() throws LpwanServiceException {
@@ -250,7 +256,7 @@ public class LnsInstanceService {
 
     private OptionPK getLnsInstancesTenantOptionKey() {
         if (lnsInstancesTenantOptionKey == null) {
-            lnsInstancesTenantOptionKey = new OptionPK(LnsInstanceDeserializer.agentName, LNS_INSTANCES_KEY);
+            lnsInstancesTenantOptionKey = new OptionPK(LnsInstanceDeserializer.lnsInstanceClass.getSimpleName(), LNS_INSTANCES_KEY);
         }
 
         return lnsInstancesTenantOptionKey;

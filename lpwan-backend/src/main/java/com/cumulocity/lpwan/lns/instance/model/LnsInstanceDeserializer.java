@@ -16,19 +16,17 @@ import java.io.IOException;
 public class LnsInstanceDeserializer extends StdDeserializer<LnsInstance> {
 
     public static volatile Class<? extends LnsInstance> lnsInstanceClass;
-    public static volatile String agentName;
 
     protected LnsInstanceDeserializer() {
         super(LnsInstance.class);
     }
 
-    public static void registerLnsInstanceConcreteClass(String agentName, Class<? extends LnsInstance> lnsInstanceClass){
-        LnsInstanceDeserializer.agentName = agentName;
+    public static void registerLnsInstanceConcreteClass(Class<? extends LnsInstance> lnsInstanceClass) {
         LnsInstanceDeserializer.lnsInstanceClass = lnsInstanceClass;
     }
 
     @Override
-    public LnsInstance deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException{
+    public LnsInstance deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         return jsonParser.getCodec().treeToValue(jsonParser.readValueAsTree(), lnsInstanceClass);
     }
 }

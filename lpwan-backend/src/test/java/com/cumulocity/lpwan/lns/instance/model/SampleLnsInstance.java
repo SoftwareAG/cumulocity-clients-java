@@ -89,10 +89,10 @@ public class SampleLnsInstance extends LnsInstance {
 
     @Override
     protected void update(LnsInstance lnsInstanceWithNewData) {
-        SampleLnsInstance testLnsInstance = (SampleLnsInstance) lnsInstanceWithNewData;
-        this.setUser(testLnsInstance.getUser());
-        if(!StringUtils.isBlank(testLnsInstance.getPassword())) {
-            this.setPassword(testLnsInstance.getPassword());
+        SampleLnsInstance sampleLnsInstanceWithNewData = (SampleLnsInstance) lnsInstanceWithNewData;
+        this.setUser(sampleLnsInstanceWithNewData.getUser());
+        if(!StringUtils.isBlank(sampleLnsInstanceWithNewData.getPassword())) {
+            this.setPassword(sampleLnsInstanceWithNewData.getPassword());
         }
     }
 }

@@ -161,7 +161,7 @@ class LnsInstanceTest {
 
     @Test
     void doDeSerializeLnsInstance_with_valueType_as_LnsInstance_insteadof_SampleLnsInstance() throws JsonProcessingException {
-        LnsInstanceDeserializer.registerLnsInstanceConcreteClass("Sample", SampleLnsInstance.class);
+        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleLnsInstance.class);
 
         LnsInstance lnsInstance = jsonObjectMapper.readValue(VALID_SAMPLE_LNS_INSTANCE_JSON_INTERNAL_VIEW, LnsInstance.class);
 
