@@ -8,13 +8,14 @@
 package com.cumulocity.lpwan.lns.instance.model;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.lpwan.smaple.instance.model.SampleInstance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.JsonExpectationsHelper;
 
-import static com.cumulocity.lpwan.lns.instance.model.SampleLnsInstance.*;
+import static com.cumulocity.lpwan.smaple.instance.model.SampleInstance.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -25,7 +26,7 @@ class LnsInstanceTest {
     @Test
     void doValidateLnsInstance_valid_description_and_password_null() {
         try {
-            assertTrue(VALID_SAMPLE_LNS_INSTANCE.isValid());
+            assertTrue(VALID_SAMPLE_INSTANCE.isValid());
         } catch (InputDataValidationException e) {
             fail("Unexpected InputDataValidationException thrown with message " + e.getMessage());
         }
@@ -33,7 +34,7 @@ class LnsInstanceTest {
 
     @Test
     void doValidateLnsInstance_invalid_name_null() {
-        LnsInstance invalid_instance = SampleLnsInstance.builder()
+        LnsInstance invalid_instance = SampleInstance.builder()
                                             .name(null)
                                             .description(null)
                                             .user("USER NAME")
@@ -46,7 +47,7 @@ class LnsInstanceTest {
 
     @Test
     void doValidateLnsInstance_invalid_name_blank() {
-        LnsInstance invalid_instance = SampleLnsInstance.builder()
+        LnsInstance invalid_instance = SampleInstance.builder()
                                             .name("   ")
                                             .description(null)
                                             .user("USER NAME")
@@ -59,42 +60,42 @@ class LnsInstanceTest {
 
     @Test
     void doValidateLnsInstance_invalid_user_null() {
-        LnsInstance invalid_instance = SampleLnsInstance.builder()
-                                                .name("LNS Instance Name")
-                                                .description("LNS Instance Description")
+        LnsInstance invalid_instance = SampleInstance.builder()
+                                                .name("Sample Instance Name")
+                                                .description("Sample Instance Description")
                                                 .user(null)
                                                 .password("**********")
                                                 .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_instance::isValid);
-        assertEquals("SampleLnsInstance is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
+        assertEquals("SampleInstance is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
     }
 
     @Test
     void doValidateLnsInstance_invalid_user_balnk() {
-        LnsInstance invalid_instance = SampleLnsInstance.builder()
-                                            .name("LNS Instance Name")
-                                            .description("LNS Instance Description")
+        LnsInstance invalid_instance = SampleInstance.builder()
+                                            .name("Sample Instance Name")
+                                            .description("Sample Instance Description")
                                             .user("    ")
                                             .password("**********")
                                             .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_instance::isValid);
-        assertEquals("SampleLnsInstance is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
+        assertEquals("SampleInstance is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
     }
 
     @Test
     void doUpdateLnsInstance_with_non_null_password() {
-        SampleLnsInstance existingLnsInstance = SampleLnsInstance.builder()
-                                                    .name("LNS Instance Name")
-                                                    .description("LNS Instance Description")
+        SampleInstance existingLnsInstance = SampleInstance.builder()
+                                                    .name("Sample Instance Name")
+                                                    .description("Sample Instance Description")
                                                     .user("USER NAME")
                                                     .password("**********")
                                                     .build();
 
-        SampleLnsInstance lnsInstanceWithUpdatedContents = SampleLnsInstance.builder()
-                                                                .name("LNS Instance Name (NEW)")
-                                                                .description("LNS Instance Description (NEW)")
+        SampleInstance lnsInstanceWithUpdatedContents = SampleInstance.builder()
+                                                                .name("Sample Instance Name (NEW)")
+                                                                .description("Sample Instance Description (NEW)")
                                                                 .user("USER NAME (NEW)")
                                                                 .password("********** (NEW)")
                                                                 .build();
@@ -106,23 +107,23 @@ class LnsInstanceTest {
 
     @Test
     void doUpdateLnsInstance_with_null_password() {
-        SampleLnsInstance existingLnsInstance = SampleLnsInstance.builder()
-                                                    .name("LNS Instance Name")
-                                                    .description("LNS Instance Description")
+        SampleInstance existingLnsInstance = SampleInstance.builder()
+                                                    .name("Sample Instance Name")
+                                                    .description("Sample Instance Description")
                                                     .user("USER NAME")
                                                     .password("**********")
                                                     .build();
 
-        SampleLnsInstance lnsInstanceWithUpdatedContents = SampleLnsInstance.builder()
-                                                                .name("LNS Instance Name (NEW)")
-                                                                .description("LNS Instance Description (NEW)")
+        SampleInstance lnsInstanceWithUpdatedContents = SampleInstance.builder()
+                                                                .name("Sample Instance Name (NEW)")
+                                                                .description("Sample Instance Description (NEW)")
                                                                 .user("USER NAME (NEW)")
                                                                 .password(null)
                                                                 .build();
 
         existingLnsInstance.initializeWith(lnsInstanceWithUpdatedContents);
 
-        compare(SampleLnsInstance.builder()
+        compare(SampleInstance.builder()
                         .name(lnsInstanceWithUpdatedContents.getName())
                         .description(lnsInstanceWithUpdatedContents.getDescription())
                         .user(lnsInstanceWithUpdatedContents.getUser())
@@ -133,16 +134,16 @@ class LnsInstanceTest {
 
     @Test
     void doUpdateLnsInstance_with_blank_password() {
-        SampleLnsInstance existingLnsInstance = SampleLnsInstance.builder()
-                                                        .name("LNS Instance Name")
-                                                        .description("LNS Instance Description")
+        SampleInstance existingLnsInstance = SampleInstance.builder()
+                                                        .name("Sample Instance Name")
+                                                        .description("Sample Instance Description")
                                                         .user("USER NAME")
                                                         .password("**********")
                                                         .build();
 
-        SampleLnsInstance lnsInstanceWithUpdatedContents = SampleLnsInstance.builder()
-                                                                .name("LNS Instance Name (NEW)")
-                                                                .description("LNS Instance Description (NEW)")
+        SampleInstance lnsInstanceWithUpdatedContents = SampleInstance.builder()
+                                                                .name("Sample Instance Name (NEW)")
+                                                                .description("Sample Instance Description (NEW)")
                                                                 .user("USER NAME (NEW)")
                                                                 .password("   ")
                                                                 .build();
@@ -150,7 +151,7 @@ class LnsInstanceTest {
         existingLnsInstance.initializeWith(lnsInstanceWithUpdatedContents);
 
 
-        compare(SampleLnsInstance.builder()
+        compare(SampleInstance.builder()
                         .name(lnsInstanceWithUpdatedContents.getName())
                         .description(lnsInstanceWithUpdatedContents.getDescription())
                         .user(lnsInstanceWithUpdatedContents.getUser())
@@ -160,32 +161,32 @@ class LnsInstanceTest {
     }
 
     @Test
-    void doDeSerializeLnsInstance_with_valueType_as_LnsInstance_insteadof_SampleLnsInstance() throws JsonProcessingException {
-        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleLnsInstance.class);
+    void doDeSerializeLnsInstance_with_valueType_as_LnsInstance_insteadof_SampleInstance() throws JsonProcessingException {
+        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleInstance.class);
 
-        LnsInstance lnsInstance = jsonObjectMapper.readValue(VALID_SAMPLE_LNS_INSTANCE_JSON_INTERNAL_VIEW, LnsInstance.class);
+        LnsInstance lnsInstance = jsonObjectMapper.readValue(VALID_SAMPLE_INSTANCE_JSON_INTERNAL_VIEW, LnsInstance.class);
 
-        compare(VALID_SAMPLE_LNS_INSTANCE, lnsInstance);
+        compare(VALID_SAMPLE_INSTANCE, lnsInstance);
     }
 
     @Test
     void doSerializeLnsInstance_with_PublicView_must_EXCLUDE_Password() throws Exception {
-        String sampleInstanceSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsInstance.PublicView.class).writeValueAsString(VALID_SAMPLE_LNS_INSTANCE);
+        String sampleInstanceSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsInstance.PublicView.class).writeValueAsString(VALID_SAMPLE_INSTANCE);
 
-        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_LNS_INSTANCE_JSON_PUBLIC_VIEW, sampleInstanceSerializedWithPublicView, true);
+        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_INSTANCE_JSON_PUBLIC_VIEW, sampleInstanceSerializedWithPublicView, true);
     }
 
     @Test
     void doSerializeLnsInstance_with_InternalView_must_INCLUDE_Password() throws Exception {
-        String sampleInstanceSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsInstance.InternalView.class).writeValueAsString(VALID_SAMPLE_LNS_INSTANCE);
+        String sampleInstanceSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsInstance.InternalView.class).writeValueAsString(VALID_SAMPLE_INSTANCE);
 
-        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_LNS_INSTANCE_JSON_INTERNAL_VIEW, sampleInstanceSerializedWithPublicView, true);
+        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_INSTANCE_JSON_INTERNAL_VIEW, sampleInstanceSerializedWithPublicView, true);
     }
 
-    private void compare(SampleLnsInstance expected, LnsInstance actual) {
+    private void compare(SampleInstance expected, LnsInstance actual) {
         assertTrue(expected.getClass().isAssignableFrom(actual.getClass()));
 
-        SampleLnsInstance actualTestLnsInstance = (SampleLnsInstance) actual;
+        SampleInstance actualTestLnsInstance = (SampleInstance) actual;
 
         assertEquals(expected.getName(), actualTestLnsInstance.getName());
         assertEquals(expected.getDescription(), actualTestLnsInstance.getDescription());

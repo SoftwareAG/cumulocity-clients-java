@@ -18,6 +18,7 @@ import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +90,6 @@ public abstract class LnsInstance {
      *
      * @param lnsInstanceWithNewData LNS Instance with updated data
      */
-    protected abstract void update(LnsInstance lnsInstanceWithNewData);
+    protected abstract void update(@NotNull LnsInstance lnsInstanceWithNewData);
 }
 

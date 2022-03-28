@@ -9,8 +9,8 @@ package com.cumulocity.lpwan.lns.instance.rest;
 
 import com.cumulocity.lpwan.lns.instance.model.LnsInstance;
 import com.cumulocity.lpwan.lns.instance.model.LnsInstanceDeserializer;
-import com.cumulocity.lpwan.lns.instance.model.SampleLnsInstance;
 import com.cumulocity.lpwan.lns.instance.service.LnsInstanceService;
+import com.cumulocity.lpwan.smaple.instance.model.SampleInstance;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.cumulocity.lpwan.lns.instance.model.SampleLnsInstance.*;
+import static com.cumulocity.lpwan.smaple.instance.model.SampleInstance.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,19 +61,19 @@ public class LnsInstanceControllerTest {
 
     @Before
     public void setup() {
-        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleLnsInstance.class);
+        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleInstance.class);
     }
 
     @Test
     public void doCall_getAll_and_ensure_only_publicView_is_returned_to_client() throws Exception {
-        SampleLnsInstance testLnsInstance_1 = SampleLnsInstance.builder()
+        SampleInstance testLnsInstance_1 = SampleInstance.builder()
                 .name("TEST-LNS-1")
                 .description("Test LNS 1")
                 .user("user-1")
                 .password("password!!!")
                 .build();
 
-        SampleLnsInstance testLnsInstance_2 = SampleLnsInstance.builder()
+        SampleInstance testLnsInstance_2 = SampleInstance.builder()
                 .name("TEST-LNS-1")
                 .description("Test LNS 1")
                 .user("user-1")
@@ -106,47 +106,47 @@ public class LnsInstanceControllerTest {
 
     @Test
     public void doCall_getByName_and_ensure_only_publicView_is_returned_to_client() throws Exception {
-        when(lnsInstanceService.getByName(eq(VALID_SAMPLE_LNS_INSTANCE.getName()))).thenReturn(VALID_SAMPLE_LNS_INSTANCE);
+        when(lnsInstanceService.getByName(eq(VALID_SAMPLE_INSTANCE.getName()))).thenReturn(VALID_SAMPLE_INSTANCE);
 
-        this.mockMvc.perform(get("/lns-instance/" + VALID_SAMPLE_LNS_INSTANCE.getName()))
+        this.mockMvc.perform(get("/lns-instance/" + VALID_SAMPLE_INSTANCE.getName()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(VALID_SAMPLE_LNS_INSTANCE_JSON_PUBLIC_VIEW, true));
+                .andExpect(content().json(VALID_SAMPLE_INSTANCE_JSON_PUBLIC_VIEW, true));
 
-        verify(lnsInstanceService).getByName(eq(VALID_SAMPLE_LNS_INSTANCE.getName()));
+        verify(lnsInstanceService).getByName(eq(VALID_SAMPLE_INSTANCE.getName()));
     }
 
     @Test
     public void doCall_create_and_ensure_only_publicView_is_returned_to_client() throws Exception {
-        when(lnsInstanceService.create(any())).thenReturn(VALID_SAMPLE_LNS_INSTANCE);
+        when(lnsInstanceService.create(any())).thenReturn(VALID_SAMPLE_INSTANCE);
 
         this.mockMvc.perform(post("/lns-instance")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(VALID_SAMPLE_LNS_INSTANCE_JSON_INTERNAL_VIEW))
+                .content(VALID_SAMPLE_INSTANCE_JSON_INTERNAL_VIEW))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().json(VALID_SAMPLE_LNS_INSTANCE_JSON_PUBLIC_VIEW, true));
+                .andExpect(content().json(VALID_SAMPLE_INSTANCE_JSON_PUBLIC_VIEW, true));
 
         verify(lnsInstanceService).create(lnsInstanceArgumentCaptor.capture());
         LnsInstance lnsInstanceCapturedArgument = lnsInstanceArgumentCaptor.getValue();
-        compare(VALID_SAMPLE_LNS_INSTANCE, lnsInstanceCapturedArgument);
+        compare(VALID_SAMPLE_INSTANCE, lnsInstanceCapturedArgument);
     }
 
     @Test
     public void doCall_update_and_ensure_only_publicView_is_returned_to_client() throws Exception {
         String existingLnsInstanceName = "EXISTING-TEST-LNS-1";
-        when(lnsInstanceService.update(eq(existingLnsInstanceName), any())).thenReturn(VALID_SAMPLE_LNS_INSTANCE);
+        when(lnsInstanceService.update(eq(existingLnsInstanceName), any())).thenReturn(VALID_SAMPLE_INSTANCE);
 
         this.mockMvc.perform(put("/lns-instance/" + existingLnsInstanceName)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(VALID_SAMPLE_LNS_INSTANCE_JSON_INTERNAL_VIEW))
+                .content(VALID_SAMPLE_INSTANCE_JSON_INTERNAL_VIEW))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(VALID_SAMPLE_LNS_INSTANCE_JSON_PUBLIC_VIEW, true));
+                .andExpect(content().json(VALID_SAMPLE_INSTANCE_JSON_PUBLIC_VIEW, true));
 
         verify(lnsInstanceService).update(eq(existingLnsInstanceName), lnsInstanceArgumentCaptor.capture());
         LnsInstance lnsInstanceCapturedArgument = lnsInstanceArgumentCaptor.getValue();
-        compare(VALID_SAMPLE_LNS_INSTANCE, lnsInstanceCapturedArgument);
+        compare(VALID_SAMPLE_INSTANCE, lnsInstanceCapturedArgument);
     }
 
     @Test
@@ -160,10 +160,10 @@ public class LnsInstanceControllerTest {
         verify(lnsInstanceService).delete(eq(lnsInstanceNameToDelete));
     }
 
-    private void compare(SampleLnsInstance expected, LnsInstance actual) {
+    private void compare(SampleInstance expected, LnsInstance actual) {
         assertTrue(expected.getClass().isAssignableFrom(actual.getClass()));
 
-        SampleLnsInstance actualTestLnsInstance = (SampleLnsInstance) actual;
+        SampleInstance actualTestLnsInstance = (SampleInstance) actual;
 
         assertEquals(expected.getName(), actualTestLnsInstance.getName());
         assertEquals(expected.getDescription(), actualTestLnsInstance.getDescription());
