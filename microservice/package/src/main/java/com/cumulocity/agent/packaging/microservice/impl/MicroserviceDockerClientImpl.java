@@ -115,7 +115,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         }
     }
 
-    public void saveDockerImage(final String image, final File targetFile) throws IOException {
+    public void saveDockerImage(final String image, final File targetFile) throws IOException, MavenExecutionException {
 
         log.info("Saving Image {} to file {}", image, targetFile.getAbsoluteFile().toString());
 
@@ -123,6 +123,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
              final InputStream inputStream = saveImageCmd.exec(); final FileOutputStream outputStream = new FileOutputStream(targetFile)) {
             IOUtils.copyLarge(inputStream, outputStream);
+        } catch (Exception e) {
+            log.error("Save image failed, reason was: {}", e.getMessage());
+            throw new MavenExecutionException("Docker save failed", e);
         }
     }
 
@@ -178,6 +181,29 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         PushImageResponseCallBack callBack = new PushImageResponseCallBack();
         pushImageCmd.exec(callBack);
         callBack.waitForCompletionOrFailure();
+    }
+
+    @SneakyThrows
+    @Override
+    public void waitForImageInRegistry(String image, int timeOutSeconds) {
+
+        log.info("Waiting for image {} to appear in registry, timeout={}s",image,timeOutSeconds);
+        Map<String, List<String>> nameFilter = getImageNameFilter(image);
+
+        ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
+        listImagesCmd.getFilters().putAll(nameFilter);
+
+        List<Image> imagesFound = listImagesCmd.exec();
+        long timeOutTimeStamp=System.currentTimeMillis()+1000*timeOutSeconds;
+        while (imagesFound.isEmpty()) {
+            if (System.currentTimeMillis()>timeOutTimeStamp) {
+                throw new RuntimeException("Waiting for image timed out after "+timeOutSeconds+"seconds");
+            }
+            Thread.sleep(2000);
+            log.info("Image {} not found in registry, retrying...");
+            imagesFound = listImagesCmd.exec();
+        }
+        log.info("Image appeared in registry.");
     }
 
 

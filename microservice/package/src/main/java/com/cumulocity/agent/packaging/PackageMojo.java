@@ -76,6 +76,10 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(property= "microservice.package.dockerBuildTimeout",defaultValue = "240")
     public int dockerBuildTimeout = 240;
 
+    @Parameter(property= "microservice.package.dockerSaveWaitTimeOut",defaultValue = "240")
+    public int dockerWaitSaveTimeOut = 300;
+
+
     ObjectMapper mapper;
 
     public PackageMojo() {
@@ -297,7 +301,12 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
             final File dockerImage = new File(build, dockerImageFileName);
             createDirectories(build.toPath());
-            dockerClient.saveDockerImage(String.format("%s:%s", image, project.getVersion()), dockerImage);
+
+            String imageNameWithTagSave = String.format("%s:%s", image, project.getVersion());
+
+            log.info("Checking if image {} is populated to registry", imageNameWithTagSave);
+            dockerClient.waitForImageInRegistry(imageNameWithTagSave,dockerWaitSaveTimeOut );
+            dockerClient.saveDockerImage(imageNameWithTagSave, dockerImage);
 
             try (final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(
                     new File(build, targetFilename)))) {
