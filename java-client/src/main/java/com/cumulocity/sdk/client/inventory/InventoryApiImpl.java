@@ -107,6 +107,16 @@ public class InventoryApiImpl implements InventoryApi {
     }
 
     @Override
+    public Integer getManagedObjectsCountByFilter(InventoryFilter filter) throws SDKException {
+        if (filter == null) {
+            return 0;
+        }
+        Map<String, String> params = filter.getQueryParams();
+        String path = getMOCollectionUrl() + "/count";
+        return restConnector.get(urlProcessor.replaceOrAddQueryParam(path, params), MediaType.APPLICATION_JSON_TYPE, Integer.class);
+    }
+
+    @Override
     public SupportedMeasurementsRepresentation getSupportedMeasurements(GId sourceId) throws SDKException {
         validatePresent(sourceId);
         String path = getMOCollectionUrl() + "/" + sourceId.getValue() + "/supportedMeasurements";
