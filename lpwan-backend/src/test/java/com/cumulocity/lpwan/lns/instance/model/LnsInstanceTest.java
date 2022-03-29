@@ -24,12 +24,8 @@ class LnsInstanceTest {
     private ObjectMapper jsonObjectMapper = new ObjectMapper();
 
     @Test
-    void doValidateLnsInstance_valid_description_and_password_null() {
-        try {
-            assertTrue(VALID_SAMPLE_INSTANCE.isValid());
-        } catch (InputDataValidationException e) {
-            fail("Unexpected InputDataValidationException thrown with message " + e.getMessage());
-        }
+    void doValidateLnsInstance_valid_description_and_password_null() throws InputDataValidationException {
+        assertTrue(VALID_SAMPLE_INSTANCE.isValid());
     }
 
     @Test
@@ -162,7 +158,7 @@ class LnsInstanceTest {
 
     @Test
     void doDeSerializeLnsInstance_with_valueType_as_LnsInstance_insteadof_SampleInstance() throws JsonProcessingException {
-        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleInstance.class);
+        LnsInstanceDeserializer.registerLnsInstanceConcreteClass("sample", SampleInstance.class);
 
         LnsInstance lnsInstance = jsonObjectMapper.readValue(VALID_SAMPLE_INSTANCE_JSON_INTERNAL_VIEW, LnsInstance.class);
 

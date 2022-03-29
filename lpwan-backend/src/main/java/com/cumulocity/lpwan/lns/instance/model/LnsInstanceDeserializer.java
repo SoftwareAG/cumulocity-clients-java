@@ -15,14 +15,20 @@ import java.io.IOException;
 
 public class LnsInstanceDeserializer extends StdDeserializer<LnsInstance> {
 
-    public static volatile Class<? extends LnsInstance> lnsInstanceClass;
+    private static Class<? extends LnsInstance> lnsInstanceClass;
+    private static String agentName;
 
     protected LnsInstanceDeserializer() {
         super(LnsInstance.class);
     }
 
-    public static void registerLnsInstanceConcreteClass(Class<? extends LnsInstance> lnsInstanceClass) {
+    public static void registerLnsInstanceConcreteClass(String agentName, Class<? extends LnsInstance> lnsInstanceClass) {
+        LnsInstanceDeserializer.agentName = agentName;
         LnsInstanceDeserializer.lnsInstanceClass = lnsInstanceClass;
+    }
+
+    public static String getRegisteredAgentName() {
+        return agentName;
     }
 
     @Override

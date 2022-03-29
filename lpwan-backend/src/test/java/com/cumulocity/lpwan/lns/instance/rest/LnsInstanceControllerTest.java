@@ -61,7 +61,7 @@ public class LnsInstanceControllerTest {
 
     @Before
     public void setup() {
-        LnsInstanceDeserializer.registerLnsInstanceConcreteClass(SampleInstance.class);
+        LnsInstanceDeserializer.registerLnsInstanceConcreteClass("sample", SampleInstance.class);
     }
 
     @Test

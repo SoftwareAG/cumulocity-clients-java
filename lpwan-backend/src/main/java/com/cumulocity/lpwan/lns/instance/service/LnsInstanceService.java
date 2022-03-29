@@ -18,6 +18,7 @@ import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -44,6 +45,7 @@ public class LnsInstanceService {
     private static final String LNS_INSTANCES_KEY = "credentials.lns.instances.map";
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final MapType mapType = JSON_MAPPER.getTypeFactory().constructMapType(ConcurrentHashMap.class, String.class, LnsInstance.class);
 
     @Autowired
     private TenantOptionApi tenantOptionApi;
@@ -179,7 +181,7 @@ public class LnsInstanceService {
         log.info("LNS instance named '{}' is deleted.", lnsInstanceNametoDelete);
     }
 
-    private Map<String, LnsInstance> loadLnsInstancesFromTenantOptions(OptionPK tenantOptionKeyForLnsInstanceMap) throws LpwanServiceException {
+    protected Map<String, LnsInstance> loadLnsInstancesFromTenantOptions(OptionPK tenantOptionKeyForLnsInstanceMap) throws LpwanServiceException {
         String lnsInstancesString = null;
         try {
             lnsInstancesString = tenantOptionApi.getOption(getLnsInstancesTenantOptionKey()).getValue();
@@ -198,7 +200,7 @@ public class LnsInstanceService {
             try {
                 lnsInstancesMap = JSON_MAPPER
                         .readerWithView(LnsInstance.InternalView.class)
-                        .forType(ConcurrentHashMap.class)
+                        .forType(mapType)
                         .readValue(lnsInstancesString);
             } catch (JsonProcessingException e) {
                 String message = String.format("Error unmarshalling the below JSON string containing LNS instance map stored as a tenant option with key '%s'. \n%s", tenantOptionKeyForLnsInstanceMap, lnsInstancesString);
@@ -212,7 +214,7 @@ public class LnsInstanceService {
         return lnsInstancesMap;
     }
 
-    private void flushCache() throws LpwanServiceException {
+    protected void flushCache() throws LpwanServiceException {
         OptionPK lnsInstancesTenantOptionKey = getLnsInstancesTenantOptionKey();
         Map<String, LnsInstance> lnsInstances = getLnsInstances();
         String lnsInstancesString;
@@ -229,9 +231,9 @@ public class LnsInstanceService {
         if (!StringUtils.isBlank(lnsInstancesString)) {
             try {
                 OptionRepresentation tenantOption = OptionRepresentation.asOptionRepresentation(
-                        lnsInstancesTenantOptionKey.getCategory(),
-                        lnsInstancesTenantOptionKey.getKey(),
-                        lnsInstancesString);
+                                                                    lnsInstancesTenantOptionKey.getCategory(),
+                                                                    lnsInstancesTenantOptionKey.getKey(),
+                                                                    lnsInstancesString);
 
                 tenantOptionApi.save(tenantOption);
             } catch (SDKException e) {
@@ -256,7 +258,7 @@ public class LnsInstanceService {
 
     private OptionPK getLnsInstancesTenantOptionKey() {
         if (lnsInstancesTenantOptionKey == null) {
-            lnsInstancesTenantOptionKey = new OptionPK(LnsInstanceDeserializer.lnsInstanceClass.getSimpleName(), LNS_INSTANCES_KEY);
+            lnsInstancesTenantOptionKey = new OptionPK(LnsInstanceDeserializer.getRegisteredAgentName(), LNS_INSTANCES_KEY);
         }
 
         return lnsInstancesTenantOptionKey;
