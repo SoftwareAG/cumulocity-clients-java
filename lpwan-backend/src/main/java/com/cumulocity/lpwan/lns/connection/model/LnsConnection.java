@@ -5,7 +5,7 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.lns.instance.model;
+package com.cumulocity.lpwan.lns.connection.model;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.sdk.client.util.StringUtils;
@@ -23,24 +23,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementers of LnsInstance class have to annotate the fields of the concrete class
- * to be part of either @JsonView(LnsInstance.PublicView.class) or @JsonView(LnsInstance.InternalView.class).
+ * Implementers of LnsConnection class have to annotate the fields of the concrete class
+ * to be part of either @JsonView(LnsConnection.PublicView.class) or @JsonView(LnsConnection.InternalView.class).
  *
  * All the fields with sensitive data which should not be serialized and sent to the client
  * have to be marked with InternalView and rest with PublicView.
  */
-@JsonDeserialize(using = LnsInstanceDeserializer.class)
+@JsonDeserialize(using = LnsConnectionDeserializer.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class LnsInstance {
+public abstract class LnsConnection {
 
     @NotBlank
-    @JsonView(LnsInstance.PublicView.class)
+    @JsonView(LnsConnection.PublicView.class)
     private String name;
 
-    @JsonView(LnsInstance.PublicView.class)
+    @JsonView(LnsConnection.PublicView.class)
     private String description;
 
     // JSON View interface for tagging Publicly visible fields
@@ -49,26 +49,15 @@ public abstract class LnsInstance {
     // JSON View interface for tagging Internally visible fields
     public interface InternalView extends PublicView {}
 
-    public void initializeWith(LnsInstance lnsInstance) {
-        this.setName(lnsInstance.getName());
-        this.setDescription(lnsInstance.getDescription());
+    public void initializeWith(LnsConnection lnsConnection) {
+        this.setName(lnsConnection.getName());
+        this.setDescription(lnsConnection.getDescription());
 
-        this.update(lnsInstance);
+        this.update(lnsConnection);
     }
 
     @JsonIgnore
     public boolean isValid() throws InputDataValidationException {
-
-//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-//        Validator validator = factory.getValidator();
-//
-//
-//        Set<ConstraintViolation<LnsInstance>> constraintViolations = validator.validate(this);
-//        if (!constraintViolations.isEmpty()) {
-//            String message = constraintViolations.stream().map((cv) -> cv.getMessage()).collect(Collectors.joining(", "));
-//            throw new InputDataValidationException(message);
-//        }
-
         List<String> missingFields = new ArrayList<>(1);
 
         if (StringUtils.isBlank(name)) {
@@ -87,20 +76,20 @@ public abstract class LnsInstance {
     /**
      * Invoked by isValid().
      * Implementors are expected validate the fields and throw InputDataValidationException
-     * is the instance data is semantically invalid.
+     * is the connection data is semantically invalid.
      *
-     * @throws InputDataValidationException Thrown if the instance is semantically invalid.
+     * @throws InputDataValidationException Thrown if the connection is semantically invalid.
      */
     protected abstract void validate() throws InputDataValidationException;
 
     /**
      * Invoked by initializeWith().
-     * Implementors are expected to update this instance with the contents from the passed-in instance and also
+     * Implementors are expected to update this connection with the contents from the passed-in connection and also
      * ensure that the passwords and other sensitive data is updated only if the corresponding contents of the
-     * passed-in instance is non null and not blank.
+     * passed-in connection are non null and not blank.
      *
-     * @param lnsInstanceWithNewData LNS Instance with updated data
+     * @param lnsConnectionWithNewData LNS Connection with updated data
      */
-    protected abstract void update(@NotNull LnsInstance lnsInstanceWithNewData);
+    protected abstract void update(@NotNull LnsConnection lnsConnectionWithNewData);
 }
 

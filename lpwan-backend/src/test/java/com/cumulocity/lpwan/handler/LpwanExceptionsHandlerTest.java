@@ -23,7 +23,7 @@ class LpwanExceptionsHandlerTest {
 
     @Test
     void doHandleException_InvalidInputDataException() {
-        InputDataValidationException exception = new InputDataValidationException("LnsInstanceService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
+        InputDataValidationException exception = new InputDataValidationException("LnsConnectionService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
         ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleLpwanServiceException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -43,7 +43,7 @@ class LpwanExceptionsHandlerTest {
 
     @Test
     void doHandleException_LpwanServiceException() {
-        LpwanServiceException exception = new LpwanServiceException("LnsInstanceService failed with internal service error.", new Exception("Some internal error."));
+        LpwanServiceException exception = new LpwanServiceException("LnsConnectionService failed with internal service error.", new Exception("Some internal error."));
         ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleLpwanServiceException(exception);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
