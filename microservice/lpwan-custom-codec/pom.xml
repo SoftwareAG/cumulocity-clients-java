@@ -15,6 +15,9 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <springfox.version>2.6.1</springfox.version>
+        <assertj-swagger.version>0.6.0</assertj-swagger.version>
+        <assertj-core.version>3.8.0</assertj-core.version>
     </properties>
 
     <dependencyManagement>
@@ -83,6 +86,34 @@
             <groupId>com.nsn.cumulocity.clients-java</groupId>
             <artifactId>custom-encoders</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <!-- http://springfox.io -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${springfox.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-core</artifactId>
+            <version>${springfox.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.robwin</groupId>
+            <artifactId>assertj-swagger</artifactId>
+            <version>${assertj-swagger.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
