@@ -181,7 +181,7 @@ public class LnsConnectionService {
         log.info("LNS connection named '{}' is deleted.", lnsConnectionNametoDelete);
     }
 
-    protected Map<String, LnsConnection> loadLnsConnectionsFromTenantOptions(OptionPK tenantOptionKeyForLnsConnectionMap) throws LpwanServiceException {
+    private Map<String, LnsConnection> loadLnsConnectionsFromTenantOptions(OptionPK tenantOptionKeyForLnsConnectionMap) throws LpwanServiceException {
         String lnsConnectionsString = null;
         try {
             lnsConnectionsString = tenantOptionApi.getOption(getLnsConnectionsTenantOptionKey()).getValue();
@@ -214,7 +214,7 @@ public class LnsConnectionService {
         return lnsConnectionsMap;
     }
 
-    protected void flushCache() throws LpwanServiceException {
+    private void flushCache() throws LpwanServiceException {
         OptionPK lnsConnectionsTenantOptionKey = getLnsConnectionsTenantOptionKey();
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
         String lnsConnectionsString;

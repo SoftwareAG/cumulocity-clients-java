@@ -30,7 +30,9 @@ import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.JsonExpectationsHelper;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -91,7 +93,7 @@ public class LnsConnectionServiceTest {
     }
 
     @Test
-    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_VALID_lnsConnections_map() throws LpwanServiceException {
+    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_VALID_lnsConnections_map() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
         OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(
                 lnsConnectionsOptionKey.getCategory(),
@@ -100,13 +102,13 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        Map<String, LnsConnection> lnsConnectionsMap = lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey);
+        Map<String, LnsConnection> lnsConnectionsMap = ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey);
 
         compare(VALID_LNS_CONNECTIONS_MAP, lnsConnectionsMap);
     }
 
     @Test
-    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_EMPTY_lnsConnections_map() throws LpwanServiceException {
+    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_EMPTY_lnsConnections_map() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
         OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(
                 lnsConnectionsOptionKey.getCategory(),
@@ -115,13 +117,13 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        Map<String, LnsConnection> lnsConnectionsMap = lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey);
+        Map<String, LnsConnection> lnsConnectionsMap = ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey);
 
         compare(new ConcurrentHashMap<>(), lnsConnectionsMap);
     }
 
     @Test
-    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_NULL_lnsConnections_String() throws LpwanServiceException {
+    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_NULL_lnsConnections_String() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
         OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(
                 lnsConnectionsOptionKey.getCategory(),
@@ -130,13 +132,13 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        Map<String, LnsConnection> lnsConnectionsMap = lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey);
+        Map<String, LnsConnection> lnsConnectionsMap = ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey);
 
         compare(new ConcurrentHashMap<>(), lnsConnectionsMap);
     }
 
     @Test
-    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_BLANK_lnsConnections_String() throws LpwanServiceException {
+    public void doLoadLnsConnectionFromTenantOptions_getOption_returns_BLANK_lnsConnections_String() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
         OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(
                 lnsConnectionsOptionKey.getCategory(),
@@ -145,18 +147,18 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        Map<String, LnsConnection> lnsConnectionsMap = lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey);
+        Map<String, LnsConnection> lnsConnectionsMap = ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey);
 
         compare(new ConcurrentHashMap<>(), lnsConnectionsMap);
     }
 
     @Test
-    public void doLoadLnsConnectionFromTenantOptions_getOption_throws_httpStatus_NOT_FOUND_exception() throws LpwanServiceException {
+    public void doLoadLnsConnectionFromTenantOptions_getOption_throws_httpStatus_NOT_FOUND_exception() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenThrow(new SDKException(HttpStatus.NOT_FOUND.value(), "NOT FOUND"));
 
-        Map<String, LnsConnection> lnsConnectionsMap = lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey);
+        Map<String, LnsConnection> lnsConnectionsMap = ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey);
 
         compare(new ConcurrentHashMap<>(), lnsConnectionsMap);
     }
@@ -167,9 +169,11 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenThrow(new SDKException("SOME UNEXPECTED ERROR"));
 
-        LpwanServiceException lpwanServiceException = assertThrows(LpwanServiceException.class, () -> lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey));
+        // Since we use ReflectionTestUtils to invoke the private method, any exception thrown by the target is wrapped in UndeclaredThrowableException.
+        // In this case LpwanServiceException thrown by the target method is returned wrapped with UndeclaredThrowableException
+        UndeclaredThrowableException undeclaredThrowableException = assertThrows(UndeclaredThrowableException.class, () -> ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey));
 
-        assertEquals(String.format("Error while fetching the tenant option with key '%s'.", lnsConnectionsOptionKey), lpwanServiceException.getMessage());
+        assertEquals(String.format("Error while fetching the tenant option with key '%s'.", lnsConnectionsOptionKey), undeclaredThrowableException.getCause().getMessage());
     }
 
     @Test
@@ -182,13 +186,15 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        LpwanServiceException lpwanServiceException = assertThrows(LpwanServiceException.class, () -> lnsConnectionService.loadLnsConnectionsFromTenantOptions(lnsConnectionsOptionKey));
+        // Since we use ReflectionTestUtils to invoke the private method, any exception thrown by the target is wrapped in UndeclaredThrowableException.
+        // In this case LpwanServiceException thrown by the target method is returned wrapped with UndeclaredThrowableException
+        UndeclaredThrowableException undeclaredThrowableException = assertThrows(UndeclaredThrowableException.class, () -> ReflectionTestUtils.invokeMethod(lnsConnectionService, "loadLnsConnectionsFromTenantOptions", lnsConnectionsOptionKey));
 
-        assertEquals(String.format("Error unmarshalling the below JSON string containing LNS connection map stored as a tenant option with key '%s'. \n%s", lnsConnectionsOptionKey, "INVALID JSON"), lpwanServiceException.getMessage());
+        assertEquals(String.format("Error unmarshalling the below JSON string containing LNS connection map stored as a tenant option with key '%s'. \n%s", lnsConnectionsOptionKey, "INVALID JSON"), undeclaredThrowableException.getCause().getMessage());
     }
 
     @Test
-    public void doFlushCache_EMPTY_lnsConnections_map() throws LpwanServiceException {
+    public void doFlushCache_EMPTY_lnsConnections_map() {
         OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
         OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(
                 lnsConnectionsOptionKey.getCategory(),
@@ -198,7 +204,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
         when(tenantOptionApi.save(eq(lnsConnectionsOptionRepresentation))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        lnsConnectionService.flushCache();
+        ReflectionTestUtils.invokeMethod(lnsConnectionService, "flushCache");
 
         verify(tenantOptionApi).save(optionRepresentationCaptor.capture());
         OptionRepresentation optionRepresentationArgument = optionRepresentationCaptor.getValue();
@@ -217,7 +223,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
         when(tenantOptionApi.save(any())).thenReturn(lnsConnectionsOptionRepresentation);
 
-        lnsConnectionService.flushCache();
+        ReflectionTestUtils.invokeMethod(lnsConnectionService, "flushCache");
 
         verify(tenantOptionApi).save(optionRepresentationCaptor.capture());
         OptionRepresentation optionRepresentationArgument = optionRepresentationCaptor.getValue();
@@ -237,9 +243,11 @@ public class LnsConnectionServiceTest {
 
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
 
-        LpwanServiceException lpwanServiceException = assertThrows(LpwanServiceException.class, () -> lnsConnectionService.flushCache());
+        // Since we use ReflectionTestUtils to invoke the private method, any exception thrown by the target is wrapped in UndeclaredThrowableException.
+        // In this case LpwanServiceException thrown by the target method is returned wrapped with UndeclaredThrowableException
+        UndeclaredThrowableException undeclaredThrowableException = assertThrows(UndeclaredThrowableException.class, () -> ReflectionTestUtils.invokeMethod(lnsConnectionService, "flushCache"));
 
-        assertEquals(String.format("Unexpected error occurred while accessing the cached LNS connections map with key '%s'.", lnsConnectionsOptionKey), lpwanServiceException.getMessage());
+        assertEquals(String.format("Unexpected error occurred while accessing the cached LNS connections map with key '%s'.", lnsConnectionsOptionKey), undeclaredThrowableException.getCause().getMessage());
     }
 
     @Test
@@ -253,9 +261,11 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
         when(tenantOptionApi.save(eq(lnsConnectionsOptionRepresentation))).thenThrow(new SDKException("Error while saving."));
 
-        LpwanServiceException lpwanServiceException = assertThrows(LpwanServiceException.class, () -> lnsConnectionService.flushCache());
+        // Since we use ReflectionTestUtils to invoke the private method, any exception thrown by the target is wrapped in UndeclaredThrowableException.
+        // In this case LpwanServiceException thrown by the target method is returned wrapped with UndeclaredThrowableException
+        UndeclaredThrowableException undeclaredThrowableException = assertThrows(UndeclaredThrowableException.class, () -> ReflectionTestUtils.invokeMethod(lnsConnectionService, "flushCache"));
 
-        assertEquals(String.format("Error saving the below LNS connection map as a tenant option with key '%s'. \n%s", lnsConnectionsOptionKey, EMPTY_LNS_CONNECTIONS_MAP_JSON), lpwanServiceException.getMessage());
+        assertEquals(String.format("Error saving the below LNS connection map as a tenant option with key '%s'. \n%s", lnsConnectionsOptionKey, EMPTY_LNS_CONNECTIONS_MAP_JSON), undeclaredThrowableException.getCause().getMessage());
     }
 
     @Test
