@@ -76,14 +76,14 @@ public class CodecExceptionsHandler {
      * This method handles the <b>UnsupportedOperationException</b>.
      *
      * @param exception       represents the exception
-     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
+     * @return ResponseEntity <code>HttpStatus.METHOD_NOT_ALLOWED</code>
      * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/UnsupportedOperationException.html">UnsupportedOperationException</a>
      */
     @ExceptionHandler(value = UnsupportedOperationException.class)
     @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForInternalServerError(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForMethodNotAllowed(Throwable exception) {
         log.error(exception.getMessage(), exception);
-        return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(exception, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
