@@ -1,0 +1,520 @@
+swagger: '2.0'
+info:
+  description: Api Documentation
+  version: '1.0'
+  title: Api Documentation
+  termsOfService: urn:tos
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+host: localhost:8675
+basePath: /
+tags:
+  - name: codec-controller
+    description: Codec Controller
+paths:
+  /decode:
+    post:
+      tags:
+        - codec-controller
+      summary: decode
+      operationId: decodeUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: inputData
+          description: inputData
+          required: true
+          schema:
+            $ref: '#/definitions/DecoderInputData'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DecoderResult'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /encode:
+    post:
+      tags:
+        - codec-controller
+      summary: encode
+      operationId: encodeUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: inputData
+          description: inputData
+          required: true
+          schema:
+            $ref: '#/definitions/EncoderInputData'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EncoderResult'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+definitions:
+  ManagedObjectReferenceCollectionRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      count:
+        type: integer
+        format: int32
+      next:
+        type: string
+      pageStatistics:
+        $ref: '#/definitions/PageStatisticsRepresentation'
+      prev:
+        type: string
+      queryPlanner:
+        type: object
+      references:
+        type: array
+        items:
+          $ref: '#/definitions/ManagedObjectReferenceRepresentation'
+      self:
+        type: string
+      selfDecoded:
+        type: string
+  ChangeRepresentation:
+    type: object
+    properties:
+      attribute:
+        type: string
+      attrs:
+        type: object
+      changeType:
+        type: string
+        enum:
+          - REPLACED
+          - ADDED
+          - REMOVED
+      newValue:
+        type: object
+      previousValue:
+        type: object
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      type:
+        type: string
+  GId:
+    type: object
+    properties:
+      attrs:
+        type: object
+      long:
+        type: integer
+        format: int64
+      name:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+  MeasurementValueDto:
+    type: object
+    properties:
+      seriesName:
+        type: string
+      unit:
+        type: string
+      value:
+        type: number
+  EncoderResult:
+    type: object
+    properties:
+      encodedCommand:
+        type: string
+      message:
+        type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+      success:
+        type: boolean
+  EventRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      creationDateTime:
+        type: string
+        format: date-time
+      creationTime:
+        type: string
+        format: date-time
+      dateTime:
+        type: string
+        format: date-time
+      externalSource:
+        $ref: '#/definitions/ExternalIDRepresentation'
+      id:
+        $ref: '#/definitions/GId'
+      lastUpdatedDateTime:
+        type: string
+        format: date-time
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      source:
+        $ref: '#/definitions/ManagedObjectRepresentation'
+      text:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+  DataFragmentUpdate:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+      valueAsObject:
+        type: object
+  AuditRecordCollectionRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      auditRecords:
+        type: array
+        items:
+          $ref: '#/definitions/AuditRecordRepresentation'
+      next:
+        type: string
+      pageStatistics:
+        $ref: '#/definitions/PageStatisticsRepresentation'
+      prev:
+        type: string
+      queryPlanner:
+        type: object
+      self:
+        type: string
+      selfDecoded:
+        type: string
+  AlarmRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      count:
+        type: integer
+        format: int64
+      creationDateTime:
+        type: string
+        format: date-time
+      creationTime:
+        type: string
+        format: date-time
+      dateTime:
+        type: string
+        format: date-time
+      externalSource:
+        $ref: '#/definitions/ExternalIDRepresentation'
+      firstOccurrenceDateTime:
+        type: string
+        format: date-time
+      firstOccurrenceTime:
+        type: string
+        format: date-time
+      history:
+        $ref: '#/definitions/AuditRecordCollectionRepresentation'
+      id:
+        $ref: '#/definitions/GId'
+      lastUpdatedDateTime:
+        type: string
+        format: date-time
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      severity:
+        type: string
+      severityOrdinal:
+        type: integer
+        format: int64
+      source:
+        $ref: '#/definitions/ManagedObjectRepresentation'
+      status:
+        type: string
+      statusOrdinal:
+        type: integer
+        format: int64
+      text:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+  ManagedObjectReferenceRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      managedObject:
+        $ref: '#/definitions/ManagedObjectRepresentation'
+      self:
+        type: string
+      selfDecoded:
+        type: string
+  AuditRecordRepresentation:
+    type: object
+    properties:
+      activity:
+        type: string
+      application:
+        type: string
+      attrs:
+        type: object
+      changes:
+        type: array
+        items:
+          $ref: '#/definitions/ChangeRepresentation'
+      creationDateTime:
+        type: string
+        format: date-time
+      creationTime:
+        type: string
+        format: date-time
+      dateTime:
+        type: string
+        format: date-time
+      externalSource:
+        $ref: '#/definitions/ExternalIDRepresentation'
+      id:
+        $ref: '#/definitions/GId'
+      lastUpdatedDateTime:
+        type: string
+        format: date-time
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      severity:
+        type: string
+      source:
+        $ref: '#/definitions/ManagedObjectRepresentation'
+      text:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      user:
+        type: string
+  ExternalIDRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      externalId:
+        type: string
+      managedObject:
+        $ref: '#/definitions/ManagedObjectRepresentation'
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      type:
+        type: string
+  PageStatisticsRepresentation:
+    type: object
+    properties:
+      attrs:
+        type: object
+      currentPage:
+        type: integer
+        format: int32
+      pageSize:
+        type: integer
+        format: int32
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      totalElements:
+        type: integer
+        format: int64
+      totalPages:
+        type: integer
+        format: int32
+  DecoderInputData:
+    type: object
+    properties:
+      args:
+        type: object
+        additionalProperties:
+          type: string
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      serviceKey:
+        type: string
+      sourceDeviceId:
+        type: string
+      status:
+        type: string
+        enum:
+          - PENDING
+          - IN_PROGRESS
+          - ERROR
+      value:
+        type: string
+  EncoderInputData:
+    type: object
+    properties:
+      args:
+        type: object
+        additionalProperties:
+          type: string
+      commandData:
+        type: string
+      commandName:
+        type: string
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      sourceDeviceId:
+        type: string
+      status:
+        type: string
+        enum:
+          - PENDING
+          - IN_PROGRESS
+          - ERROR
+  ManagedObjectRepresentation:
+    type: object
+    properties:
+      additionParents:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      assetParents:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      attrs:
+        type: object
+      childAdditions:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      childAssets:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      childDevices:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      creationDateTime:
+        type: string
+        format: date-time
+      creationTime:
+        type: string
+        format: date-time
+      deviceParents:
+        $ref: '#/definitions/ManagedObjectReferenceCollectionRepresentation'
+      id:
+        $ref: '#/definitions/GId'
+      lastUpdated:
+        type: string
+        format: date-time
+      lastUpdatedDateTime:
+        type: string
+        format: date-time
+      name:
+        type: string
+      owner:
+        type: string
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      type:
+        type: string
+  DecoderResult:
+    type: object
+    properties:
+      alarmTypesToUpdate:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            type: string
+      alarms:
+        type: array
+        items:
+          $ref: '#/definitions/AlarmRepresentation'
+      dataFragments:
+        type: array
+        items:
+          $ref: '#/definitions/DataFragmentUpdate'
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/EventRepresentation'
+      measurements:
+        type: array
+        items:
+          $ref: '#/definitions/MeasurementDto'
+      message:
+        type: string
+      self:
+        type: string
+      selfDecoded:
+        type: string
+      success:
+        type: boolean
+  MeasurementDto:
+    type: object
+    properties:
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: string
+      deviceFragmentPrefix:
+        type: string
+      deviceNameFragment:
+        type: string
+      fragmentsToCopyFromSourceDevice:
+        type: array
+        items:
+          type: string
+      includeDeviceName:
+        type: boolean
+      series:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      values:
+        type: array
+        items:
+          $ref: '#/definitions/MeasurementValueDto'
