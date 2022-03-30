@@ -15,6 +15,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.utils.Sets;
 import org.codehaus.plexus.util.FileUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,11 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -53,7 +54,7 @@ public class MicroserviceDockerClientImplTest {
     BuildImageCmd buildImageCmd;
 
     private String dockerDir;
-    private String networkeMode;
+    private String networkMode;
     private Map<String, String> buildArgs;
     private Set<String> tags;
 
@@ -66,11 +67,16 @@ public class MicroserviceDockerClientImplTest {
         pepareBuildCommandMock(false);
 
         //and I build the image with our client
-        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode, 60);
+        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60);
 
-        //then docker was instructed to build the file
-        //dockerClientMock.buildImageCmd(eq(new File(dockerDir)));
+        //then docker was instructed to build the file and parameters are passed into the build command.
         verify(dockerClientMock, times(1)).buildImageCmd(eq(new File(dockerDir)));
+        verify(buildImageCmd,times(1)).withPlatform("amd64");
+        verify(buildImageCmd).withTags(tags);
+        verify(buildImageCmd).withNetworkMode(networkMode);
+        for (Map.Entry<String, String> entry: buildArgs.entrySet()) {
+            verify(buildImageCmd).withBuildArg(entry.getKey(), entry.getValue());
+        }
     }
 
     @Test
@@ -83,9 +89,7 @@ public class MicroserviceDockerClientImplTest {
 
         //and I build the image with our client, then the docker error is propagated
 
-        assertThrows(RuntimeException.class, () -> {
-            dockerClient.buildDockerImage(dockerDir, tags, buildArgs, networkeMode, 60);
-        });
+        assertThrows(RuntimeException.class, () -> dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60));
 
         verify(dockerClientMock, times(1)).buildImageCmd(eq(new File(dockerDir)));
     }
@@ -94,22 +98,24 @@ public class MicroserviceDockerClientImplTest {
         //mock a three step build process, possibly with an error in the end.
         when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenAnswer(mockInvocation -> {
 
-            BuildImageResultCallback imageResultCallback = (BuildImageResultCallback) mockInvocation.getArgument(0);
+            BuildImageResultCallback imageResultCallback = mockInvocation.getArgument(0);
 
             imageResultCallback.onNext(mockBuildProgressItem("Progress 1"));
             imageResultCallback.onNext(mockBuildProgressItem("Progress 2"));
             imageResultCallback.onNext(mockBuildProgressItem("Progress 3"));
             if (!generateError) {
-                imageResultCallback.onNext(mockCompleteProgressItem("Finished"));
+                imageResultCallback.onNext(mockCompleteProgressItem());
             } else {
-                imageResultCallback.onNext(mockErrorItem("Simulated Docker Error"));
+                imageResultCallback.onNext(mockErrorItem());
             }
             return null;
 
 
         });
-
         when(dockerClientMock.buildImageCmd(any(File.class))).thenReturn(buildImageCmd);
+        when(buildImageCmd.withPlatform(any())).thenReturn(buildImageCmd);
+        when(buildImageCmd.withTags(any())).thenReturn(buildImageCmd);
+        when(buildImageCmd.withBuildArg(any(),any())).thenReturn(buildImageCmd);
     }
 
     private void prepareDockerClientMockForBuild() {
@@ -118,11 +124,9 @@ public class MicroserviceDockerClientImplTest {
         buildArgs = Maps.newHashMap();
         buildArgs.put("IMAGEARCH", "amd64");
         buildArgs.put("hey", "yolo");
-        networkeMode = "none";
+        networkMode = "none";
 
-        when(buildImageCmd.withBuildArg(any(), any())).thenReturn(buildImageCmd);
         when(buildImageCmd.withNetworkMode(any())).thenReturn(buildImageCmd);
-        when(buildImageCmd.withTags(any())).thenReturn(buildImageCmd);
     }
 
     private BuildResponseItem mockBuildProgressItem(String text) {
@@ -131,21 +135,21 @@ public class MicroserviceDockerClientImplTest {
         return buildResponseItem;
     }
 
-    private BuildResponseItem mockCompleteProgressItem(String text) {
+    private BuildResponseItem mockCompleteProgressItem() {
         BuildResponseItem buildResponseItem = mock(BuildResponseItem.class);
-        when(buildResponseItem.getStream()).thenReturn(text);
+        when(buildResponseItem.getStream()).thenReturn("Finished");
         when(buildResponseItem.isBuildSuccessIndicated()).thenReturn(true);
         when(buildResponseItem.getImageId()).thenReturn("ABCDEF4");
         return buildResponseItem;
     }
 
 
-    private BuildResponseItem mockErrorItem(String text) {
+    private BuildResponseItem mockErrorItem() {
         BuildResponseItem buildResponseItem = mock(BuildResponseItem.class);
-        when(buildResponseItem.getStream()).thenReturn(text);
+        when(buildResponseItem.getStream()).thenReturn("Simulated Docker Error");
         when(buildResponseItem.isErrorIndicated()).thenReturn(true);
         ResponseItem.ErrorDetail errorDetail = mock(ResponseItem.ErrorDetail.class);
-        when(errorDetail.getMessage()).thenReturn(text);
+        when(errorDetail.getMessage()).thenReturn("Simulated Docker Error");
         when(errorDetail.getCode()).thenReturn(777);
         when(buildResponseItem.getErrorDetail()).thenReturn(errorDetail);
 
@@ -167,15 +171,16 @@ public class MicroserviceDockerClientImplTest {
         SaveImageCmd saveImageCmd = mock(SaveImageCmd.class);
         when(saveImageCmd.exec()).thenReturn(new ByteArrayInputStream(mockImage));
         when(dockerClientMock.saveImageCmd("test-image")).thenReturn(saveImageCmd);
-        File targetFile = new File(temporaryDirectory.getAbsoluteFile(),"test-image.tar");
+
+        File targetFile = new File(temporaryDirectory.getAbsoluteFile(),"test-image.bin");
 
         //and I tell our implementation client to save this image to a temporary target file.
-        dockerClient.saveDockerImage("test-image", targetFile);
+        dockerClient.saveDockerImage("test-image", new FileOutputStream(targetFile));
 
         //then the target file contains the exact bytes and the hashes are the same.
         String targetImageDigest = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), targetFile));
 
-        assertEquals("Image corrupted by save method!", sourceImageDigest, targetImageDigest);
+        Assertions.assertEquals(sourceImageDigest, targetImageDigest, "Image data corrupted by save method!");
 
 
     }
@@ -184,7 +189,7 @@ public class MicroserviceDockerClientImplTest {
     void testDeleteAll() {
 
         //When I have a image called testimage mocked
-        Image image = getMockedImage("testimage");
+        Image image = getMockedImage();
         RemoveImageCmd removeImageCmd = mockAndGetRemoveImageCmd();
 
         ListImagesCmd listImagesCmd = mock(ListImagesCmd.class);
@@ -208,9 +213,9 @@ public class MicroserviceDockerClientImplTest {
         return removeImageCmd;
     }
 
-    private Image getMockedImage(String imageName) {
+    private Image getMockedImage() {
         Image image = mock(Image.class);
-        when(image.getId()).thenReturn(imageName);
+        when(image.getId()).thenReturn("testimage");
         when(image.getRepoTags()).thenReturn(new String[]{"A", "B", "C"});
         return image;
     }
@@ -219,9 +224,7 @@ public class MicroserviceDockerClientImplTest {
     void tagImage() {
 
         TagImageCmd tagImageCmd = mock(TagImageCmd.class);
-        when(dockerClientMock.tagImageCmd(any(), any(), any())).thenAnswer(invocationOnMock -> {
-            return tagImageCmd;
-        });
+        when(dockerClientMock.tagImageCmd(any(), any(), any())).thenAnswer(invocationOnMock -> tagImageCmd);
 
         //make sure our docker client passes the tagging command to docker and executes it
         dockerClient.tagImage("hello", "bla/hello", "world");
@@ -235,7 +238,7 @@ public class MicroserviceDockerClientImplTest {
         //when I mock a push process
         PushImageCmd pushImageCmd = mock(PushImageCmd.class);
         when(pushImageCmd.exec(any())).thenAnswer(invocationOnMock -> {
-            ResultCallback resultCallback = (ResultCallback) invocationOnMock.getArgument(0);
+            ResultCallback resultCallback = invocationOnMock.getArgument(0);
             resultCallback.onNext(getMockedPushResponseItem("Pushing"));
             resultCallback.onNext(getMockedPushResponseItem("Still pushing"));
             resultCallback.onComplete();
@@ -256,7 +259,7 @@ public class MicroserviceDockerClientImplTest {
         //when I mock a push process
         PushImageCmd pushImageCmd = mock(PushImageCmd.class);
         when(pushImageCmd.exec(any())).thenAnswer(invocationOnMock -> {
-            ResultCallback resultCallback = (ResultCallback) invocationOnMock.getArgument(0);
+            ResultCallback resultCallback = invocationOnMock.getArgument(0);
             resultCallback.onError(new RuntimeException("Push failed"));
             return null;
         });
@@ -264,9 +267,7 @@ public class MicroserviceDockerClientImplTest {
         when(dockerClientMock.pushImageCmd("testimage2")).thenReturn(pushImageCmd);
 
         //and I then ask our client to push this image
-        assertThrows(RuntimeException.class, () -> {
-            dockerClient.pushImage("testimage2");
-        });
+        assertThrows(RuntimeException.class, () -> dockerClient.pushImage("testimage2"));
         //then our push image command is executed on the docker side
         verify(pushImageCmd, times(1)).exec(any());
 

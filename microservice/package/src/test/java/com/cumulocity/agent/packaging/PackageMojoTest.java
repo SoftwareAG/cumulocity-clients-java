@@ -10,18 +10,17 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
-import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,12 +37,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,12 +95,12 @@ public class PackageMojoTest {
 
     @SneakyThrows
     @BeforeEach
-    public void init() throws IOException {
+    public void init() {
         log.info("Initializing files");
         initializeMockedResources();
         mockArtifact();
         mockMavenSession();
-        mockDockerImageFileForArchitectures("amd64", "arm64v8", "i386");
+        mockDockerImageFileForArchitectures("linux/amd64", "linux/arm64v8", "i386");
         mockVersion(TEST_VERSION);
         configurePojo();
     }
@@ -109,15 +108,15 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testContainerPackageDefault() {
-        String expectedBuildArch = "amd64";
+        String expectedBuildArch = "linux/amd64";
 
         //As a default, running the packaging plugin does package a container
         packageMojo.execute();
 
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags(expectedBuildArch)), eq(getExpectedBuildArgs(expectedBuildArch)), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
-
+        
         //and there is a zip file with the expected name for the microservice
         validateZipFileForArchitecture(expectedBuildArch);
 
@@ -128,15 +127,15 @@ public class PackageMojoTest {
 
     @SneakyThrows
     @Test
-    public void testSingleCustomTargetBuildArch() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
+    public void testSingleCustomTargetBuildArch() {
 
-        String expectedBuildArch = "arm64v8";
+        String expectedBuildArch = "linux/arm64v8";
         packageMojo.targetBuildArchs = expectedBuildArch;
 
         //As a default, running the packaging plugin does package a container
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags(expectedBuildArch)), eq(getExpectedBuildArgs(expectedBuildArch)), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch),any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -149,15 +148,15 @@ public class PackageMojoTest {
 
     @SneakyThrows
     @Test
-    public void testContainerNoDelete() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
-        String expectedBuildArch = "amd64";
+    public void testContainerNoDelete() {
+        String expectedBuildArch = "linux/amd64";
 
         //When I turn off docker image deletion
         packageMojo.deleteImage = false;
         //and I package
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags(expectedBuildArch)), eq(getExpectedBuildArgs(expectedBuildArch)), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(),eq(expectedBuildArch), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -170,9 +169,9 @@ public class PackageMojoTest {
 
     @SneakyThrows
     @Test
-    public void testMultipleCustomTargetBuildArch() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
+    public void testMultipleCustomTargetBuildArch() {
 
-        String[] expectedBuildArch = new String[]{"arm64v8", "amd64", "i386"};
+        String[] expectedBuildArch = new String[]{"linux/arm64v8", "linux/amd64", "i386"};
         packageMojo.targetBuildArchs = StringUtils.join(expectedBuildArch, ","); //construct comma-based argument
 
         //As a default, running the packaging plugin does package a container
@@ -182,7 +181,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : expectedBuildArch) {
             validateZipFileForArchitecture(expected);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags(expected)), eq(getExpectedBuildArgs(expected)), any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected),any(), any());
         }
 
         //3 Images saved
@@ -195,8 +194,7 @@ public class PackageMojoTest {
 
     @SneakyThrows
     @Test
-    public void testDockerBuildSpec() throws MojoExecutionException, MavenFilteringException, IOException, InterruptedException {
-
+    public void testDockerBuildSpec() {
         //When I modify the docker build spec in the cumulocity.json for three architectures
         String[] targetArgs = new String[]{"C64", "QNX", "mainframe"};
         mockDockerImageFileForArchitectures(targetArgs);
@@ -206,7 +204,7 @@ public class PackageMojoTest {
 
         ObjectMapper mapper = new ObjectMapper();
         Path manifestPathTarget = Paths.get(tempDir.getAbsolutePath(), "filtered-resources", MANIFEST_FILENAME);
-        ObjectNode jsonManifest = (ObjectNode) mapper.readValue(new File(manifestPathTarget.toUri()), ObjectNode.class);
+        ObjectNode jsonManifest = mapper.readValue(new File(manifestPathTarget.toUri()), ObjectNode.class);
         jsonManifest.putPOJO("buildSpec", dockerBuildSpec);
 
         FileWriter fileWriter = new FileWriter(manifestPathTarget.toFile());
@@ -219,7 +217,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : dockerBuildSpec.getTargetBuildArchitectures()) {
             validateZipFileForArchitecture(expected, jsonManifest);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags(expected)), eq(getExpectedBuildArgs(expected)), any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected), any(), any());
         }
 
         //3 Images saved
@@ -236,49 +234,48 @@ public class PackageMojoTest {
     }
 
     @SneakyThrows
-    private void validateZipFileForArchitecture(String buildArch, JsonNode originalManifest) throws IOException {
+    private void validateZipFileForArchitecture(String buildArch, JsonNode originalManifest)  {
 
         //first, check if there is a properly named zip file
         Path zipFilePath = getExpectedZipFilePath(buildArch);
-        assertTrue(Files.exists(zipFilePath));
+        Assertions.assertTrue(Files.exists(zipFilePath));
 
         //and the zip file contains a cumulocity.json and an image tar
         Map<String, String> zipArguments = Maps.newHashMap();
         zipArguments.put("create", "false");
 
         ZipFile zipFile = new ZipFile(zipFilePath.toFile());
-        assertTrue("image tar not in microservice.zip", Objects.nonNull(zipFile.getEntry("image.tar")));
+        Assertions.assertTrue(Objects.nonNull(zipFile.getEntry("image.tar")), "image tar not in microservice.zip");
 
         ZipEntry manifestFileEntry = zipFile.getEntry("cumulocity.json");
-        assertTrue("manifest entry is null", Objects.nonNull(manifestFileEntry));
+        Assertions.assertTrue(Objects.nonNull(manifestFileEntry), "manifest entry is null");
 
         //Let's check if the docker build info was added and if it contains valid information
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode manifest = objectMapper.readTree(zipFile.getInputStream(manifestFileEntry));
 
         DockerBuildInfo dockerBuildInfo = objectMapper.convertValue(manifest.get("dockerBuildInfo"), DockerBuildInfo.class);
-        assertEquals("Docker build arch mismatch", buildArch, dockerBuildInfo.getImageArch());
-        assertEquals("Host information is valid", SystemUtils.OS_NAME, dockerBuildInfo.getHostOS());
-        assertTrue("The build date in the cumulocity.json seems to be wrong", Math.abs(System.currentTimeMillis() - dockerBuildInfo.getBuildDate().getTime()) < 60000);
+        Assertions.assertEquals(buildArch, dockerBuildInfo.getImageArch(), "Docker build arch mismatch");
+        Assertions.assertEquals(SystemUtils.OS_NAME, dockerBuildInfo.getHostOS(), "Host information is valid");
+        Assertions.assertTrue(Math.abs(System.currentTimeMillis() - dockerBuildInfo.getBuildDate().getTime()) < 60000, "The build date in the cumulocity.json seems to be wrong");
 
-        assertTrue(manifest instanceof ObjectNode);
+        Assertions.assertTrue(manifest instanceof ObjectNode);
 
         //Let us make sure there are no unwanted mutations to the cumulocity.json by the package plugin
         //If we remove the docker build info fragment, the cumulocity.json must be equivalent to original file again.
         ObjectNode manifestWithoutDockerBuildinfo = ((ObjectNode) originalManifest).remove(Lists.newArrayList("dockerBuildInfo"));
-        assertEquals("There seem to be extra mutations in the json by package", originalManifest, manifestWithoutDockerBuildinfo);
+        Assertions.assertEquals(originalManifest, manifestWithoutDockerBuildinfo, "There seem to be extra mutations in the json by package");
 
     }
 
     private Path getExpectedZipFilePath(String buildArch) {
         String expectedZipFileName;
         if (!buildArch.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
-            expectedZipFileName = String.format("%s-%s-%s.zip", ARTIFACT_NAME, TEST_VERSION, buildArch);
+            expectedZipFileName = String.format("%s-%s-%s.zip", ARTIFACT_NAME, TEST_VERSION, buildArch).replaceAll("/","-");
         } else {
             expectedZipFileName = String.format("%s-%s.zip", ARTIFACT_NAME, TEST_VERSION);
         }
-        Path zipFilePath = Paths.get(build.getAbsolutePath(), expectedZipFileName);
-        return zipFilePath;
+        return Paths.get(build.getAbsolutePath(), expectedZipFileName);
     }
 
 
@@ -312,7 +309,7 @@ public class PackageMojoTest {
         Path filteredResourcePath = Paths.get(tempDir.getAbsolutePath(), "filtered-resources");
         filteredResources = filteredResourcePath.toFile();
 
-        log.info("Creating temp directory {}", filteredResources.getAbsoluteFile().toString());
+        log.info("Creating temp directory {}", filteredResources.getAbsoluteFile());
         Files.createDirectories(Paths.get(filteredResources.getAbsolutePath()));
 
         Path source = Paths.get(MANIFEST_RELATIVE_FILEPATH);
@@ -361,7 +358,7 @@ public class PackageMojoTest {
     @SneakyThrows
     private void mockDockerImageFileForArchitectures(String... architectures) {
         for (String architecture : architectures) {
-            Path imgMockPath = Paths.get(build.getAbsolutePath(), String.format("/image-%s.tar", architecture));
+            Path imgMockPath = Paths.get(build.getAbsolutePath(), String.format("image-%s.tar", architecture).replaceAll("/","-"));
             Files.createFile(imgMockPath);
             log.info("Image mock {} created", imgMockPath);
         }
@@ -370,19 +367,11 @@ public class PackageMojoTest {
     @SneakyThrows
     private JsonNode getOriginalManifestJson() {
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode origManifest = objectMapper.readTree(new File(MANIFEST_RELATIVE_FILEPATH));
-        return origManifest;
+        return objectMapper.readTree(new File(MANIFEST_RELATIVE_FILEPATH));
     }
 
-    private Set<String> getExpectedTags(String architecture) {
-        HashSet<String> tagsExpected = Sets.newHashSet(ARTIFACT_NAME + ":" + TEST_VERSION, ARTIFACT_NAME + ":latest");
-        return tagsExpected;
-    }
-
-    private Map<String, String> getExpectedBuildArgs(String architecture) {
-        HashMap<String, String> buildArgs = new HashMap<>();
-        buildArgs.put("IMAGEARCH", architecture + "/");
-        return buildArgs;
+    private Set<String> getExpectedTags() {
+        return Sets.newHashSet(ARTIFACT_NAME + ":" + TEST_VERSION, ARTIFACT_NAME + ":latest");
     }
 
 

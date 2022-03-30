@@ -7,7 +7,6 @@ import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -264,7 +263,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return getDefaultTargetFilename();
         }
 
-        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture);
+        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture).replaceAll("/","-");
     }
 
     protected String getDefaultTargetFilename() {

@@ -13,7 +13,7 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.model.ApplicationWithS
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
 import com.google.common.collect.Sets;
 import lombok.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;

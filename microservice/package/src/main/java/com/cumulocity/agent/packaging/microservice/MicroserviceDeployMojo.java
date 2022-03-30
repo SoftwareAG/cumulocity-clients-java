@@ -1,7 +1,6 @@
 package com.cumulocity.agent.packaging.microservice;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -17,9 +16,9 @@ import org.apache.maven.wagon.repository.Repository;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
+import java.util.Optional;
 
 import static com.cumulocity.agent.packaging.BaseMicroserviceMojo.TARGET_FILENAME_PATTERN_DEFAULT_ARCH;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 
@@ -67,7 +66,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             wagon.put(file, targetFilename);
             wagon.disconnect();
         } catch (Exception e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
