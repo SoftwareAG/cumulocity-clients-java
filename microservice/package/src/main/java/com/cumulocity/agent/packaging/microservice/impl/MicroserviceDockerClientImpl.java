@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements MicroserviceDockerClient, Startable {
 
     DockerClient dockerClient;
-    private final static ExecutorService executorService = Executors.newFixedThreadPool(16);
+    private final static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @SneakyThrows
     public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerBuildTimeout) {
