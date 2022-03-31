@@ -37,10 +37,10 @@ import java.util.Objects;
 @Slf4j
 public class CodecController {
 
-    @Autowired(required = false)
+    @Autowired
     private DecoderService decoderService;
 
-    @Autowired(required = false)
+    @Autowired
     private EncoderService encoderService;
 
     /**
@@ -53,9 +53,6 @@ public class CodecController {
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull DecoderResult decode(@RequestBody @NotNull DecoderInputData inputData) throws DecoderServiceException {
-        if(Objects.isNull(decoderService)) {
-            throw new UnsupportedOperationException("DecoderService is not implemented.");
-        }
         try {
             if(Objects.isNull(inputData)) {
                 throw new IllegalArgumentException("Decoder is invoked with null input data.");
@@ -81,9 +78,6 @@ public class CodecController {
      */
     @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull EncoderResult encode(@RequestBody @NotNull EncoderInputData inputData) throws EncoderServiceException {
-        if(Objects.isNull(encoderService)) {
-            throw new UnsupportedOperationException("EncoderService is not implemented.");
-        }
         try {
             if(Objects.isNull(inputData)) {
                 throw new IllegalArgumentException("Encoder is invoked with null input data.");
