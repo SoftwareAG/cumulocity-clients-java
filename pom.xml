@@ -56,7 +56,8 @@
         <microemu.version>2.0.4</microemu.version>
         <mockito.version>3.12.4</mockito.version>
         <slf4j.version>1.7.32</slf4j.version>
-        <spring.version>5.3.16</spring.version>
+        <spring.version>${spring-framework.version}</spring.version><!-- deprecated, use spring-framework.version instead -->
+        <spring-framework.version>5.3.18</spring-framework.version>
         <svenson.version>1.5.8</svenson.version>
         <osgi.svenson.version>${svenson.version}-${cumulocity.core.version}</osgi.svenson.version>
 
@@ -439,7 +440,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
+            <version>${spring-framework.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
