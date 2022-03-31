@@ -17,7 +17,6 @@ import com.cumulocity.microservice.customencoders.api.exception.InvalidCommandDa
 import com.cumulocity.microservice.customencoders.api.model.EncoderInputData;
 import com.cumulocity.microservice.customencoders.api.model.EncoderResult;
 import com.cumulocity.microservice.customencoders.api.service.EncoderService;
-import com.cumulocity.microservice.lpwan.codec.decoder.model.LpwanDecoderInputData;
 import com.cumulocity.model.idtype.GId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +36,10 @@ import java.util.Objects;
 @Slf4j
 public class CodecController {
 
-    @Autowired
+    @Autowired(required = false)
     private DecoderService decoderService;
 
-    @Autowired
+    @Autowired(required = false)
     private EncoderService encoderService;
 
     /**
@@ -53,13 +52,16 @@ public class CodecController {
      */
     @PostMapping(value = "/decode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull DecoderResult decode(@RequestBody @NotNull DecoderInputData inputData) throws DecoderServiceException {
+        if(decoderService == null) {
+            Exception exception = new UnsupportedOperationException("No implementation provided for the DecoderService");
+            throw new DecoderServiceException(exception, exception.getMessage(), DecoderResult.empty());
+        }
+
         try {
             if(Objects.isNull(inputData)) {
                 throw new IllegalArgumentException("Decoder is invoked with null input data.");
             }
-            else {
-                log.debug("Decoder is invoked with the following input data \\n {}", inputData);
-            }
+            log.debug("Decoder is invoked with the following input data \\n {}", inputData);
 
             return decoderService.decode(inputData.getValue(), GId.asGId(inputData.getSourceDeviceId()), inputData.getArgs());
         } catch (IllegalArgumentException e) {
@@ -78,13 +80,16 @@ public class CodecController {
      */
     @PostMapping(value = "/encode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public @NotNull EncoderResult encode(@RequestBody @NotNull EncoderInputData inputData) throws EncoderServiceException {
+        if(encoderService == null) {
+            Exception exception = new UnsupportedOperationException("No implementation provided for the EncoderService");
+            throw new EncoderServiceException(exception, exception.getMessage(), EncoderResult.empty());
+        }
+
         try {
             if(Objects.isNull(inputData)) {
                 throw new IllegalArgumentException("Encoder is invoked with null input data.");
             }
-            else {
-                log.debug("Encoder is invoked with the following input data \\n {}", inputData);
-            }
+            log.debug("Encoder is invoked with the following input data \\n {}", inputData);
             return encoderService.encode(inputData);
         } catch (IllegalArgumentException e) {
             log.error("Encoder failed as it received invalid input.", e);
