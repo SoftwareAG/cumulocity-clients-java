@@ -21,6 +21,7 @@
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>2.2.8.RELEASE</spring-boot-dependencies.version>
+        <spring-framework.version>5.2.20.RELEASE</spring-framework.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
         <guava.version>29.0-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
@@ -63,6 +64,15 @@
                 <scope>import</scope>
                 <type>pom</type>
                 <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- override vulnerable spring version -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring-framework.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- spring boot -->
