@@ -21,7 +21,7 @@
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
         <spring-boot-dependencies.version>2.2.10.RELEASE</spring-boot-dependencies.version>
-        <spring-framework.version>5.3.15</spring-framework.version>
+        <spring-framework.version>5.3.18</spring-framework.version>
         <spring-security.version>5.6.1</spring-security.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
         <guava.version>29.0-jre</guava.version>
