@@ -147,6 +147,9 @@ public class LnsConnectionService {
         LnsConnection existingLnsConnection = lnsConnections.remove(existingLnsConnectionName);
         existingLnsConnection.initializeWith(lnsConnectionToUpdate);
 
+        // Validate LnsConnection after update
+        existingLnsConnection.isValid();
+
         lnsConnections.put(updatedLnsConnectionName, existingLnsConnection);
 
         flushCache();
