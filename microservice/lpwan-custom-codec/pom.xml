@@ -93,11 +93,13 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
             <version>${springfox.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-core</artifactId>
             <version>${springfox.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
