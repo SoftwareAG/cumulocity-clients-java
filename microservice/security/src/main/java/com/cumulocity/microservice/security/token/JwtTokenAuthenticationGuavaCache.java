@@ -12,16 +12,21 @@ public class JwtTokenAuthenticationGuavaCache implements JwtAuthenticatedTokenCa
 
     private final Cache<JwtCredentials, Authentication> userTokenCache;
 
-    public JwtTokenAuthenticationGuavaCache(int maximumSize, int expireAfterAccessInMinutes) {
-        this.userTokenCache = CacheBuilder.newBuilder()
+    public JwtTokenAuthenticationGuavaCache(int maximumSize, int expireAfterAccessInMinutes, int jwtCacheExpireAfterWrite) {
+        CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder()
                 .maximumSize(maximumSize)
-                .expireAfterAccess(expireAfterAccessInMinutes, TimeUnit.MINUTES)
-                .build();
+                .expireAfterAccess(expireAfterAccessInMinutes, TimeUnit.MINUTES);
+
+        if(jwtCacheExpireAfterWrite > 0){
+            builder.expireAfterWrite(jwtCacheExpireAfterWrite, TimeUnit.SECONDS);
+        }
+
+        this.userTokenCache = builder.build();
     }
 
     @Override
-    public Authentication get(JwtCredentials key, JwtTokenAuthenticationLoader valueLoader) throws ExecutionException {
-        return userTokenCache.get(key, valueLoader);
+    public Authentication get(JwtCredentials key, JwtTokenAuthenticationLoader jwtTokenAuthenticationLoader) throws ExecutionException {
+        return userTokenCache.get(key, jwtTokenAuthenticationLoader);
     }
 }
 
