@@ -109,7 +109,7 @@ public class InventoryApiImpl implements InventoryApi {
     @Override
     public Integer countManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
         if (filter == null) {
-            return 0;
+            throw new IllegalArgumentException("Inventory filter cannot be null");
         }
         Map<String, String> params = filter.getQueryParams();
         String path = getMOCollectionUrl() + "/count";

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT;
@@ -202,6 +203,43 @@ public class InventoryApiImplTest {
         assertThat(list, notNullValue());
 
     }
+
+    @Test
+    public void shouldCountMosByEmptyFilter() throws SDKException {
+        //Given
+        String expectedUrl = INVENTORY_COLLECTION_URL + "/count";
+        InventoryFilter filter = new InventoryFilter();
+
+        // When
+        inventoryApiResource.countManagedObjectsByFilter(filter);
+
+        // Then
+        verify(restConnector).get(expectedUrl, MediaType.APPLICATION_JSON_TYPE, Integer.class);
+    }
+
+    @Test
+    public void shouldCountMosByTypeFilter() throws SDKException {
+        //Given
+        String myType = "myType";
+        InventoryFilter filter = new InventoryFilter().byType(myType);
+        String expectedUrl = INVENTORY_COLLECTION_URL + "/count?type=myType";
+
+        // When
+        inventoryApiResource.countManagedObjectsByFilter(filter);
+
+        // Then
+        verify(restConnector).get(expectedUrl, MediaType.APPLICATION_JSON_TYPE, Integer.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenCountByFilterWithNullInput() throws SDKException {
+        // When
+        Throwable thrown = catchThrowable(() -> inventoryApiResource.countManagedObjectsByFilter(null));
+
+        // Then
+        assertThat(thrown, is(instanceOf(IllegalArgumentException.class)));
+    }
+
     private void givenRespondManagedObject(GId id) {
         ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
         when(restConnector.get(contains(INVENTORY_COLLECTION_URL+"/"+ GId.asString(id)), eq(MANAGED_OBJECT), eq(ManagedObjectRepresentation.class)))

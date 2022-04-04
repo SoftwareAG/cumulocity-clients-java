@@ -118,11 +118,12 @@ public interface InventoryApi {
     ManagedObjectCollection getManagedObjectsByFilter(InventoryFilter filter) throws SDKException;
 
     /**
-     * Gets the count of managed objects from the platform based on specified filter.
+     * Returns the count of managed objects from the platform based on specified filter.
      *
      * @param filter the filter criteria(s)
      * @return count of managed objects matched by the filter
      * @throws SDKException             if the query failed
+     * @throws IllegalArgumentException if filter is null
      */
     Integer countManagedObjectsByFilter(InventoryFilter filter) throws SDKException;
 
