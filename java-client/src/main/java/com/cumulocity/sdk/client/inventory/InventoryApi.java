@@ -124,7 +124,7 @@ public interface InventoryApi {
      * @return count of managed objects matched by the filter
      * @throws SDKException             if the query failed
      */
-    Integer getManagedObjectsCountByFilter(InventoryFilter filter) throws SDKException;
+    Integer countManagedObjectsByFilter(InventoryFilter filter) throws SDKException;
 
     /**
      * Returns supported measurements of the Managed Object specified by its id

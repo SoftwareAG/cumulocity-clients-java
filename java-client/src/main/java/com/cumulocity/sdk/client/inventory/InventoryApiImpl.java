@@ -107,7 +107,7 @@ public class InventoryApiImpl implements InventoryApi {
     }
 
     @Override
-    public Integer getManagedObjectsCountByFilter(InventoryFilter filter) throws SDKException {
+    public Integer countManagedObjectsByFilter(InventoryFilter filter) throws SDKException {
         if (filter == null) {
             return 0;
         }
