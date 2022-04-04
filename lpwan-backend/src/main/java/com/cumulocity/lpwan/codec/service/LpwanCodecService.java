@@ -22,7 +22,7 @@ import com.cumulocity.microservice.lpwan.codec.model.LpwanCodecDetails;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
@@ -44,20 +44,20 @@ public class LpwanCodecService {
 
     private MicroserviceSubscriptionsService subscriptionsService;
 
-    private PlatformParameters platformParameters;
+    private RestConnector restConnector;
 
     private InventoryApi inventoryApi;
 
     private WebClient webClient;
 
     @Autowired
-    public LpwanCodecService(MicroserviceSubscriptionsService subscriptionsService, PlatformParameters platformParameters, InventoryApi inventoryApi) {
+    public LpwanCodecService(MicroserviceSubscriptionsService subscriptionsService, RestConnector restConnector, InventoryApi inventoryApi) {
         this.subscriptionsService = subscriptionsService;
-        this.platformParameters = platformParameters;
+        this.restConnector = restConnector;
         this.inventoryApi = inventoryApi;
         this.webClient = WebClientFactory.builder()
                 .timeout(WebClientFactory.DEFAULT_TIMEOUT_IN_MILLIS)
-                .baseUrl(platformParameters.getHost())
+                .baseUrl(restConnector.getPlatformParameters().getHost())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .build();
