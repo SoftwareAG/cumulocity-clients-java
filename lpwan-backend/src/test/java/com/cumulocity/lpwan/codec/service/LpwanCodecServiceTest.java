@@ -15,15 +15,12 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
-import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -44,8 +41,8 @@ public class LpwanCodecServiceTest {
     @Mock
     private MicroserviceSubscriptionsService subscriptionsService;
 
-    @Mock
-    private PlatformParameters platformParameters;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    RestConnector restConnector;
 
     @Mock
     private InventoryApi inventoryApi;
