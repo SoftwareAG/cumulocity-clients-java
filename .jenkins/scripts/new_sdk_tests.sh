@@ -9,7 +9,7 @@ else
   MANAGE_USER="$3"
 fi
 
-./mvnw -s $MVN_SETTINGS verify $ADDITIONAL_BUILD_ARGS \
+./mvnw -B -s $MVN_SETTINGS verify $ADDITIONAL_BUILD_ARGS \
   -Pintegration -Dcumulocity.host=http://${DEPLOYMENT_ENVIRONMENT} \
   -Dcumulocity.management.password=${MANAGE_PASS} \
   -Dcumulocity.management.username=${MANAGE_USER}    

@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Important to call close() method on shutdown to finish processing.
  */
 @Slf4j
-public class PlatformParameters {
+public class PlatformParameters implements AutoCloseable {
 
     public final static int DEFAULT_PAGE_SIZE = 5;
 
@@ -75,7 +75,9 @@ public class PlatformParameters {
 
     private HttpClientConfig httpClientConfig = HttpClientConfig.httpConfig().build();
 
-    Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap());
+    Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+    private final Object lock = new Object();
 
     /** This property determines whether the chunked encoding is used and if so,
      * the chunk size used by the http client while sending the request.
@@ -118,9 +120,13 @@ public class PlatformParameters {
         }
     }
 
-    public synchronized RestConnector createRestConnector() {
+    public RestConnector createRestConnector() {
         if (restConnector == null) {
-            restConnector = new RestConnector(this, new ResponseParser(responseMapper));
+            synchronized (lock) {
+                if (restConnector == null) {
+                    restConnector = new RestConnector(this, new ResponseParser(responseMapper));
+                }
+            }
         }
         return restConnector;
     }
@@ -264,10 +270,14 @@ public class PlatformParameters {
         }
 
         if (restConnector != null) {
-            try {
-                restConnector.close();
-            } catch (Exception e) {
-                log.debug("Error while closing restConnector.", e);
+            synchronized (lock) {
+                if (restConnector != null) {
+                    try {
+                        restConnector.close();
+                    } catch (Exception e) {
+                        log.debug("Error while closing restConnector.", e);
+                    }
+                }
             }
         }
     }

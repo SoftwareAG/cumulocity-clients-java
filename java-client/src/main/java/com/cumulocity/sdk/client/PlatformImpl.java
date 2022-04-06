@@ -44,18 +44,18 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryApiImpl;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApiImpl;
+import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
 import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApiImpl;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl;
 import com.cumulocity.sdk.client.option.SystemOptionApi;
 import com.cumulocity.sdk.client.option.SystemOptionApiImpl;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.cumulocity.sdk.client.option.TenantOptionApiImpl;
-import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
-import com.cumulocity.sdk.client.messaging.notifications.TokenApiImpl;
 import com.cumulocity.sdk.client.user.UserApi;
 import com.cumulocity.sdk.client.user.UserApiImpl;
-import com.cumulocity.sdk.client.messaging.notifications.NotificationSubscriptionApi;
 
-public class PlatformImpl extends PlatformParameters implements Platform, AutoCloseable {
+public class PlatformImpl extends PlatformParameters implements Platform {
 
     private static final String PLATFORM_URL = "platform";
 
@@ -314,4 +314,5 @@ public class PlatformImpl extends PlatformParameters implements Platform, AutoCl
     public RestConnector rest() {
         return new RestConnector(this, new ResponseParser(this.getResponseMapper()));
     }
+
 }

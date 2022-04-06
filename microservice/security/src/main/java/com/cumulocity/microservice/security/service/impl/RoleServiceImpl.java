@@ -5,6 +5,7 @@ import com.cumulocity.rest.representation.user.CurrentUserRepresentation;
 import com.cumulocity.rest.representation.user.RoleRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.user.UserApi;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +23,18 @@ import static com.cumulocity.rest.representation.user.UserMediaType.CURRENT_USER
 @Slf4j
 @Service
 public class RoleServiceImpl implements RoleService {
-    private final RestConnector userRestConnector;
 
-    @Autowired
-    public RoleServiceImpl(RestConnector userRestConnector) {
-        this.userRestConnector = userRestConnector;
+    private final UserApi userApi;
+
+    public RoleServiceImpl(UserApi userApi) {
+        this.userApi = userApi;
     }
 
     @Override
     public List<String> getUserRoles() {
         final List<String> result = Lists.newArrayList();
         try {
-            final URL url = new URL(new URL(userRestConnector.getPlatformParameters().getHost()), "user/currentUser");
-            final CurrentUserRepresentation currrentUser = userRestConnector.get(url.toString(), CURRENT_USER, CurrentUserRepresentation.class);
+            final CurrentUserRepresentation currrentUser = userApi.getCurrentUser();
     
             final List<RoleRepresentation> effectiveRoles = currrentUser.getEffectiveRoles();
             if (effectiveRoles != null && !effectiveRoles.isEmpty()) {

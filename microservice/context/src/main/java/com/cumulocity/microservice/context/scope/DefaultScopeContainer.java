@@ -2,9 +2,6 @@ package com.cumulocity.microservice.context.scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,21 +101,10 @@ public class DefaultScopeContainer implements ScopeContainer {
         }
         try {
             Object removed = objectsMap.remove(name);
-            doReleaseResource(removed);
             runDestructionCallbacks(name);
             return removed;
         } finally {
             objectsInDestruction.remove(name);
-        }
-    }
-
-    private void doReleaseResource(Object object) {
-        if (ClassUtils.isAssignableValue(AutoCloseable.class, object)) {
-            try {
-                ((AutoCloseable) object).close();
-            } catch (Exception e) {
-                log.debug("Could not release resources of: {}", object.getClass().getSimpleName());
-            }
         }
     }
 
