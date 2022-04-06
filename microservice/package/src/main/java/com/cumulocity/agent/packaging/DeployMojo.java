@@ -1,8 +1,6 @@
 package com.cumulocity.agent.packaging;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -10,15 +8,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 @Mojo(name = "push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
 @Slf4j
@@ -49,10 +44,6 @@ public class DeployMojo extends BaseMicroserviceMojo {
 
     }
 
-    private boolean configExists() {
-		return Files.exists(Paths.get(System.getProperty("user.home")).resolve(".docker/config.json"));
-    }
-
     private void publish(String tag) throws MojoExecutionException {
         log.info("Publishing image to registry");
         final DockerImage source = DockerImage.ofName(name).withTag(tag);
@@ -71,12 +62,5 @@ public class DeployMojo extends BaseMicroserviceMojo {
         dockerClient.deleteAll(image.toString(), true);
     }
 
-    private Element[] tags(List<String> tags) {
-        return FluentIterable.from(tags).transform(new Function<String, Element>() {
-            @Override
-            public Element apply(@Nullable String tag) {
-                return element("tag", tag);
-            }
-        }).toArray(Element.class);
-    }
+
 }

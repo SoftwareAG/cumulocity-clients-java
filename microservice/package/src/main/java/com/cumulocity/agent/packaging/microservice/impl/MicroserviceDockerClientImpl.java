@@ -20,10 +20,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
 import java.io.*;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,7 +57,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     }
 
-    protected class ImageBuildCompletionWaiter extends BuildImageResultCallback {
+    protected static class ImageBuildCompletionWaiter extends BuildImageResultCallback {
 
         String completedImageId;
         boolean buildFailed;
@@ -114,9 +112,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         }
     }
 
-    public void saveDockerImage(final String image,  final OutputStream outputStream) throws IOException, MavenExecutionException {
+    public void saveDockerImage(final String image,  final OutputStream outputStream) throws MavenExecutionException {
 
-        log.info("Saving image {} to output stream", outputStream.toString());
+        log.info("Saving image {} to output stream", image);
 
         try {
             SaveImageCmd saveImageCmd = dockerClient.saveImageCmd(image);
@@ -132,11 +130,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     private static DockerClient newDockerClient() {
 
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-
         log.debug("Docker Configuration used: {}", config);
 
-        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder().dockerHost(config.getDockerHost()).sslConfig(config.getSSLConfig()).maxConnections(100).connectionTimeout(Duration.ofSeconds(30)).responseTimeout(Duration.ofSeconds(45)).build();
-
+        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder().dockerHost(config.getDockerHost()).build();
 
         return DockerClientImpl.getInstance(config, httpClient);
     }
@@ -146,7 +142,6 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         log.info("Cleaning up all docker images for {} ", imageName);
 
         ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
-
         listImagesCmd.getFilters().putAll(getImageNameFilter(imageName));
 
         List<Image> images = listImagesCmd.exec();
@@ -194,26 +189,26 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         listImagesCmd.getFilters().putAll(nameFilter);
 
         List<Image> imagesFound = listImagesCmd.exec();
-        long timeOutTimeStamp=System.currentTimeMillis()+1000*timeOutSeconds;
+        long timeOutTimeStamp=System.currentTimeMillis()+ 1000L *timeOutSeconds;
         while (imagesFound.isEmpty()) {
             if (System.currentTimeMillis()>timeOutTimeStamp) {
                 throw new RuntimeException("Waiting for image timed out after "+timeOutSeconds+"seconds");
             }
             Thread.sleep(2000);
-            log.info("Image {} not found in registry, retrying...");
+            log.info("Image {} not found in registry, retrying...", image);
             imagesFound = listImagesCmd.exec();
         }
         log.info("Image appeared in registry.");
     }
 
 
-    private class PushImageResponseCallBack implements ResultCallback<PushResponseItem> {
+    private static class PushImageResponseCallBack implements ResultCallback<PushResponseItem> {
 
         AtomicBoolean pushProcessDone = new AtomicBoolean(false);
 
         @SneakyThrows
         private void waitForCompletionOrFailure() {
-            while (pushProcessDone.get() == false) {
+            while (!pushProcessDone.get()) {
                 Thread.sleep(250);
             }
         }

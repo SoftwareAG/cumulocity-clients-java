@@ -26,7 +26,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 public class MicroserviceDeployMojo extends AbstractMojo {
 
     private static final String SERVER_ID = "microservice";
-    
+
     @Parameter(defaultValue = "${project.build.directory}")
     private File build;
     @Parameter(defaultValue = "${project}", readonly = true)

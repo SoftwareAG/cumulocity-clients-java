@@ -3,7 +3,6 @@ package com.cumulocity.agent.packaging.microservice;
 
 import org.apache.maven.MavenExecutionException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;

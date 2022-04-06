@@ -120,7 +120,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
-                                                                                 ImmutableList.<String>of(), ImmutableList.<String>of(),
+                                                                                 ImmutableList.of(), ImmutableList.of(),
                                                                                  mavenSession);
         getLog().info("copy resources from " + src + " to" + destination);
         createDirectories(destination.toPath());
@@ -229,7 +229,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     public Resource resource(String resourceDirectory) {
-        return resource(resourceDirectory, ImmutableList.<String>of(), ImmutableList.<String>of());
+        return resource(resourceDirectory, ImmutableList.of(), ImmutableList.of());
     }
 
     public Resource resource(String resourceDirectory, List<String> includes, List<String> excludes) {

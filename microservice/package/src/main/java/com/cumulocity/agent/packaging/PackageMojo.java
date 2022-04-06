@@ -105,7 +105,6 @@ public class PackageMojo extends BaseMicroserviceMojo {
         if (!containerSkip) {
 
             Iterable<String> buildTargetArchitectures = getTargetBuildArchitectures();
-
             log.info("Starting docker microservice build for the following target architectures: {}", List.of(buildTargetArchitectures));
 
             for (String arch: buildTargetArchitectures) {
@@ -211,7 +210,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             throw e;
         }
 
-        Map jsonManifest = mapper.readValue(file, Map.class);
+        Map<String, Object> jsonManifest = mapper.readValue(file, Map.class);
 
         if (jsonManifest.containsKey(BUILD_SPEC_FRAGMENT)) {
             DockerBuildSpec buildSpec = mapper.convertValue(jsonManifest.get(BUILD_SPEC_FRAGMENT), DockerBuildSpec.class);
@@ -427,9 +426,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
     }
 
     @Value
-    private static final class ManifestConstraintViolation {
-        private final String path;
-        private final String message;
+    private static class ManifestConstraintViolation {
+        String path;
+        String message;
     }
 
 
