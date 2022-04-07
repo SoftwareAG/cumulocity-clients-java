@@ -19,21 +19,6 @@
  */
 package com.cumulocity.sdk.client.measurement;
 
-import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
-import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.joda.time.DateTime;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import com.cumulocity.model.DateConverter;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -41,6 +26,19 @@ import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepre
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import org.joda.time.DateTime;
+import org.junit.jupiter.api.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
+import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.TEN_SECONDS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
@@ -84,6 +82,11 @@ public class MeasurementIT extends JavaSdkITBase {
             deleteMeasurements(measOn1stPage);
             measOn1stPage = getMeasurementsFrom1stPage();
         }
+    }
+
+    @AfterAll
+    public static void clearManagedObjects() {
+        managedObjects = new ArrayList<>();
     }
 
     @Test
@@ -329,19 +332,13 @@ public class MeasurementIT extends JavaSdkITBase {
         // given
         iHaveMeasurements(3, "com.type1");
         iHaveMeasurements(2, "com.type2");
-        // when
         iCreateAllMeasurements();
-        // then
         allShouldBeCreated();
-        // when
-        iQueryAll();
-        // then
-        iShouldGetNumberOfMeasurements(5);
+        iShouldEventuallyGetNumberOfMeasurements(5);
         // when
         iDeleteMeasurementCollection();
-        iQueryAll();
         // then
-        iShouldGetNumberOfMeasurements(0);
+        iShouldEventuallyGetNumberOfMeasurements(0);
     }
 
     @Test
@@ -349,19 +346,13 @@ public class MeasurementIT extends JavaSdkITBase {
         // given
         iHaveMeasurements(3, "com.type1");
         iHaveMeasurements(2, "com.type2");
-        // when
         iCreateAllMeasurements();
-        // then
         allShouldBeCreated();
-        // when
-        iQueryAll();
-        // then
-        iShouldGetNumberOfMeasurements(5);
+        iShouldEventuallyGetNumberOfMeasurements(5);
         // when
         iDeleteMeasurementsByType("com.type2");
-        iQueryAll();
         // then
-        iShouldGetNumberOfMeasurements(3);
+        iShouldEventuallyGetNumberOfMeasurements(3);
         // when
         iQueryAllByType("com.type1");
         // then
@@ -511,7 +502,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void iDeleteMeasurementWithCreatedId() throws SDKException {
         try {
-            measurementApi.deleteMeasurement(result1.get(0));
+            measurementApi.delete(result1.get(0));
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -645,6 +636,10 @@ public class MeasurementIT extends JavaSdkITBase {
         assertThat(collection1.getMeasurements().size(), is(equalTo(count)));
     }
 
+    private void iShouldEventuallyGetNumberOfMeasurements(int count) {
+        await().atMost(TEN_SECONDS).until(() -> measurementApi.getMeasurements().get().getMeasurements().size() == count);
+    }
+
     private void shouldBeBadRequest() {
         assertThat(status, is(UNPROCESSABLE));
     }
@@ -659,7 +654,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void deleteMeasurements(List<MeasurementRepresentation> measOn1stPage) throws SDKException {
         for (MeasurementRepresentation m : measOn1stPage) {
-            measurementApi.deleteMeasurement(m);
+            measurementApi.delete(m);
         }
     }
 
