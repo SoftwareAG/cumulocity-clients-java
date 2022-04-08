@@ -82,7 +82,7 @@ class CodecExceptionsHandlerTest {
     @Test
     void doHandleException_IllegalArgumentException() {
         IllegalArgumentException exception = new IllegalArgumentException("Invalid input parameter message");
-        ResponseEntity<ErrorMessageRepresentation> responseEntity = new CodecExceptionsHandler().handleExceptionForBadRequest(exception);
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new CodecExceptionsHandler().handleIllegalArgumentException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getHeaders().getContentType());

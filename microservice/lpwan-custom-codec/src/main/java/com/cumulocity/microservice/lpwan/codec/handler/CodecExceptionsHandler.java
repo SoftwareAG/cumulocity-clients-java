@@ -38,7 +38,7 @@ public class CodecExceptionsHandler {
      * This method handles the custom <b>DecoderServiceException</b>.
      *
      * @param exception       represents the exception
-     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code> or <code>HttpStatus.NOT_IMPLEMENTED</code>
      * @see DecoderServiceException {@link com.cumulocity.microservice.customdecoders.api.exception.DecoderServiceException}
      */
     @ExceptionHandler(value = DecoderServiceException.class)
@@ -46,18 +46,23 @@ public class CodecExceptionsHandler {
     public ResponseEntity<DecoderResult> handleDecoderServiceException(DecoderServiceException exception) {
         log.error(exception.getMessage(), exception);
 
-        if (exception instanceof InvalidInputDataException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+        HttpStatus httpStatus;
+        if (exception.getCause() instanceof UnsupportedOperationException) {
+            httpStatus = HttpStatus.NOT_IMPLEMENTED;
+        } else if (exception instanceof InvalidInputDataException) {
+            httpStatus = HttpStatus.BAD_REQUEST;
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
+
+        return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
     }
 
     /**
      * This method handles the custom <b>EncoderServiceException</b>.
      *
      * @param exception represents the exception
-     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code> or <code>HttpStatus.NOT_IMPLEMENTED</code>
      * @see EncoderServiceException {@link com.cumulocity.microservice.customencoders.api.exception.EncoderServiceException}
      */
     @ExceptionHandler(value = EncoderServiceException.class)
@@ -65,25 +70,16 @@ public class CodecExceptionsHandler {
     public ResponseEntity<EncoderResult> handleEncoderServiceException(EncoderServiceException exception) {
         log.error(exception.getMessage(), exception);
 
-        if (exception instanceof InvalidCommandDataException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+        HttpStatus httpStatus;
+        if (exception.getCause() instanceof UnsupportedOperationException) {
+            httpStatus = HttpStatus.NOT_IMPLEMENTED;
+        } else if (exception instanceof InvalidCommandDataException) {
+            httpStatus = HttpStatus.BAD_REQUEST;
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
-    }
 
-    /**
-     * This method handles the <b>UnsupportedOperationException</b>.
-     *
-     * @param exception       represents the exception
-     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
-     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/UnsupportedOperationException.html">UnsupportedOperationException</a>
-     */
-    @ExceptionHandler(value = UnsupportedOperationException.class)
-    @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForInternalServerError(Throwable exception) {
-        log.error(exception.getMessage(), exception);
-        return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON).body(exception.getResult());
     }
 
     /**
@@ -95,7 +91,7 @@ public class CodecExceptionsHandler {
      */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForBadRequest(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleIllegalArgumentException(Throwable exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
     }

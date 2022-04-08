@@ -16,7 +16,7 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
-import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -42,8 +42,8 @@ public class PayloadDecoderServiceTest {
     @Mock
     private MicroserviceSubscriptionsService subscriptionsService;
 
-    @Mock
-    PlatformParameters platformParameters;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    RestConnector restConnector;
 
     @Mock
     private InventoryApi inventoryApi;
