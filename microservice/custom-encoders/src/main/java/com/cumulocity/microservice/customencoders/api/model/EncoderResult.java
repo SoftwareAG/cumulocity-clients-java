@@ -7,12 +7,14 @@
 
 package com.cumulocity.microservice.customencoders.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.Map;
 
 @NoArgsConstructor
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EncoderResult {
     private String encodedCommand;
     private Map<String, String> properties;

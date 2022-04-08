@@ -13,6 +13,7 @@ import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import lombok.Getter;
@@ -25,6 +26,7 @@ import java.util.*;
 
 @NoArgsConstructor
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DecoderResult extends BaseResourceRepresentation implements Serializable {
 
     private List<AlarmRepresentation> internalServiceAlarms;
