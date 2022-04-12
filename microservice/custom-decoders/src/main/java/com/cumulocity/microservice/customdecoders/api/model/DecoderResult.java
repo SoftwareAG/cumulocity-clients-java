@@ -24,9 +24,11 @@ import org.svenson.JSONTypeHint;
 import java.io.Serializable;
 import java.util.*;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.*;
+
 @NoArgsConstructor
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 public class DecoderResult extends BaseResourceRepresentation implements Serializable {
 
     private List<AlarmRepresentation> internalServiceAlarms;

@@ -12,9 +12,11 @@ import lombok.*;
 
 import java.util.Map;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.*;
+
 @NoArgsConstructor
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 public class EncoderResult {
     private String encodedCommand;
     private Map<String, String> properties;

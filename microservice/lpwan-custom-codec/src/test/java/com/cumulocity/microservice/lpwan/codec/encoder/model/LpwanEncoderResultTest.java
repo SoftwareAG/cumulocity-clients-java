@@ -7,9 +7,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LpwanEncoderResultTest {
@@ -31,16 +28,25 @@ public class LpwanEncoderResultTest {
     }
 
     @Test
-    public void nullFieldsShouldBeIgnoredOnSerialization() throws JsonProcessingException {
+    public void nullFieldsShouldBeIgnoredOnSerialization() throws Exception {
         LpwanEncoderResult lpwanEncoderResult = new LpwanEncoderResult();
         lpwanEncoderResult.setMessage("\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\"");
         ObjectMapper objectMapper = new ObjectMapper();
 
+        String expectedJson = "{\"message\":\"\\\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\\\"\",\"success\":true}";
         String outputJson = objectMapper.writeValueAsString(lpwanEncoderResult);
-        assertThat(outputJson, containsString("message"));
-        assertThat(outputJson, containsString("success"));
-        assertThat(outputJson, not(containsString("encodedCommand")));
-        assertThat(outputJson, not(containsString("properties")));
+        assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(outputJson));
+    }
+
+    @Test
+    public void nullFieldsShouldBeIgnoredOnSerialization_FailCase() throws Exception {
+        LpwanEncoderResult lpwanEncoderResult = new LpwanEncoderResult();
+        lpwanEncoderResult.setMessage("\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\"");
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String expectedJson = "{\"encodedCommand\":null, \"properties\":null,\"message\":\"\\\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\\\"\",\"success\":true}";
+        String outputJson = objectMapper.writeValueAsString(lpwanEncoderResult);
+        assertNotEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(outputJson));
     }
 
     @Test
