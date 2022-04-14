@@ -26,8 +26,7 @@ Below you see the request JSON input accepted by the /decode endpoint:
    		"deviceModel": "<<device model>>",
    		"deviceManufacturer": "<<device manufacturer>>",
    		"sourceDeviceEui": "<<device external Id>>"
-   	},
-
+   	}
 }
 ```
 
@@ -47,7 +46,7 @@ The LPWAN agent passes in the following fragments to the codec microservice:
         "deviceModel": "Asset Tracker",
         "deviceManufacturer": "LANSITEC",
         "sourceDeviceEui": "AA02030405060708"
-    },
+    }
 }
 ```
 
@@ -75,148 +74,65 @@ The fragments above are used as follows:
 * *success* - An informative boolean flag (true or false) that indicates if decoding by the microservice was successful.
 * *measurements* - A list of measurements to be created by the LPWAN agent. The syntax here follows an own DTO format. See the example below:
 
-
-```json
-  {
-      "alarms": null,
-      "alarmTypesToUpdate": null,
-      "events": [
-          {
-              "type": "Tracker status",
-              "time": "2021-12-27T10:13:24.251+00:00",
-              "creationTime": null,
-              "text": "GPSSTATE: LOCATING\nVIBSTATE: 5\nCHGSTATE: UNKNOWN(24)",
-              "source": {
-                  "id": {
-                      "attrs": {},
-                      "type": "com_cumulocity_model_idtype_GId",
-                      "value": "1025",
-                      "name": null,
-                      "long": 1025
-                  }
-              },
-              "dateTime": "2021-12-27T10:13:24.251Z"
-          }
-      ],
-      "measurements": [
-          {
-              "type": "c8y_Battery",
-              "series": "c8y_Battery",
-              "time": "2021-12-27T10:13:24.251Z",
-              "values": [
-                  {
-                      "seriesName": "level",
-                      "unit": "%",
-                      "value": 35
-                  }
-              ]
-          },
-          {
-              "type": "Tracker Signal Strength",
-              "series": "Tracker Signal Strength",
-              "time": "2021-12-27T10:13:24.251Z",
-              "values": [
-                  {
-                      "seriesName": "rssi",
-                      "unit": "dBm",
-                      "value": -85
-                  }
-              ]
-          },
-          {
-              "type": "Tracker Signal Strength",
-              "series": "Tracker Signal Strength",
-              "time": "2021-12-27T10:13:24.251Z",
-              "values": [
-                  {
-                      "seriesName": "snr",
-                      "unit": "dBm",
-                      "value": 0
-                  }
-              ]
-          }
-      ],
-      "dataFragments": null,
-      "success": true
-  }
-```
-
 **Full decoder response sample**
 
-```
-{
-    "self": null,
-    "alarms": [{
-        "source": {
-            "id": null
-          },
-        "type": "c8yDemoDecoderalarm",
-        "text": "I am an decoder alarm",
-        "severity": "MINOR",
-        "status": "ACTIVE",
-        "time": "2020-03-03T12:03:23.845Z",
-        "myFragment": "my data"
-    }],
-    "alarmTypesToUpdate": null,
-    "events": [
+```json
+ {
+  "events": [
+    {
+      "source": {
+        "id": "3626"
+      },
+      "type": "Tracker status",
+      "time": "2022-04-14T06:33:53.559Z",
+      "text": "GPSSTATE: NO_SIGNAL\nVIBSTATE: 0\nCHGSTATE: POWER_CABLE_DISCONNECTED"
+    }
+  ],
+  "measurements": [
+    {
+      "series": "c8y_Battery",
+      "values": [
         {
-            "self": null,
-            "attrs": {},
-            "id": null,
-            "type": "c8y_LocationUpdate",
-            "time": "1997-10-26T13:27:16.000+00:00",
-            "creationTime": null,
-            "text": "Location updated",
-            "externalSource": null,
-            "source": {
-                "self": null,
-                "attrs": {},
-                "id": {
-                    "attrs": {},
-                    "type": "com_cumulocity_model_idtype_GId",
-                    "value": "1025",
-                    "name": null,
-                    "long": 1025
-                },
-                "type": null,
-                "name": null,
-                "lastUpdated": null,
-                "creationTime": null,
-                "owner": null,
-                "childDevices": null,
-                "childAssets": null,
-                "childAdditions": null,
-                "deviceParents": null,
-                "assetParents": null,
-                "additionParents": null,
-                "lastUpdatedDateTime": null,
-                "creationDateTime": null,
-                "selfDecoded": null
-            },
-            "dateTime": "1997-10-26T13:27:16.000Z",
-            "lastUpdatedDateTime": null,
-            "creationDateTime": null,
-            "selfDecoded": null
+          "value": 100,
+          "unit": "%",
+          "seriesName": "level"
         }
-    ],
-    "measurements": null,
-    "dataFragments": [
+      ],
+      "additionalProperties": {},
+      "time": "2022-04-14T06:33:53.560Z",
+      "type": "c8y_Battery",
+      "includeDeviceName": false
+    },
+    {
+      "series": "Tracker Signal Strength",
+      "values": [
         {
-            "key": "c8y_Position/lat",
-            "value": null,
-            "valueAsObject": 9.609690346957522E-28
-        },
-        {
-            "key": "c8y_Position/lng",
-            "value": null,
-            "valueAsObject": 1.1554608044067426E-17
+          "value": 0,
+          "unit": "dBm",
+          "seriesName": "rssi"
         }
-    ],
-    "message": null,
-    "success": true,
-    "selfDecoded": null
+      ],
+      "additionalProperties": {},
+      "time": "2022-02-08T07:15:23.433Z",
+      "type": "Tracker Signal Strength",
+      "includeDeviceName": false
+    },
+    {
+      "series": "Tracker Signal Strength",
+      "values": [
+        {
+          "value": 0,
+          "unit": "dBm",
+          "seriesName": "snr"
+        }
+      ],
+      "additionalProperties": {},
+      "time": "2022-02-08T07:15:23.433Z",
+      "type": "Tracker Signal Strength",
+      "includeDeviceName": false
+    }
+  ]
 }
-
 ```
 
 #### The REST endpoint: /encode
@@ -280,8 +196,12 @@ The fragments above are used as follows:
 
 ```json
 {
-    "encodedCommand": "9F5000",
-    "fport": 20
+  "encodedCommand": "9F000000",
+  "properties": {
+    "fport": "20"
+  },
+  "message": "Successfully Encoded the payload",
+  "success": true
 }
 ```
 
@@ -290,13 +210,16 @@ The fragments above are used as follows:
 The codec microservice can be easily built on top of [Cumulocity IoT Microservices](http://www.cumulocity.com/guides/microservice-sdk/java).
 In order to serve as a LPWAN codec microservice, two requirements have to be met:
 
-1. The codec microservice Main class needs to be annotated as `@CodecMicroserviceApplication`.
+1. The codec microservice Main class needs to be annotated as `@CodecMicroserviceApplication`, present in package `com.cumulocity.microservice.lpwan.codec.annotation.CodecMicroserviceApplication`.
 2. The microservice needs to provide implementation for the following interfaces.
 
  ```java
  /**
  * The <b>Codec</b> interface exposes methods to provide the uniquely supported devices. The class which implements this interface should be annotated with "@Component".
  */
+
+package com.cumulocity.microservice.lpwan.codec;
+ 
 public interface Codec {
 
     /**
@@ -309,6 +232,8 @@ public interface Codec {
 ```
 
 ```java
+package com.cumulocity.microservice.customdecoders.api.service;
+
 public interface DecoderService {
 
     /**
@@ -326,6 +251,8 @@ public interface DecoderService {
 ```
 
 ```java
+package com.cumulocity.microservice.customdecoders.api.service;
+
 public interface EncoderService {
     /**
      * Encodes the EncoderInput object into EncoderResult object
@@ -344,7 +271,7 @@ In this repository, you'll find a very straightforward codec example, the lansit
 
 Follow the steps below while implementing the microservice:
 
-1) Annotate the Main class with `@CodecMicroserviceApplication`.
+1) Annotate the Main class with `@CodecMicroserviceApplication` present in package `com.cumulocity.microservice.lpwan.codec.annotation.CodecMicroserviceApplication`.
 
 ```java
 @CodecMicroserviceApplication
@@ -355,7 +282,7 @@ public class Application {
 }
 ```
 
-2) Implement the `Codec` interface and supply the list of supported devices.
+2) Implement the `Codec` interface, present in package `com.cumulocity.microservice.lpwan.codec.Codec`, and supply the list of supported devices.
 
 ```java
 @Component
@@ -403,7 +330,7 @@ public class LansitecCodec implements Codec {
 }
 ```
 
-3) Implement `DecoderService` interface.
+3) Implement `DecoderService` interface, present in package `com.cumulocity.microservice.customdecoders.api.service.DecoderService`.
 
 ```java
 @Component
@@ -439,7 +366,7 @@ public class LansitecDecoder implements DecoderService {
 
 A flexible option named `success` is provided in the DecoderResult which represents whether the `decode` operation is successful or not.
 
-4) Implement `EncoderService` interface.
+4) Implement `EncoderService` interface, present in package `com.cumulocity.microservice.customdecoders.api.service.EncoderService`.
 
 ```java
 @Component
@@ -492,6 +419,7 @@ public class LansitecEncoder implements EncoderService {
         }
         return encoderResult;
     }
+}
 ```
 
 5. Add the following permissions in the cumulocity.json file. Here's how the cumulocity.json looks like
