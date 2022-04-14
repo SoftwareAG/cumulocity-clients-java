@@ -28,6 +28,28 @@ public class LpwanEncoderResultTest {
     }
 
     @Test
+    public void nullFieldsShouldBeIgnoredOnSerialization() throws Exception {
+        LpwanEncoderResult lpwanEncoderResult = new LpwanEncoderResult();
+        lpwanEncoderResult.setMessage("\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\"");
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String expectedJson = "{\"message\":\"\\\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\\\"\",\"success\":true}";
+        String outputJson = objectMapper.writeValueAsString(lpwanEncoderResult);
+        assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(outputJson));
+    }
+
+    @Test
+    public void nullFieldsShouldBeIgnoredOnSerialization_FailCase() throws Exception {
+        LpwanEncoderResult lpwanEncoderResult = new LpwanEncoderResult();
+        lpwanEncoderResult.setMessage("\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\"");
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String expectedJson = "{\"encodedCommand\":null, \"properties\":null,\"message\":\"\\\"EncoderInputData is missing mandatory fields: 'sourceDeviceId', 'sourceDeviceEui', 'manufacturer, model and/or supportedCommands', 'commandName'\\\"\",\"success\":true}";
+        String outputJson = objectMapper.writeValueAsString(lpwanEncoderResult);
+        assertNotEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(outputJson));
+    }
+
+    @Test
     public void deserializedObjectShouldHaveFPort() throws JsonProcessingException {
         String inputJson = "{\"encodedCommand\":\"9F000000\",\"properties\":{\"fport\":\"20\"},\"message\":\"Successfully Encoded the payload\",\"success\":true}";
         ObjectMapper objectMapper = new ObjectMapper();
