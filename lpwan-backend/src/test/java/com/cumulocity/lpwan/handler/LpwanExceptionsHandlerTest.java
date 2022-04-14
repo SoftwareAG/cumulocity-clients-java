@@ -24,7 +24,7 @@ class LpwanExceptionsHandlerTest {
     @Test
     void doHandleException_InvalidInputDataException() {
         InputDataValidationException exception = new InputDataValidationException("LnsConnectionService failed with missing input parameters.", new IllegalArgumentException("Missing input parameters."));
-        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleLpwanServiceException(exception);
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleInputDataValidationException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getHeaders().getContentType());
@@ -64,7 +64,7 @@ class LpwanExceptionsHandlerTest {
     @Test
     void doHandleException_IllegalArgumentException() {
         IllegalArgumentException exception = new IllegalArgumentException("Invalid input parameter message");
-        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleExceptionForBadRequest(exception);
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleIllegalArgumentException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getHeaders().getContentType());
@@ -84,7 +84,7 @@ class LpwanExceptionsHandlerTest {
     @Test
     void doHandleException_UnsupportedOperationException() {
         UnsupportedOperationException exception = new UnsupportedOperationException("Operation not supported");
-        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleExceptionForInternalServerError(exception);
+        ResponseEntity<ErrorMessageRepresentation> responseEntity = new LpwanExceptionsHandler().handleUnsupportedOperationException(exception);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getHeaders().getContentType());

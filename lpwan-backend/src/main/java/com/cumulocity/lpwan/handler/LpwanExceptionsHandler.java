@@ -34,32 +34,40 @@ public class LpwanExceptionsHandler {
      * This method handles the custom <b>{@link com.cumulocity.lpwan.exception.LpwanServiceException}</b>.
      *
      * @param exception       represents the exception
-     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code> or <code>HttpStatus.BAD_REQUEST</code>
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
      * @see com.cumulocity.lpwan.exception.LpwanServiceException {@link com.cumulocity.lpwan.exception.LpwanServiceException}
      */
     @ExceptionHandler(value = LpwanServiceException.class)
     @ResponseBody
     public ResponseEntity<ErrorMessageRepresentation> handleLpwanServiceException(LpwanServiceException exception) {
         log.error(exception.getMessage(), exception);
+        return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-        if (exception instanceof InputDataValidationException) {
-            return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
-        }
-        else {
-            return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    /**
+     * This method handles the custom <b>{@link com.cumulocity.lpwan.exception.InputDataValidationException}</b>.
+     *
+     * @param exception       represents the InputDataValidationException
+     * @return ResponseEntity <code>HttpStatus.BAD_REQUEST</code>
+     * @see com.cumulocity.lpwan.exception.InputDataValidationException {@link com.cumulocity.lpwan.exception.InputDataValidationException}
+     */
+    @ExceptionHandler(value = InputDataValidationException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorMessageRepresentation> handleInputDataValidationException(InputDataValidationException exception) {
+        log.error(exception.getMessage(), exception);
+        return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     /**
      * This method handles the <b>UnsupportedOperationException</b>.
      *
-     * @param exception       represents the exception
+     * @param exception       represents the UnsupportedOperationException
      * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
      * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/UnsupportedOperationException.html">UnsupportedOperationException</a>
      */
     @ExceptionHandler(value = UnsupportedOperationException.class)
     @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForInternalServerError(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleUnsupportedOperationException(UnsupportedOperationException exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -67,15 +75,29 @@ public class LpwanExceptionsHandler {
     /**
      * This method handles the <b>IllegalArgumentException</b>.
      *
-     * @param exception       represents the exception
+     * @param exception       represents the IllegalArgumentException
      * @return ResponseEntity <code>HttpStatus.BAD_REQUEST</code>
      * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/IllegalArgumentException.html">IllegalArgumentException</a>
      */
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseBody
-    public ResponseEntity<ErrorMessageRepresentation> handleExceptionForBadRequest(Throwable exception) {
+    public ResponseEntity<ErrorMessageRepresentation> handleIllegalArgumentException(IllegalArgumentException exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * This method handles the <b>Exception</b>.
+     *
+     * @param exception       represents the Exception
+     * @return ResponseEntity <code>HttpStatus.INTERNAL_SERVER_ERROR</code>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/Exception.html">Exception</a>
+     */
+    @ExceptionHandler(value = Exception.class)
+    @ResponseBody
+    public ResponseEntity<ErrorMessageRepresentation> handleException(Exception exception) {
+        log.error(exception.getMessage(), exception);
+        return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     protected ResponseEntity<ErrorMessageRepresentation> buildErrorResponse(Throwable exception, HttpStatus status) {
