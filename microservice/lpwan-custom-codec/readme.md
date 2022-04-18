@@ -4,7 +4,7 @@
 
 Cumulocity IoT has the ability to integrate LPWAN devices via LPWAN agents, for a list of all supported LPWAN agents see the [Protocol integration guide] (https://cumulocity.com/guides/protocol-integration/overview/).
 
-The following section explains how to implement a custom codec microservice for implementing LPWAN device specific codec for decoding and encoding the device payload.
+The following section explains how to implement a custom codec microservice for implementing LPWAN device specific codec for decoding and encoding the device payload. In the documentation, when we refer to codec microservice, it encompasses both the encoder and decoder. 
 
 ## Codec Workflow
 
@@ -25,14 +25,15 @@ Below you see the request JSON input accepted by the /decode endpoint:
    	"args": {
    		"deviceModel": "<<device model>>",
    		"deviceManufacturer": "<<device manufacturer>>",
-   		"sourceDeviceEui": "<<device external Id>>"
+   		"sourceDeviceEui": "<<device external Id>>",
+   		"fport": <<the target fport>>
    	}
 }
 ```
 
 The LPWAN agent passes in the following fragments to the codec microservice:
 
-* *args* - Meta information that is required by codec microservice to know the model and manufacturer of the device, along with the EUI of the device.
+* *args* - Meta information that is required by codec microservice to know the model and manufacturer of the device, along with the EUI of the device and the target fport.
 * *sourceDeviceId* - The ID of the source device in the Cumulocity IoT inventory.
 * *value* - The actual value to be decoded. The value is a series of bytes encoded as a hexadecimal string.
 
@@ -45,7 +46,8 @@ The LPWAN agent passes in the following fragments to the codec microservice:
     "args": {
         "deviceModel": "Asset Tracker",
         "deviceManufacturer": "LANSITEC",
-        "sourceDeviceEui": "AA02030405060708"
+        "sourceDeviceEui": "AA02030405060708",
+        "fport": 100
     }
 }
 ```
@@ -151,14 +153,15 @@ Following is the request JSON input accepted by the /encode endpoint:
     "args":{
         "deviceModel": "<<device model>>",
    		"deviceManufacturer": "<<device manufacturer>>",
-   		"sourceDeviceEui": "<<device external Id>>"
+   		"sourceDeviceEui": "<<device external Id>>",
+   		"fport": <<the target fport>>
     }
 }
 ```
 
 The LPWAN agent populates the following fragments while invoking the codec microservice:
 
-* *args* - Meta information that is required by codec microservice to know the model and manufacturer of the device, along with the EUI of the device.
+* *args* - Meta information that is required by codec microservice to know the model and manufacturer of the device, along with the EUI of the device and the target fport.
 * *sourceDeviceId* - The ID of the source device in the Cumulocity IoT inventory.
 * *commandName* - The name of the command to be encoded.
 * *commandData* - The text of the command to be encoded.
@@ -173,7 +176,8 @@ The LPWAN agent populates the following fragments while invoking the codec micro
       "args" : {
         "deviceModel": "Asset Tracker",
         "deviceManufacturer": "LANSITEC",
-        "sourceDeviceEui": "AABB03AABB030000"
+        "sourceDeviceEui": "AABB03AABB030000",
+        "fport": 100
       }
 }
 ```
@@ -198,7 +202,7 @@ The fragments above are used as follows:
 {
   "encodedCommand": "9F000000",
   "properties": {
-    "fport": "20"
+    "fport": "100"
   },
   "message": "Successfully Encoded the payload",
   "success": true
@@ -210,23 +214,18 @@ The fragments above are used as follows:
 The codec microservice can be easily built on top of [Cumulocity IoT Microservices](http://www.cumulocity.com/guides/microservice-sdk/java).
 In order to serve as a LPWAN codec microservice, two requirements have to be met:
 
-1. The codec microservice Main class needs to be annotated as `@CodecMicroserviceApplication`, present in package `com.cumulocity.microservice.lpwan.codec.annotation.CodecMicroserviceApplication`.
+1. The codec microservice Main class needs to be annotated as:
+   
+```java
+@CodecMicroserviceApplication `com.cumulocity.microservice.lpwan.codec.annotation.CodecMicroserviceApplication`
+```   
+
 2. The microservice needs to provide implementation for the following interfaces.
 
  ```java
- /**
- * The <b>Codec</b> interface exposes methods to provide the uniquely supported devices. The class which implements this interface should be annotated with "@Component".
- */
-
 package com.cumulocity.microservice.lpwan.codec;
  
 public interface Codec {
-
-    /**
-     * This method returns a set of uniquely supported devices w.r.t the device manufacturer and the device model.
-     *
-     * @return Set
-     */
     @NotNull @NotEmpty Set<DeviceInfo> supportsDevices();
 }
 ```
@@ -235,16 +234,6 @@ public interface Codec {
 package com.cumulocity.microservice.customdecoders.api.service;
 
 public interface DecoderService {
-
-    /**
-     * Decodes byte array data into DecoderResult object.
-     *
-     * @param inputData Hex encoded input byte array
-     * @param deviceId device from which this data comes from
-     * @param args additional arguments that may be required by decoder
-     * @return DecoderResult object
-     * @throws DecoderServiceException when decode failed
-     */
     DecoderResult decode(String inputData, GId deviceId, Map<String, String> args) throws DecoderServiceException;
 }
 
@@ -254,18 +243,11 @@ public interface DecoderService {
 package com.cumulocity.microservice.customdecoders.api.service;
 
 public interface EncoderService {
-    /**
-     * Encodes the EncoderInput object into EncoderResult object
-     *
-     * @param encoderInputData the EncoderInputData object containing the source device id, command name, command data and the properties
-     * @return EncoderResult the EncoderResult object that contains the encoded hexadecimal command and/or additional properties like fport
-     * @throws EncoderServiceException
-     */
     EncoderResult encode(EncoderInputData encoderInputData) throws EncoderServiceException;
 }
 ```
 
-## Sample codec microservice implementation
+## Sample codec microservice implementation details
 
 In this repository, you'll find a very straightforward codec example, the lansitec codec (`lora-codec-lansitec`). It is implemented using Spring Boot.
 
@@ -287,15 +269,8 @@ public class Application {
 ```java
 @Component
 public class LansitecCodec implements Codec {
-
-    /**
-     * This method should populate a set of unique devices identified by their manufacturer and model.
-     *
-     * @return Set: A set of unique devices identified by their manufacturer and model.
-     */
     public Set<DeviceInfo> supportsDevices() {
-
-        // The manufacturer "LANSITEC" has 2 different devices with model "Outdoor Asset Tracker" and "Temperature Sensor"
+        
         DeviceCommand positionRequestCommand = new DeviceCommand(LansitecEncoder.POSITION_REQUEST, "Device Config", LansitecEncoder.POSITION_REQUEST);
         DeviceCommand deviceRequestCommand = new DeviceCommand(LansitecEncoder.DEVICE_REQUEST, "Device Config", LansitecEncoder.DEVICE_REQUEST);
         DeviceCommand registerRequestCommand = new DeviceCommand(LansitecEncoder.REGISTER_REQUEST, "Device Config", LansitecEncoder.REGISTER_REQUEST);
