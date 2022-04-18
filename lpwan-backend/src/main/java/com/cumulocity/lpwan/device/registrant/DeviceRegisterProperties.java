@@ -7,12 +7,17 @@
 
 package com.cumulocity.lpwan.device.registrant;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class DeviceRegisterProperties {
 
     @NotNull
@@ -20,6 +25,9 @@ public class DeviceRegisterProperties {
 
     @Null
     private String uplinkCallback;
+
+    @NotBlank
+    private String lnsConnectionName;
 
     @JsonIgnore
     public DeviceType getDeviceType() {
