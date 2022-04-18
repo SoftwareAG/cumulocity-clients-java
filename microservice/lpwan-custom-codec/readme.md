@@ -253,7 +253,7 @@ In this repository, you'll find a very straightforward codec example, the lansit
 
 Follow the steps below while implementing the microservice:
 
-1) Annotate the Main class with `@CodecMicroserviceApplication`.
+1. Annotate the Main class with `@CodecMicroserviceApplication`.
 
 ```java
 @CodecMicroserviceApplication
@@ -264,7 +264,7 @@ public class Application {
 }
 ```
 
-2) Implement the `Codec` interface and supply the list of supported devices.
+2. Implement the `Codec` interface and supply the list of supported devices.
 
 ```java
 @Component
@@ -305,7 +305,7 @@ public class LansitecCodec implements Codec {
 }
 ```
 
-3) Implement `DecoderService` interface.
+3. Implement `DecoderService` interface.
 
 ```java
 @Component
@@ -341,7 +341,7 @@ public class LansitecDecoder implements DecoderService {
 
 A flexible option named `success` is provided in the DecoderResult which represents whether the `decode` operation is successful or not.
 
-4) Implement `EncoderService` interface.
+4. Implement `EncoderService` interface.
 
 ```java
 @Component
