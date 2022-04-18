@@ -4,7 +4,7 @@
 
 Cumulocity IoT has the ability to integrate LPWAN devices via LPWAN agents, for a list of all supported LPWAN agents see the [Protocol integration guide] (https://cumulocity.com/guides/protocol-integration/overview/).
 
-The following section explains how to implement a custom codec microservice for implementing LPWAN device specific codec for decoding and encoding the device payload. In the documentation, when we refer to codec microservice, it encompasses both the encoder and decoder. 
+The following section explains how to implement a custom codec microservice for implementing LPWAN device specific codec for decoding and encoding the device payload.
 
 ## Codec Workflow
 
@@ -415,14 +415,13 @@ public class LansitecEncoder implements EncoderService {
     }
 ```
 
+## Deploying the example codec microservice
+
+1. Clone https://github.com/SoftwareAG/cumulocity-examples.git repository.
+2. Build the microservice using `mvn clean install`. This creates a ZIP file of the lanitec codec microservice.
+3. Deploy the microservice by uploading the ZIP file using the Cumulocity IoT Administration UI.
+4. Open the device management application. Under **Device protocols**, you should now see the device types with type "lpwan" created by the lansitec codec microservice.
+
 ## Developing microservice without lpwan-custom-codec
 
 If the user does not use the lpwan-custom-codec, then the custom microservice developed by the user must adhere to the pre-requisite task performed by the lpwan-custom-codec i.e must create the device types and pre-defined commands to use the custom codec feature seamlessly. 
-
-## Deploying the example codec microservice
-
-In order to build and deploy the sample codec microservice, follow the [Microservice SDK guide](http://www.cumulocity.com/guides/microservice-sdk/java/).
-
-First, clone this repository. Next, build the microservice using `mvn clean install`. The build will create a zip file of the codec microservice.
-
-In the next step, deploy the microservice using the Cumulocity IoT UI. Once the decoder microservice has been deployed, it can take couple of minutes for the Cumulocity platform to discover the new decoder. Then, open the device management application. Under device protocols, you should now see the device types with type as 'lpwan' created by the custom codec microservice. Map one of these device types to the LPWAN device.
