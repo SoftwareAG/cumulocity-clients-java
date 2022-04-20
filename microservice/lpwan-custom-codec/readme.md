@@ -204,7 +204,7 @@ The fragments above are used as follows:
   "properties": {
     "fport": "100"
   },
-  "message": "Successfully Encoded the payload",
+  "message": "Successfully encoded the payload",
   "success": true
 }
 ```
@@ -384,7 +384,7 @@ public class LansitecEncoder implements EncoderService {
 
                 encoderResult = new LpwanEncoderResult(payload, 20);
                 encoderResult.setSuccess(true);
-                encoderResult.setMessage("Successfully Encoded the payload");
+                encoderResult.setMessage("Successfully encoded the payload");
             } catch (IOException e) {
                 e.printStackTrace();
                 encoderResult = new LpwanEncoderResult();
