@@ -89,7 +89,8 @@ public class TenantCreator {
                         "\"domain\": \"sample-tenant.cumulocity.com\", " +
                         "\"company\": \"sample-tenant\", " +
                         "\"adminName\": \"" + credentials.getUsername() + "\", " +
-                        "\"adminPass\": \"" + credentials.getPassword() + "\" " +
+                        "\"adminPass\": \"" + credentials.getPassword() + "\", " +
+                        "\"adminEmail\": \"admin@sample-tenant.com\" " +
                         "}";
                 Response result = resource.post(Entity.json(tenantJson));
                 String newTenant = result.readEntity(String.class);

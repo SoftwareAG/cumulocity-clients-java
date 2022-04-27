@@ -6,6 +6,7 @@ import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 import org.cometd.bayeux.Message;
 import org.cometd.client.transport.TransportListener;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
@@ -42,6 +43,7 @@ public class MessageExchangeBlockingThreadsTest {
 
     @Test
     @Timeout(value = 2000, unit = MILLISECONDS)
+    @Disabled
     public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
         //given
         final Client client = mock(Client.class);
