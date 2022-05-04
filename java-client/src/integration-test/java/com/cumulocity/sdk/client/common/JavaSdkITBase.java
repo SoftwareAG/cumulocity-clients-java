@@ -32,6 +32,7 @@ import java.util.Properties;
 public class JavaSdkITBase {
 
     private static TenantCreator tenantCreator;
+    protected static ApplicationApi applicationApi;
     protected static PlatformImpl platform;
     protected static PlatformImpl bootstrapPlatform;
 
@@ -39,7 +40,7 @@ public class JavaSdkITBase {
     public static void createTenantWithApplication() throws Exception {
         platform = createPlatform(false);
         bootstrapPlatform = createPlatform(true);
-
+        applicationApi = new ApplicationApi(platform);
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
 
