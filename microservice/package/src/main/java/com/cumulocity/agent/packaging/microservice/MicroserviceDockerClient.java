@@ -1,6 +1,5 @@
 package com.cumulocity.agent.packaging.microservice;
 
-
 import org.apache.maven.MavenExecutionException;
 
 import java.io.IOException;

@@ -15,7 +15,7 @@
         <changelist>-SNAPSHOT</changelist>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>9</java.version>
+        <java.version>1.8</java.version>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 

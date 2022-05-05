@@ -8,9 +8,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
