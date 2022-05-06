@@ -8,4 +8,3 @@ bin/
 cucumber.html
 dependency-reduced-pom.xml
 .flattened-pom.xml
-microservice/package/resources/dummy.jar
