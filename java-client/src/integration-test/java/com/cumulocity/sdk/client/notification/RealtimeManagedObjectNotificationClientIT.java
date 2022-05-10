@@ -7,6 +7,7 @@ import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -21,6 +22,8 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
 
+    //MTM-45152
+    @Disabled
     @Test
     public void shouldReceiveCreateMONotification() {
         // given
