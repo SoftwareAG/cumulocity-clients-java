@@ -1,5 +1,7 @@
 package com.cumulocity.agent.packaging.uploadMojo;
 
+import com.cumulocity.agent.packaging.BaseMicroserviceMojo;
+import com.cumulocity.agent.packaging.DockerBuildSpec;
 import com.cumulocity.agent.packaging.uploadMojo.configuration.ApplicationConfiguration;
 import com.cumulocity.agent.packaging.uploadMojo.configuration.ApplicationConfigurationSupplier;
 import com.cumulocity.agent.packaging.uploadMojo.configuration.CredentialsConfiguration;
@@ -11,7 +13,7 @@ import com.cumulocity.agent.packaging.uploadMojo.platform.model.ApplicationWithS
 import com.cumulocity.agent.packaging.uploadMojo.platform.model.Tenant;
 import com.google.common.collect.Sets;
 import lombok.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -25,7 +27,6 @@ import java.io.File;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
 import static com.cumulocity.agent.packaging.uploadMojo.configuration.ApplicationConfiguration.normalizeName;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
@@ -35,7 +36,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 @NoArgsConstructor
 @AllArgsConstructor
 @Mojo(name = "upload", defaultPhase = PACKAGE)
-public class MicroserviceUploadMojo extends AbstractMojo {
+public class MicroserviceUploadMojo extends BaseMicroserviceMojo {
 
     @Parameter(defaultValue = "microservice")
     private String serviceId ;
@@ -191,6 +192,6 @@ public class MicroserviceUploadMojo extends AbstractMojo {
     }
 
     private File targetFile() {
-        return new File(getProject().getBuild().getDirectory(), format(TARGET_FILENAME_PATTERN, packageName, project.getVersion()));
+        return new File(getProject().getBuild().getDirectory(), format(getTargetFilename(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM), packageName, project.getVersion()));
     }
 }
