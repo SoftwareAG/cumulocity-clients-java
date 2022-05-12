@@ -1,0 +1,192 @@
+/*
+ * Copyright (c) 2012-2020 Cumulocity GmbH
+ * Copyright (c) 2020-2022 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.
+ *
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
+ */
+
+package com.cumulocity.lpwan.lns.connection.model;
+
+import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.JsonExpectationsHelper;
+
+import static com.cumulocity.lpwan.smaple.connection.model.SampleConnection.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+
+class LnsConnectionTest {
+
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+
+    @Test
+    void doValidateLnsConnection_valid_description_and_password_null() throws InputDataValidationException {
+        assertTrue(VALID_SAMPLE_CONNECTION.isValid());
+    }
+
+    @Test
+    void doValidateLnsConnection_invalid_name_null() {
+        LnsConnection invalid_connection = SampleConnection.builder()
+                                            .name(null)
+                                            .description(null)
+                                            .user("USER NAME")
+                                            .password("**********")
+                                            .build();
+
+        InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
+        assertEquals("SampleConnection is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
+    }
+
+    @Test
+    void doValidateLnsConnection_invalid_name_blank() {
+        LnsConnection invalid_connection = SampleConnection.builder()
+                                            .name("   ")
+                                            .description(null)
+                                            .user("USER NAME")
+                                            .password("**********")
+                                            .build();
+
+        InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
+        assertEquals("SampleConnection is missing mandatory fields: 'name'", inputDataValidationException.getMessage());
+    }
+
+    @Test
+    void doValidateLnsConnection_invalid_user_null() {
+        LnsConnection invalid_connection = SampleConnection.builder()
+                                                .name("Sample Connection Name")
+                                                .description("Sample Connection Description")
+                                                .user(null)
+                                                .password("**********")
+                                                .build();
+
+        InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
+        assertEquals("SampleConnection is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
+    }
+
+    @Test
+    void doValidateLnsConnection_invalid_user_balnk() {
+        LnsConnection invalid_connection = SampleConnection.builder()
+                                            .name("Sample Connection Name")
+                                            .description("Sample Connection Description")
+                                            .user("    ")
+                                            .password("**********")
+                                            .build();
+
+        InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
+        assertEquals("SampleConnection is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
+    }
+
+    @Test
+    void doUpdateLnsConnection_with_non_null_password() {
+        SampleConnection existingLnsConnection = SampleConnection.builder()
+                                                    .name("Sample Connection Name")
+                                                    .description("Sample Connection Description")
+                                                    .user("USER NAME")
+                                                    .password("**********")
+                                                    .build();
+
+        SampleConnection lnsConnectionWithUpdatedContents = SampleConnection.builder()
+                                                                .name("Sample Connection Name (NEW)")
+                                                                .description("Sample Connection Description (NEW)")
+                                                                .user("USER NAME (NEW)")
+                                                                .password("********** (NEW)")
+                                                                .build();
+
+        existingLnsConnection.initializeWith(lnsConnectionWithUpdatedContents);
+
+        compare(lnsConnectionWithUpdatedContents, existingLnsConnection);
+    }
+
+    @Test
+    void doUpdateLnsConnection_with_null_password() {
+        SampleConnection existingLnsConnection = SampleConnection.builder()
+                                                    .name("Sample Connection Name")
+                                                    .description("Sample Connection Description")
+                                                    .user("USER NAME")
+                                                    .password("**********")
+                                                    .build();
+
+        SampleConnection lnsConnectionWithUpdatedContents = SampleConnection.builder()
+                                                                .name("Sample Connection Name (NEW)")
+                                                                .description("Sample Connection Description (NEW)")
+                                                                .user("USER NAME (NEW)")
+                                                                .password(null)
+                                                                .build();
+
+        existingLnsConnection.initializeWith(lnsConnectionWithUpdatedContents);
+
+        compare(SampleConnection.builder()
+                        .name(lnsConnectionWithUpdatedContents.getName())
+                        .description(lnsConnectionWithUpdatedContents.getDescription())
+                        .user(lnsConnectionWithUpdatedContents.getUser())
+                        .password(existingLnsConnection.getPassword())
+                        .build()
+                , existingLnsConnection);
+    }
+
+    @Test
+    void doUpdateLnsConnection_with_blank_password() {
+        SampleConnection existingLnsConnection = SampleConnection.builder()
+                                                        .name("Sample Connection Name")
+                                                        .description("Sample Connection Description")
+                                                        .user("USER NAME")
+                                                        .password("**********")
+                                                        .build();
+
+        SampleConnection lnsConnectionWithUpdatedContents = SampleConnection.builder()
+                                                                .name("Sample Connection Name (NEW)")
+                                                                .description("Sample Connection Description (NEW)")
+                                                                .user("USER NAME (NEW)")
+                                                                .password("   ")
+                                                                .build();
+
+        existingLnsConnection.initializeWith(lnsConnectionWithUpdatedContents);
+
+
+        compare(SampleConnection.builder()
+                        .name(lnsConnectionWithUpdatedContents.getName())
+                        .description(lnsConnectionWithUpdatedContents.getDescription())
+                        .user(lnsConnectionWithUpdatedContents.getUser())
+                        .password(existingLnsConnection.getPassword())
+                        .build()
+                , existingLnsConnection);
+    }
+
+    @Test
+    void doDeSerializeLnsConnection_with_valueType_as_LnsConnection_insteadof_SampleConnection() throws JsonProcessingException {
+        com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer.registerLnsConnectionConcreteClass("sample", SampleConnection.class);
+
+        LnsConnection lnsConnection = jsonObjectMapper.readValue(VALID_SAMPLE_CONNECTION_JSON_INTERNAL_VIEW, LnsConnection.class);
+
+        compare(VALID_SAMPLE_CONNECTION, lnsConnection);
+    }
+
+    @Test
+    void doSerializeLnsConnection_with_PublicView_must_EXCLUDE_Password() throws Exception {
+        String sampleConnectionSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsConnection.PublicView.class).writeValueAsString(VALID_SAMPLE_CONNECTION);
+
+        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_CONNECTION_JSON_PUBLIC_VIEW, sampleConnectionSerializedWithPublicView, true);
+    }
+
+    @Test
+    void doSerializeLnsConnection_with_InternalView_must_INCLUDE_Password() throws Exception {
+        String sampleConnectionSerializedWithPublicView = jsonObjectMapper.writerWithView(LnsConnection.InternalView.class).writeValueAsString(VALID_SAMPLE_CONNECTION);
+
+        new JsonExpectationsHelper().assertJsonEqual(VALID_SAMPLE_CONNECTION_JSON_INTERNAL_VIEW, sampleConnectionSerializedWithPublicView, true);
+    }
+
+    private void compare(SampleConnection expected, LnsConnection actual) {
+        assertTrue(expected.getClass().isAssignableFrom(actual.getClass()));
+
+        SampleConnection actualTestLnsConnection = (SampleConnection) actual;
+
+        assertEquals(expected.getName(), actualTestLnsConnection.getName());
+        assertEquals(expected.getDescription(), actualTestLnsConnection.getDescription());
+        assertEquals(expected.getUser(), actualTestLnsConnection.getUser());
+        assertEquals(expected.getPassword(), actualTestLnsConnection.getPassword());
+    }
+}
