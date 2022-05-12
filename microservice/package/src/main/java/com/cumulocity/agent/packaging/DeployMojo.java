@@ -1,25 +1,23 @@
 package com.cumulocity.agent.packaging;
 
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
+import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.google.common.collect.ImmutableList;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import javax.annotation.Nullable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-
-import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 @Mojo(name = "push", defaultPhase = DEPLOY, requiresDependencyResolution = RUNTIME, threadSafe = true)
+@Slf4j
 public class DeployMojo extends BaseMicroserviceMojo {
+
+    @Component
+    private MicroserviceDockerClient dockerClient;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -37,67 +35,29 @@ public class DeployMojo extends BaseMicroserviceMojo {
             publish(tag);
         }
         final DockerImage image = DockerImage.ofName(name);
-        cleanup(image, tags);
-        cleanup(image.withRegistry(registry), tags);
 
-    }
+        cleanup(image);
+        cleanup(image.withRegistry(registry));
 
-    private boolean configExists() {
-		return Files.exists(Paths.get(System.getProperty("user.home")).resolve(".docker/config.json"));
     }
 
     private void publish(String tag) throws MojoExecutionException {
+        log.info("Publishing image to registry");
         final DockerImage source = DockerImage.ofName(name).withTag(tag);
         final DockerImage pushed = source.withRegistry(registry);
 
         //@formatter:off
 
+        dockerClient.tagImage(source.toString(), pushed.toString(),tag);
+        dockerClient.pushImage(pushed.toString());
 
-	executeMojo(
-            docker(),
-            goal("tag"),
-            configuration(
-                element("image", source.toString() ),
-                element("newName", pushed.toString())
-            ),
-            executionEnvironment(this.project, this.mavenSession, this.pluginManager)
-        );
-        executeMojo(
-            docker(),
-            goal("push"),
-            configuration(
-                element("imageName", pushed.toString()),
-		element("useConfigFile", "true")
-            ),
-            executionEnvironment(this.project, this.mavenSession, this.pluginManager)
-        );
-
-        //@formatter:on
 
     }
 
-    public void cleanup(DockerImage image, List<String> tags) throws MojoExecutionException {
-
-        //@formatter:off
-        executeMojo(
-            docker(),
-            goal("removeImage"),
-            configuration(
-                element("imageName", image.toString()),
-                element("imageTags", tags(tags))
-
-            ),
-            executionEnvironment(this.project, this.mavenSession, this.pluginManager)
-        );
-        //@formatter:on
+    public void cleanup(DockerImage image) throws MojoExecutionException {
+        log.info("Running cleanup on {} with tags", image.toString());
+        dockerClient.deleteAll(image.toString(), true);
     }
 
-    private Element[] tags(List<String> tags) {
-        return FluentIterable.from(tags).transform(new Function<String, Element>() {
-            @Override
-            public Element apply(@Nullable String tag) {
-                return element("tag", tag);
-            }
-        }).toArray(Element.class);
-    }
+
 }
