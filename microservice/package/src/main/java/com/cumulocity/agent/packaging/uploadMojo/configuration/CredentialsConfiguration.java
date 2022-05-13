@@ -1,7 +1,7 @@
 package com.cumulocity.agent.packaging.uploadMojo.configuration;
 
 import lombok.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @Builder(toBuilder = true)

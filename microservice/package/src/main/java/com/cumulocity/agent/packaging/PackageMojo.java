@@ -4,13 +4,20 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.cumulocity.model.application.MicroserviceManifest;
 import com.cumulocity.model.application.microservice.DataSize;
 import com.cumulocity.model.application.microservice.Resources;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.maven.MavenExecutionException;
 import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -18,50 +25,70 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import javax.validation.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.validation.Validation;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.io.*;
 import java.nio.file.Files;
-import java.util.Iterator;
+import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.List;
 
-import static com.cumulocity.agent.packaging.DockerDsl.docker;
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
-import static com.google.common.base.Throwables.propagate;
-import static com.google.common.io.Files.asByteSource;
 import static java.nio.file.Files.createDirectories;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
+@Slf4j
 @Mojo(name = "package", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME, threadSafe = false)
 public class PackageMojo extends BaseMicroserviceMojo {
 
-    public static final String TARGET_FILENAME_PATTERN = "%s-%s.zip";
     public static final DataSize MEMORY_MINIMAL_LIMIT = DataSize.parse("178Mi");
 
+    public static final String BUILD_SPEC_FRAGMENT="buildSpec";
+    public static final String DOCKER_BUILD_INFO_FRAGMENT="dockerBuildInfo";
+    public static final String MANIFEST_JSON_FILENAME = "cumulocity.json";
+    public static final String DOCKER_IMAGE_TAR = "image.tar";
+
     @Component
-    private MicroserviceDockerClient dockerClient;
+    protected MicroserviceDockerClient dockerClient;
 
     @Parameter(defaultValue = "${basedir}/src/main/configuration/cumulocity.json")
-    private File manifestFile;
+    protected File manifestFile;
 
     @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
-    private String image;
+    protected String image;
 
-    @Parameter(defaultValue = "")
+    @Parameter(property = "microservice.package.dockerBuildNetwork")
     private String dockerBuildNetwork;
 
     @Parameter(property= "microservice.package.deleteImage",defaultValue = "true")
-    private Boolean deleteImage = true;
+    protected Boolean deleteImage = true;
+
+    @Parameter(property = "microservice.package.dockerBuildArchs")
+    protected String targetBuildArchs;
+
+    @Parameter(defaultValue = "${mojoExecution}")
+    protected MojoExecution mojoExecution;
+
+    @Parameter(property= "microservice.package.dockerBuildTimeout",defaultValue = "360")
+    public int dockerBuildTimeout = 360;
+
+    @Parameter(property= "microservice.package.dockerSaveWaitTimeOut",defaultValue = "360")
+    public int dockerImageInRegistryMaxWaitTime = 360;
+
+    protected ObjectMapper mapper;
+
+    public PackageMojo() {
+        super();
+        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    }
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -76,12 +103,19 @@ public class PackageMojo extends BaseMicroserviceMojo {
         }
 
         if (!containerSkip) {
-            getLog().info("docker container " + project.getArtifactId() + " in network '" + (dockerBuildNetwork != null ? dockerBuildNetwork : "<default>") + "'");
-            dockerContainer();
 
-            if (!skipMicroservicePackage) {
-                getLog().info("microservice zip container " + project.getArtifactId());
-                microserviceZip();
+            Iterable<String> buildTargetArchitectures = getTargetBuildArchitectures();
+            log.info("Starting docker microservice build for the following target architectures: {}", List.of(buildTargetArchitectures));
+
+            for (String arch: buildTargetArchitectures) {
+
+                getLog().info("docker container " + project.getArtifactId() + " in network '" + (dockerBuildNetwork != null ? dockerBuildNetwork : "<default>") + "'");
+                dockerContainer(arch);
+
+                if (!skipMicroservicePackage) {
+                    getLog().info("microservice zip container " + project.getArtifactId());
+                    microserviceZip(arch);
+                }
             }
         }
     }
@@ -93,7 +127,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(rpmTmpDir.getAbsolutePath()), rpmBaseBuildDir, false);
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcConfigurationDir.getAbsolutePath()), new File(rpmBaseBuildDir, "etc"), true);
         } catch (Exception e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         //@formatter:off
         executeMojo(
@@ -126,70 +160,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
         //@formatter:on
     }
 
-    private Xpp3Dom getDockerBuildConfig() {
-        List<Proxy>  list = mavenSession.getSettings().getProxies();
-        String  httpProxy = null;
-        String httpsProxy = null;
-
-        //loop about Proxy settings
-        for ( Proxy proxy : list ) {
-        	if ( proxy.isActive() ) {
-        		String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
-        		getLog().info( "Found Proxy settings: " + pS );
-        		if ( proxy.getProtocol().equals( "http" ) )
-        			httpProxy = pS;
-        		if ( proxy.getProtocol().equals( "https" ) )
-        			httpsProxy = pS;
-        	}
-        }
-
-        if ( httpsProxy == null && httpProxy != null ) 
-        	httpsProxy = httpProxy;
-
-        if ( httpProxy == null && httpsProxy != null )
-        	httpProxy = httpsProxy;
-
-        //Set Docker building configuration depending on Proxy settings
-        Xpp3Dom back; 
-        if ( httpProxy != null ) {
-        	
-            getLog().info( "Passing HTTP  proxy setting to Docker : " + httpProxy );
-            getLog().info( "Passing HTTPS proxy setting to Docker : " + httpsProxy );
-
-            back = 
-                configuration(
-                        element(name("imageName"), image),
-                        element("imageTags",
-                                element("imageTag", project.getVersion()),
-                                element("imageTag", "latest")
-                        ),
-                        element("network", dockerBuildNetwork),
-                        element("buildArgs", 
-                        		element("HTTP_PROXY",  httpProxy), 
-                        		element("HTTPS_PROXY", httpsProxy),
-                        		element("http_proxy",  httpProxy), 
-                        		element("https_proxy", httpsProxy) ),
-                        element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-        }
-        else {
-            back = 
-                    configuration(
-                            element(name("imageName"), image),
-                            element("imageTags",
-                                    element("imageTag", project.getVersion()),
-                                    element("imageTag", "latest")
-                            ),
-                            element("network", dockerBuildNetwork),
-                            element("dockerDirectory", dockerWorkDir.getAbsolutePath()) );
-        }
-    	return back;
-    }
-
-    private void dockerContainer() throws MojoExecutionException {
+    private void dockerContainer(String targetArchitecture)  {
 
         final File dockerWorkResources = new File(dockerWorkDir, "resources");
         try {
-//            copy artifact to docker work directory
+//          copy artifact to docker work directory
             cleanDirectory(dockerWorkResources);
             copyArtifact(dockerWorkResources);
 
@@ -205,46 +180,181 @@ public class PackageMojo extends BaseMicroserviceMojo {
 //            copy content of project src/main/docker to docker work directory replacing placeholders
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcDockerDir.getAbsolutePath()), dockerWorkDir, true);
 
-            //@formatter:off
-            executeMojo(
-                    docker(),
-                    goal("build"),
-                    getDockerBuildConfig(),
-                    executionEnvironment(this.project, this.mavenSession, this.pluginManager));
-            //@formatter:on
+//          build docker image with target architecture
+            buildDockerImage(targetArchitecture);
 
-//            cleaning up directory created by spotify docker plugin
+//          cleaning up directory created by spotify docker plugin
             cleanDirectory(new File(build, "docker"));
         } catch (Exception e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
-    private void microserviceZip() {
+    @SneakyThrows
+    private Iterable<String> getTargetBuildArchitectures() {
+
+        if (Objects.nonNull(targetBuildArchs)) {
+            log.info("Using custom target build architectures from maven configuration (overriding microservice manifest): {}", targetBuildArchs);
+            return Arrays.asList(targetBuildArchs.split(","));
+        }
+
+        final File file;
+
         try {
-            final String targetFilename = String.format(TARGET_FILENAME_PATTERN, name, project.getVersion());
-            final File dockerImage = new File(build, "image.tar");
+            file = filterResourceFile(manifestFile);
+        } catch (IOException e) {
+            log.error("Can't read manifest file {}", manifestFile);
+            throw e;
+        } catch (MavenFilteringException e) {
+            log.error("Maven filtering exception {}", e.getMessage());
+            throw e;
+        }
+
+        Map<String, Object> jsonManifest = mapper.readValue(file, Map.class);
+
+        if (jsonManifest.containsKey(BUILD_SPEC_FRAGMENT)) {
+            DockerBuildSpec buildSpec = mapper.convertValue(jsonManifest.get(BUILD_SPEC_FRAGMENT), DockerBuildSpec.class);
+            log.info("Using build target images from build spec: {}", buildSpec.getTargetBuildArchitectures());
+            return buildSpec.getTargetBuildArchitectures();
+        } else {
+            log.info("Manifest contains no buildspec and target architectures. Using defaults");
+            return DockerBuildSpec.defaultBuildSpec().getTargetBuildArchitectures();
+        }
+
+        }
+   private void buildDockerImage(String targetBuildArch) {
+        log.info("Building microservice image for target architecture {}", targetBuildArch);
+        Map<String, String> buildArgs = configureProxyBuildArguments();
+        Set<String> tags = getDockerImageNameExpandedWithTags();
+
+        if (!targetBuildArch.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+            log.warn("Your target build architecture {} does not match the default target {}", targetBuildArch, DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+            log.warn("Currently, Cumulocity only supports hosting microservices build for {}", DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM);
+            log.warn("Your image might be incompatible with cloud hosting!");
+        }
+
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork, dockerBuildTimeout);
+
+    }
+
+    private DockerBuildInfo getDockerBuildInfo(String targetBuildArch) {
+        return DockerBuildInfo.defaultInfo()
+                .withImageArch(targetBuildArch)
+                .withCurrentBuildDate()
+                .withBuilderInfo(mojoExecution.getPlugin().getId())
+                .withHostArchitecture()
+                .withHostOS();
+    }
+
+    private Set<String> getDockerImageNameExpandedWithTags() {
+        String imageVersionTag = image+":"+project.getVersion();
+        String imageLatestTag = image+":latest";
+
+        return Sets.newHashSet(imageLatestTag, imageVersionTag);
+    }
+
+    private Map<String, String> configureProxyBuildArguments() {
+        String httpProxy = null;
+        String httpsProxy = null;
+
+        //loop about Proxy settings
+        for (Proxy proxy : mavenSession.getSettings().getProxies() ) {
+            if ( proxy.isActive() ) {
+                String pS = proxy.getProtocol() + "://" + proxy.getHost() + ":" + proxy.getPort();
+                getLog().info( "Found Proxy settings: " + pS );
+                if ( proxy.getProtocol().equals( "http" ) )
+                    httpProxy = pS;
+                if ( proxy.getProtocol().equals( "https" ) )
+                    httpsProxy = pS;
+            }
+        }
+
+        if (httpsProxy == null && httpProxy != null )
+            httpsProxy = httpProxy;
+
+        if (httpProxy == null && httpsProxy != null )
+            httpProxy = httpsProxy;
+
+        Map<String, String> buildArgs = Maps.newHashMap();
+
+        if (httpProxy != null ) {
+            buildArgs.put("HTTP_PROXY", httpProxy);
+            buildArgs.put("http_proxy", httpProxy);
+        }
+
+        if (httpsProxy != null ) {
+            buildArgs.put("HTTPS_PROXY", httpsProxy);
+            buildArgs.put("https_proxy", httpsProxy);
+        }
+
+        return buildArgs;
+    }
+
+    private void microserviceZip(String targetArchitecture) {
+        try {
+
+            String targetFilename = getTargetFilename(targetArchitecture);
+            log.info("Saving microservice to {}", targetFilename);
             createDirectories(build.toPath());
-            dockerClient.saveDockerImage(String.format("%s:%s", image, project.getVersion()), dockerImage);
+
+            String imageNameWithTagSave = String.format("%s:%s", image, project.getVersion());
+
+            log.info("Checking if image {} is populated to registry", imageNameWithTagSave);
+            dockerClient.waitForImageInRegistry(imageNameWithTagSave, dockerImageInRegistryMaxWaitTime);
 
             try (final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(
                     new File(build, targetFilename)))) {
                 final File file = filterResourceFile(manifestFile);
                 validateManifest(file);
-                addFileToZip(zipOutputStream, file, "cumulocity.json");
-                addFileToZip(zipOutputStream, dockerImage, "image.tar");
+                addPlatformTaggedMicroserviceManifestToZipFile(targetArchitecture, filterResourceFile(manifestFile), zipOutputStream);
+                saveDockerImageToZipOutputStream(imageNameWithTagSave, zipOutputStream);
             }
             if(deleteImage!= null && deleteImage) {
-                dockerClient.deleteAll(image);
-            }else{
+                Set<String> imageNameWithTags = getDockerImageNameExpandedWithTags();
+                log.info("Deleting all images named {} and imageNameWithTags {}", image, imageNameWithTags);
+                imageNameWithTags.forEach(imageNameWithTag -> dockerClient.deleteAll(imageNameWithTag, true));
+
+            } else{
                 getLog().info("Skipping docker image cleanup");
             }
 
-            dockerImage.delete();
         } catch (Exception e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
+
+    private void saveDockerImageToZipOutputStream(String imageNameWithTagSave, ZipOutputStream zipOutputStream) throws IOException, MavenExecutionException {
+        final ZipEntry ze = new ZipEntry(DOCKER_IMAGE_TAR);
+        try {
+            zipOutputStream.putNextEntry(ze);
+            dockerClient.saveDockerImage(imageNameWithTagSave, zipOutputStream);
+        } catch (Exception e) {
+            log.error("Error saving Docker image to zip file: {}", e.getMessage());
+            throw new MavenExecutionException("Image export to zip file failed", e);
+        } finally {
+            zipOutputStream.closeEntry();
+        }
+    }
+
+    private void addPlatformTaggedMicroserviceManifestToZipFile(String targetArchitecture, File manifestFile, ZipOutputStream zipOutputStream) throws IOException {
+
+        log.info("Tagging microservice manifest with image platform");
+        ObjectNode manifest = (ObjectNode) mapper.readTree(manifestFile);
+
+        DockerBuildInfo updated = getDockerBuildInfo(targetArchitecture);
+        manifest.putPOJO(DOCKER_BUILD_INFO_FRAGMENT, updated);
+        String jsonString = mapper.writeValueAsString(manifest);
+
+        final ZipEntry ze = new ZipEntry(MANIFEST_JSON_FILENAME);
+        zipOutputStream.putNextEntry(ze);
+
+        BufferedWriter zipStringWriter = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
+        zipStringWriter.write(jsonString);
+        zipStringWriter.flush();
+
+        zipOutputStream.closeEntry();
+    }
+
 
     private void validateManifest(File file) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), Charsets.UTF_8)) {
@@ -252,17 +362,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             Validator validator = factory.getValidator();
 
-            FluentIterable<ManifestConstraintViolation> violations = FluentIterable.from(validator.validate(manifest))
-                    .transform(new Function<ConstraintViolation<MicroserviceManifest>, ManifestConstraintViolation>() {
-                        @Override
-                        public ManifestConstraintViolation apply(ConstraintViolation<MicroserviceManifest> input) {
-                            return new ManifestConstraintViolation(input.getPropertyPath().toString(), input.getMessage());
-                        }
-                    });
+            Stream<ManifestConstraintViolation> violations = validator.validate(manifest).stream().map(input -> new ManifestConstraintViolation(input.getPropertyPath().toString(), input.getMessage()));
 
-            violations = violations.append(validateMemory(manifest));
+            violations = Stream.concat(violations, validateMemory(manifest).stream());
 
-            if (!violations.isEmpty()) {
+            if (violations.findAny().isPresent()) {
                 for (String line : manifestValidationFailedMessage(violations)) {
                     getLog().error(line);
                 }
@@ -271,23 +375,21 @@ public class PackageMojo extends BaseMicroserviceMojo {
         }
     }
 
+
     private ImmutableList<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
         final Resources resources = manifest.getResources();
         if (resources != null && resources.getMemoryLimit().isPresent()) {
             final DataSize memoryLimit = resources.getMemoryLimit().get();
-            if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT) < 0) {
+            if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT ) < 0) {
                 return ImmutableList.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
             }
         }
         return ImmutableList.of();
     }
 
-    private <T> Iterable<String> manifestValidationFailedMessage(Iterable<ManifestConstraintViolation> result) {
+    private Iterable<String> manifestValidationFailedMessage(Stream<ManifestConstraintViolation> result) {
         final List<String> sb = Lists.newArrayList("Microservice manifest invalid:");
-        for (final Iterator<ManifestConstraintViolation> it = result.iterator(); it.hasNext(); ) {
-            final ManifestConstraintViolation violation = it.next();
-            sb.add(violation.getPath() + " - " + violation.getMessage());
-        }
+        result.forEach(violation -> sb.add(violation.getPath() + " - " + violation.getMessage()));
         return sb;
     }
 
@@ -298,8 +400,8 @@ public class PackageMojo extends BaseMicroserviceMojo {
                 filteredDir,
                 project,
                 encoding,
-                ImmutableList.<String>of(),
-                ImmutableList.<String>of(),
+                ImmutableList.of(),
+                ImmutableList.of(),
                 mavenSession);
         createDirectories(filteredDir.toPath());
         execution.setOverwrite(true);
@@ -312,7 +414,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         resource.setDirectory(file.getParent());
         resource.setFiltering(true);
         resource.setIncludes(ImmutableList.of(file.getName()));
-        resource.setExcludes(ImmutableList.<String>of());
+        resource.setExcludes(ImmutableList.of());
         return resource;
     }
 
@@ -323,18 +425,11 @@ public class PackageMojo extends BaseMicroserviceMojo {
         return "java-" + getJavaVersion();
     }
 
-    private void addFileToZip(final ZipOutputStream zipOutputStream, final File file, String name) throws IOException {
-        final ZipEntry ze = new ZipEntry(name);
-        try {
-            zipOutputStream.putNextEntry(ze);
-            asByteSource(file).copyTo(zipOutputStream);
-        } finally {
-            zipOutputStream.closeEntry();
-        }
-    }
     @Value
-    private static final class ManifestConstraintViolation {
-        private final String path;
-        private final String message;
+    private static class ManifestConstraintViolation {
+        String path;
+        String message;
     }
+
+
 }

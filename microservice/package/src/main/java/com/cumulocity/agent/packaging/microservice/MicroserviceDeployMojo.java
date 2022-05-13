@@ -1,7 +1,6 @@
 package com.cumulocity.agent.packaging.microservice;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -17,9 +16,9 @@ import org.apache.maven.wagon.repository.Repository;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
+import java.util.Optional;
 
-import static com.cumulocity.agent.packaging.PackageMojo.TARGET_FILENAME_PATTERN;
-import static com.google.common.base.Throwables.propagate;
+import static com.cumulocity.agent.packaging.BaseMicroserviceMojo.TARGET_FILENAME_PATTERN_DEFAULT_ARCH;
 import static java.lang.String.format;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 
@@ -27,7 +26,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.DEPLOY;
 public class MicroserviceDeployMojo extends AbstractMojo {
 
     private static final String SERVER_ID = "microservice";
-    
+
     @Parameter(defaultValue = "${project.build.directory}")
     private File build;
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -58,7 +57,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             return;
         }
 
-        final String targetFilename = format(TARGET_FILENAME_PATTERN, name, project.getVersion());
+        final String targetFilename = format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, name, project.getVersion());
         final File file = new File(build, targetFilename);
         try {
             final Repository repository = new Repository(serviceId, serverUrl.get());
@@ -67,7 +66,7 @@ public class MicroserviceDeployMojo extends AbstractMojo {
             wagon.put(file, targetFilename);
             wagon.disconnect();
         } catch (Exception e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
