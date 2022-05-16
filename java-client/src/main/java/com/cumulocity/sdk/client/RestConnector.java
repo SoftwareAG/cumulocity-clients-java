@@ -114,8 +114,13 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentation> T get(String path, CumulocityMediaType mediaType, Class<T> responseType) throws SDKException {
-        Response response = getClientResponse(path, mediaType);
-        return responseParser.parse(response, responseType, OK.getStatusCode());
+        try {
+            Response response = getClientResponse(path, mediaType);
+            return responseParser.parse(response, responseType, OK.getStatusCode());
+        } catch (SDKException e) {
+              log.error(" request : GET {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            throw e;
+        }
     }
 
     @Override
@@ -226,8 +231,13 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException {
-        Response response = httpPut(path, mediaType, representation);
-        return parseResponseWithId(representation, response, OK.getStatusCode());
+        try {
+            Response response = httpPut(path, mediaType, representation);
+            return parseResponseWithId(representation, response, OK.getStatusCode());
+        } catch (SDKException e) {
+            log.error(" request : PUT {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            throw e;
+        }
     }
 
     private <T extends ResourceRepresentationWithId> T parseResponseWithId(T representation, Response response, int responseCode)
@@ -272,8 +282,14 @@ public class RestConnector implements RestOperations {
 
     @Override
     public <T extends ResourceRepresentationWithId> T post(String path, MediaType mediaType, T representation) throws SDKException {
-        Response response = httpPost(path, mediaType, mediaType, representation);
-        return parseResponseWithId(representation, response, CREATED.getStatusCode());
+        Response response = null;
+        try {
+            response = httpPost(path, mediaType, mediaType, representation);
+            return parseResponseWithId(representation, response, CREATED.getStatusCode());
+        } catch (SDKException e) {
+            log.error(" request : POSTT {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            throw e;
+        }
     }
 
     @Override
