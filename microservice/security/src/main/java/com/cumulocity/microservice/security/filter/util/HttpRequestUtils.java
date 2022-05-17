@@ -4,7 +4,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -12,7 +12,6 @@ public class HttpRequestUtils {
     public static final String X_CUMULOCITY_APPLICATION_KEY = "X-Cumulocity-Application-Key";
     public static final String TFA_TOKEN_HEADER = "TFAToken";
     public static final String LOGIN_SEPARATOR = "/";
-    public static final String AUTH_ENCODING = "ASCII";
     public static final String AUTH_PREFIX = "BASIC ";
     public static final String AUTH_SEPARATOR = ":";
     public static final String XSRF_TOKEN_HEADER = "X-XSRF-TOKEN";
@@ -162,10 +161,8 @@ public class HttpRequestUtils {
     }
 
     public static String[] decode(String authorization) {
-        try {
-            return new String(Base64.decode(authorization.substring(AUTH_PREFIX.length()).getBytes()), AUTH_ENCODING).split(AUTH_SEPARATOR, 2);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        final byte[] decoded = Base64.decode(authorization.substring(AUTH_PREFIX.length()).getBytes());
+        return new String(decoded, StandardCharsets.UTF_8)
+                .split(AUTH_SEPARATOR, 2);
     }
 }
