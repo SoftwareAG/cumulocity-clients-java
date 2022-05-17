@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.svenson.AbstractDynamicProperties;
 
+/**
+ * Allows device integrators to provide information about the agent running on the device.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
