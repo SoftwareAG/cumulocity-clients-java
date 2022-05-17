@@ -14,7 +14,7 @@ import com.google.common.collect.ObjectArrays;
 
 public final class RpmDsl {
     public static Plugin rpm() {
-        return plugin(groupId("org.codehaus.mojo"), artifactId("rpm-maven-plugin"), version("2.1.5"));
+        return plugin(groupId("org.codehaus.mojo"), artifactId("rpm-maven-plugin"), version("2.2.0"));
     }
     public static String currentYear() {
         return String.valueOf(Calendar.getInstance().get(YEAR));

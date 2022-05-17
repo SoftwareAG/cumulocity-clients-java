@@ -7,7 +7,6 @@ import com.google.common.io.Files;
 import com.google.common.reflect.ClassPath;
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -36,6 +35,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.lang3.StringUtils.firstNonEmpty;
 
 public abstract class BaseMicroserviceMojo extends AbstractMojo {
+
+    public static final String TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH = "%s-%s-%s.zip";
+    public static final String TARGET_FILENAME_PATTERN_DEFAULT_ARCH = "%s-%s.zip";
 
     @Parameter(property = "agent-package.container.registry")
     protected String registry;
@@ -118,7 +120,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
 
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
-                                                                                 ImmutableList.<String>of(), ImmutableList.<String>of(),
+                                                                                 ImmutableList.of(), ImmutableList.of(),
                                                                                  mavenSession);
         getLog().info("copy resources from " + src + " to" + destination);
         createDirectories(destination.toPath());
@@ -227,7 +229,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     }
 
     public Resource resource(String resourceDirectory) {
-        return resource(resourceDirectory, ImmutableList.<String>of(), ImmutableList.<String>of());
+        return resource(resourceDirectory, ImmutableList.of(), ImmutableList.of());
     }
 
     public Resource resource(String resourceDirectory, List<String> includes, List<String> excludes) {
@@ -254,5 +256,17 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return javaRuntime.substring(2);
         }
         return javaRuntime;
+    }
+
+    protected String getTargetFilename(String targetArchitecture) {
+        if (targetArchitecture.equals(DockerBuildSpec.DEFAULT_TARGET_DOCKER_IMAGE_PLATFORM)) {
+            return getDefaultTargetFilename();
+        }
+
+        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture).replaceAll("/","-");
+    }
+
+    protected String getDefaultTargetFilename() {
+        return String.format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, name, project.getVersion());
     }
 }
