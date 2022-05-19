@@ -12,8 +12,12 @@ import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.service.LnsConnectionService;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
@@ -55,5 +59,15 @@ public class LnsConnectionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable @NotNull String lnsConnectionName) throws LpwanServiceException {
         lnsConnectionService.delete(lnsConnectionName);
+    }
+
+    @GetMapping(value = "/associated-device/{lnsConnectionName}")
+    @JsonView(LnsConnection.PublicView.class)
+    public @ResponseBody @NotNull ResponseEntity<Resource> downloadCsvForDeviceMoList(@PathVariable @NotBlank String lnsConnectionName) throws LpwanServiceException {
+        InputStreamResource resource = lnsConnectionService.getDeviceManagedObjectsInCsv(lnsConnectionName);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=DeviceList.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(resource);
     }
 }
