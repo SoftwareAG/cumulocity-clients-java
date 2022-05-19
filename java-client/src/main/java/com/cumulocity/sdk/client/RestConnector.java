@@ -52,7 +52,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.cumulocity.sdk.client.util.StringUtils.isNotBlank;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
@@ -118,9 +120,15 @@ public class RestConnector implements RestOperations {
             Response response = getClientResponse(path, mediaType);
             return responseParser.parse(response, responseType, OK.getStatusCode());
         } catch (SDKException e) {
-              log.error(" request : GET {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            logTenantUserMediaParameter(mediaType);
             throw e;
         }
+    }
+
+    private void logTenantUserMediaParameter(MediaType mediaType) {
+        Map<String, String> mediaTypeParameters = mediaType.getParameters();
+        String mediaParameterUncasted = mediaTypeParameters.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining("&"));
+        log.error("Exception happened for tenant: {} user: {} with mediaParameterUncasted : {} ", platformParameters.getTenantId(), platformParameters.getUser(), mediaParameterUncasted);
     }
 
     @Override
@@ -235,7 +243,7 @@ public class RestConnector implements RestOperations {
             Response response = httpPut(path, mediaType, representation);
             return parseResponseWithId(representation, response, OK.getStatusCode());
         } catch (SDKException e) {
-            log.error(" request : PUT {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            logTenantUserMediaParameter(mediaType);
             throw e;
         }
     }
@@ -287,7 +295,7 @@ public class RestConnector implements RestOperations {
             response = httpPost(path, mediaType, mediaType, representation);
             return parseResponseWithId(representation, response, CREATED.getStatusCode());
         } catch (SDKException e) {
-            log.error(" request : POSTT {} for tenant: {} user: {}", path, platformParameters.getTenantId(), platformParameters.getUser());
+            logTenantUserMediaParameter(mediaType);
             throw e;
         }
     }
