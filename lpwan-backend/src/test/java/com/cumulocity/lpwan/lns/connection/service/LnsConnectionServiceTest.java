@@ -569,6 +569,39 @@ public class LnsConnectionServiceTest {
     }
 
     @Test
+    public void ShouldThrowExceptionOnUpdateWhenDevicesAreAssociated() {
+        OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
+        OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(lnsConnectionsOptionKey.getCategory(), lnsConnectionsOptionKey.getKey(), VALID_LNS_CONNECTIONS_MAP_JSON);
+
+        when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
+        when(tenantOptionApi.save(any())).thenReturn(null);
+
+        PlatformParameters platformParameters = new PlatformParameters();
+        platformParameters.setHost("http://localhost:9090");
+        when(restConnector.getPlatformParameters()).thenReturn(platformParameters);
+
+        String existingLnsConnectionName = "SampleConnection-1";
+        SampleConnection connectionToUpdate = SampleConnection.builder()
+//                .name("SampleConnection-1 (UPDATED)")
+                .description("Description for SampleConnection-1 (UPDATED)")
+                .user("user-1 (UPDATED)")
+                .password(null) // Password is passed as null, so the old password is kept
+                .build();
+        connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
+
+        mockInventoryReturnsWithDevice(existingLnsConnectionName, new GId("12345"));
+        try {
+            lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
+        } catch (LpwanServiceException e) {
+            String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
+                    existingLnsConnectionName.toLowerCase(), 1);
+            assertTrue(e.getMessage().contains(errorMessage));
+        }
+
+        verify(tenantOptionApi,never()).save(optionRepresentationCaptor.capture());
+    }
+
+    @Test
     public void doUpdate_with_null_existingLnsConnectionName() {
         LnsConnection connectionToUpdate = SampleConnection.builder()
                                             .name("SampleConnection-1 (UPDATED)")
