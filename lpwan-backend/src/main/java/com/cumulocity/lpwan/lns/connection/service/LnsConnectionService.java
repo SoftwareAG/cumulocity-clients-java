@@ -371,7 +371,7 @@ public class LnsConnectionService {
             throw new LpwanServiceException(message, e);
         }
         List<ManagedObjectRepresentation> managedObjectRepresentationList = Lists.newArrayList(managedObjectRepresentations);
-        managedObjectRepresentationList.removeIf(mo -> !lnsConnectionNametoDeleteLowerCase.equals(mo.get(LpwanDevice.class).getLnsConnectionName()));
+        managedObjectRepresentationList.removeIf(mo -> !lnsConnectionNametoDeleteLowerCase.equalsIgnoreCase(mo.get(LpwanDevice.class).getLnsConnectionName()));
         return managedObjectRepresentationList;
     }
 

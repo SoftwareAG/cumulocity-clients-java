@@ -506,7 +506,7 @@ public class LnsConnectionServiceTest {
                 .password("password-1 (UPDATED)")
                 .build();
         connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice(existingLnsConnectionName, new GId("12345"));
+        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         compare(connectionToUpdate, updatedConnection);
@@ -542,7 +542,7 @@ public class LnsConnectionServiceTest {
                 .password(null) // Password is passed as null, so the old password is kept
                 .build();
         connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice(existingLnsConnectionName, new GId("12345"));
+        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         connectionToUpdate.setPassword(((SampleConnection)VALID_LNS_CONNECTIONS_MAP.get(existingLnsConnectionName.toLowerCase())).getPassword()); // Initialize the password with the existing connection's password
@@ -667,7 +667,7 @@ public class LnsConnectionServiceTest {
 
         String connectionNameToDelete = "SampleConnection-1";
 
-        mockInventoryReturnsWithDevice(connectionNameToDelete, new GId("12345"));
+        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
         lnsConnectionService.delete(connectionNameToDelete);
 
         verify(tenantOptionApi).save(optionRepresentationCaptor.capture());
