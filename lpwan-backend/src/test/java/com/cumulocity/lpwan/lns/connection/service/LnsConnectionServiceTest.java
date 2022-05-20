@@ -17,6 +17,8 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
+import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryFilter;
@@ -59,6 +61,9 @@ public class LnsConnectionServiceTest {
 
     @Mock
     private InventoryApi inventoryApi;
+
+    @Mock
+    private RestConnector restConnector;
 
     @InjectMocks
     private LnsConnectionService lnsConnectionService;
@@ -682,6 +687,32 @@ public class LnsConnectionServiceTest {
                                                     .forType(mapType)
                                                     .readValue(optionRepresentationArgument.getValue());
         compare(VALID_LNS_CONNECTIONS_MAP, actualMapSaved);
+    }
+
+    @Test
+    public void ShouldThrowExceptionOnDeleteWhenDevicesAreAssociated() {
+        OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
+        OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(lnsConnectionsOptionKey.getCategory(), lnsConnectionsOptionKey.getKey(), VALID_LNS_CONNECTIONS_MAP_JSON);
+
+        when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
+        when(tenantOptionApi.save(any())).thenReturn(null);
+
+        PlatformParameters platformParameters = new PlatformParameters();
+        platformParameters.setHost("http://localhost:9090");
+        when(restConnector.getPlatformParameters()).thenReturn(platformParameters);
+
+        String connectionNameToDelete = "SampleConnection-1";
+
+        mockInventoryReturnsWithDevice(connectionNameToDelete, new GId("12345"));
+        try {
+            lnsConnectionService.delete(connectionNameToDelete);
+        } catch (LpwanServiceException e) {
+            String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
+                    connectionNameToDelete, 1);
+            assertTrue(e.getMessage().contains(errorMessage));
+        }
+
+        verify(tenantOptionApi,never()).save(optionRepresentationCaptor.capture());
     }
 
     @Test
