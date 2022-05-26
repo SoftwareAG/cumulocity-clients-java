@@ -174,7 +174,6 @@ public class LnsConnectionService {
 
         return existingLnsConnection;
     }
-
     public synchronized void delete(@NotBlank String lnsConnectionNametoDelete) throws LpwanServiceException {
         if (StringUtils.isBlank(lnsConnectionNametoDelete)) {
             String message = "LNS connection name to delete can't be null or blank.";
@@ -183,33 +182,19 @@ public class LnsConnectionService {
         }
 
         final String lnsConnectionNametoDeleteLowerCase = lnsConnectionNametoDelete.toLowerCase();
+        
+        Map<String, LnsConnection> lnsConnections = getLnsConnections();
+        if (!lnsConnections.containsKey(lnsConnectionNametoDeleteLowerCase)) {
+            String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionNametoDeleteLowerCase);
+            log.error(message);
+            throw new InputDataValidationException(message);
+        }
 
-//        InventoryFilter inventoryFilter = InventoryFilter.searchInventory().byFragmentType(LpwanDevice.class);
-//        Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
-//        try {
-//            managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
-//        } catch (SDKException e) {
-//            String message = String.format("Error in getting device managed objects with fragment type 'c8y_LpwanDevice'");
-//            log.error(message, e);
-//            throw new LpwanServiceException(message, e);
-//        }
-//        List<ManagedObjectRepresentation> managedObjectRepresentationList = Lists.newArrayList(managedObjectRepresentations);
-//        managedObjectRepresentationList.removeIf(mo -> !lnsConnectionNametoDeleteLowerCase.equals(mo.get(LpwanDevice.class).getLnsConnectionName()));
+        lnsConnections.remove(lnsConnectionNametoDeleteLowerCase);
 
-//        if(managedObjectRepresentationList.isEmpty()) {
-            Map<String, LnsConnection> lnsConnections = getLnsConnections();
-            if (!lnsConnections.containsKey(lnsConnectionNametoDeleteLowerCase)) {
-                String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionNametoDeleteLowerCase);
-                log.error(message);
-                throw new InputDataValidationException(message);
-            }
+        flushCache();
 
-            lnsConnections.remove(lnsConnectionNametoDeleteLowerCase);
-
-            flushCache();
-
-            log.info("LNS connection named '{}' is deleted.", lnsConnectionNametoDeleteLowerCase);
-//        }
+        log.info("LNS connection named '{}' is deleted.", lnsConnectionNametoDeleteLowerCase);
     }
 
     private Map<String, LnsConnection> loadLnsConnectionsFromTenantOptions(OptionPK tenantOptionKeyForLnsConnectionMap) throws LpwanServiceException {
