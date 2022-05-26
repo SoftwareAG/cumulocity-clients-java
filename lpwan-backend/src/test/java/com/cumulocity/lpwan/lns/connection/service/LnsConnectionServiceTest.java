@@ -363,7 +363,6 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection connectionToCreate = SampleConnection.builder()
-//                                        .name("Sample Connection Name")
                                         .description("Sample Connection Description")
                                         .user("USER NAME")
                                         .password("**********")
@@ -415,7 +414,6 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection duplicateConnectionToCreate = SampleConnection.builder()
-//                .name("SampleConnection-1")
                 .description("Sample Connection Description")
                 .user("USER NAME")
                 .password("**********")
@@ -434,7 +432,6 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection connectionToUpdate = SampleConnection.builder()
-//                                        .name("SampleConnection-1")
                                         .description("Description for SampleConnection-1 (UPDATED)")
                                         .user("user-1 (UPDATED)")
                                         .password("password-1 (UPDATED)")
@@ -467,7 +464,6 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         SampleConnection connectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-1")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password(null) // Password is passed as null, so the old password is kept
@@ -502,7 +498,6 @@ public class LnsConnectionServiceTest {
 
         String existingLnsConnectionName = "SampleConnection-1";
         LnsConnection connectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password("password-1 (UPDATED)")
@@ -538,7 +533,6 @@ public class LnsConnectionServiceTest {
 
         String existingLnsConnectionName = "SampleConnection-1";
         SampleConnection connectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password(null) // Password is passed as null, so the old password is kept
@@ -663,7 +657,6 @@ public class LnsConnectionServiceTest {
 
         String nonExistingConnectionNameToUpdate = "SampleConnection-1";
         LnsConnection invalidConnectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user(null) // Invalid as user is a mandatory field
                 .password("password-5 (UPDATED)")
@@ -682,7 +675,6 @@ public class LnsConnectionServiceTest {
 
         String existingConnectionNameToUpdate = "SampleConnection-1";
         LnsConnection connectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-2") // Already existing connection
                 .description("Description for SampleConnection-2 (UPDATED)")
                 .user("user-2 (UPDATED)")
                 .password("password-2 (UPDATED)")
