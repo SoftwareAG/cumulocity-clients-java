@@ -71,7 +71,7 @@ def run_sdk_tests()
     {
         withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')])
         {
-            sh ".jenkins/scripts/new_sdk_tests.sh ${DEPLOY_ENVIRONMENT} ${MANAGE_PASS} ${params.MANAGE_USER}"
+            sh ".jenkins/scripts/new_sdk_tests.sh ${DEPLOY_ENVIRONMENT} '${MANAGE_PASS}' '${params.MANAGE_USER}'"
         }
         currentBuild.result = "SUCCESS"
     }
