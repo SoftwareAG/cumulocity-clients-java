@@ -8,6 +8,7 @@
 package com.cumulocity.lpwan.handler;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
+import com.cumulocity.lpwan.exception.LpwanErrorMessageRepresentation;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
@@ -40,7 +41,7 @@ public class LpwanExceptionsHandler {
     @ExceptionHandler(value = LpwanServiceException.class)
     @ResponseBody
     public ResponseEntity<ErrorMessageRepresentation> handleLpwanServiceException(LpwanServiceException exception) {
-        log.error(exception.getMessage(), exception);
+        log.error(exception.getMessage(), exception, exception.getUrl());
         return buildErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -106,10 +107,13 @@ public class LpwanExceptionsHandler {
     }
 
     private ErrorMessageRepresentation buildErrorMessageRepresentation(Throwable exception) {
-        ErrorMessageRepresentation representation = new ErrorMessageRepresentation();
+        LpwanErrorMessageRepresentation representation = new LpwanErrorMessageRepresentation();
         representation.setError("Lpwan Backend Error");
         representation.setMessage(exception.getMessage());
         representation.setDetails(buildErrorDetails(exception));
+        if(exception instanceof LpwanServiceException) {
+            representation.setUrl(((LpwanServiceException) exception).getUrl());
+        }
         return representation;
     }
 

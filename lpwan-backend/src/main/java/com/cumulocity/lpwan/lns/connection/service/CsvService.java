@@ -1,14 +1,11 @@
 package com.cumulocity.lpwan.lns.connection.service;
 
-import com.cumulocity.microservice.context.ContextService;
-import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceDetails;
 import com.cumulocity.microservice.context.inject.TenantScope;
-import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,21 +19,17 @@ import java.util.List;
 @TenantScope
 public class CsvService {
 
-    private static final String[] HEADERS = {"Tenant Name", "Device Name", "Device Managed Object Id"};
+    private static final String[] HEADERS = {"Device Name", "Device Managed Object Id"};
     private static final CSVFormat FORMAT = CSVFormat.DEFAULT.withHeader(HEADERS);
 
-    @Autowired
-    private ContextService<Credentials> contextService;
-
-    public ByteArrayInputStream writeDataToCsv(final List<ManagedObjectRepresentation> deviceMoList) {
+    public ByteArrayInputStream writeDataToCsv(final List<LpwanDeviceDetails> deviceMoList) {
         log.info("Writing data to the csv printer");
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream();
              final CSVPrinter printer = new CSVPrinter(new PrintWriter(stream), FORMAT)) {
-            for (final ManagedObjectRepresentation deviceMo : deviceMoList) {
+            for (final LpwanDeviceDetails deviceMo : deviceMoList) {
                 final List<String> data = Arrays.asList(
-                        contextService.getContext().getTenant(),
-                        deviceMo.getName(),
-                        deviceMo.getId().getValue());
+                        deviceMo.getDeviceName(),
+                        deviceMo.getDeviceMoId());
 
                 printer.printRecord(data);
             }

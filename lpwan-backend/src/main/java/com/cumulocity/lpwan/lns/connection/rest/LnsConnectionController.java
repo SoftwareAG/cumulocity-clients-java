@@ -61,8 +61,8 @@ public class LnsConnectionController {
         lnsConnectionService.delete(lnsConnectionName);
     }
 
-    @GetMapping(value = "/associated-device/{lnsConnectionName}")
-    @JsonView(LnsConnection.PublicView.class)
+    @GetMapping(value = "/lns-connection/{lnsConnectionName}/device")
+    @ResponseStatus(HttpStatus.OK)
     public @ResponseBody @NotNull ResponseEntity<Resource> downloadCsvForDeviceMoList(@PathVariable @NotBlank String lnsConnectionName) throws LpwanServiceException {
         InputStreamResource resource = lnsConnectionService.getDeviceManagedObjectsInCsv(lnsConnectionName);
         return ResponseEntity.ok()
