@@ -199,7 +199,7 @@ public class LnsConnectionService {
                 String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
                         existingLnsConnectionNameLowerCase, managedObjectRepresentationList.size(), url);
                 log.info(errorMessage);
-                throw new LpwanServiceException(errorMessage);
+                throw new LpwanServiceException(errorMessage, url);
             }
         }
 

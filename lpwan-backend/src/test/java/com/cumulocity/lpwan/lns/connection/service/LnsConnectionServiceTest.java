@@ -42,16 +42,13 @@ import org.springframework.test.util.JsonExpectationsHelper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class LnsConnectionServiceTest {
@@ -511,7 +508,7 @@ public class LnsConnectionServiceTest {
                 .password("password-1 (UPDATED)")
                 .build();
         connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
+        mockInventoryReturnsWithDevice(null, null);
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         compare(connectionToUpdate, updatedConnection);
@@ -547,7 +544,7 @@ public class LnsConnectionServiceTest {
                 .password(null) // Password is passed as null, so the old password is kept
                 .build();
         connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
+        mockInventoryReturnsWithDevice(null, null);
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         connectionToUpdate.setPassword(((SampleConnection)VALID_LNS_CONNECTIONS_MAP.get(existingLnsConnectionName.toLowerCase())).getPassword()); // Initialize the password with the existing connection's password
@@ -705,7 +702,7 @@ public class LnsConnectionServiceTest {
 
         String connectionNameToDelete = "SampleConnection-1";
 
-        mockInventoryReturnsWithDevice("SomeConnectionName", new GId("12345"));
+        mockInventoryReturnsWithDevice(null, null);
         lnsConnectionService.delete(connectionNameToDelete);
 
         verify(tenantOptionApi).save(optionRepresentationCaptor.capture());
@@ -811,26 +808,22 @@ public class LnsConnectionServiceTest {
     }
 
     private void mockInventoryReturnsWithDevice(String lnsConnectionName, GId gId) {
-        ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
-        managedObject.setType("type");
-        LpwanDevice lpwanDevice = new LpwanDevice();
-        lpwanDevice.setLnsConnectionName(lnsConnectionName);
-        managedObject.set(lpwanDevice);
-        managedObject.setId(gId);
+        List<ManagedObjectRepresentation> moList = new ArrayList<>();
+        if(Objects.nonNull(lnsConnectionName)) {
+            ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
+            managedObject.setType("type");
+            LpwanDevice lpwanDevice = new LpwanDevice();
+            lpwanDevice.setLnsConnectionName(lnsConnectionName);
+            managedObject.set(lpwanDevice);
+            managedObject.setId(gId);
+            moList.add(managedObject);
+        }
 
         ManagedObjectCollection managedObjectCollection = mock(ManagedObjectCollection.class);
         PagedManagedObjectCollectionRepresentation paged = mock(PagedManagedObjectCollectionRepresentation.class);
         when(managedObjectCollection.get()).thenReturn(paged);
         Iterable<ManagedObjectRepresentation> iterable = mock(Iterable.class);
-        Iterator iterator = mock(Iterator.class);
-        when(iterable.iterator()).thenReturn(iterator);
-        when(paged.allPages()).thenReturn(iterable);
-
-        when(iterator.hasNext())
-                .thenReturn(true)
-                .thenReturn(false);
-        when(iterator.next())
-                .thenReturn(managedObject);
+        when(paged.allPages()).thenReturn(moList);
 
         when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class))).
                 thenReturn(managedObjectCollection);
