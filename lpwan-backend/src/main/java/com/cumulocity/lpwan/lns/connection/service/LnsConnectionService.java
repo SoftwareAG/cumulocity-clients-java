@@ -338,7 +338,7 @@ public class LnsConnectionService {
     }
 
     private List<LpwanDeviceDetails> getDeviceMoListAssociatedWithLnsConnection(String lnsConnectionName) throws LpwanServiceException {
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.of(lnsConnectionName);
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.of("lnsConnectionName", lnsConnectionName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
             managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();

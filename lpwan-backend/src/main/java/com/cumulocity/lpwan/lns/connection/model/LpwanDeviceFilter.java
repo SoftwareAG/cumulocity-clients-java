@@ -8,12 +8,12 @@ public class LpwanDeviceFilter extends InventoryFilter {
     @ParamSource
     private String query;
 
-    private LpwanDeviceFilter(String lnsConnectionName) {
-        query = "$filter=c8y_LpwanDevice.lnsConnectionName eq " +
-                String.format("'%s'", lnsConnectionName);
+    private LpwanDeviceFilter(String filterCriteria, String filterCriteriaValue) {
+        query = "$filter=c8y_LpwanDevice." + filterCriteria + " eq " +
+                String.format("'%s'", filterCriteriaValue);
     }
 
-    public static LpwanDeviceFilter of(String lnsConnectionName) {
-        return new LpwanDeviceFilter(lnsConnectionName);
+    public static LpwanDeviceFilter of(String filterCriteria, String filterCriteriaValue) {
+        return new LpwanDeviceFilter(filterCriteria, filterCriteriaValue);
     }
 }
