@@ -7,14 +7,18 @@
 
 package com.cumulocity.lpwan.lns.connection.service;
 
+import c8y.LpwanDevice;
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.model.option.OptionPK;
+import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.inventory.InventoryFilter;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +26,8 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +38,7 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -49,6 +56,9 @@ public class LnsConnectionService {
 
     @Autowired
     private TenantOptionApi tenantOptionApi;
+
+    @Autowired
+    private InventoryApi inventoryApi;
 
     private OptionPK lnsConnectionsTenantOptionKey;
 
@@ -71,14 +81,16 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
+        final String lnsConnectionNameLowerCase = lnsConnectionName.toLowerCase();
+
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
-        if (!lnsConnections.containsKey(lnsConnectionName)) {
-            String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionName);
+        if (!lnsConnections.containsKey(lnsConnectionNameLowerCase)) {
+            String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionNameLowerCase);
             log.error(message);
             throw new InputDataValidationException(message);
         }
 
-        return lnsConnections.get(lnsConnectionName);
+        return lnsConnections.get(lnsConnectionNameLowerCase);
     }
 
     public Collection<LnsConnection> getAll() throws LpwanServiceException {
@@ -119,9 +131,11 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
+        final String existingLnsConnectionNameLowerCase = existingLnsConnectionName.toLowerCase();
+
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
-        if (!lnsConnections.containsKey(existingLnsConnectionName)) {
-            String message = String.format("LNS connection named '%s' doesn't exist.", existingLnsConnectionName);
+        if (!lnsConnections.containsKey(existingLnsConnectionNameLowerCase)) {
+            String message = String.format("LNS connection named '%s' doesn't exist.", existingLnsConnectionNameLowerCase);
             log.error(message);
             throw new InputDataValidationException(message);
         }
@@ -132,11 +146,14 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
-        // Validate LnsConnection to update
-        lnsConnectionToUpdate.isValid();
+        LnsConnection existingLnsConnection = lnsConnections.get(existingLnsConnectionNameLowerCase);
+        existingLnsConnection.initializeWith(lnsConnectionToUpdate);
+
+        // Validate LnsConnection after update
+        existingLnsConnection.isValid();
 
         String updatedLnsConnectionName = lnsConnectionToUpdate.getName();
-        if (!existingLnsConnectionName.equals(updatedLnsConnectionName)) {
+        if (!existingLnsConnectionNameLowerCase.equals(updatedLnsConnectionName)) {
             if (lnsConnections.containsKey(updatedLnsConnectionName)) {
                 String message = String.format("LNS connection named '%s' already exists.", updatedLnsConnectionName);
                 log.error(message);
@@ -144,25 +161,19 @@ public class LnsConnectionService {
             }
         }
 
-        LnsConnection existingLnsConnection = lnsConnections.remove(existingLnsConnectionName);
-        existingLnsConnection.initializeWith(lnsConnectionToUpdate);
-
-        // Validate LnsConnection after update
-        existingLnsConnection.isValid();
-
+        lnsConnections.remove(existingLnsConnectionNameLowerCase);
         lnsConnections.put(updatedLnsConnectionName, existingLnsConnection);
 
         flushCache();
 
-        if (!existingLnsConnectionName.equals(updatedLnsConnectionName)) {
-            log.info("LNS connection named '{}', is renamed to '{}' and updated.", existingLnsConnectionName, updatedLnsConnectionName);
+        if (!existingLnsConnectionNameLowerCase.equals(updatedLnsConnectionName)) {
+            log.info("LNS connection named '{}', is renamed to '{}' and updated.", existingLnsConnectionNameLowerCase, updatedLnsConnectionName);
         } else {
-            log.info("LNS connection named '{}' is updated.", existingLnsConnectionName);
+            log.info("LNS connection named '{}' is updated.", existingLnsConnectionNameLowerCase);
         }
 
         return existingLnsConnection;
     }
-
     public synchronized void delete(@NotBlank String lnsConnectionNametoDelete) throws LpwanServiceException {
         if (StringUtils.isBlank(lnsConnectionNametoDelete)) {
             String message = "LNS connection name to delete can't be null or blank.";
@@ -170,18 +181,20 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
+        final String lnsConnectionNametoDeleteLowerCase = lnsConnectionNametoDelete.toLowerCase();
+        
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
-        if (!lnsConnections.containsKey(lnsConnectionNametoDelete)) {
-            String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionNametoDelete);
+        if (!lnsConnections.containsKey(lnsConnectionNametoDeleteLowerCase)) {
+            String message = String.format("LNS connection named '%s' doesn't exist.", lnsConnectionNametoDeleteLowerCase);
             log.error(message);
             throw new InputDataValidationException(message);
         }
 
-        lnsConnections.remove(lnsConnectionNametoDelete);
+        lnsConnections.remove(lnsConnectionNametoDeleteLowerCase);
 
         flushCache();
 
-        log.info("LNS connection named '{}' is deleted.", lnsConnectionNametoDelete);
+        log.info("LNS connection named '{}' is deleted.", lnsConnectionNametoDeleteLowerCase);
     }
 
     private Map<String, LnsConnection> loadLnsConnectionsFromTenantOptions(OptionPK tenantOptionKeyForLnsConnectionMap) throws LpwanServiceException {

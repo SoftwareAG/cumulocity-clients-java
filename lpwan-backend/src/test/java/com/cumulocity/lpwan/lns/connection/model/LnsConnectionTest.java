@@ -184,7 +184,7 @@ class LnsConnectionTest {
 
         SampleConnection actualTestLnsConnection = (SampleConnection) actual;
 
-        assertEquals(expected.getName(), actualTestLnsConnection.getName());
+        assertEquals(expected.getName().toLowerCase(), actualTestLnsConnection.getName());
         assertEquals(expected.getDescription(), actualTestLnsConnection.getDescription());
         assertEquals(expected.getUser(), actualTestLnsConnection.getUser());
         assertEquals(expected.getPassword(), actualTestLnsConnection.getPassword());

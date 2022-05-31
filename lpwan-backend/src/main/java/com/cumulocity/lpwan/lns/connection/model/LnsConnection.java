@@ -56,6 +56,14 @@ public abstract class LnsConnection {
         this.update(lnsConnection);
     }
 
+    public void setName(String name){
+        if(StringUtils.isNotBlank(name)) {
+            this.name = name.trim().toLowerCase();
+        } else{
+            this.name = null;
+        }
+    }
+
     @JsonIgnore
     public boolean isValid() throws InputDataValidationException {
         List<String> missingFields = new ArrayList<>(1);

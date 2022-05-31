@@ -18,4 +18,5 @@ public class LpwanDevice  {
     private String serviceProvider;
     private String lpwanDeviceType;
     private TypeExternalId typeExternalId;
+    private String lnsConnectionName;
 }

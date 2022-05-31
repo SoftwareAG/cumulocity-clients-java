@@ -29,6 +29,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import static com.cumulocity.lpwan.smaple.connection.model.SampleConnection.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -165,7 +166,7 @@ public class LnsConnectionControllerTest {
 
         SampleConnection actualTestLnsConnection = (SampleConnection) actual;
 
-        assertEquals(expected.getName(), actualTestLnsConnection.getName());
+        assertEquals(expected.getName().toLowerCase(), actualTestLnsConnection.getName());
         assertEquals(expected.getDescription(), actualTestLnsConnection.getDescription());
         assertEquals(expected.getUser(), actualTestLnsConnection.getUser());
         assertEquals(expected.getPassword(), actualTestLnsConnection.getPassword());
