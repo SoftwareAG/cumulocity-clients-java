@@ -584,9 +584,12 @@ public class LnsConnectionServiceTest {
         try {
             lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
         } catch (LpwanServiceException e) {
+            String contextPath = null;
+            String url = restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + existingLnsConnectionName.toLowerCase() + "/device";
             String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
                     existingLnsConnectionName.toLowerCase(), 1);
             assertTrue(e.getMessage().contains(errorMessage));
+            assertEquals(url, e.getUrl());
         }
 
         verify(tenantOptionApi,never()).save(optionRepresentationCaptor.capture());
@@ -729,9 +732,12 @@ public class LnsConnectionServiceTest {
         try {
             lnsConnectionService.delete(connectionNameToDelete);
         } catch (LpwanServiceException e) {
+            String contextPath = null;
+            String url = restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + connectionNameToDelete.toLowerCase() + "/device";
             String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
-                    connectionNameToDelete, 1);
+                    connectionNameToDelete.toLowerCase(), 1);
             assertTrue(e.getMessage().contains(errorMessage));
+            assertEquals(url, e.getUrl());
         }
 
         verify(tenantOptionApi,never()).save(optionRepresentationCaptor.capture());

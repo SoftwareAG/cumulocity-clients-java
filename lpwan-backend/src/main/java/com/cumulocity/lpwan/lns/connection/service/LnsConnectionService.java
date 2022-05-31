@@ -236,9 +236,9 @@ public class LnsConnectionService {
         List<LpwanDeviceDetails> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(lnsConnectionNametoDeleteLowerCase);
 
         if(!managedObjectRepresentationList.isEmpty()) {
-            String url = getURI(restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + lnsConnectionNametoDelete + "/device");
+            String url = getURI(restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device");
             String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
-                    lnsConnectionNametoDelete, managedObjectRepresentationList.size(), url);
+                    lnsConnectionNametoDeleteLowerCase, managedObjectRepresentationList.size(), url);
             log.info(errorMessage);
             throw new LpwanServiceException(errorMessage, url);
         }
