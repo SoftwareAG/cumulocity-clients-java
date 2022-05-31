@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -72,6 +72,6 @@ public class JavaSdkITBase {
     }
 
     private static String nextTenantId() {
-        return "sdk_tenant_" + RandomUtils.nextInt(1_000_000);
+        return "sdk_tenant_" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
     }
 }
