@@ -58,9 +58,9 @@ public abstract class LnsConnection {
 
     public void setName(String name){
         if(StringUtils.isNotBlank(name)) {
-            this.name = name.toLowerCase();
+            this.name = name.trim().toLowerCase();
         } else{
-            this.name = name;
+            this.name = null;
         }
     }
 
