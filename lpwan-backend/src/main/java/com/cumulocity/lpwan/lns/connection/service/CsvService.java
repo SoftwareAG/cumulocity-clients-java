@@ -1,6 +1,7 @@
 package com.cumulocity.lpwan.lns.connection.service;
 
-import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceDetails;
+import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.lns.connection.model.LpwanDevice;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -22,21 +23,23 @@ public class CsvService {
     private static final String[] HEADERS = {"Device Name", "Device Managed Object Id"};
     private static final CSVFormat FORMAT = CSVFormat.DEFAULT.withHeader(HEADERS);
 
-    public ByteArrayInputStream writeDataToCsv(final List<LpwanDeviceDetails> deviceMoList) {
+    public ByteArrayInputStream writeDataToCsv(final List<LpwanDevice> deviceList) throws LpwanServiceException {
         log.info("Writing data to the csv printer");
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream();
              final CSVPrinter printer = new CSVPrinter(new PrintWriter(stream), FORMAT)) {
-            for (final LpwanDeviceDetails deviceMo : deviceMoList) {
+            for (final LpwanDevice device : deviceList) {
                 final List<String> data = Arrays.asList(
-                        deviceMo.getDeviceName(),
-                        deviceMo.getDeviceMoId());
+                        device.getName(),
+                        device.getManagedObjectId());
 
                 printer.printRecord(data);
             }
             printer.flush();
             return new ByteArrayInputStream(stream.toByteArray());
         } catch (final IOException e) {
-            throw new RuntimeException("Csv writing error: " + e.getMessage());
+            String errorMessage = "Csv writing error: " + e.getMessage();
+            log.error(errorMessage, e);
+            throw new LpwanServiceException(errorMessage, e);
         }
     }
 }

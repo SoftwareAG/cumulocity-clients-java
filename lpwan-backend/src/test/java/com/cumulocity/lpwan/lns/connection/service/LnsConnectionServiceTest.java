@@ -32,15 +32,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.JsonExpectationsHelper;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +60,9 @@ public class LnsConnectionServiceTest {
 
     @Mock
     private RestConnector restConnector;
+
+    @Spy
+    private CsvService csvService;
 
     @InjectMocks
     private LnsConnectionService lnsConnectionService;
@@ -768,6 +770,14 @@ public class LnsConnectionServiceTest {
         assertEquals(String.format("LNS connection named '%s' doesn't exist.", noExistingConnectionNameToDelete.toLowerCase()), inputDataValidationException.getMessage());
     }
 
+    @Test
+    public void getDataForCsv() throws LpwanServiceException, IOException {
+        mockInventoryReturnsWithDevice("dummyLnsConnection", new GId("12345"));
+        InputStreamResource inputStreamResource = lnsConnectionService.getDeviceManagedObjectsInCsv("dummyLnsConnection");
+        assertNotNull(inputStreamResource.getInputStream());
+    }
+
+
     private void compare(Map<String, LnsConnection> expected, Collection<LnsConnection> actual) {
         assertEquals(expected.size(), actual.size());
         Map<String, LnsConnection> actualMap = new ConcurrentHashMap<>(actual.size());
@@ -809,6 +819,7 @@ public class LnsConnectionServiceTest {
         List<ManagedObjectRepresentation> moList = new ArrayList<>();
         if(Objects.nonNull(lnsConnectionName)) {
             ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
+            managedObject.setName("Dummy_LPWAN_Device");
             managedObject.setType("type");
             LpwanDevice lpwanDevice = new LpwanDevice();
             lpwanDevice.setLnsConnectionName(lnsConnectionName);
