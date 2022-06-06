@@ -107,12 +107,12 @@ public class LpwanExceptionsHandler {
     }
 
     private ErrorMessageRepresentation buildErrorMessageRepresentation(Throwable exception) {
-        LpwanErrorMessageRepresentation representation = new LpwanErrorMessageRepresentation();
+        ErrorMessageRepresentation representation = new ErrorMessageRepresentation();
         representation.setError("Lpwan Backend Error");
         representation.setMessage(exception.getMessage());
         representation.setDetails(buildErrorDetails(exception));
         if(exception instanceof LpwanServiceException) {
-            representation.setUrl(((LpwanServiceException) exception).getUrl());
+            representation.set(((LpwanServiceException) exception).getUrl(), "URL");
         }
         return representation;
     }

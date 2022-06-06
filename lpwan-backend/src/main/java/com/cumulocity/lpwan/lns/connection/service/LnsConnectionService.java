@@ -193,7 +193,7 @@ public class LnsConnectionService {
         if(!existingLnsConnectionNameLowerCase.equals(lnsConnectionToUpdate.getName().toLowerCase())) {
             List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(existingLnsConnectionNameLowerCase);
             if (!managedObjectRepresentationList.isEmpty()) {
-                String url = getURI(restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + existingLnsConnectionNameLowerCase + "/device");
+                String url = "/service/" + contextPath + "/lns-connection/" + existingLnsConnectionNameLowerCase + "/device";
                 String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
                         existingLnsConnectionNameLowerCase, managedObjectRepresentationList.size(), url);
                 log.info(errorMessage);
@@ -234,7 +234,7 @@ public class LnsConnectionService {
         List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(lnsConnectionNametoDeleteLowerCase);
 
         if(!managedObjectRepresentationList.isEmpty()) {
-            String url = getURI(restConnector.getPlatformParameters().getHost() + "/service/" + contextPath + "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device");
+            String url = "/service/" + contextPath + "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device";
             String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
                     lnsConnectionNametoDeleteLowerCase, managedObjectRepresentationList.size(), url);
             log.info(errorMessage);
@@ -348,19 +348,6 @@ public class LnsConnectionService {
         return StreamSupport.stream(managedObjectRepresentations.spliterator(), true)
                                                             .map(mo -> new LpwanDevice(mo.getName(), mo.getId().getValue()))
                                                             .collect(Collectors.toList());
-    }
-
-    public String getURI(String url) throws LpwanServiceException {
-        try {
-            return UriComponentsBuilder
-                    .fromHttpUrl(url)
-                    .build()
-                    .toUri()
-                    .toString();
-        } catch (IllegalStateException e){
-            log.error("Invalid URL '{}'", url, e);
-            throw new LpwanServiceException(e.getMessage(), e);
-        }
     }
 
     @EventListener
