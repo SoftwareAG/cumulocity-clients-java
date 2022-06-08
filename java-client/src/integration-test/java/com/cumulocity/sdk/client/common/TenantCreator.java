@@ -91,6 +91,7 @@ public class TenantCreator {
                         "\"domain\": \"sample-tenant-" + random.nextInt(10000) + ".cumulocity.com\", " +
                         "\"company\": \"sample-tenant\", " +
                         "\"adminName\": \"" + credentials.getUsername() + "\", " +
+                        "\"adminEmail\": \"" + "randomTestEmail@" + random.nextInt(10000) + "domain.com"+ "\", " +
                         "\"adminPass\": \"" + credentials.getPassword() + "\" " +
                         "}";
                 Response result = resource.post(Entity.json(tenantJson));
