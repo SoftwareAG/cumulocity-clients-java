@@ -26,7 +26,16 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+/*
+ * This class implements glue code between our package plugin logic and the Docker Java plugin.
+ * Please note: The methods have been marked as synchronized to prevent multiple maven threads
+ * to issue tasks to the Docker daemon in parallel.
+ *
+ * Both the Docker daemon and this plugin are actually capable of doing so. However, uncoordinated
+ * parallel builds with multiple threads have been reported to overload build environments.
+ * By making these methods synchronized in here, only one maven thread at a time is able to build and image or save one.
+ * On shared build environments this reduces the parallel load on Docker.
+ */
 @Component(role = MicroserviceDockerClient.class)
 @Slf4j(topic = "MicroserviceDockerClient")
 public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements MicroserviceDockerClient, Startable {
@@ -35,7 +44,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     private final static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @SneakyThrows
-    public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerBuildTimeout) {
+    synchronized public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerBuildTimeout) {
 
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags).withPlatform(platform);
         for (Map.Entry<String, String> buildArgument : buildArgs.entrySet()) {
@@ -112,7 +121,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
         }
     }
 
-    public void saveDockerImage(final String image,  final OutputStream outputStream) throws MavenExecutionException {
+    synchronized public void saveDockerImage(final String image,  final OutputStream outputStream) throws MavenExecutionException {
 
         log.info("Saving image {} to output stream", image);
 
@@ -138,7 +147,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     }
 
     @Override
-    public void deleteAll(String imageName, boolean withForce) {
+    synchronized public void deleteAll(String imageName, boolean withForce) {
         log.info("Cleaning up all docker images for {} ", imageName);
 
         ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
@@ -162,14 +171,14 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
 
     @Override
-    public void tagImage(String image, String imageNameWithRepository, String tag) {
+    synchronized public void tagImage(String image, String imageNameWithRepository, String tag) {
         log.info("Tagging image {} image / {} with tag {}", image, imageNameWithRepository, tag);
         TagImageCmd tagImageCmd = dockerClient.tagImageCmd(image, imageNameWithRepository, tag);
         tagImageCmd.exec();
     }
 
     @Override
-    public void pushImage(String name) {
+    synchronized public void pushImage(String name) {
         log.info("Pushing docker image to registry");
         PushImageCmd pushImageCmd = dockerClient.pushImageCmd(name);
 
