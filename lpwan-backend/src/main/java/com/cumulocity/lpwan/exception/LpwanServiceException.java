@@ -7,12 +7,23 @@
 
 package com.cumulocity.lpwan.exception;
 
+import lombok.Getter;
+
 public class LpwanServiceException extends Exception {
+
+    @Getter
+    private String url;
+
     public LpwanServiceException(String message) {
         super(message);
     }
 
     public LpwanServiceException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public LpwanServiceException(String message, String url) {
+        super(message);
+        this.url = url;
     }
 }
