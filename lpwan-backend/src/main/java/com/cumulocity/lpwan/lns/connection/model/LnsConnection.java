@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * Implementers of LnsConnection class have to annotate the fields of the concrete class
  * to be part of either @JsonView(LnsConnection.PublicView.class) or @JsonView(LnsConnection.InternalView.class).
- *
+ * <p>
  * All the fields with sensitive data which should not be serialized and sent to the client
  * have to be marked with InternalView and rest with PublicView.
  */
@@ -56,10 +57,11 @@ public abstract class LnsConnection {
         this.update(lnsConnection);
     }
 
-    public void setName(String name){
-        if(StringUtils.isNotBlank(name)) {
+    public void setName(String name) {
+        if (StringUtils.isNotBlank(name)) {
+            name = StringEscapeUtils.escapeHtml(name);
             this.name = name.trim().toLowerCase();
-        } else{
+        } else {
             this.name = null;
         }
     }
@@ -72,7 +74,7 @@ public abstract class LnsConnection {
             missingFields.add("'name'");
         }
 
-        if(!missingFields.isEmpty()) {
+        if (!missingFields.isEmpty()) {
             throw new InputDataValidationException(this.getClass().getSimpleName() + " is missing mandatory fields: " + String.join(", ", missingFields));
         }
 
