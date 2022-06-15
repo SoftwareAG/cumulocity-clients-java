@@ -85,7 +85,7 @@ public class DeviceTypePayloadConfigurer {
                             LpwanDeviceTypeUtil.setTypePath(lpwanDevice, deviceTypeId.getValue());
                             deviceMoToUpdate.set(lpwanDevice);
                             inventoryApi.update(deviceMoToUpdate);
-                            log.info("Updated the device fragment 'c8y_LpwanDevice' having the Managed object ID '{}' with the new device type Managed object ID '%s'", device.getId().getValue(), deviceTypeId.getValue());
+                            log.info("Updated the device fragment 'c8y_LpwanDevice' having the Managed object ID '{}' with the new device type Managed object ID '{}'", device.getId().getValue(), deviceTypeId.getValue());
                         }
                     }
                 } else {

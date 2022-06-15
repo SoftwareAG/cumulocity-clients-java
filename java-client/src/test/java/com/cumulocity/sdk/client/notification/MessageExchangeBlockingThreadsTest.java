@@ -3,63 +3,59 @@ package com.cumulocity.sdk.client.notification;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.sdk.client.notification.MessageExchange.ResponseHandler;
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
-import org.cometd.bayeux.Message;
-import org.cometd.client.transport.TransportListener;
+import com.google.common.base.Throwables;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import org.cometd.client.transport.TransportListener;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.Response;
-
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.util.concurrent.Callables.returning;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static org.mockito.BDDMockito.given;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-
-public class MessageExchangeBlockingThreadsTest {
+class MessageExchangeBlockingThreadsTest {
 
     private final ScheduledExecutorService executorService = newScheduledThreadPool(1);
 
     @Test
-    @Timeout(value = 2000, unit = MILLISECONDS)
-    @Disabled
-    public void shouldNotBlockedThreadWhenTryingToReadResponse() throws Exception {
+    void shouldNotBlockedThreadWhenTryingToReadResponse() {
         //given
         final Client client = mock(Client.class);
         final TransportListener listener = mock(TransportListener.class);
-        final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class), Collections.<Message.Mutable>emptyList());
+        final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class), Collections.emptyList());
+        assertTimeoutPreemptively(Duration.ofMillis(2000), () -> {
 
-        givenUnfinishedClientResponse(client);
+            givenUnfinishedClientResponse(client);
 
-        //when
-        messageExchange.execute("", "");
-        Thread.sleep(50);
-        messageExchange.cancel();
+            //when
+            messageExchange.execute("", "");
+            Thread.sleep(50);
+            messageExchange.cancel();
 
-        //then
-        executorShouldHaveFreeThread();
-        verify(listener).onFailure(any(Throwable.class), any(List.class));
+            //then
+            executorShouldHaveFreeThread();
+            verify(listener).onFailure(any(Throwable.class), any(List.class));
+        });
+
     }
 
     private void givenUnfinishedClientResponse(final Client client) {
@@ -93,8 +89,8 @@ public class MessageExchangeBlockingThreadsTest {
 
                 doAnswer(invocation -> {
                     final CumulocityJSONMessageBodyReader reader = new CumulocityJSONMessageBodyReader();
-                    return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null,blockOnRead);
-                    }).when(response)
+                    return reader.readFrom(BaseResourceRepresentation.class, null, null, null, null, blockOnRead);
+                }).when(response)
                         .readEntity(ArgumentMatchers.<Class<?>>any());
 
                 final FutureTask<Response> futureTask = new FutureTask<Response>(returning(response)) {
@@ -103,7 +99,7 @@ public class MessageExchangeBlockingThreadsTest {
                             final ResponseHandler responseHandler = (ResponseHandler) invocationOnMock.getArguments()[1];
                             responseHandler.completed(this.get());
                         } catch (InterruptedException | ExecutionException e) {
-                            propagate(e);
+                            Throwables.throwIfUnchecked(e);
                         }
                     }
                 };

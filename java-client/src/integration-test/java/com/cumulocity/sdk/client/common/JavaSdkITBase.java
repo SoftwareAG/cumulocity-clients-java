@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -32,6 +32,7 @@ import java.util.Properties;
 public class JavaSdkITBase {
 
     private static TenantCreator tenantCreator;
+    protected static ApplicationApi applicationApi;
     protected static PlatformImpl platform;
     protected static PlatformImpl bootstrapPlatform;
 
@@ -39,7 +40,7 @@ public class JavaSdkITBase {
     public static void createTenantWithApplication() throws Exception {
         platform = createPlatform(false);
         bootstrapPlatform = createPlatform(true);
-
+        applicationApi = new ApplicationApi(platform);
         tenantCreator = new TenantCreator(platform);
         tenantCreator.createTenant();
 
@@ -72,6 +73,6 @@ public class JavaSdkITBase {
     }
 
     private static String nextTenantId() {
-        return "sdk_tenant_" + RandomUtils.nextInt(1_000_000);
+        return "sdk_tenant_" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
     }
 }
