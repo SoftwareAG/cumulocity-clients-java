@@ -193,9 +193,9 @@ public class LnsConnectionService {
         if(!existingLnsConnectionNameLowerCase.equals(lnsConnectionToUpdate.getName().toLowerCase())) {
             List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(existingLnsConnectionNameLowerCase);
             if (!managedObjectRepresentationList.isEmpty()) {
-                String url = "/service/" + contextPath + "/lns-connection/" + existingLnsConnectionNameLowerCase + "/device";
-                String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
-                        existingLnsConnectionNameLowerCase, managedObjectRepresentationList.size(), url);
+                String url = "/lns-connection/" + existingLnsConnectionNameLowerCase + "/device";
+                String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s).",
+                        existingLnsConnectionNameLowerCase, managedObjectRepresentationList.size());
                 log.info(errorMessage);
                 throw new LpwanServiceException(errorMessage, url);
             }
@@ -234,9 +234,9 @@ public class LnsConnectionService {
         List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(lnsConnectionNametoDeleteLowerCase);
 
         if(!managedObjectRepresentationList.isEmpty()) {
-            String url = "/service/" + contextPath + "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device";
-            String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL : %s",
-                    lnsConnectionNametoDeleteLowerCase, managedObjectRepresentationList.size(), url);
+            String url = "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device";
+            String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s).",
+                    lnsConnectionNametoDeleteLowerCase, managedObjectRepresentationList.size());
             log.info(errorMessage);
             throw new LpwanServiceException(errorMessage, url);
         }
