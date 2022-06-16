@@ -16,7 +16,6 @@ import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceFilter;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
-import com.cumulocity.microservice.subscription.model.MicroserviceSubscriptionAddedEvent;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.model.option.OptionPK;
@@ -36,11 +35,9 @@ import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
@@ -48,7 +45,6 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -88,8 +84,6 @@ public class LnsConnectionService {
 
 
     private OptionPK lnsConnectionsTenantOptionKey;
-
-    private volatile String contextPath;
 
     private LoadingCache<OptionPK, Map<String, LnsConnection>> lnsConnectionsCache = CacheBuilder.newBuilder()
             .maximumSize(1) // Only one key, as we are keeping the Map which is loaded from the tenant options
@@ -350,19 +344,4 @@ public class LnsConnectionService {
                                                             .collect(Collectors.toList());
     }
 
-    @EventListener
-    public void registerDeviceTypes(MicroserviceSubscriptionAddedEvent event) {
-        if (Objects.isNull(contextPath)) {
-            contextPath =
-                    contextService.callWithinContext(platformProperties.getMicroserviceBoostrapUser(),
-                            () -> {
-                                try {
-                                    return applicationApi.currentApplication().get().getContextPath();
-                                } catch (Exception e) {
-                                    log.warn("Error while determining the microservice context path. Defaulting to the application name.", e);
-                                    return platformProperties.getApplicationName();
-                                }
-                            });
-        }
-    }
 }
