@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class LpwanDevice {
+public class DeviceDetail {
     String name;
     String managedObjectId;
 }

@@ -7,11 +7,12 @@
 
 package com.cumulocity.lpwan.lns.connection.service;
 
+import c8y.LpwanDevice;
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.lns.connection.model.DeviceDetail;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
-import com.cumulocity.lpwan.lns.connection.model.LpwanDevice;
 import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceFilter;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
@@ -20,6 +21,7 @@ import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -45,6 +47,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -185,7 +188,7 @@ public class LnsConnectionService {
         }
 
         if(!existingLnsConnectionNameLowerCase.equals(lnsConnectionToUpdate.getName().toLowerCase())) {
-            List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(existingLnsConnectionNameLowerCase);
+            List<DeviceDetail> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(existingLnsConnectionNameLowerCase);
             if (!managedObjectRepresentationList.isEmpty()) {
                 String url = "/lns-connection/" + existingLnsConnectionNameLowerCase + "/device";
                 String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s).",
@@ -225,7 +228,7 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
-        List<LpwanDevice> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(lnsConnectionNametoDeleteLowerCase);
+        List<DeviceDetail> managedObjectRepresentationList = getDeviceMoListAssociatedWithLnsConnection(lnsConnectionNametoDeleteLowerCase);
 
         if(!managedObjectRepresentationList.isEmpty()) {
             String url = "/lns-connection/" + lnsConnectionNametoDeleteLowerCase + "/device";
@@ -244,6 +247,33 @@ public class LnsConnectionService {
 
     public synchronized InputStreamResource getDeviceManagedObjectsInCsv(@NotBlank String lnsConnectionName) throws LpwanServiceException {
             return new InputStreamResource(csvService.writeDataToCsv(getDeviceMoListAssociatedWithLnsConnection(lnsConnectionName)));
+    }
+
+    public synchronized void migrateOldDevices(String lpwanProviderName, String lnsConnectionName) {
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.of("serviceProvider", lpwanProviderName);
+        Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
+        try {
+            managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
+        } catch (SDKException e) {
+            String message = String.format("Error in getting device managed objects from the service provider '%s'", lpwanProviderName);
+            log.error(message, e);
+            return;
+        }
+
+        for(ManagedObjectRepresentation deviceMo : managedObjectRepresentations){
+            LpwanDevice lpwanDevice = deviceMo.get(LpwanDevice.class);
+            if(Objects.nonNull(lpwanDevice) && Objects.isNull(lpwanDevice.getLnsConnectionName())) {
+                ManagedObjectRepresentation deviceMoToBeUpdated = ManagedObjects.asManagedObject(deviceMo.getId());
+                lpwanDevice.setLnsConnectionName(lnsConnectionName);
+                deviceMoToBeUpdated.set(lpwanDevice);
+                try {
+                    inventoryApi.update(deviceMoToBeUpdated);
+                } catch (SDKException e) {
+                    String message = String.format("Error in updating the LNS connection name ('%s') of the device with managed object id '%s", lnsConnectionName, deviceMoToBeUpdated.getId());
+                    log.error(message, e);
+                }
+            }
+        }
     }
 
     private Map<String, LnsConnection> loadLnsConnectionsFromTenantOptions(OptionPK tenantOptionKeyForLnsConnectionMap) throws LpwanServiceException {
@@ -329,7 +359,7 @@ public class LnsConnectionService {
         return lnsConnectionsTenantOptionKey;
     }
 
-    private List<LpwanDevice> getDeviceMoListAssociatedWithLnsConnection(String lnsConnectionName) throws LpwanServiceException {
+    private List<DeviceDetail> getDeviceMoListAssociatedWithLnsConnection(String lnsConnectionName) throws LpwanServiceException {
         InventoryFilter inventoryFilter = LpwanDeviceFilter.of("lnsConnectionName", lnsConnectionName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
@@ -340,7 +370,7 @@ public class LnsConnectionService {
             throw new LpwanServiceException(message, e);
         }
         return StreamSupport.stream(managedObjectRepresentations.spliterator(), true)
-                                                            .map(mo -> new LpwanDevice(mo.getName(), mo.getId().getValue()))
+                                                            .map(mo -> new DeviceDetail(mo.getName(), mo.getId().getValue()))
                                                             .collect(Collectors.toList());
     }
 
