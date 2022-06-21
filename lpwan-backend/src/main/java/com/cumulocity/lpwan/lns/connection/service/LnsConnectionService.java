@@ -268,6 +268,7 @@ public class LnsConnectionService {
                 deviceMoToBeUpdated.set(lpwanDevice);
                 try {
                     inventoryApi.update(deviceMoToBeUpdated);
+                    log.info("The device with the Managed object Id '{}' is migrated to the connection '{}'", deviceMo.getId(), lnsConnectionName);
                 } catch (SDKException e) {
                     String message = String.format("Error in updating the LNS connection name ('%s') of the device with managed object id '%s", lnsConnectionName, deviceMoToBeUpdated.getId());
                     log.error(message, e);
