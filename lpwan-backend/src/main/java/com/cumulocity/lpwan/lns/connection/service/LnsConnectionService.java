@@ -172,12 +172,6 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
-        LnsConnection existingLnsConnection = lnsConnections.get(existingLnsConnectionNameLowerCase);
-        existingLnsConnection.initializeWith(lnsConnectionToUpdate);
-
-        // Validate LnsConnection after update
-        existingLnsConnection.isValid();
-
         String updatedLnsConnectionName = lnsConnectionToUpdate.getName();
         if (!existingLnsConnectionNameLowerCase.equals(updatedLnsConnectionName)) {
             if (lnsConnections.containsKey(updatedLnsConnectionName)) {
@@ -197,6 +191,12 @@ public class LnsConnectionService {
                 throw new LpwanServiceException(errorMessage, url);
             }
         }
+
+        LnsConnection existingLnsConnection = lnsConnections.get(existingLnsConnectionNameLowerCase);
+        existingLnsConnection.initializeWith(lnsConnectionToUpdate);
+
+        // Validate LnsConnection after update
+        existingLnsConnection.isValid();
 
         lnsConnections.remove(existingLnsConnectionNameLowerCase);
         lnsConnections.put(updatedLnsConnectionName, existingLnsConnection);

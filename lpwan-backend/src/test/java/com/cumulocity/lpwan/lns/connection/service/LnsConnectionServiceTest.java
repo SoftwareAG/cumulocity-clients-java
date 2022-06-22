@@ -666,6 +666,7 @@ public class LnsConnectionServiceTest {
                 .password("password-5 (UPDATED)")
                 .build();
         invalidConnectionToUpdate.setName("SampleConnection-1 (UPDATED)");
+        mockInventoryReturnsWithDevice("SampleConnection-1 (UPDATED)", GId.asGId("12345"), false);
         InputDataValidationException inputDataValidationException = assertThrows(InputDataValidationException.class, () -> lnsConnectionService.update(nonExistingConnectionNameToUpdate, invalidConnectionToUpdate));
         assertEquals("SampleConnection is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
     }
