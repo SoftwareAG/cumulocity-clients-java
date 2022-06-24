@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,8 +14,6 @@ import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-//Disabled till fixing https://cumulocity.atlassian.net/browse/MTM-46135
-@Disabled
 public class CepApiIT extends JavaSdkITBase {
 
     final CepApi cepApi = platform.getCepApi();
