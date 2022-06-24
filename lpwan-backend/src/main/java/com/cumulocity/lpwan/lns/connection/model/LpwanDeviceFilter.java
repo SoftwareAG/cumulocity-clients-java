@@ -4,6 +4,7 @@ import com.cumulocity.sdk.client.ParamSource;
 import com.cumulocity.sdk.client.inventory.InventoryFilter;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class LpwanDeviceFilter extends InventoryFilter {
 
@@ -11,13 +12,16 @@ public class LpwanDeviceFilter extends InventoryFilter {
     private String query;
 
     private LpwanDeviceFilter(Map<String, String> filterCriteriaMap) {
-        Map.Entry<String, String> firstFilterCriterion = filterCriteriaMap.entrySet().stream().findFirst().get();
-        query = "$filter=c8y_LpwanDevice." + firstFilterCriterion.getKey() + " eq " +
-                String.format("'%s'", firstFilterCriterion.getValue());
-        for(Map.Entry<String, String> filterCriterion : filterCriteriaMap.entrySet()) {
-            if(!(filterCriterion.getKey().equals(firstFilterCriterion.getKey()))) {
-                query += " and c8y_LpwanDevice." + filterCriterion.getKey() + " eq " +
-                        String.format("'%s'", filterCriterion.getValue());
+        Optional<Map.Entry<String, String>> firstFilterCriterionOptional = filterCriteriaMap.entrySet().stream().findFirst();
+        query = "";
+        if(firstFilterCriterionOptional.isPresent()) {
+            query = "$filter=c8y_LpwanDevice." + firstFilterCriterionOptional.get().getKey() + " eq " +
+                    String.format("'%s'", firstFilterCriterionOptional.get().getValue());
+            for(Map.Entry<String, String> filterCriterion : filterCriteriaMap.entrySet()) {
+                if(!(filterCriterion.getKey().equals(firstFilterCriterionOptional.get().getKey()))) {
+                    query += " and c8y_LpwanDevice." + filterCriterion.getKey() + " eq " +
+                            String.format("'%s'", filterCriterion.getValue());
+                }
             }
         }
     }
