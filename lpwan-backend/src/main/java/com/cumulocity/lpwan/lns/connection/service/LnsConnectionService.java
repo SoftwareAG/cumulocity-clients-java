@@ -43,7 +43,6 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -331,10 +330,7 @@ public class LnsConnectionService {
     }
 
     private List<LpwanDevice> getDeviceMoListAssociatedWithLnsConnection(String lnsConnectionName) throws LpwanServiceException {
-        Map<String, String> filterCriteriaMap = new HashMap<>();
-        filterCriteriaMap.put("lnsConnectionName", lnsConnectionName);
-        filterCriteriaMap.put("serviceProvider", LnsConnectionDeserializer.getRegisteredAgentName());
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.of(filterCriteriaMap);
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProviderAndLnsConnectionName(LnsConnectionDeserializer.getRegisteredAgentName(), lnsConnectionName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
             managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
