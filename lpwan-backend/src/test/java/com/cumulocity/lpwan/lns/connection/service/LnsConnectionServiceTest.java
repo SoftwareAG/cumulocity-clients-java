@@ -10,6 +10,7 @@ package com.cumulocity.lpwan.lns.connection.service;
 import c8y.LpwanDevice;
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.lns.connection.event.LnsConnectionUpdateEvent;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
@@ -33,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -60,6 +62,9 @@ public class LnsConnectionServiceTest {
 
     @Mock
     private RestConnector restConnector;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Spy
     private CsvService csvService;
@@ -523,6 +528,7 @@ public class LnsConnectionServiceTest {
                 .forType(mapType)
                 .readValue(optionRepresentationArgument.getValue());
         compare(VALID_LNS_CONNECTIONS_MAP, actualMapSaved);
+        verify(applicationEventPublisher).publishEvent(any(LnsConnectionUpdateEvent.class));
     }
 
     @Test

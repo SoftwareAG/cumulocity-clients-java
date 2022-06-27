@@ -10,6 +10,7 @@ package com.cumulocity.lpwan.lns.connection.service;
 import c8y.LpwanDevice;
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.lns.connection.event.LnsConnectionUpdateEvent;
 import com.cumulocity.lpwan.lns.connection.model.DeviceDetail;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
@@ -37,6 +38,7 @@ import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -84,6 +86,9 @@ public class LnsConnectionService {
 
     @Autowired
     private ApplicationApi applicationApi;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
 
     private OptionPK lnsConnectionsTenantOptionKey;
@@ -172,6 +177,12 @@ public class LnsConnectionService {
             throw new InputDataValidationException(message);
         }
 
+        if(Objects.isNull(lnsConnectionToUpdate.getName())){
+            String message = "The name of the LNS connection to update can't be null.";
+            log.error(message);
+            throw new InputDataValidationException(message);
+        }
+
         String updatedLnsConnectionName = lnsConnectionToUpdate.getName();
         if (!existingLnsConnectionNameLowerCase.equals(updatedLnsConnectionName)) {
             if (lnsConnections.containsKey(updatedLnsConnectionName)) {
@@ -196,7 +207,12 @@ public class LnsConnectionService {
         existingLnsConnection.initializeWith(lnsConnectionToUpdate);
 
         // Validate LnsConnection after update
-        existingLnsConnection.isValid();
+        try {
+            existingLnsConnection.isValid();
+        } catch (InputDataValidationException e){
+            lnsConnectionsCache.invalidateAll();
+            throw e;
+        }
 
         lnsConnections.remove(existingLnsConnectionNameLowerCase);
         lnsConnections.put(updatedLnsConnectionName, existingLnsConnection);
@@ -208,6 +224,8 @@ public class LnsConnectionService {
         } else {
             log.info("LNS connection named '{}' is updated.", existingLnsConnectionNameLowerCase);
         }
+
+        eventPublisher.publishEvent(new LnsConnectionUpdateEvent(existingLnsConnectionNameLowerCase));
 
         return existingLnsConnection;
     }
