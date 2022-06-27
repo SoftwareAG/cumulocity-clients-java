@@ -7,11 +7,11 @@ public class LpwanDeviceFilter extends InventoryFilter {
     @ParamSource
     private String query;
 
-    private LpwanDeviceFilter(String serviceProvider, String lnsConnectionName) {
-        this.query = String.format("$filter=c8y_LpwanDevice.serviceProvider eq '%s' and c8y_LpwanDevice.lnsConnectionName eq '%s'", serviceProvider, lnsConnectionName);
+    private LpwanDeviceFilter(String query) {
+        this.query = query;
     }
 
     public static LpwanDeviceFilter byServiceProviderAndLnsConnectionName(String serviceProvider, String lnsConnectionName) {
-        return new LpwanDeviceFilter(encode(serviceProvider), encode(lnsConnectionName));
+        return new LpwanDeviceFilter(String.format("$filter=c8y_LpwanDevice.serviceProvider eq '%s' and c8y_LpwanDevice.lnsConnectionName eq '%s'", encode(serviceProvider), encode(lnsConnectionName)));
     }
 }
