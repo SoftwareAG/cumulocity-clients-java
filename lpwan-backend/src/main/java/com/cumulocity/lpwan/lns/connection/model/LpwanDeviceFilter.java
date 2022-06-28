@@ -4,16 +4,18 @@ import com.cumulocity.sdk.client.ParamSource;
 import com.cumulocity.sdk.client.inventory.InventoryFilter;
 
 public class LpwanDeviceFilter extends InventoryFilter {
-
     @ParamSource
     private String query;
 
-    private LpwanDeviceFilter(String filterCriteria, String filterCriteriaValue) {
-        query = "$filter=c8y_LpwanDevice." + filterCriteria + " eq " +
-                String.format("'%s'", filterCriteriaValue);
+    private LpwanDeviceFilter(String query) {
+        this.query = query;
     }
 
-    public static LpwanDeviceFilter of(String filterCriteria, String filterCriteriaValue) {
-        return new LpwanDeviceFilter(filterCriteria, filterCriteriaValue);
+    public static LpwanDeviceFilter byServiceProviderAndLnsConnectionName(String serviceProvider, String lnsConnectionName) {
+        return new LpwanDeviceFilter(String.format("$filter=c8y_LpwanDevice.serviceProvider eq '%s' and c8y_LpwanDevice.lnsConnectionName eq '%s'", encode(serviceProvider), encode(lnsConnectionName)));
+    }
+
+    public static LpwanDeviceFilter byServiceProvider(String serviceProvider) {
+        return new LpwanDeviceFilter(String.format("$filter=c8y_LpwanDevice.serviceProvider eq '%s'", encode(serviceProvider)));
     }
 }
