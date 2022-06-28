@@ -268,7 +268,7 @@ public class LnsConnectionService {
     }
 
     public synchronized void migrateOldDevices(String lpwanProviderName, String lnsConnectionName) {
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.of("serviceProvider", lpwanProviderName);
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProvider(lpwanProviderName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
             managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
@@ -378,8 +378,9 @@ public class LnsConnectionService {
         return lnsConnectionsTenantOptionKey;
     }
 
+
     private List<DeviceDetail> getDeviceMoListAssociatedWithLnsConnection(String lnsConnectionName) throws LpwanServiceException {
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.of("lnsConnectionName", lnsConnectionName);
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProviderAndLnsConnectionName(LnsConnectionDeserializer.getRegisteredAgentName(), lnsConnectionName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
             managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
