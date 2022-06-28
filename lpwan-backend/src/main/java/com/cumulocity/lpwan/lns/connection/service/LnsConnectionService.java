@@ -268,7 +268,7 @@ public class LnsConnectionService {
     }
 
     public synchronized void migrateOldDevices(String lpwanProviderName, String lnsConnectionName) {
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProviderAndLnsConnectionName(lpwanProviderName, lnsConnectionName);
+        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProvider(lpwanProviderName);
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
         try {
             managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
