@@ -318,41 +318,32 @@ public class LnsConnectionService {
 
         final String tenantId = contextService.getContext().getTenant();
         Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
-        @SneakyThrows
+
         @Override
         public void run() {
-            List<String> unreachableLnsConnectionNames = new ArrayList<>();
-//            Collection<LnsConnection> lnsConnections = getAll();
-            try{
-                unreachableLnsConnectionNames = getAll().parallelStream()
-                                                        .filter((oneConnection)-> !oneConnection.checkConnectionStatus())
-                                                        .map(LnsConnection::getName)
-                                                        .collect(Collectors.toList());
-//                for(LnsConnection lnsConnection : lnsConnections){
-//                    if(lnsConnection.isConnectionUp()){
-//                        log.info("The LNS Connection '{}' is up", lnsConnection.getName());
-//                    } else {
-//                        log.warn("The LNS Connection '{}' is not reachable", lnsConnection.getName());
-//                        unreachableLnsConnectionNames.add(lnsConnection.getName());
-//                    }
-//                }
-            } finally {
-                List<String> finalUnreachableLnsConnectionNames = unreachableLnsConnectionNames;
-                contextService.runWithinContext(serviceUser.get(), () -> {
-
-                     final GId source = lpwanRepository.findOrCreateSource();
-                     lpwanRepository.clearAlarm(source, ALARM_TYPE);
-                    if(finalUnreachableLnsConnectionNames.isEmpty()){
+            contextService.runWithinContext(serviceUser.get(), () -> {
+                List<String> unreachableLnsConnectionNames = new ArrayList<>();
+                try{
+                    unreachableLnsConnectionNames = getAll().parallelStream()
+                            .filter((oneConnection)-> !oneConnection.checkConnectionStatus())
+                            .map(LnsConnection::getName)
+                            .collect(Collectors.toList());
+                } catch (LpwanServiceException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    final GId source = lpwanRepository.findOrCreateSource();
+                    lpwanRepository.clearAlarm(source, ALARM_TYPE);
+                    if(unreachableLnsConnectionNames.isEmpty()){
                         log.info("All the connections in the tenant '{}' are up", tenantId);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
                     } else {
-                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '{}'", String.join(",", finalUnreachableLnsConnectionNames), tenantId);
+                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames), tenantId);
                         log.warn(alarmText);
                         lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
                     }
-                });
-            }
+                }
+            });
         }
     }
 
