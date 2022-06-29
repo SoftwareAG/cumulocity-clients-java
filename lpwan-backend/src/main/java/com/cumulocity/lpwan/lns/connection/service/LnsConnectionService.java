@@ -17,40 +17,29 @@ import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceFilter;
 import com.cumulocity.lpwan.platform.repository.LpwanRepository;
 import com.cumulocity.microservice.context.ContextService;
-import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
-import com.cumulocity.model.ID;
-import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
-import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
-import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
-import com.cumulocity.sdk.client.alarm.AlarmApi;
-import com.cumulocity.sdk.client.alarm.AlarmCollection;
-import com.cumulocity.sdk.client.alarm.AlarmFilter;
-import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryFilter;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.FluentIterable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
@@ -72,7 +61,6 @@ import java.util.stream.StreamSupport;
 
 import static com.cumulocity.lpwan.platform.repository.LpwanRepository.ALARM_TYPE;
 import static com.cumulocity.lpwan.platform.repository.LpwanRepository.CRITICAL;
-import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
 @Slf4j
 @Component
@@ -94,7 +82,7 @@ public class LnsConnectionService {
     CsvService csvService;
 
     @Autowired
-    private ContextService<Credentials> contextService;
+    private ContextService<MicroserviceCredentials> contextService;
 
     @Autowired
     private PlatformProperties platformProperties;
@@ -112,7 +100,7 @@ public class LnsConnectionService {
     private TaskScheduler taskScheduler;
 
     @Autowired
-    LpwanRepository lpwanRepository;
+    private LpwanRepository lpwanRepository;
 
     private OptionPK lnsConnectionsTenantOptionKey;
 
@@ -327,25 +315,30 @@ public class LnsConnectionService {
         @Override
         public void run() {
             List<String> unreachableLnsConnectionNames = new ArrayList<>();
-            Collection<LnsConnection> lnsConnections = getAll();
+//            Collection<LnsConnection> lnsConnections = getAll();
             try{
-//                unreachableLnsConnectionNames = getAll().parallelStream().filter((oneConnection)-> !oneConnection.isConnectionUp()).map(c -> c.getName()).collect(Collectors.toList());
-                for(LnsConnection lnsConnection : lnsConnections){
-                    if(lnsConnection.isConnectionUp()){
-                        log.info("The LNS Connection '{}' is up", lnsConnection.getName());
-                    } else {
-                        log.warn("The LNS Connection '{}' is not reachable", lnsConnection.getName());
-                        unreachableLnsConnectionNames.add(lnsConnection.getName());
-                    }
-                }
+                unreachableLnsConnectionNames = getAll().parallelStream()
+                                                        .filter((oneConnection)-> !oneConnection.isConnectionUp())
+                                                        .map(LnsConnection::getName)
+                                                        .collect(Collectors.toList());
+//                for(LnsConnection lnsConnection : lnsConnections){
+//                    if(lnsConnection.isConnectionUp()){
+//                        log.info("The LNS Connection '{}' is up", lnsConnection.getName());
+//                    } else {
+//                        log.warn("The LNS Connection '{}' is not reachable", lnsConnection.getName());
+//                        unreachableLnsConnectionNames.add(lnsConnection.getName());
+//                    }
+//                }
             } finally {
                 final GId source = lpwanRepository.findOrCreateSource();
                 lpwanRepository.clearAlarm(source, ALARM_TYPE);
 
                 if(unreachableLnsConnectionNames.isEmpty()){
+                    log.info("All the connections in the tenant '{}' are up", contextService.getContext().getTenant());
                     taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
                 } else {
                     String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable", String.join(",", unreachableLnsConnectionNames));
+                    log.warn(alarmText);
                     lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
                     taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
                 }
