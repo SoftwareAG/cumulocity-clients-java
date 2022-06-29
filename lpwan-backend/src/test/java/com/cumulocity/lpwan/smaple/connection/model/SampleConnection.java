@@ -97,4 +97,11 @@ public class SampleConnection extends LnsConnection {
             this.setPassword(sampleConnectionWithNewData.getPassword());
         }
     }
+
+    @Override
+    public boolean isConnectionUp() {
+        SampleConnection sampleConnectionWithNewData = new SampleConnection();
+        sampleConnectionWithNewData.setConnectionReachable(true);
+        return true;
+    }
 }
