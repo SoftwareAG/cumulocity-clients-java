@@ -21,6 +21,7 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -83,6 +84,9 @@ public class LnsConnectionService {
 
     @Autowired
     private ContextService<MicroserviceCredentials> contextService;
+
+    @Autowired
+    private MicroserviceSubscriptionsService subscriptionsService;
 
     @Autowired
     private PlatformProperties platformProperties;
@@ -311,6 +315,9 @@ public class LnsConnectionService {
     }
 
     private class ScheduledHealthCheckTaskExecutor implements Runnable {
+
+        final String tenantId = contextService.getContext().getTenant();
+        Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
         @SneakyThrows
         @Override
         public void run() {
@@ -330,18 +337,21 @@ public class LnsConnectionService {
 //                    }
 //                }
             } finally {
-                final GId source = lpwanRepository.findOrCreateSource();
-                lpwanRepository.clearAlarm(source, ALARM_TYPE);
+                List<String> finalUnreachableLnsConnectionNames = unreachableLnsConnectionNames;
+                contextService.runWithinContext(serviceUser.get(), () -> {
 
-                if(unreachableLnsConnectionNames.isEmpty()){
-                    log.info("All the connections in the tenant '{}' are up", contextService.getContext().getTenant());
-                    taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
-                } else {
-                    String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable", String.join(",", unreachableLnsConnectionNames));
-                    log.warn(alarmText);
-                    lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
-                    taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
-                }
+                     final GId source = lpwanRepository.findOrCreateSource();
+                     lpwanRepository.clearAlarm(source, ALARM_TYPE);
+                    if(finalUnreachableLnsConnectionNames.isEmpty()){
+                        log.info("All the connections in the tenant '{}' are up", tenantId);
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                    } else {
+                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable", String.join(",", finalUnreachableLnsConnectionNames));
+                        log.warn(alarmText);
+                        lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                    }
+                });
             }
         }
     }

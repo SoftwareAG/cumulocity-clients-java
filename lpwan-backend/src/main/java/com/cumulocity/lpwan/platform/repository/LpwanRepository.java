@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.*;
 
-@TenantScope
 @Component
+@TenantScope
 public class LpwanRepository {
 
     public static final String MICROSERVICE_ID_TYPE = "c8y_Microservice";
