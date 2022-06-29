@@ -50,7 +50,7 @@ public class ApplicationApi {
 
     private void waitTillCepWillBeSubscribed(Client httpClient) {
         final WebTarget cepApiResponse = httpClient.target(platform.getHost() + CEP_URI).path("/cep");
-        await().timeout(FIVE_MINUTES).pollInterval(Durations.TEN_SECONDS).until(() -> cepApiResponse.request().get().getStatus() != 200);
+        await().timeout(FIVE_MINUTES).pollInterval(Durations.TEN_SECONDS).until(() -> cepApiResponse.request().get().getStatus() == 200);
     }
 
     private void subscribeApplicationForTenant(Client httpClient, ApplicationRepresentation application) {
