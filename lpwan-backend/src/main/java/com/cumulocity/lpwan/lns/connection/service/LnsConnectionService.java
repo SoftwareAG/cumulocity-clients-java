@@ -325,7 +325,7 @@ public class LnsConnectionService {
 //            Collection<LnsConnection> lnsConnections = getAll();
             try{
                 unreachableLnsConnectionNames = getAll().parallelStream()
-                                                        .filter((oneConnection)-> !oneConnection.isConnectionUp())
+                                                        .filter((oneConnection)-> !oneConnection.checkConnectionStatus())
                                                         .map(LnsConnection::getName)
                                                         .collect(Collectors.toList());
 //                for(LnsConnection lnsConnection : lnsConnections){
@@ -346,7 +346,7 @@ public class LnsConnectionService {
                         log.info("All the connections in the tenant '{}' are up", tenantId);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
                     } else {
-                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable", String.join(",", finalUnreachableLnsConnectionNames));
+                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '{}'", String.join(",", finalUnreachableLnsConnectionNames), tenantId);
                         log.warn(alarmText);
                         lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));

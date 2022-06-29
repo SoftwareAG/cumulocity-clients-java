@@ -99,7 +99,7 @@ public class SampleConnection extends LnsConnection {
     }
 
     @Override
-    public boolean isConnectionUp() {
+    public boolean checkConnectionStatus() {
         SampleConnection sampleConnectionWithNewData = new SampleConnection();
         sampleConnectionWithNewData.setConnectionReachable(true);
         return true;

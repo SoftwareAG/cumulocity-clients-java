@@ -110,6 +110,6 @@ public abstract class LnsConnection {
      * Implementors are expected to check if the connection is valid (by checking the session)
      * @return true if the LNS connection is valid/reachable.
      */
-    public abstract boolean isConnectionUp();
+    public abstract boolean checkConnectionStatus();
 }
 
