@@ -72,6 +72,8 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
         try {
             return rest().get(url, APPLICATION_USER_COLLECTION_MEDIA_TYPE, ApplicationUserCollectionRepresentation.class);
         } catch (final Exception ex) {
+            RestOperations rest = rest();
+
             return (ApplicationUserCollectionRepresentation) handleException("GET", url, ex);
         }
     }
@@ -90,6 +92,7 @@ public class CurrentMicroserviceRepository implements MicroserviceRepository {
             final SDKException sdkException = (SDKException) ex;
             if (sdkException.getHttpStatus() == SC_FORBIDDEN || sdkException.getHttpStatus() == SC_UNAUTHORIZED) {
                 log.warn("User has no permission to api " + method + " " + url);
+
                 log.debug("Details :", ex);
                 return null;
             } else if (sdkException.getHttpStatus() == SC_NOT_FOUND) {

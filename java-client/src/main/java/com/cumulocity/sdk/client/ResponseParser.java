@@ -24,6 +24,8 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ResponseParser {
@@ -39,17 +43,19 @@ public class ResponseParser {
     public static final String NO_ERROR_REPRESENTATION = "Something went wrong. Failed to parse error message.";
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
     private final List<MapperWrapper> mappers;
+    private final PlatformParameters platformParameters;
 
-    public ResponseParser(final ResponseMapper mapper) {
+    public ResponseParser(final ResponseMapper mapper, PlatformParameters platformParameters) {
         this.mappers = new ArrayList<>();
         if (mapper != null) {
             this.mappers.add(MapperWrapper.objectMapper(mapper));
         }
         this.mappers.add(MapperWrapper.nullMapper());
+        this.platformParameters = platformParameters;
     }
 
     public ResponseParser() {
-        this(null);
+        this(null, null);
     }
 
     public <T extends ResourceRepresentation> T parse(Response response, Class<T> type, int... expectedStatusCodes) throws SDKException {
@@ -77,13 +83,28 @@ public class ResponseParser {
 
     protected String getErrorMessage(Response response, int status) {
         String errorMessage = "Http status code: " + status;
+        String responseHeader = null;
 
         if (response.hasEntity()) {
             String errorRepresentation = getErrorRepresentation(response);
             if (errorRepresentation == null) {
                 errorRepresentation = NO_ERROR_REPRESENTATION;
             }
+            Map<String, List<String>> responseHeadermap = response.getStringHeaders();
+            if (responseHeadermap != null) {
+                for (Map.Entry<String, List<String>> entry : responseHeadermap.entrySet()) {
+                    responseHeader += entry.getKey() +
+                            ": " + entry.getValue() +"\n";
+                }
+            }
+//            responseHeader = response.getStringHeaders().entrySet().stream().map(e -> e.getKey() + " = " + e.getValue()).collect(Collectors.joining("&"));
             errorMessage += "\n" + errorRepresentation;
+        }
+        if (platformParameters != null) {
+            errorMessage += "\n tenant: " + platformParameters.getTenantId() + " user: " + platformParameters.getUser();
+        }
+        if (responseHeader != null) {
+            errorMessage += "\nHttp response header: {" + responseHeader + "}";
         }
         return errorMessage;
     }

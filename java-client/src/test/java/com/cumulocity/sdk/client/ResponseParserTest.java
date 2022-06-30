@@ -30,8 +30,13 @@ import java.net.URI;
 
 import javax.ws.rs.core.MediaType;
 
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.http.entity.ContentType;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,6 +110,26 @@ public class ResponseParserTest {
         // Then
         Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
                 .hasMessage("Http status code: " + ERROR_STATUS + "\n" + errorRepresentation);
+    }
+
+    @Test
+    public void shouldIncludeResponseHeaderInExceptionWhenStatusIsNotAsExpected() {
+        // Given
+        when(response.getStatus()).thenReturn(ERROR_STATUS);
+        ErrorMessageRepresentation errorRepresentation = new ErrorMessageRepresentation();
+        when(response.hasEntity()).thenReturn(true);
+        MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+        headers.add("Content-Type", "application/json");
+        headers.add("x-authorization", "1bdc5db0-dfc8-43f2-9159-3827bfe48ea7.1587315996051");
+        when(response.getStringHeaders()).thenReturn(headers);
+        when(response.readEntity(ErrorMessageRepresentation.class)).thenReturn(errorRepresentation);
+
+        // When
+        Throwable thrown = catchThrowable(() -> parser.parse(response, BaseResourceRepresentation.class, EXPECTED_STATUS));
+
+        // Then
+        Assertions.assertThat(thrown).isInstanceOf(SDKException.class)
+                .hasMessageContaining("Content-Type: [application/json]" );
     }
 
     @Test

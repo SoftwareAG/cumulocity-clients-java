@@ -124,7 +124,7 @@ public class PlatformParameters implements AutoCloseable {
         if (restConnector == null) {
             synchronized (lock) {
                 if (restConnector == null) {
-                    restConnector = new RestConnector(this, new ResponseParser(responseMapper));
+                    restConnector = new RestConnector(this, new ResponseParser(responseMapper, this));
                 }
             }
         }
