@@ -314,7 +314,7 @@ public class LnsConnectionService {
         taskScheduler.schedule(new ScheduledHealthCheckTaskExecutor(), Instant.now());
     }
 
-    private class ScheduledHealthCheckTaskExecutor implements Runnable {
+    class ScheduledHealthCheckTaskExecutor implements Runnable {
 
         final String tenantId = contextService.getContext().getTenant();
         Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
@@ -335,12 +335,12 @@ public class LnsConnectionService {
                     lpwanRepository.clearAlarm(source, ALARM_TYPE);
                     if(unreachableLnsConnectionNames.isEmpty()){
                         log.info("All the connections in the tenant '{}' are up", tenantId);
-                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
                     } else {
                         String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames), tenantId);
                         log.warn(alarmText);
                         lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
-                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
                     }
                 }
             });

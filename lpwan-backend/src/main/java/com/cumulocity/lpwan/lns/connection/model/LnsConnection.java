@@ -31,7 +31,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-//@AllArgsConstructor
 @RequiredArgsConstructor
 public abstract class LnsConnection {
 
