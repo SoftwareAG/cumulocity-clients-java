@@ -335,12 +335,12 @@ public class LnsConnectionService {
                     lpwanRepository.clearAlarm(source, ALARM_TYPE);
                     if(unreachableLnsConnectionNames.isEmpty()){
                         log.info("All the connections in the tenant '{}' are up", tenantId);
-                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
                     } else {
                         String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames), tenantId);
                         log.warn(alarmText);
                         lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
-                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofSeconds(30)));
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
                     }
                 }
             });
