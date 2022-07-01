@@ -337,7 +337,8 @@ public class LnsConnectionService {
                         log.info("All the connections in the tenant '{}' are up", tenantId);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
                     } else {
-                        String alarmText = String.format("The LNS connection(s) with name '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames), tenantId);
+                        String alarmText = String.format("The LNS connection(s) with name '%s' in '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames),
+                                                                                                                                            LnsConnectionDeserializer.getRegisteredAgentName(), tenantId);
                         log.warn(alarmText);
                         lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
                         taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
