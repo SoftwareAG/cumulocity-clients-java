@@ -75,16 +75,6 @@ public class LpwanRepositoryTest {
         assertFalse(gIdOptional.isPresent());
     }
 
-    /*@Test
-    public void shouldTestCreateManagedObject(){
-        lpwanRepository.createManagedObject("DummyType", "DummyName");
-        ArgumentCaptor<ManagedObjectRepresentation> managedObjectRepresentationArgumentCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
-        verify(inventory).create(managedObjectRepresentationArgumentCaptor.capture());
-        ManagedObjectRepresentation managedObjectRepresentation = managedObjectRepresentationArgumentCaptor.getValue();
-        assertEquals("DummyName",managedObjectRepresentation.getName());
-        assertEquals("DummyType",managedObjectRepresentation.getType());
-    }*/
-
     @Test
     public void shouldCreate() {
         GId sourceId = GId.asGId(456);
