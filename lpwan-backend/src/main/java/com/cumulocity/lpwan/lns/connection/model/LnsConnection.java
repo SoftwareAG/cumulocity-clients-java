@@ -12,10 +12,7 @@ import com.cumulocity.sdk.client.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.validation.constraints.NotBlank;
@@ -34,15 +31,21 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 public abstract class LnsConnection {
 
     @NotBlank
     @JsonView(LnsConnection.PublicView.class)
+    @NonNull
     private String name;
 
     @JsonView(LnsConnection.PublicView.class)
+    @NonNull
     private String description;
+
+    @JsonIgnore
+    @Setter(AccessLevel.PROTECTED)
+    private boolean connectionReachable;
 
     // JSON View interface for tagging Publicly visible fields
     public interface PublicView {}
@@ -101,5 +104,11 @@ public abstract class LnsConnection {
      * @param lnsConnectionWithNewData LNS Connection with updated data
      */
     protected abstract void update(@NotNull LnsConnection lnsConnectionWithNewData);
+
+    /**
+     * Implementors are expected to check if the connection is valid (by checking the session)
+     * @return true if the LNS connection is valid/reachable.
+     */
+    public abstract boolean checkConnectionStatus();
 }
 
