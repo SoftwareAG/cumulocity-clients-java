@@ -1,6 +1,8 @@
 package com.cumulocity.model;
 
 
+import com.cumulocity.model.util.ClassNameMapper;
+import com.cumulocity.model.util.DateTimeConverter;
 import org.joda.time.DateTime;
 import org.svenson.*;
 import org.svenson.converter.DateConverter;

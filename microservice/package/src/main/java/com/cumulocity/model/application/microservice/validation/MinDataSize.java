@@ -1,4 +1,4 @@
-package com.cumulocity.model;
+package com.cumulocity.model.application.microservice.validation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -12,7 +12,6 @@ import java.lang.annotation.*;
 )
 public @interface MinDataSize {
     String value();
-
 
     String message() default "The data size should be at least {value} ";
 

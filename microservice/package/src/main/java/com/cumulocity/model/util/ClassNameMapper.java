@@ -1,6 +1,5 @@
-package com.cumulocity.model;
+package com.cumulocity.model.util;
 
-import com.cumulocity.model.util.ExtensibilityConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.TypeMapper;

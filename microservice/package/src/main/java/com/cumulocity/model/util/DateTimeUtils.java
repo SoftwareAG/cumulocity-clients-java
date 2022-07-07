@@ -1,6 +1,5 @@
 package com.cumulocity.model.util;
 
-import com.cumulocity.model.DateTimeConverter;
 import org.joda.time.*;
 import org.joda.time.chrono.ISOChronology;
 

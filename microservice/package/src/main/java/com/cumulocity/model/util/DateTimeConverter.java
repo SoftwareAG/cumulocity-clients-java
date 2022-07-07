@@ -1,4 +1,4 @@
-package com.cumulocity.model;
+package com.cumulocity.model.util;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;

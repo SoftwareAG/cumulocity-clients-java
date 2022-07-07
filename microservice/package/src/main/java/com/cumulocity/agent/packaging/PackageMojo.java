@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +23,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 
-import javax.validation.Validation;
-import javax.validation.ValidationException;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
@@ -363,37 +357,35 @@ public class PackageMojo extends BaseMicroserviceMojo {
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             Validator validator = factory.getValidator();
 
-            Stream<ManifestConstraintViolation> violations = validator.validate(manifest).stream().map(input -> new ManifestConstraintViolation(input.getPropertyPath().toString(), input.getMessage()));
+            Set<ConstraintViolation<MicroserviceManifest>> constraintViolations = validator.validate(manifest);
 
-            violations = Stream.concat(violations, validateMemory(manifest).stream());
+            Set<ManifestConstraintViolation> violations = validateMemory(manifest);
+            for (ConstraintViolation<MicroserviceManifest> cviolation: constraintViolations) {
+                violations.add(new ManifestConstraintViolation(cviolation.getPropertyPath().toString(), cviolation.getMessage()));
+            }
 
-            if (violations.findAny().isPresent()) {
-                for (String line : manifestValidationFailedMessage(violations)) {
-                    log.error("Microservice Manifest Validation failed: "+line);
-                }
-                ValidationException validationException = new ValidationException("Manifest validation failed");
-                throw new MavenExecutionException("Manifest validation failed", validationException);
+            if (!violations.isEmpty()) {
+                log.error("Manifest validation error!");
+                violations.forEach(violation -> {
+                    log.error("Validation error: {} {}", violation.getPath(), violation.getMessage());
+                });
+
+                throw new MavenExecutionException("Could not validate manifest", new IllegalArgumentException());
             }
         }
     }
 
-
-    private ImmutableList<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
+    private ImmutableSet<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
         final Resources resources = manifest.getResources();
         if (resources != null && resources.getMemoryLimit().isPresent()) {
             final DataSize memoryLimit = resources.getMemoryLimit().get();
             if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT ) < 0) {
-                return ImmutableList.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
+                return ImmutableSet.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
             }
         }
-        return ImmutableList.of();
+        return ImmutableSet.of();
     }
 
-    private Iterable<String> manifestValidationFailedMessage(Stream<ManifestConstraintViolation> result) {
-        final List<String> sb = Lists.newArrayList("Microservice manifest invalid:");
-        result.forEach(violation -> sb.add(violation.getPath() + " - " + violation.getMessage()));
-        return sb;
-    }
 
     private File filterResourceFile(File source) throws IOException, MavenFilteringException {
         final File filteredDir = new File(build, File.separator + "filtered-resources");

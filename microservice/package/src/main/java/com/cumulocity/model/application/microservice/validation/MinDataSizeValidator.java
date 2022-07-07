@@ -1,5 +1,6 @@
-package com.cumulocity.model;
+package com.cumulocity.model.application.microservice.validation;
 
+import com.cumulocity.model.DataSize;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Range;

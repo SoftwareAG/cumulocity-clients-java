@@ -1,6 +1,7 @@
 package com.cumulocity.model;
 
 import com.cumulocity.model.application.microservice.validation.MinCpu;
+import com.cumulocity.model.application.microservice.validation.MinDataSize;
 import com.google.common.base.Optional;
 import lombok.*;
 import org.svenson.JSONProperty;
