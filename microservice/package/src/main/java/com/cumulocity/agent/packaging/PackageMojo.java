@@ -1,9 +1,9 @@
 package com.cumulocity.agent.packaging;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
+import com.cumulocity.model.DataSize;
+import com.cumulocity.model.Resources;
 import com.cumulocity.model.application.MicroserviceManifest;
-import com.cumulocity.model.application.microservice.DataSize;
-import com.cumulocity.model.application.microservice.Resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -105,7 +105,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         if (!containerSkip) {
 
             Iterable<String> buildTargetArchitectures = getTargetBuildArchitectures();
-            log.info("Starting docker microservice build for the following target architectures: {}", List.of(buildTargetArchitectures));
+            log.info("Starting docker microservice build for the following target architectures: {}", buildTargetArchitectures);
 
             for (String arch: buildTargetArchitectures) {
 
@@ -356,7 +356,8 @@ public class PackageMojo extends BaseMicroserviceMojo {
     }
 
 
-    private void validateManifest(File file) throws IOException {
+    private void validateManifest(File file) throws IOException, MavenExecutionException {
+        log.info("Validating manifest");
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), Charsets.UTF_8)) {
             final MicroserviceManifest manifest = MicroserviceManifest.from(reader);
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -368,9 +369,10 @@ public class PackageMojo extends BaseMicroserviceMojo {
 
             if (violations.findAny().isPresent()) {
                 for (String line : manifestValidationFailedMessage(violations)) {
-                    getLog().error(line);
+                    log.error("Microservice Manifest Validation failed: "+line);
                 }
-                throw new ValidationException("Microservice manifest is invalid");
+                ValidationException validationException = new ValidationException("Manifest validation failed");
+                throw new MavenExecutionException("Manifest validation failed", validationException);
             }
         }
     }
