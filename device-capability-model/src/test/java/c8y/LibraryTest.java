@@ -1,17 +1,17 @@
 package c8y;
 
+import com.cumulocity.model.Document;
+import com.cumulocity.model.idtype.GId;
+import org.apache.commons.beanutils.ConversionException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.svenson.JSONParseException;
+import org.svenson.tokenize.InputStreamSource;
+
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.beanutils.ConversionException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.svenson.JSONParseException;
-import org.svenson.tokenize.InputStreamSource;
-
-import com.cumulocity.model.ManagedObject;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -115,4 +115,8 @@ public class LibraryTest {
         assertThatThrownBy(() -> incorrectFragmentLib2.get("c8y_Position", Position.class))
                 .isInstanceOfAny(JSONParseException.class, ConversionException.class);
     }
+
+    public static final class ManagedObject extends Document<GId> {
+    }
+
 }

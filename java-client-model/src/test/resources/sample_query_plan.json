@@ -1,0 +1,468 @@
+{
+  "queryPlanner": {
+    "plannerVersion": 1,
+    "namespace": "management.pmdata",
+    "indexFilterSet": false,
+    "parsedQuery": {
+      "source": {
+        "$eq": "106"
+      }
+    },
+    "winningPlan": {
+      "stage": "LIMIT",
+      "limitAmount": 5,
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "source": 1,
+            "_seriesValueFragments.path": 1,
+            "time.date": 1
+          },
+          "indexName": "source_1__seriesValueFragments.path_1_time.date_1",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "source": [],
+            "_seriesValueFragments.path": [
+              "_seriesValueFragments"
+            ],
+            "time.date": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "source": [
+              "[\"106\", \"106\"]"
+            ],
+            "_seriesValueFragments.path": [
+              "[MinKey, MaxKey]"
+            ],
+            "time.date": [
+              "[MinKey, MaxKey]"
+            ]
+          }
+        }
+      }
+    },
+    "rejectedPlans": [
+      {
+        "stage": "LIMIT",
+        "limitAmount": 5,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "source": 1,
+              "type": 1,
+              "time.date": 1
+            },
+            "indexName": "source_1_type_1_time.date_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "source": [],
+              "type": [],
+              "time.date": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "source": [
+                "[\"106\", \"106\"]"
+              ],
+              "type": [
+                "[MinKey, MaxKey]"
+              ],
+              "time.date": [
+                "[MinKey, MaxKey]"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "stage": "LIMIT",
+        "limitAmount": 5,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "source": 1,
+              "time.date": 1,
+              "time": 1
+            },
+            "indexName": "source_1_time.date_1_time_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "source": [],
+              "time.date": [],
+              "time": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "source": [
+                "[\"106\", \"106\"]"
+              ],
+              "time.date": [
+                "[MinKey, MaxKey]"
+              ],
+              "time": [
+                "[MinKey, MaxKey]"
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 5,
+    "executionTimeMillis": 0,
+    "totalKeysExamined": 5,
+    "totalDocsExamined": 5,
+    "executionStages": {
+      "stage": "LIMIT",
+      "nReturned": 5,
+      "executionTimeMillisEstimate": 0,
+      "works": 6,
+      "advanced": 5,
+      "needTime": 0,
+      "needYield": 0,
+      "saveState": 0,
+      "restoreState": 0,
+      "isEOF": 1,
+      "invalidates": 0,
+      "limitAmount": 5,
+      "inputStage": {
+        "stage": "FETCH",
+        "nReturned": 5,
+        "executionTimeMillisEstimate": 0,
+        "works": 5,
+        "advanced": 5,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 0,
+        "invalidates": 0,
+        "docsExamined": 5,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 5,
+          "executionTimeMillisEstimate": 0,
+          "works": 5,
+          "advanced": 5,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 0,
+          "invalidates": 0,
+          "keyPattern": {
+            "source": 1,
+            "_seriesValueFragments.path": 1,
+            "time.date": 1
+          },
+          "indexName": "source_1__seriesValueFragments.path_1_time.date_1",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "source": [],
+            "_seriesValueFragments.path": [
+              "_seriesValueFragments"
+            ],
+            "time.date": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "source": [
+              "[\"106\", \"106\"]"
+            ],
+            "_seriesValueFragments.path": [
+              "[MinKey, MaxKey]"
+            ],
+            "time.date": [
+              "[MinKey, MaxKey]"
+            ]
+          },
+          "keysExamined": 5,
+          "seeks": 1,
+          "dupsTested": 5,
+          "dupsDropped": 0,
+          "seenInvalidated": 0
+        }
+      }
+    },
+    "allPlansExecution": [
+      {
+        "nReturned": 5,
+        "executionTimeMillisEstimate": 0,
+        "totalKeysExamined": 5,
+        "totalDocsExamined": 5,
+        "executionStages": {
+          "stage": "LIMIT",
+          "nReturned": 5,
+          "executionTimeMillisEstimate": 0,
+          "works": 5,
+          "advanced": 5,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "invalidates": 0,
+          "limitAmount": 5,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 5,
+            "executionTimeMillisEstimate": 0,
+            "works": 5,
+            "advanced": 5,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 0,
+            "invalidates": 0,
+            "docsExamined": 5,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 5,
+              "executionTimeMillisEstimate": 0,
+              "works": 5,
+              "advanced": 5,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 0,
+              "invalidates": 0,
+              "keyPattern": {
+                "source": 1,
+                "type": 1,
+                "time.date": 1
+              },
+              "indexName": "source_1_type_1_time.date_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "source": [],
+                "type": [],
+                "time.date": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "source": [
+                  "[\"106\", \"106\"]"
+                ],
+                "type": [
+                  "[MinKey, MaxKey]"
+                ],
+                "time.date": [
+                  "[MinKey, MaxKey]"
+                ]
+              },
+              "keysExamined": 5,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0,
+              "seenInvalidated": 0
+            }
+          }
+        }
+      },
+      {
+        "nReturned": 5,
+        "executionTimeMillisEstimate": 0,
+        "totalKeysExamined": 5,
+        "totalDocsExamined": 5,
+        "executionStages": {
+          "stage": "LIMIT",
+          "nReturned": 5,
+          "executionTimeMillisEstimate": 0,
+          "works": 5,
+          "advanced": 5,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "invalidates": 0,
+          "limitAmount": 5,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 5,
+            "executionTimeMillisEstimate": 0,
+            "works": 5,
+            "advanced": 5,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 0,
+            "invalidates": 0,
+            "docsExamined": 5,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 5,
+              "executionTimeMillisEstimate": 0,
+              "works": 5,
+              "advanced": 5,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 0,
+              "invalidates": 0,
+              "keyPattern": {
+                "source": 1,
+                "time.date": 1,
+                "time": 1
+              },
+              "indexName": "source_1_time.date_1_time_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "source": [],
+                "time.date": [],
+                "time": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "source": [
+                  "[\"106\", \"106\"]"
+                ],
+                "time.date": [
+                  "[MinKey, MaxKey]"
+                ],
+                "time": [
+                  "[MinKey, MaxKey]"
+                ]
+              },
+              "keysExamined": 5,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0,
+              "seenInvalidated": 0
+            }
+          }
+        }
+      },
+      {
+        "nReturned": 5,
+        "executionTimeMillisEstimate": 0,
+        "totalKeysExamined": 5,
+        "totalDocsExamined": 5,
+        "executionStages": {
+          "stage": "LIMIT",
+          "nReturned": 5,
+          "executionTimeMillisEstimate": 0,
+          "works": 5,
+          "advanced": 5,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "invalidates": 0,
+          "limitAmount": 5,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 5,
+            "executionTimeMillisEstimate": 0,
+            "works": 5,
+            "advanced": 5,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 0,
+            "invalidates": 0,
+            "docsExamined": 5,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 5,
+              "executionTimeMillisEstimate": 0,
+              "works": 5,
+              "advanced": 5,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 0,
+              "invalidates": 0,
+              "keyPattern": {
+                "source": 1,
+                "_seriesValueFragments.path": 1,
+                "time.date": 1
+              },
+              "indexName": "source_1__seriesValueFragments.path_1_time.date_1",
+              "isMultiKey": true,
+              "multiKeyPaths": {
+                "source": [],
+                "_seriesValueFragments.path": [
+                  "_seriesValueFragments"
+                ],
+                "time.date": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "source": [
+                  "[\"106\", \"106\"]"
+                ],
+                "_seriesValueFragments.path": [
+                  "[MinKey, MaxKey]"
+                ],
+                "time.date": [
+                  "[MinKey, MaxKey]"
+                ]
+              },
+              "keysExamined": 5,
+              "seeks": 1,
+              "dupsTested": 5,
+              "dupsDropped": 0,
+              "seenInvalidated": 0
+            }
+          }
+        }
+      }
+    ]
+  },
+  "serverInfo": {
+    "host": "mongodb-deployment-569cb7d7f5-6gc4x",
+    "port": 27017,
+    "version": "3.6.18",
+    "gitVersion": "2005f25eed7ed88fa698d9b800fe536bb0410ba4"
+  },
+  "ok": 1
+}

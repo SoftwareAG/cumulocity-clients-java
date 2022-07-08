@@ -21,7 +21,6 @@
 package com.cumulocity.sdk.client.cep;
 
 import com.cumulocity.rest.representation.CumulocityMediaType;
-import com.cumulocity.rest.representation.alarm.AlarmMediaType;
 import com.cumulocity.rest.representation.cep.CepMediaType;
 import com.cumulocity.rest.representation.cep.CepModuleCollectionRepresentation;
 import com.cumulocity.rest.representation.cep.CepModuleRepresentation;

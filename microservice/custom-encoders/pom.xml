@@ -23,8 +23,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.nsn.cumulocity.model</groupId>
-            <artifactId>rest-representation</artifactId>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>java-client-model</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

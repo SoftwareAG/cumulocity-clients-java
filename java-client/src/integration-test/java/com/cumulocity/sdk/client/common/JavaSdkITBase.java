@@ -22,7 +22,7 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
