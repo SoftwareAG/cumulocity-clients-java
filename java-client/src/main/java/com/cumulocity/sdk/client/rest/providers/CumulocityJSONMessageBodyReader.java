@@ -1,6 +1,5 @@
 package com.cumulocity.sdk.client.rest.providers;
 
-import com.cumulocity.model.CumulocityCharset;
 import com.cumulocity.model.JSONBase;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +18,8 @@ import java.lang.reflect.Type;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Provider
 @Slf4j
@@ -73,7 +74,7 @@ public class CumulocityJSONMessageBodyReader implements MessageBodyReader<BaseRe
     private String convertStreamToString(InputStream is) {
         try {
             // \A is the beginning of the input
-            return new Scanner(is, CumulocityCharset.CHARSET).useDelimiter("\\A").next();
+            return new Scanner(is, UTF_8.name()).useDelimiter("\\A").next();
         } catch (NoSuchElementException e) {
             return null;
         }

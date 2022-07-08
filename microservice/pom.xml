@@ -140,64 +140,14 @@
 
             <!-- fixing client java -->
             <dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>rest-representation</artifactId>
-                <version>${cumulocity.core.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>com.nsn.cumulocity.clients-java</groupId>
+                <artifactId>java-client-model</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>core-model</artifactId>
-                <version>${cumulocity.core.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>application-model</artifactId>
-                <version>${cumulocity.core.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>cep-model</artifactId>
-                <version>${cumulocity.core.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>com.springsource.javax.validation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.nsn.cumulocity.model</groupId>
-                <artifactId>realtime-model</artifactId>
-                <version>${cumulocity.core.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>java-client</artifactId>
                 <version>${cumulocity.clients.version}</version>
-
                 <exclusions>
                     <exclusion>
                         <groupId>javax.validation</groupId>

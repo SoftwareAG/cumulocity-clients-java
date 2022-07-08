@@ -24,12 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cumulocity.model.ID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.model.idtype.XtId;
 import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -148,7 +148,7 @@ public class IdentityIT extends JavaSdkITBase {
     private void iGetTheExternalId() throws SDKException {
         result1.clear();
         try {
-            XtId id = new XtId(input.get(0).getExternalId());
+            ID id = new ID(input.get(0).getExternalId());
             id.setType(input.get(0).getType());
             result1.add(identity.getExternalId(id));
         } catch (SDKException e) {

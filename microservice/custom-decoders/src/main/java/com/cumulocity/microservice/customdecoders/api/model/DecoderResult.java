@@ -8,7 +8,6 @@
 package com.cumulocity.microservice.customdecoders.api.model;
 
 import com.cumulocity.microservice.customdecoders.api.util.ObjectUtils;
-import com.cumulocity.model.event.AlarmStatus;
 import com.cumulocity.model.event.CumulocityAlarmStatuses;
 import com.cumulocity.rest.representation.BaseResourceRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
@@ -96,7 +95,7 @@ public class DecoderResult extends BaseResourceRepresentation implements Seriali
         addAlarmTypesToUpdate(CumulocityAlarmStatuses.ACKNOWLEDGED, alarmTypes);
     }
 
-    public void addAlarmTypesToUpdate(AlarmStatus status, String... alarmTypes){
+    public void addAlarmTypesToUpdate(CumulocityAlarmStatuses status, String... alarmTypes){
         if(ObjectUtils.isNull(alarmTypes) || ObjectUtils.isEmpty(alarmTypes) || ObjectUtils.isNull(status)){
             return;
         }

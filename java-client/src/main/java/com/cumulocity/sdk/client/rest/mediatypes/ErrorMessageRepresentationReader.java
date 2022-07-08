@@ -1,6 +1,5 @@
 package com.cumulocity.sdk.client.rest.mediatypes;
 
-import com.cumulocity.model.CumulocityCharset;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import org.svenson.JSONParser;
 
@@ -14,6 +13,8 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Scanner;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Provider
 public class ErrorMessageRepresentationReader implements MessageBodyReader<ErrorMessageRepresentation> {
@@ -32,6 +33,6 @@ public class ErrorMessageRepresentationReader implements MessageBodyReader<Error
     }
 
     public String convertStreamToString(InputStream is) {
-        return new Scanner(is, CumulocityCharset.CHARSET).useDelimiter("\\A").next();
+        return new Scanner(is, UTF_8.name()).useDelimiter("\\A").next();
     }
 }

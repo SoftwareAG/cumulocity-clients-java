@@ -1,0 +1,17 @@
+{
+  "measurement": 1,
+  "details": {
+    "wrongField": "unknown",
+    "wrongComplex": {
+      "a": "b"
+    },
+    "wrongArray": [
+      "a",
+      "b",
+      "c"
+    ],
+    "description": "Temperature measurement"
+  },
+  "wrongField": "unknown",
+  "type": "Temperature"
+}
