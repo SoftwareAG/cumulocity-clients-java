@@ -31,21 +31,23 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 public abstract class LnsConnection {
 
     @NotBlank
     @JsonView(LnsConnection.PublicView.class)
-    @NonNull
     private String name;
 
     @JsonView(LnsConnection.PublicView.class)
-    @NonNull
     private String description;
 
     @JsonIgnore
     @Setter(AccessLevel.PROTECTED)
     private boolean connectionReachable;
+
+    public LnsConnection(String name, String description){
+        this.name = name;
+        this.description = description;
+    }
 
     // JSON View interface for tagging Publicly visible fields
     public interface PublicView {}
