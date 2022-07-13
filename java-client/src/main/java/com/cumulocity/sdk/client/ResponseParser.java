@@ -24,18 +24,15 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import com.cumulocity.rest.representation.ResourceRepresentation;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class ResponseParser {
@@ -93,11 +90,14 @@ public class ResponseParser {
             Map<String, List<String>> responseHeadermap = response.getStringHeaders();
             if (responseHeadermap != null) {
                 for (Map.Entry<String, List<String>> entry : responseHeadermap.entrySet()) {
-                    responseHeader += entry.getKey() +
-                            ": " + entry.getValue() +"\n";
+                    if (entry.getKey().equals("Forwarded")
+                            || entry.getKey().equals("Location")
+                            || entry.getKey().equals("Via")) {
+                        responseHeader += entry.getKey() +
+                                ": " + entry.getValue() + "\n";
+                    }
                 }
             }
-//            responseHeader = response.getStringHeaders().entrySet().stream().map(e -> e.getKey() + " = " + e.getValue()).collect(Collectors.joining("&"));
             errorMessage += "\n" + errorRepresentation;
         }
         if (platformParameters != null) {
