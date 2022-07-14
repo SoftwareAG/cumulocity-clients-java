@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +25,16 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 
-import javax.validation.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -375,15 +382,15 @@ public class PackageMojo extends BaseMicroserviceMojo {
         }
     }
 
-    private ImmutableSet<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
+    private Set<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
         final Resources resources = manifest.getResources();
         if (resources != null && resources.getMemoryLimit().isPresent()) {
             final DataSize memoryLimit = resources.getMemoryLimit().get();
             if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT ) < 0) {
-                return ImmutableSet.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
+                return Sets.newHashSet(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
             }
         }
-        return ImmutableSet.of();
+        return Sets.newHashSet();
     }
 
 
