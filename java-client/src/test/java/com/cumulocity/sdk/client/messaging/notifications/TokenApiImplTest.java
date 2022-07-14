@@ -125,7 +125,56 @@ public class TokenApiImplTest {
         assertThat(argumentCaptor.getValue().getSubscriber()).isEqualTo("testsubscriber");
         assertThat(argumentCaptor.getValue().getSubscription()).isEqualTo("testsubscription");
         assertThat(argumentCaptor.getValue().getExpiresInMinutes()).isEqualTo(1L);
+        assertThat(argumentCaptor.getValue().isShared()).isFalse();
+        assertThat(argumentCaptor.getValue().isNonPersistent()).isFalse();
     }
+
+    @Test
+    public void shouldRefreshSharedToken() {
+        //given
+        String expiredSharedJwtToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0c3Vic2NyaWJlciIsInNoYXJlZCI6InRydWUiLCJ0" +
+                "b3BpYyI6Im1hbmFnZW1lbnQvcmVsbm90aWYvdGVzdHN1YnNjcmlwdGlvbiIsImp0aSI6IjE3MzI0YzIyLTczMjktNGJjNS05YTAz" +
+                "LWZiYTk5YmFjNzZhMSIsImlhdCI6MTY1NzcwOTY1MSwiZXhwIjoxNjU3NzA5NzExfQ.MKxWB7W-BDv_p-wb1z2nvR9Jmy9oEgTpa" +
+                "cs05IV-AkJEcinVVK4uDoi7HI8DwrqWmtFYIWhI3HEa-4-3fB4VjvPJdAsAcWcBQW5pGGNtVkRkXkKRzPO_wmrCMp8uqtv9zJpwj" +
+                "AMUWWFlnAP10WqsZvLtIX0fS-PWZmf6PAKzElZQGKOn5Gg_ycC49tbm6MuieuH1NT6LRFs4xHESDgJf9iMwEnzzZrOuo9JhUFiS1" +
+                "bdePGVPDmSRmgrdML7Ogv4wFblsq4oTnuC4VtRisXLczBJJhyf6Mqx6Anh78amLIWA1qpKfUcizUGjpllqm862EAOuPZnJDPMf-1" +
+                "1a55IcdhA";
+        ArgumentCaptor<NotificationTokenRequestRepresentation> argumentCaptor = ArgumentCaptor.forClass(NotificationTokenRequestRepresentation.class);
+
+        //when
+        tokenApi.refresh(new Token(expiredSharedJwtToken));
+
+        verify(tokenApi).create(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().getSubscriber()).isEqualTo("testsubscriber");
+        assertThat(argumentCaptor.getValue().getSubscription()).isEqualTo("testsubscription");
+        assertThat(argumentCaptor.getValue().getExpiresInMinutes()).isEqualTo(1L);
+        assertThat(argumentCaptor.getValue().isShared()).isTrue();
+        assertThat(argumentCaptor.getValue().isNonPersistent()).isFalse();
+    }
+
+    @Test
+    public void shouldRefreshNonPersistentToken() {
+        //given
+        String expiredNonPersistentJwtToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0c3Vic2NyaWJlciIsInRvcGljIjoibWFuY" +
+                "WdlbWVudC9yZWxub3RpZi90ZXN0c3Vic2NyaXB0aW9uIiwidm9sYXRpbGUiOiJ0cnVlIiwianRpIjoiZDIzNjE3MDEtYmRlYi00M" +
+                "TIzLWI4YjItYTliYTFkYjZjNzkyIiwiaWF0IjoxNjU3NzA5NDU0LCJleHAiOjE2NTc3MDk1MTR9.Ny12cVUlZXD4YSm_ZZFI0M29" +
+                "5ne_NcQrXFGpVvYrtuB670TLFbgNyM2ep9ItuevECzqI0Ur7WY5kk2HnfTMe3lUi6ojP78J3xX4VH1Ar-NFK0U5aW91nvWg7C31F" +
+                "pj9OnXmESjMn-RjeP-FDZxzZdAveIgOXlyigS8xkLLXLcoxXi3L50z_6UvwpBKqnaS5DLveCgpNYGA4VzbX-74dZj2MnVMKfPc9p" +
+                "qUICB_lDiR3z68_X1v9EkSOsc2jYHAWH6GcAApRmRx6geaxwIsbq-QFEBJ1mAkAYG9PeXIe_XFFrBvwLEg6W3F8Gu7YHDfpDakIl" +
+                "qRVgckoi-nUChJX3Mw";
+        ArgumentCaptor<NotificationTokenRequestRepresentation> argumentCaptor = ArgumentCaptor.forClass(NotificationTokenRequestRepresentation.class);
+
+        //when
+        tokenApi.refresh(new Token(expiredNonPersistentJwtToken));
+
+        verify(tokenApi).create(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().getSubscriber()).isEqualTo("testsubscriber");
+        assertThat(argumentCaptor.getValue().getSubscription()).isEqualTo("testsubscription");
+        assertThat(argumentCaptor.getValue().getExpiresInMinutes()).isEqualTo(1L);
+        assertThat(argumentCaptor.getValue().isShared()).isFalse();
+        assertThat(argumentCaptor.getValue().isNonPersistent()).isTrue();
+    }
+
 
     private String getUri(String endpoint) {
         return HOST + endpoint;
