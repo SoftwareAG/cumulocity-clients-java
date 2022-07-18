@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash -xe
+
+export MAVEN_OPTS="-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m ${MAVEN_OPTS}"
+
 if [ -z "$TPP_FETCHER_URL" ]; then TPP_FETCHER_URL="http://172.30.0.129:8083"; fi
 if [ -n "$1" ]
   then

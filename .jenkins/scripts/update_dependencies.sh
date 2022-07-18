@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash -xe
+
 source ${BASH_SOURCE%/*}/common.sh
 
 function update-dependencies {
