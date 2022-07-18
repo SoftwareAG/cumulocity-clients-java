@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -xe
 
 release_version=$1
 branch_name=release/r$release_version
