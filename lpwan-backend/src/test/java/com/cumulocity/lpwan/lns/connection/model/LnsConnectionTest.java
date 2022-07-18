@@ -31,11 +31,11 @@ class LnsConnectionTest {
     @Test
     void doValidateLnsConnection_invalid_name_null() {
         LnsConnection invalid_connection = SampleConnection.builder()
-                                            .name(null)
-                                            .description(null)
-                                            .user("USER NAME")
-                                            .password("**********")
-                                            .build();
+                .name(null)
+                .description(null)
+                .user("USER NAME")
+                .password("**********")
+                .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
         assertEquals("SampleConnection is missing mandatory fields: 'name'", inputDataValidationException.getMessage());

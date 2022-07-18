@@ -8,11 +8,20 @@
 package com.cumulocity.lpwan.lns.connection.service;
 
 import c8y.LpwanDevice;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.lns.connection.event.LnsConnectionUpdateEvent;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
+import com.cumulocity.lpwan.platform.repository.LpwanRepository;
 import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.cumulocity.microservice.context.ContextService;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -28,22 +37,30 @@ import com.cumulocity.sdk.client.option.TenantOptionApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.JsonExpectationsHelper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.cumulocity.lpwan.platform.repository.LpwanRepository.ALARM_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,8 +78,26 @@ public class LnsConnectionServiceTest {
     @Mock
     private RestConnector restConnector;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Spy
     private CsvService csvService;
+
+    @Spy
+    TaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+
+    @Captor
+    ArgumentCaptor<Instant> instantArgumentCaptor;
+
+    @Mock
+    private MicroserviceSubscriptionsService subscriptionsService;
+
+    @Mock
+    private ContextService<MicroserviceCredentials> contextService;
+
+    @Mock
+    private LpwanRepository lpwanRepository;
 
     @InjectMocks
     private LnsConnectionService lnsConnectionService;
@@ -365,6 +400,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection connectionToCreate = SampleConnection.builder()
+                                        .name("Sample Connection Name")
                                         .description("Sample Connection Description")
                                         .user("USER NAME")
                                         .password("**********")
@@ -416,6 +452,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection duplicateConnectionToCreate = SampleConnection.builder()
+                .name("SampleConnection-1")
                 .description("Sample Connection Description")
                 .user("USER NAME")
                 .password("**********")
@@ -434,6 +471,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         LnsConnection connectionToUpdate = SampleConnection.builder()
+                                        .name("SampleConnection-1")
                                         .description("Description for SampleConnection-1 (UPDATED)")
                                         .user("user-1 (UPDATED)")
                                         .password("password-1 (UPDATED)")
@@ -466,6 +504,7 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.save(any())).thenReturn(null);
 
         SampleConnection connectionToUpdate = SampleConnection.builder()
+                .name("SampleConnection-1")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password(null) // Password is passed as null, so the old password is kept
@@ -500,12 +539,12 @@ public class LnsConnectionServiceTest {
 
         String existingLnsConnectionName = "SampleConnection-1";
         LnsConnection connectionToUpdate = SampleConnection.builder()
+                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password("password-1 (UPDATED)")
                 .build();
-        connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice(null, null);
+        mockInventoryReturnsWithDevice(null, null, false);
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         compare(connectionToUpdate, updatedConnection);
@@ -523,6 +562,7 @@ public class LnsConnectionServiceTest {
                 .forType(mapType)
                 .readValue(optionRepresentationArgument.getValue());
         compare(VALID_LNS_CONNECTIONS_MAP, actualMapSaved);
+        verify(applicationEventPublisher).publishEvent(any(LnsConnectionUpdateEvent.class));
     }
 
     @Test
@@ -535,12 +575,12 @@ public class LnsConnectionServiceTest {
 
         String existingLnsConnectionName = "SampleConnection-1";
         SampleConnection connectionToUpdate = SampleConnection.builder()
+                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password(null) // Password is passed as null, so the old password is kept
                 .build();
-        connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
-        mockInventoryReturnsWithDevice(null, null);
+        mockInventoryReturnsWithDevice(null, null, false);
         LnsConnection updatedConnection = lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
 
         connectionToUpdate.setPassword(((SampleConnection)VALID_LNS_CONNECTIONS_MAP.get(existingLnsConnectionName.toLowerCase())).getPassword()); // Initialize the password with the existing connection's password
@@ -575,20 +615,19 @@ public class LnsConnectionServiceTest {
 
         String existingLnsConnectionName = "SampleConnection-1";
         SampleConnection connectionToUpdate = SampleConnection.builder()
-//                .name("SampleConnection-1 (UPDATED)")
+                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user("user-1 (UPDATED)")
                 .password(null) // Password is passed as null, so the old password is kept
                 .build();
         connectionToUpdate.setName("SampleConnection-1 (UPDATED)");
 
-        mockInventoryReturnsWithDevice(existingLnsConnectionName, new GId("12345"));
+        mockInventoryReturnsWithDevice(existingLnsConnectionName, new GId("12345"), true);
         try {
             lnsConnectionService.update(existingLnsConnectionName, connectionToUpdate);
         } catch (LpwanServiceException e) {
-            String contextPath = null;
-            String url = "/service/" + contextPath + "/lns-connection/" + existingLnsConnectionName.toLowerCase() + "/device";
-            String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
+            String url = "/lns-connection/" + existingLnsConnectionName.toLowerCase() + "/device";
+            String errorMessage = String.format("Can not update the LNS connection with name '%s' as it's associated with '%s' device(s).",
                     existingLnsConnectionName.toLowerCase(), 1);
             assertTrue(e.getMessage().contains(errorMessage));
             assertEquals(url, e.getUrl());
@@ -662,11 +701,13 @@ public class LnsConnectionServiceTest {
 
         String nonExistingConnectionNameToUpdate = "SampleConnection-1";
         LnsConnection invalidConnectionToUpdate = SampleConnection.builder()
+                .name("SampleConnection-1 (UPDATED)")
                 .description("Description for SampleConnection-1 (UPDATED)")
                 .user(null) // Invalid as user is a mandatory field
                 .password("password-5 (UPDATED)")
                 .build();
         invalidConnectionToUpdate.setName("SampleConnection-1 (UPDATED)");
+        mockInventoryReturnsWithDevice("SampleConnection-1 (UPDATED)", GId.asGId("12345"), false);
         InputDataValidationException inputDataValidationException = assertThrows(InputDataValidationException.class, () -> lnsConnectionService.update(nonExistingConnectionNameToUpdate, invalidConnectionToUpdate));
         assertEquals("SampleConnection is missing mandatory fields: 'user'", inputDataValidationException.getMessage());
     }
@@ -680,6 +721,7 @@ public class LnsConnectionServiceTest {
 
         String existingConnectionNameToUpdate = "SampleConnection-1";
         LnsConnection connectionToUpdate = SampleConnection.builder()
+                .name("SampleConnection-2")
                 .description("Description for SampleConnection-2 (UPDATED)")
                 .user("user-2 (UPDATED)")
                 .password("password-2 (UPDATED)")
@@ -699,7 +741,7 @@ public class LnsConnectionServiceTest {
 
         String connectionNameToDelete = "SampleConnection-1";
 
-        mockInventoryReturnsWithDevice(null, null);
+        mockInventoryReturnsWithDevice(null, null, false);
         lnsConnectionService.delete(connectionNameToDelete);
 
         verify(tenantOptionApi).save(optionRepresentationCaptor.capture());
@@ -730,13 +772,12 @@ public class LnsConnectionServiceTest {
 
         String connectionNameToDelete = "SampleConnection-1";
 
-        mockInventoryReturnsWithDevice(connectionNameToDelete, new GId("12345"));
+        mockInventoryReturnsWithDevice(connectionNameToDelete, new GId("12345"), true);
         try {
             lnsConnectionService.delete(connectionNameToDelete);
         } catch (LpwanServiceException e) {
-            String contextPath = null;
-            String url = "/service/" + contextPath + "/lns-connection/" + connectionNameToDelete.toLowerCase() + "/device";
-            String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s). \nVisit the following URL to download the list of devices. \nURL :",
+            String url = "/lns-connection/" + connectionNameToDelete.toLowerCase() + "/device";
+            String errorMessage = String.format("Can not delete the LNS connection with name '%s' as it's associated with '%s' device(s).",
                     connectionNameToDelete.toLowerCase(), 1);
             assertTrue(e.getMessage().contains(errorMessage));
             assertEquals(url, e.getUrl());
@@ -772,9 +813,69 @@ public class LnsConnectionServiceTest {
 
     @Test
     public void getDataForCsv() throws LpwanServiceException, IOException {
-        mockInventoryReturnsWithDevice("dummyLnsConnection", new GId("12345"));
+        mockInventoryReturnsWithDevice("dummyLnsConnection", new GId("12345"), true);
         InputStreamResource inputStreamResource = lnsConnectionService.getDeviceManagedObjectsInCsv("dummyLnsConnection");
         assertNotNull(inputStreamResource.getInputStream());
+    }
+
+    @Test
+    public void shouldMigrateOldDevices() {
+        String defaultConnection = "default connection";
+        mockInventoryReturnsWithDevice(null, new GId("12345"), true);
+        lnsConnectionService.migrateOldDevices("sigfox", defaultConnection);
+        ArgumentCaptor<ManagedObjectRepresentation> argumentCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
+        verify(inventoryApi).update(argumentCaptor.capture());
+        ManagedObjectRepresentation updatedDeviceMo = argumentCaptor.getValue();
+        LpwanDevice lpwanDevice = updatedDeviceMo.get(LpwanDevice.class);
+        assertEquals(defaultConnection, lpwanDevice.getLnsConnectionName());
+    }
+
+    @Test
+    public void shouldNotMigrateWhenNoDevicesAreAvailable() {
+        String defaultConnection = "default connection";
+        mockInventoryReturnsWithDevice(null, new GId("12345"), false);
+        lnsConnectionService.migrateOldDevices("sigfox", defaultConnection);
+        ArgumentCaptor<ManagedObjectRepresentation> argumentCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
+        verify(inventoryApi, never()).update(argumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldCheckHealthStatus(){
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        Logger logger = (Logger) LoggerFactory.getLogger(LnsConnectionService.class);
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        MicroserviceCredentials microserviceCredentials = new MicroserviceCredentials("aTenant", "aServiceUser", "aPassword", null, null, null, null);
+        Collection<MicroserviceCredentials> currentSubscriptions = Lists.newArrayList(microserviceCredentials);
+        when(subscriptionsService.getCredentials("aTenant")).thenReturn(Optional.of(microserviceCredentials));
+        when(contextService.getContext()).thenReturn(microserviceCredentials);
+
+        OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
+        OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(lnsConnectionsOptionKey.getCategory(), lnsConnectionsOptionKey.getKey(), VALID_LNS_CONNECTIONS_MAP_JSON);
+        when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
+
+        GId source = GId.asGId("12345");
+        when(lpwanRepository.findOrCreateSource()).thenReturn(source);
+
+        ((ThreadPoolTaskScheduler) taskScheduler).initialize();
+
+        lnsConnectionService.checkHealth();
+
+        ArgumentCaptor<Runnable> runnableArgumentCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(contextService, timeout(5000L)).runWithinContext(eq(microserviceCredentials),runnableArgumentCaptor.capture());
+        runnableArgumentCaptor.getValue().run();
+        verify(lpwanRepository).clearAlarm(eq(source),eq(ALARM_TYPE));
+        InOrder inOrder = inOrder(taskScheduler);
+        inOrder.verify(taskScheduler, timeout(5000L)).schedule(any(LnsConnectionService.ScheduledHealthCheckTaskExecutor.class), instantArgumentCaptor.capture());
+        Assert.assertTrue(instantArgumentCaptor.getValue().getEpochSecond() <= Instant.now().getEpochSecond());
+        inOrder.verify(taskScheduler, timeout(5000L)).schedule(any(LnsConnectionService.ScheduledHealthCheckTaskExecutor.class), instantArgumentCaptor.capture());
+        Assert.assertTrue(instantArgumentCaptor.getValue().getEpochSecond() <= Instant.now().plus(Duration.ofHours(1)).getEpochSecond());
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals(Level.INFO, logsList.get(0).getLevel());
+        String infoMessage = String.format("All the connections in the tenant '%s' are up", microserviceCredentials.getTenant());
+        assertEquals(infoMessage, logsList.get(0).getFormattedMessage());
     }
 
 
@@ -815,9 +916,9 @@ public class LnsConnectionServiceTest {
         assertEquals(expectedTestLnsConnection.getPassword(), actualTestLnsConnection.getPassword());
     }
 
-    private void mockInventoryReturnsWithDevice(String lnsConnectionName, GId gId) {
+    private void mockInventoryReturnsWithDevice(String lnsConnectionName, GId gId, boolean isDeviceAssociated) {
         List<ManagedObjectRepresentation> moList = new ArrayList<>();
-        if(Objects.nonNull(lnsConnectionName)) {
+        if(isDeviceAssociated) {
             ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
             managedObject.setName("Dummy_LPWAN_Device");
             managedObject.setType("type");
@@ -831,7 +932,6 @@ public class LnsConnectionServiceTest {
         ManagedObjectCollection managedObjectCollection = mock(ManagedObjectCollection.class);
         PagedManagedObjectCollectionRepresentation paged = mock(PagedManagedObjectCollectionRepresentation.class);
         when(managedObjectCollection.get()).thenReturn(paged);
-        Iterable<ManagedObjectRepresentation> iterable = mock(Iterable.class);
         when(paged.allPages()).thenReturn(moList);
 
         when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class))).
