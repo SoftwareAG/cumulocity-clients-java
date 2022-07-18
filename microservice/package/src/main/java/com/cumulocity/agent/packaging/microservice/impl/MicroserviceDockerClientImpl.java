@@ -11,6 +11,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -267,7 +268,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     private Map<String, List<String>> getImageNameFilter(String imageName) {
         Map<String, List<String>> imageFilters = Maps.newHashMap();
-        imageFilters.put("reference", List.of(imageName));
+        imageFilters.put("reference", Lists.newArrayList(imageName));
         return imageFilters;
     }
 
