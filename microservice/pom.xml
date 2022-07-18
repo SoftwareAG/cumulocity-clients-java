@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1014.93.0</revision>
+        <revision>1014.124.0</revision>
         <changelist>-SNAPSHOT</changelist>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,11 +19,10 @@
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
-        <spring-boot-dependencies.version>2.5.12</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.5.14</spring-boot-dependencies.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <guava.version>31.0.1-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
-        <jackson.version>2.12.5</jackson.version>
 
         <nexus.url>http://localhost:8080</nexus.url>
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
@@ -47,14 +46,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
 
             <!-- jetty -->
             <!-- must be defined before spring-boot-dependencies -->
@@ -171,6 +162,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>com.nsn.cumulocity.model</groupId>
                 <artifactId>application-model</artifactId>
@@ -193,6 +185,12 @@
                         <artifactId>com.springsource.javax.validation</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nsn.cumulocity.model</groupId>
+                <artifactId>realtime-model</artifactId>
+                <version>${cumulocity.core.version}</version>
             </dependency>
 
             <dependency>
@@ -237,6 +235,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
+                    <configuration>
+                        <argLine>-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m</argLine>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>

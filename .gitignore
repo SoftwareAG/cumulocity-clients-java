@@ -1,6 +1,7 @@
 *.
 .idea/
 target/
+cumulocity-sdk
 cumulocity-sdk/
 bin/
 *.iml

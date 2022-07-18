@@ -15,11 +15,14 @@ import com.cumulocity.lpwan.lns.connection.model.DeviceDetail;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceFilter;
+import com.cumulocity.lpwan.platform.repository.LpwanRepository;
 import com.cumulocity.microservice.context.ContextService;
-import com.cumulocity.microservice.context.credentials.Credentials;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
+import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
@@ -35,26 +38,30 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import static com.cumulocity.lpwan.platform.repository.LpwanRepository.ALARM_TYPE;
+import static com.cumulocity.lpwan.platform.repository.LpwanRepository.CRITICAL;
 
 @Slf4j
 @Component
@@ -76,7 +83,10 @@ public class LnsConnectionService {
     CsvService csvService;
 
     @Autowired
-    private ContextService<Credentials> contextService;
+    private ContextService<MicroserviceCredentials> contextService;
+
+    @Autowired
+    private MicroserviceSubscriptionsService subscriptionsService;
 
     @Autowired
     private PlatformProperties platformProperties;
@@ -90,6 +100,11 @@ public class LnsConnectionService {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private TaskScheduler taskScheduler;
+
+    @Autowired
+    private LpwanRepository lpwanRepository;
 
     private OptionPK lnsConnectionsTenantOptionKey;
 
@@ -292,6 +307,44 @@ public class LnsConnectionService {
                     log.error(message, e);
                 }
             }
+        }
+    }
+
+    public synchronized void checkHealth()  {
+        taskScheduler.schedule(new ScheduledHealthCheckTaskExecutor(), Instant.now());
+    }
+
+    class ScheduledHealthCheckTaskExecutor implements Runnable {
+
+        final String tenantId = contextService.getContext().getTenant();
+        Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
+
+        @Override
+        public void run() {
+            contextService.runWithinContext(serviceUser.get(), () -> {
+                List<String> unreachableLnsConnectionNames = new ArrayList<>();
+                try{
+                    unreachableLnsConnectionNames = getAll().parallelStream()
+                            .filter((oneConnection)-> !oneConnection.checkConnectionStatus())
+                            .map(LnsConnection::getName)
+                            .collect(Collectors.toList());
+                } catch (LpwanServiceException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    final GId source = lpwanRepository.findOrCreateSource();
+                    lpwanRepository.clearAlarm(source, ALARM_TYPE);
+                    if(unreachableLnsConnectionNames.isEmpty()){
+                        log.info("All the connections in the tenant '{}' are up", tenantId);
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofHours(1)));
+                    } else {
+                        String alarmText = String.format("The LNS connection(s) with name '%s' in '%s' is/are unreachable in the tenant '%s'", String.join(",", unreachableLnsConnectionNames),
+                                                                                                                                            LnsConnectionDeserializer.getRegisteredAgentName(), tenantId);
+                        log.warn(alarmText);
+                        lpwanRepository.createAlarm(source, CRITICAL, ALARM_TYPE, alarmText);
+                        taskScheduler.schedule(this, Instant.now().plus(Duration.ofMinutes(5)));
+                    }
+                }
+            });
         }
     }
 
