@@ -78,8 +78,8 @@ public class TokenApiImpl implements TokenApi {
                 parsedToken.getSubscriber(),
                 subscription,
                 validityPeriodMinutes,
-                parsedToken.getShared(),
-                parsedToken.getNonPersistent()));
+                parsedToken.isShared(),
+                parsedToken.isNonPersistent()));
     }
 
     @Override

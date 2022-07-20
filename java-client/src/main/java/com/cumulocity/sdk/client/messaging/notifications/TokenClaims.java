@@ -51,12 +51,12 @@ public class TokenClaims extends BaseResourceRepresentation {
     }
 
     @JSONProperty(value = "shared", ignoreIfNull = true)
-    public boolean getShared() {
+    public boolean isShared() {
         return this.shared;
     }
 
     @JSONProperty(value = "volatile", ignoreIfNull = true)
-    public boolean getNonPersistent() {
+    public boolean isNonPersistent() {
         return this.nonPersistent;
     }
 }
