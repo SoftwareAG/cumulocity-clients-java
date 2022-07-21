@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash -xe
+
 release_version=$1
 
 function git_finish_release {

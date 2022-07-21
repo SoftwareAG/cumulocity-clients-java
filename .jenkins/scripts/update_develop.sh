@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash -xe
+
 hotfix_version=$1
 development_version=$2
 
