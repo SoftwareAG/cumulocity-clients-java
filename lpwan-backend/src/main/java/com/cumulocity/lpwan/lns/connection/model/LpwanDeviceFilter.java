@@ -22,4 +22,8 @@ public class LpwanDeviceFilter extends InventoryFilter {
     public static LpwanDeviceFilter of(String filterQuery){
         return new LpwanDeviceFilter(filterQuery);
     }
+
+    public static LpwanDeviceFilter of(String filterQuery){
+        return new LpwanDeviceFilter(filterQuery);
+    }
 }
