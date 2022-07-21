@@ -17,8 +17,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementers of LnsConnection class have to annotate the fields of the concrete class
@@ -47,6 +46,11 @@ public abstract class LnsConnection {
     public LnsConnection(String name, String description){
         this.name = name;
         this.description = description;
+
+        PriorityQueue<Map.Entry<Integer,Integer>> maxHeap =new PriorityQueue<>(3);
+        Map<Integer, Integer> map = new HashMap<>();
+        maxHeap.add((Map.Entry<Integer, Integer>) map);
+        ((Map.Entry<?, ?>) map).getValue();
     }
 
     // JSON View interface for tagging Publicly visible fields

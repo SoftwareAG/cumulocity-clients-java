@@ -16,6 +16,7 @@ import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.lns.connection.model.LpwanDeviceFilter;
 import com.cumulocity.lpwan.platform.repository.LpwanRepository;
+import com.cumulocity.lpwan.util.LpwanCommonService;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.inject.TenantScope;
@@ -105,6 +106,9 @@ public class LnsConnectionService {
 
     @Autowired
     private LpwanRepository lpwanRepository;
+
+    @Autowired
+    private LpwanCommonService lpwanCommonService;
 
     private OptionPK lnsConnectionsTenantOptionKey;
 
@@ -283,15 +287,8 @@ public class LnsConnectionService {
     }
 
     public synchronized void migrateOldDevices(String lpwanProviderName, String lnsConnectionName) {
-        InventoryFilter inventoryFilter = LpwanDeviceFilter.byServiceProvider(lpwanProviderName);
-        Iterable<ManagedObjectRepresentation> managedObjectRepresentations = null;
-        try {
-            managedObjectRepresentations = inventoryApi.getManagedObjectsByFilter(inventoryFilter).get().allPages();
-        } catch (SDKException e) {
-            String message = String.format("Error in getting device managed objects from the service provider '%s'", lpwanProviderName);
-            log.error(message, e);
-            return;
-        }
+        Iterable<ManagedObjectRepresentation> managedObjectRepresentations = lpwanCommonService.getDeviceMosByProvider(lpwanProviderName);
+        if (managedObjectRepresentations == null) return;
 
         for(ManagedObjectRepresentation deviceMo : managedObjectRepresentations){
             LpwanDevice lpwanDevice = deviceMo.get(LpwanDevice.class);
