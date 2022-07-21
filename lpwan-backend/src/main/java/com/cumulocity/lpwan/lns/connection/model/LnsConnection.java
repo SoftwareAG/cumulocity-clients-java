@@ -46,11 +46,6 @@ public abstract class LnsConnection {
     public LnsConnection(String name, String description){
         this.name = name;
         this.description = description;
-
-        PriorityQueue<Map.Entry<Integer,Integer>> maxHeap =new PriorityQueue<>(3);
-        Map<Integer, Integer> map = new HashMap<>();
-        maxHeap.add((Map.Entry<Integer, Integer>) map);
-        ((Map.Entry<?, ?>) map).getValue();
     }
 
     // JSON View interface for tagging Publicly visible fields
