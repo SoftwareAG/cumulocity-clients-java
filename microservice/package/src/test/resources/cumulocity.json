@@ -7,6 +7,10 @@
   "isolation":"MULTI_TENANT",
   "requiredRoles": [
   ],
+  "resources": {
+    "cpu": "1",
+    "memory": "1G"
+  },
   "roles":[
   ],
   "livenessProbe":{
