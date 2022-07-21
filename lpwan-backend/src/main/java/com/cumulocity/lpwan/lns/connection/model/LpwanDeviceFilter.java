@@ -18,4 +18,8 @@ public class LpwanDeviceFilter extends InventoryFilter {
     public static LpwanDeviceFilter byServiceProvider(String serviceProvider) {
         return new LpwanDeviceFilter(String.format("$filter=c8y_LpwanDevice.serviceProvider eq '%s'", serviceProvider));
     }
+
+    public static LpwanDeviceFilter of(String filterQuery){
+        return new LpwanDeviceFilter(filterQuery);
+    }
 }
