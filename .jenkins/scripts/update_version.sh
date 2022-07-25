@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash -xe
 
 function update-property {
     echo "update property ${1} to value ${2}"

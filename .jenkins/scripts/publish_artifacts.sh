@@ -1,10 +1,10 @@
-#!/bin/bash
-set -e
+#!/bin/bash -xe
+
+export MAVEN_OPTS="-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m ${MAVEN_OPTS}"
+
 source ${BASH_SOURCE%/*}/common.sh
 RELEASE_TYPE=$1
 shift 1
-
-export MAVEN_OPTS="-Xmx2048m -XX:MetaspaceSize=1024m ${MAVEN_OPTS}"
 
 call-mvn -s $MVN_SETTINGS deploy -T 2C -Dmaven.install.skip=true $release_args -DskipTests "$@"
 
