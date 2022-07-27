@@ -77,7 +77,9 @@ public class TokenApiImpl implements TokenApi {
         return create(new NotificationTokenRequestRepresentation(
                 parsedToken.getSubscriber(),
                 subscription,
-                validityPeriodMinutes, false));
+                validityPeriodMinutes,
+                parsedToken.isShared(),
+                parsedToken.isNonPersistent()));
     }
 
     @Override
