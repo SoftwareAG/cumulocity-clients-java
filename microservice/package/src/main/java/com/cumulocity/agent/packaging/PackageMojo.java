@@ -1,15 +1,14 @@
 package com.cumulocity.agent.packaging;
 
 import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
+import com.cumulocity.model.DataSize;
+import com.cumulocity.model.Resources;
 import com.cumulocity.model.application.MicroserviceManifest;
-import com.cumulocity.model.application.microservice.DataSize;
-import com.cumulocity.model.application.microservice.Resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
@@ -26,14 +25,16 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
-import javax.validation.ValidationException;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -102,7 +103,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         if (!containerSkip) {
 
             Iterable<String> buildTargetArchitectures = getTargetBuildArchitectures();
-            log.info("Starting docker microservice build for the following target architectures: {}", List.of(buildTargetArchitectures));
+            log.info("Starting docker microservice build for the following target architectures: {}", buildTargetArchitectures);
 
             for (String arch: buildTargetArchitectures) {
 
@@ -353,42 +354,42 @@ public class PackageMojo extends BaseMicroserviceMojo {
     }
 
 
-    private void validateManifest(File file) throws IOException {
+    private void validateManifest(File file) throws IOException, MavenExecutionException {
+        log.info("Validating manifest");
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), Charsets.UTF_8)) {
             final MicroserviceManifest manifest = MicroserviceManifest.from(reader);
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             Validator validator = factory.getValidator();
 
-            Stream<ManifestConstraintViolation> violations = validator.validate(manifest).stream().map(input -> new ManifestConstraintViolation(input.getPropertyPath().toString(), input.getMessage()));
+            Set<ConstraintViolation<MicroserviceManifest>> constraintViolations = validator.validate(manifest);
 
-            violations = Stream.concat(violations, validateMemory(manifest).stream());
+            Set<ManifestConstraintViolation> violations = validateMemory(manifest);
+            for (ConstraintViolation<MicroserviceManifest> cviolation: constraintViolations) {
+                violations.add(new ManifestConstraintViolation(cviolation.getPropertyPath().toString(), cviolation.getMessage()));
+            }
 
-            if (violations.findAny().isPresent()) {
-                for (String line : manifestValidationFailedMessage(violations)) {
-                    getLog().error(line);
-                }
-                throw new ValidationException("Microservice manifest is invalid");
+            if (!violations.isEmpty()) {
+                log.error("Manifest validation error!");
+                violations.forEach(violation -> {
+                    log.error("Validation error: {} {}", violation.getPath(), violation.getMessage());
+                });
+
+                throw new MavenExecutionException("Could not validate manifest", new IllegalArgumentException());
             }
         }
     }
 
-
-    private ImmutableList<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
+    private Set<ManifestConstraintViolation> validateMemory(MicroserviceManifest manifest) {
         final Resources resources = manifest.getResources();
         if (resources != null && resources.getMemoryLimit().isPresent()) {
             final DataSize memoryLimit = resources.getMemoryLimit().get();
             if (memoryLimit.compareTo(MEMORY_MINIMAL_LIMIT ) < 0) {
-                return ImmutableList.of(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
+                return Sets.newHashSet(new ManifestConstraintViolation("resources.memory", "For java project memory needs to be at least " + MEMORY_MINIMAL_LIMIT));
             }
         }
-        return ImmutableList.of();
+        return Sets.newHashSet();
     }
 
-    private Iterable<String> manifestValidationFailedMessage(Stream<ManifestConstraintViolation> result) {
-        final List<String> sb = Lists.newArrayList("Microservice manifest invalid:");
-        result.forEach(violation -> sb.add(violation.getPath() + " - " + violation.getMessage()));
-        return sb;
-    }
 
     private File filterResourceFile(File source) throws IOException, MavenFilteringException {
         final File filteredDir = new File(build, File.separator + "filtered-resources");
