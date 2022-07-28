@@ -51,6 +51,9 @@ public class ResponseParser {
         this.platformParameters = platformParameters;
     }
 
+    public ResponseParser(final ResponseMapper mapper) {
+        this(mapper, null);
+    }
     public ResponseParser() {
         this(null, null);
     }
