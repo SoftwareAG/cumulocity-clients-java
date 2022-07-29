@@ -22,7 +22,6 @@ package com.cumulocity.sdk.client;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.when;
 

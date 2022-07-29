@@ -1,6 +1,5 @@
 package c8y;
 
-import com.cumulocity.model.audit.annotation.SkipFieldInChangeScanner;
 import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -20,11 +19,9 @@ public class RemoteAccessCredentials {
 
     private RemoteAccessCredentialsType type;
     private String username;
-    @SkipFieldInChangeScanner
     private String password;
     private String publicKey;
     private String certificate;
-    @SkipFieldInChangeScanner
     private String privateKey;
     /**Can be either hostKey or hostCertificate*/
     private String hostKey;

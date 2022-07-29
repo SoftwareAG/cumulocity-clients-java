@@ -1,0 +1,7 @@
+{
+  "measurement": 1,
+  "wrongComplex": {
+    "a": "b"
+  },
+  "type": "Temperature"
+}

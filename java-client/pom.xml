@@ -44,12 +44,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>rest-representation</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>realtime-model</artifactId>
+			<groupId>com.nsn.cumulocity.clients-java</groupId>
+			<artifactId>java-client-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.connectors</groupId>
@@ -82,6 +78,10 @@
 			<artifactId>json</artifactId>
 			<version>20190722</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -108,19 +108,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>model-test-tools</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>core-model</artifactId>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>com.nsn.cumulocity.model</groupId>
-			<artifactId>rest-representation</artifactId>
+			<groupId>com.nsn.cumulocity.clients-java</groupId>
+			<artifactId>java-client-model</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
@@ -184,6 +173,11 @@
 			<groupId>org.mock-server</groupId>
 			<artifactId>mockserver-netty</artifactId>
 			<version>5.11.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -348,9 +342,9 @@
 							<!--List of artifacts that will be included to javadoc generation -->
 							<artifactItems>
 								<artifactItem>
-									<groupId>com.nsn.cumulocity.model</groupId>
-									<artifactId>rest-representation</artifactId>
-									<version>${cumulocity.core.version}</version>
+									<groupId>com.nsn.cumulocity.clients-java</groupId>
+									<artifactId>java-client-model</artifactId>
+									<version>${project.version}</version>
 									<type>jar</type>
 									<classifier>sources</classifier>
 									<overWrite>true</overWrite>

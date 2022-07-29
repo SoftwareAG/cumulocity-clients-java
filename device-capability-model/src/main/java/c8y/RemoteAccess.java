@@ -1,6 +1,5 @@
 package c8y;
 
-import com.cumulocity.model.audit.annotation.SkipFieldInChangeScanner;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +27,6 @@ public class RemoteAccess extends AbstractDynamicProperties {
 
     private RemoteAccessProtocol protocol;
 
-    // This field needs to be scanned independently because of a bug in ChangeScanner
-    @SkipFieldInChangeScanner
     private RemoteAccessCredentials credentials;
 
     public RemoteAccess(Map<String, Object> map) {
