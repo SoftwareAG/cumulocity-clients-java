@@ -11,6 +11,10 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 20, unit: 'MINUTES')
     }
+    triggers {
+        upstream(upstreamProjects: "/${currentBuild.fullProjectName.replaceFirst('cumulocity-clients-java', 'cumulocity-core')}",
+            threshold: hudson.model.Result.SUCCESS)
+    }
     environment {
         MVN_SETTINGS = credentials('maven-settings')
     }
