@@ -2,6 +2,7 @@ package com.cumulocity.sdk.client.messaging.notifications;
 
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.CumulocityMediaType;
+import com.cumulocity.rest.representation.reliable.notification.NotificationApiRepresentation;
 import com.cumulocity.rest.representation.reliable.notification.NotificationSubscriptionRepresentation;
 import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
@@ -20,20 +21,21 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
 
     public static final CumulocityMediaType MEDIA_TYPE = new CumulocityMediaType("application", "json");
 
-    public static final String SUBSCRIPTION_REQUEST_URI = "notification2/subscriptions";
-
     private final RestConnector restConnector;
 
     private final int pageSize;
+    private final NotificationApiRepresentation notificationApiRepresentation;
 
     private final UrlProcessor urlProcessor;
 
     public NotificationSubscriptionApiImpl(
             RestConnector restConnector,
             UrlProcessor urlProcessor,
+            NotificationApiRepresentation notificationApiRepresentation,
             int pageSize) {
         this.restConnector = requireNonNull(restConnector, "restConnector");
         this.urlProcessor = requireNonNull(urlProcessor, "urlProcessor");
+        this.notificationApiRepresentation = notificationApiRepresentation;
         this.pageSize = pageSize;
     }
 
@@ -97,6 +99,6 @@ public class NotificationSubscriptionApiImpl implements NotificationSubscription
     }
 
     private String getSelfUri() throws SDKException {
-        return restConnector.getPlatformParameters().getHost() + SUBSCRIPTION_REQUEST_URI;
+        return notificationApiRepresentation.getNotificationSubscriptions().getSelf();
     }
 }
