@@ -106,7 +106,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
         if (!containerSkip) {
 
             Iterable<String> buildTargetArchitectures = getTargetBuildArchitectures();
-            log.info("Starting docker microservice build for the following target architectures: {}", buildTargetArchitectures);
+            log.info("Starting docker microservice build for the following target architectures: {}", new ArrayList<>(Arrays.asList(buildTargetArchitectures));
 
             for (String arch: buildTargetArchitectures) {
 

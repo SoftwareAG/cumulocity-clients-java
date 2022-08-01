@@ -268,7 +268,7 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
 
     private Map<String, List<String>> getImageNameFilter(String imageName) {
         Map<String, List<String>> imageFilters = Maps.newHashMap();
-        imageFilters.put("reference", Lists.newArrayList(imageName));
+        imageFilters.put("reference", Collections.unmodifiableList(new ArrayList<>(Arrays.asList(imageName))));
         return imageFilters;
     }
 
