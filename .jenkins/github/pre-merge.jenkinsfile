@@ -1,0 +1,558 @@
+library "c8y-common-steps"
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+
+INSTANCES = ['java', 'sdk'].collectEntries { [(it): devInstanceOf(it)] }
+SECRETS = [
+    management: [ user: 'admin', pass: 'Pyi1bo1r' ],
+    tenant: [ pass: 'Pyi1bo1r!' ]
+]
+VERSIONS = [
+    changeList: "${env.CHANGE_ID}.${env.BUILD_NUMBER}.sdk" // Docker registry rejects versions with capital letters!
+]
+LOCKS = [
+    core: "core-compile-${VERSIONS.changeList}",
+    sdk: "sdk-compile-${VERSIONS.changeList}"
+]
+JOB_ABORTED = false
+ERROR_COUNT = 0
+
+node('jdk11') {
+  try {
+    job_options()
+    calculate_versions()
+    parallel(
+        'build and test': {
+          build_and_test()
+        },
+        'spin up instances': {
+          spinup_instances()
+        },
+        failFast: true
+    )
+    stage('update instances') {
+      update_instances()
+    }
+    stage('functional tests') {
+      functional_tests()
+    }
+  } catch (e) {
+    if (e instanceof InterruptedException || e instanceof FlowInterruptedException) {
+      JOB_ABORTED = true
+      currentBuild.result = "ABORTED"
+    } else {
+      currentBuild.result = "FAILED"
+    }
+  } finally {
+    //moved to finally block to ensure teardown happens if the pipeline is aborted
+    stage('teardown') {
+      teardown_instance(INSTANCES.java)
+      teardown_instance(INSTANCES.sdk)
+      clean_up_resources()
+    }
+  }
+}
+
+def job_options() {
+  properties([[$class: 'JiraProjectProperty'],
+              disableConcurrentBuilds(),
+              parameters([string(defaultValue: '@smoke', description: 'to use multiple tags use @smoke or @security, to run full set use not (@ignore or @wip or @local)', name: 'java_test_tags')])])
+}
+
+def calculate_versions() {
+  container('default') {
+    stage('sdk checkout') {
+      dir('cumulocity-clients-java') {
+        try {
+          checkout scm
+        } catch (e) {
+          stopPipeline('Checkout clients_java', e)
+        }
+
+        try {
+          checkoutMatchingBranch('cumulocity-sdk', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+        } catch (e) {
+          stopPipeline('Checkout SDK', e)
+        }
+      }
+    }
+
+    stage('sdk versions') {
+      dir('cumulocity-clients-java') {
+        try {
+          VERSIONS.revision = sh(returnStdout: true,
+              script: './mvnw -N -Dexec.executable=\'echo\' -Dexec.args=\'${revision}\' exec:exec -q'
+          ).trim()
+          VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
+          VERSIONS.currentRpm = "${VERSIONS.current}-1"
+          VERSIONS.release = releaseVersionOf(VERSIONS.revision)
+          echo "Building SDK version ${VERSIONS.current} on top of release version ${VERSIONS.release}"
+        } catch (e) {
+          stopPipeline('Version sdk', e)
+        }
+      }
+    }
+  }
+}
+
+def build_and_test() {
+  withEnv([
+      "VERSION=${VERSIONS.revision}",
+      "CHANGE_VERSION=.${VERSIONS.changeList}"
+  ]) {
+    parallel(
+        'core': {
+          build_core()
+        },
+        'sdk': {
+          build_sdk()
+        },
+        'agents': {
+          build_agents()
+        },
+        failFast: true
+    )
+  }
+}
+
+def build_core() {
+  node('jdk11') {
+    container('default') {
+      withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+        lock(resource: LOCKS.core) {
+          stage('core checkout') {
+            try {
+              checkoutMatchingBranch('cumulocity-core', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+            } catch (e) {
+              stopPipeline('Checkout core', e)
+            }
+          }
+
+          stage('core compile') {
+            dir('cumulocity-core') {
+              try {
+                sh '.jenkins/scripts/mvn.sh -DskipTests install'
+              } catch (e) {
+                stopPipeline('Core compile', e)
+              }
+            }
+          }
+
+          stage('core stash') {
+            try {
+              stash includes: '.m2/repository/**/cumulocity/**/*.*', name: 'core-m2', useDefaultExcludes: false
+            } catch (e) {
+              stopPipeline('Core stash', e)
+            }
+          }
+        }
+
+        dir('cumulocity-core') {
+          stage('core publish') {
+            try {
+              sh "find ./cumulocity-application -iname '*.rpm' -exec mv {} .jenkins/docker/ \\;"
+              dir('.jenkins/docker') {
+                container('dind-daemon') {
+                  withDockerRegistry(credentialsId: 'registry_stage', url: 'https://registry.stage.c8y.io/testing') {
+                    sh "docker build --build-arg karaf_version=${VERSIONS.currentRpm} -f cumulocity-core.dockerfile -t registry.stage.c8y.io/testing/core:${VERSIONS.currentRpm} ."
+                    sh "docker push registry.stage.c8y.io/testing/core:${VERSIONS.currentRpm}"
+                  }
+                }
+              }
+            } catch (e) {
+              stopPipeline('Publish core image', e)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def get_core_m2_repo() {
+  try {
+    println "Waiting for core build to start"
+    sleep(300)
+
+    println "Waiting for core build to compile"
+    lock(resource: LOCKS.core) {
+      println "Core compiled. Let's proceed"
+    }
+
+    unstash 'core-m2'
+  } catch (e) {
+    stopPipeline('get_core_m2_repo', e)
+  }
+}
+
+def build_sdk() {
+  container('default') {
+    withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+      lock(resource: LOCKS.sdk) {
+
+        stage('core unstash') {
+          get_core_m2_repo()
+        }
+
+        stage('sdk compile') {
+          dir('cumulocity-clients-java') {
+            try {
+              sh '.jenkins/scripts/mvn.sh -DskipTests install'
+            } catch (e) {
+              stopPipeline('Compile SDK', e)
+            }
+          }
+        }
+
+        stage('sdk stash') {
+          try {
+            stash includes: ".m2/repository/**/cumulocity/**/*.*,.m2/repository/c8y/**/*.*", name: 'sdk-m2', useDefaultExcludes: false
+          } catch (e) {
+            stopPipeline('Stash SDK / clients_java', e)
+          }
+        }
+
+        stage('sdk verify') {
+          dir('cumulocity-clients-java') {
+            try {
+              sh '.jenkins/scripts/mvn.sh verify'
+            } catch (e) {
+              currentBuild.result = 'UNSTABLE'
+              stageResult = "UNSTABLE"
+            } finally {
+              junit(allowEmptyResults: true, checksName: "cumulocity-clients-java-unit-test", keepLongStdio: true,
+                  testResults: '**/TEST-*.xml')
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def get_sdk_m2_repo() {
+  try {
+    println "Waiting for sdk build to start"
+    sleep(300)
+
+    println "Waiting for sdk to be compiled"
+    lock(resource: LOCKS.sdk) {
+      println "SDK compiled. Let's proceed"
+    }
+
+    unstash 'sdk-m2'
+  } catch (e) {
+    stopPipeline('get_sdk_m2_repo', e)
+  }
+}
+
+def build_agents() {
+  node('jdk11') {
+    container('default') {
+      withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+        stage('agents checkout') {
+          try {
+            checkoutMatchingBranch('cumulocity-agents', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+          } catch (e) {
+            stopPipeline('Checkout agents', e)
+          }
+        }
+
+        stage('unstash sdk') {
+          get_sdk_m2_repo()
+        }
+
+        dir('cumulocity-agents') {
+          stage('agents build & verify') {
+            try {
+              sh '.jenkins/scripts/mvn.sh package'
+            } catch (e) {
+              stopPipeline('Build & test agents', e)
+            } finally {
+              junit(allowEmptyResults: true, checksName: "cumulocity-agents-unit-tests", keepLongStdio: true, testResults: '**/TEST-*.xml')
+            }
+          }
+
+          stage('agents publish') {
+            try {
+              sshagent(credentials: ['jenkins-master']) {
+                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum'"
+                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images'"
+
+                sh "find . -iname '*.rpm' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum/ \\;"
+                sh "find . -iname '*.zip' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images/ \\;"
+              }
+            } catch (e) {
+              stopPipeline('Publish agent artifacts', e)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def spinup_instances() {
+  stage('spin up dev-x instances') {
+    parallel(
+        'spin up java instance': {
+          spinup_instance(INSTANCES.java)
+        },
+        'spin up sdk instance': {
+          spinup_instance(INSTANCES.sdk)
+        },
+        failFast: true
+    )
+  }
+}
+
+def spinup_instance(instance) {
+  if (!JOB_ABORTED && currentBuild.result != 'UNSTABLE' && currentBuild.result != 'FAILURE') {
+    stage("deploy $instance.name env") {
+      build job: 'dev-x-cc-deployment', parameters: [
+          string(name: 'DEPLOY_ENVIRONMENT', value: instance.name),
+          string(name: 'VERSION', value: VERSIONS.release),
+          string(name: 'BUILD_TYPE', value: 'custom'),
+          booleanParam(name: 'CONTAINERIZED_CORE', value: true),
+          booleanParam(name: 'RUN_SMOKE_TESTS', value: false),
+          booleanParam(name: 'RUN_JAVA_SDK_TESTS', value: false),
+          booleanParam(name: 'RUN_CUCUMBER_JAVA_TESTS', value: false),
+          booleanParam(name: 'RUN_CUCUMBER_RUBY_TESTS', value: false),
+          booleanParam(name: 'RUN_PERFORMANCE_TESTS', value: false),
+          booleanParam(name: 'RUN_READ_PERFORMANCE_TESTS', value: false),
+          string(name: 'PURPOSE', value: 'core-pre-merge-check')
+      ],
+          propagate: true
+    }
+  }
+}
+
+def update_instances() {
+  node('smoke-provisioning') {
+    container('c8y-tools') {
+      checkoutMatchingBranch('cumulocity-chef', env.CHANGE_BRANCH, "master")
+      dir('cumulocity-chef/smoke') {
+        parallel(
+            'update java instance': {
+              update_instance(INSTANCES.java)
+            },
+            'update sdk instance': {
+              update_instance(INSTANCES.sdk)
+            },
+            failFast: true
+        )
+      }
+    }
+  }
+}
+
+def update_instance(instance) {
+  try {
+    sh """#!/bin/bash
+            set -eux
+
+            chmod 600 ../.chef/keys/chef_cumulocity.pem
+
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 -i ${instance.name}-internal.dev.c8y.io, \
+              --user centos --private-key ../.chef/keys/chef_cumulocity.pem pre-merge-deploy.yaml \
+              -e 'env_name=${instance.name}-dev-c8y-io' \
+              -e 'core_version=${VERSIONS.currentRpm}' \
+              -e 'agents_version=${VERSIONS.currentRpm}' \
+              -e 'microservices_version=${VERSIONS.current}' \
+              -e 'pr_number=${VERSIONS.changeList}'
+          """
+  } catch (e) {
+    stopPipeline('Update instance', e)
+  }
+}
+
+def functional_tests() {
+  withEnv([
+      "MAVEN_ARGS=--batch-mode --show-version --errors -Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"
+  ]) {
+    parallel(
+        'java-tests': {
+          cucumber_java(INSTANCES.java)
+        },
+        'java-token-tests': {
+          sdk_token_tests(INSTANCES.sdk)
+        },
+        failFast: true
+    )
+  }
+}
+
+def cucumber_java(instance) {
+  stage('cucumber-java') {
+    licence = generateLicence("${instance.licence}")
+
+    node('jdk11') {
+      container('default') {
+        withCredentials([
+            file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+            usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS')
+        ]) {
+          withEnv([
+              "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
+              "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
+          ]) {
+            checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+            unstash 'sdk-m2'
+            try {
+              dir('cumulocity-quality') {
+                sh """
+                .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
+                  ${SECRETS.management.pass} ${SECRETS.tenant.pass} "${params.java_test_tags}" \
+                  ${instance.name}-dev-c8y-io.svc.cluster.local common ${licence} \
+                  ${instance.licence} ${instance.name}-enterprise-second.dev.c8y.io \
+                  ${SECRETS.management.user} "${RESOURCES_URL}" "${RESOURCES_URL}" "${RESOURCES_URL}"
+                  """
+              }
+            } catch (Exception e) {
+              currentBuild.result = "UNSTABLE"
+              stageResult = "UNSTABLE"
+              archiveArtifacts("cumulocity-quality/**/cucumber.log")
+            } finally {
+              publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: "cumulocity-quality/functional-tests/cucumber-java/target/cucumber", reportFiles: "index.html", reportName: "Cucumber Result"])
+              junit(testResults: 'cumulocity-quality/**/TEST-*.xml', keepLongStdio: true, checksName: "cucumber-java-smoke")
+              jacoco()
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def sdk_token_tests(instance) {
+  stage('sdk test') {
+    sdk_tests(instance)
+  }
+  stage('token test') {
+    java_token_tests(instance)
+  }
+}
+
+def sdk_tests(instance) {
+  node('jdk8') {
+    container('default') {
+      withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+        withEnv([
+            "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository"
+        ]) {
+          checkoutMatchingBranch('cumulocity-clients-java', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+          unstash 'sdk-m2'
+          try {
+            dir('cumulocity-clients-java') {
+              sh ".jenkins/scripts/new_sdk_tests.sh ${instance.domain} ${SECRETS.management.pass} ${SECRETS.management.user}"
+            }
+          } catch (Exception e) {
+            currentBuild.result = "UNSTABLE"
+            stageResult = "UNSTABLE"
+          } finally {
+            junit "cumulocity-clients-java/**/target/surefire-reports/*.xml"
+            junit "cumulocity-clients-java/**/target/failsafe-reports/*.xml"
+            archiveArtifacts("cumulocity-clients-java/**/TEST-*.xml")
+          }
+        }
+      }
+    }
+  }
+}
+
+def java_token_tests(instance) {
+  licence = generateLicence("${instance.licence}")
+
+  node('jdk11') {
+    container('default') {
+      withCredentials([
+          file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+          usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS')
+      ]) {
+        withEnv([
+            "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
+            "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
+        ]) {
+          checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+          unstash 'sdk-m2'
+          try {
+            dir('cumulocity-quality') {
+              sh """
+            .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
+              ${SECRETS.management.pass} ${SECRETS.tenant.pass} \
+              ${instance.name}-dev-c8y-io.svc.cluster.local common \
+              ${SECRETS.management.user} ${RESOURCES_URL} ${RESOURCES_URL} ${RESOURCES_URL}
+              """
+            }
+          } catch (Exception e) {
+            currentBuild.result = "UNSTABLE"
+            stageResult = "UNSTABLE"
+            archiveArtifacts("cumulocity-quality/**/cucumber.log")
+          } finally {
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: "cumulocity-quality/functional-tests/cucumber-java/target/cucumber", reportFiles: "index.html", reportName: "Cucumber Java Token Result"])
+            junit(testResults: 'cumulocity-quality/**/TEST-*.xml', keepLongStdio: true, checksName: "cucumber-java-token")
+            jacoco()
+            archiveArtifacts("cumulocity-quality/**/TEST-*.xml")
+          }
+        }
+      }
+    }
+  }
+}
+
+def teardown_instance(instance) {
+  build wait: false, job: "dev-x-termination", parameters: [string(name: 'DEPLOY_ENVIRONMENT', value: instance.name)]
+}
+
+def clean_up_resources() {
+  sshagent(credentials: ['jenkins-master']) {
+    sh "ssh -o 'StrictHostKeyChecking=no' hudson@staging-resources.cumulocity.com 'rm -rf /var/www/staging-resources/pre-merge/${VERSIONS.changeList}'"
+  }
+}
+
+//Used to stop the pipeline for certain errors
+//For example build errors
+//Set overall and stage result to failure and use error to stop the pipeline executing except for the finally block
+def stopPipeline(String msg, Exception e) {
+  ERROR_COUNT++
+  if (ERROR_COUNT == 1) {
+    currentBuild.result = 'FAILURE'
+    stageResult = "FAILURE"
+    //stop the pipeline
+    println "ERROR: ${msg} failed"
+    manager.createSummary("warning.gif").appendText("<h1>ERROR: ${msg} failed</h1>", false, false, false, "red")
+    error msg
+  }
+  throw e
+}
+
+// commons, possibly move to c8y-jenkins-common-steps ?
+def devInstanceOf(String label, String tld = 'dev.c8y.io') {
+  String instance_name = env.JOB_NAME
+      .split("cumulocity-")[1]
+      .replaceAll('[/_]', '-')
+      .toLowerCase()
+
+  return [
+      label: label,
+      name: "${instance_name}-${env.BUILD_NUMBER}-${label}".toString(),
+      domain: "${instance_name}-${env.BUILD_NUMBER}-${label}.${tld}".toString(),
+      licence: "${instance_name}-${env.BUILD_NUMBER}-${label}-enterprise.${tld}".toString(),
+  ]
+}
+
+def releaseVersionOf(String revision) {
+  String[] versions = revision.split('\\.')
+  if (versions.length < 3) {
+    return revision
+  }
+  int major = Integer.parseInt(versions[0])
+  int minor = Integer.parseInt(versions[1])
+  int maintenance = Integer.parseInt(versions[2])
+  if (maintenance > 0) {
+    return "${major}.${minor}.${maintenance - 1}".toString()
+  } else if (minor > 0) {
+    return "${major}.${minor - 1}.${maintenance}".toString()
+  } else {
+    return revision
+  }
+}

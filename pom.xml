@@ -31,7 +31,7 @@
     </modules>
 
     <properties>
-        <revision>1014.114.0</revision>
+        <revision>1015.34.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,7 +142,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
+                    <argLine>-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m -Djdk.attach.allowAttachSelf=true</argLine>
                     <systemPropertyVariables>
                         <security.mode>disabled</security.mode>
                     </systemPropertyVariables>
@@ -401,7 +401,7 @@
                 <plugin>
                     <groupId>com.nsn.cumulocity.dependencies</groupId>
                     <artifactId>3rd-license-maven-plugin</artifactId>
-                    <version>${project.version}</version>
+                    <version>${cumulocity.core.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
