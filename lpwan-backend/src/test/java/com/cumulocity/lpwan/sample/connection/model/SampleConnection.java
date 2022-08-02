@@ -5,7 +5,7 @@
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG.
  */
 
-package com.cumulocity.lpwan.smaple.connection.model;
+package com.cumulocity.lpwan.sample.connection.model;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
