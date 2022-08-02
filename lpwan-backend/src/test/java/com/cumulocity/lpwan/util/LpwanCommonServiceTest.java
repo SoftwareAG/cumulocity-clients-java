@@ -2,7 +2,7 @@ package com.cumulocity.lpwan.util;
 
 import c8y.LpwanDevice;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
-import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
