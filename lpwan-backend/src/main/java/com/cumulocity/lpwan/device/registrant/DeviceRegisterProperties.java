@@ -26,6 +26,7 @@ public class DeviceRegisterProperties {
     @Null
     private String uplinkCallback;
 
+    @NotBlank
     private String lnsConnectionName;
 
     @JsonIgnore
