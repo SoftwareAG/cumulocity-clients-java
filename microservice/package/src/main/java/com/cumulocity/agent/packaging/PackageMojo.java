@@ -63,6 +63,9 @@ public class PackageMojo extends BaseMicroserviceMojo {
     @Parameter(defaultValue = "${basedir}/src/main/configuration/cumulocity.json")
     protected File manifestFile;
 
+    @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
+    protected String image;
+
     @Parameter(property = "microservice.package.dockerBuildNetwork")
     private String dockerBuildNetwork;
 

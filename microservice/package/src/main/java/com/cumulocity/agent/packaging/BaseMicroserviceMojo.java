@@ -48,9 +48,6 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "package.name", defaultValue = "${project.artifactId}")
     protected String name;
 
-    @Parameter(property = "package.image", defaultValue = "${project.artifactId}")
-    protected String image;
-
     @Parameter(property = "package.directory", defaultValue = "${project.artifactId}")
     protected String directory;
 
@@ -266,16 +263,10 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
             return getDefaultTargetFilename();
         }
 
-        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, getImageString(), project.getVersion(), targetArchitecture).replaceAll("/","-");
+        return String.format(TARGET_FILENAME_PATTERN_NON_DEFAULT_ARCH, name, project.getVersion(), targetArchitecture).replaceAll("/","-");
     }
 
     protected String getDefaultTargetFilename() {
-        String imageName = getImageString();
-        return String.format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, imageName, project.getVersion());
-    }
-
-    private String getImageString() {
-        String imageName= name.equals(image) ? name : image;
-        return imageName;
+        return String.format(TARGET_FILENAME_PATTERN_DEFAULT_ARCH, name, project.getVersion());
     }
 }
