@@ -1,8 +1,9 @@
 package com.cumulocity.lpwan.util;
 
+import c8y.Agent;
 import c8y.LpwanDevice;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
-import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.Credentials;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
@@ -14,25 +15,20 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.inventory.InventoryFilter;
 import com.cumulocity.sdk.client.inventory.ManagedObjectCollection;
 import com.cumulocity.sdk.client.inventory.PagedManagedObjectCollectionRepresentation;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.reactivestreams.Publisher;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import c8y.Agent;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.*;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class LpwanCommonServiceTest {
