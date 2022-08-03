@@ -65,9 +65,15 @@ public class TokenApiImpl implements TokenApi {
 
         TokenClaims parsedToken = JSONParser.defaultJSONParser().parse(TokenClaims.class, claimsString);
 
+        String type = null;
         String subscription = null;
         try {
-            subscription = parsedToken.getTopic().split(TOPIC_SPLIT)[2];
+            String[] parts = parsedToken.getTopic().split(TOPIC_SPLIT);
+            type = parts[1];
+            if ("relnotif".equals(type)) {
+                type = null;
+            }
+            subscription = parts[2];
         } catch (IndexOutOfBoundsException ie) {
             throw new IllegalArgumentException("Not a valid topic");
         }
@@ -77,6 +83,8 @@ public class TokenApiImpl implements TokenApi {
         return create(new NotificationTokenRequestRepresentation(
                 parsedToken.getSubscriber(),
                 subscription,
+                type,
+                true,
                 validityPeriodMinutes,
                 parsedToken.isShared(),
                 parsedToken.isNonPersistent()));
