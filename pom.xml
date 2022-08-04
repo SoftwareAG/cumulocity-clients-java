@@ -31,7 +31,7 @@
     </modules>
 
     <properties>
-        <revision>1015.35.0</revision>
+        <revision>1015.36.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
