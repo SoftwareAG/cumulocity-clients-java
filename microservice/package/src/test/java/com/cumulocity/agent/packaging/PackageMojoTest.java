@@ -27,7 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -44,7 +43,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,7 +96,10 @@ public class PackageMojoTest {
     @SneakyThrows
     @BeforeEach
     public void init() {
+        log.info("Initializing files");
         initializeMockedResources();
+        mockArtifact();
+        mockMavenSession();
         mockDockerImageFileForArchitectures("linux/amd64", "linux/arm64v8", "i386");
         mockVersion(TEST_VERSION);
         configurePojo();
@@ -107,9 +108,6 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testContainerPackageDefault() {
-        mockArtifact();
-        mockMavenSession();
-
         String expectedBuildArch = "linux/amd64";
 
         //As a default, running the packaging plugin does package a container
@@ -130,8 +128,6 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testSingleCustomTargetBuildArch() {
-        mockArtifact();
-        mockMavenSession();
 
         String expectedBuildArch = "linux/arm64v8";
         packageMojo.targetBuildArchs = expectedBuildArch;
@@ -153,9 +149,6 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testContainerNoDelete() {
-        mockArtifact();
-        mockMavenSession();
-
         String expectedBuildArch = "linux/amd64";
 
         //When I turn off docker image deletion
@@ -177,8 +170,6 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testMultipleCustomTargetBuildArch() {
-        mockArtifact();
-        mockMavenSession();
 
         String[] expectedBuildArch = new String[]{"linux/arm64v8", "linux/amd64", "i386"};
         packageMojo.targetBuildArchs = StringUtils.join(expectedBuildArch, ","); //construct comma-based argument
@@ -204,9 +195,6 @@ public class PackageMojoTest {
     @SneakyThrows
     @Test
     public void testDockerBuildSpec() {
-        mockArtifact();
-        mockMavenSession();
-
         //When I modify the docker build spec in the cumulocity.json for three architectures
         String[] targetArgs = new String[]{"C64", "QNX", "mainframe"};
         mockDockerImageFileForArchitectures(targetArgs);
@@ -238,19 +226,6 @@ public class PackageMojoTest {
         //and containers are deleted again
         verify(dockerClient, times(3)).deleteAll(ARTIFACT_NAME + ":" + TEST_VERSION, true);
 
-    }
-
-    @Test
-    public void testDefaultImageNaming() {
-        String targetFileName = packageMojo.getTargetFilename("linux/amd64");
-        assertEquals(String.format("%s-%s.zip",packageMojo.name, packageMojo.project.getVersion()),targetFileName);
-    }
-
-    @Test
-    public void testImageOveridingProjectName() {
-        packageMojo.image = "bananabread";
-        String targetFileName = packageMojo.getTargetFilename("linux/amd64");
-        assertEquals(String.format("%s-%s.zip",packageMojo.image, packageMojo.project.getVersion()),targetFileName);
     }
 
     @SneakyThrows
@@ -330,7 +305,7 @@ public class PackageMojoTest {
     }
 
     private void initializeMockedResources() throws IOException {
-        log.info("Initializing files");
+
         Path filteredResourcePath = Paths.get(tempDir.getAbsolutePath(), "filtered-resources");
         filteredResources = filteredResourcePath.toFile();
 

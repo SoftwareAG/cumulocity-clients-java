@@ -40,7 +40,7 @@ public class TokenApiImplTest {
     public void shouldCreateToken() {
         //given
         NotificationTokenRequestRepresentation tokenRequest =
-                new NotificationTokenRequestRepresentation("sub", "sup", 1L, false, false);
+                new NotificationTokenRequestRepresentation("sub", "sup", null, true, 1L, false, false);
         Token token = new Token(JWT_TOKEN);
 
         //when
@@ -59,7 +59,7 @@ public class TokenApiImplTest {
     public void shouldBuildCreateTokenUri() {
         //given
         NotificationTokenRequestRepresentation tokenRequest =
-                new NotificationTokenRequestRepresentation("sub", "sup", 1L, false, false);
+                new NotificationTokenRequestRepresentation("sub", "sup", null, true, 1L, false, false);
         final String uri = getUri(TokenApiImpl.TOKEN_REQUEST_URI);
         when(restConnector.post(any(), any(), any(), any(), any())).thenReturn(new Token());
 
