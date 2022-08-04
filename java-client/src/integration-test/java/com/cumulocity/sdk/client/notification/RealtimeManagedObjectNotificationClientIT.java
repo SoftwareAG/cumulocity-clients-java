@@ -1,5 +1,6 @@
 package com.cumulocity.sdk.client.notification;
 
+import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
@@ -9,6 +10,8 @@ import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentat
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
@@ -27,8 +30,8 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
     @Test
     public void shouldReceiveCreateMONotification() {
         // given
-        Subscriber<String, RealtimeManagedObjectMessage> subscriber = getSubscriberForType(RealtimeManagedObjectMessage.class, platform);
-        TestSubscriptionListener<RealtimeManagedObjectMessage> subscriptionListener = new TestSubscriptionListener<>();
+        Subscriber<String, AbstractExtensibleRepresentation> subscriber = getSubscriberForType(AbstractExtensibleRepresentation.class, platform);
+        TestSubscriptionListener<AbstractExtensibleRepresentation> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MANAGEDOBJECTS + "*", subscriptionListener, subscriptionListener, true);
@@ -36,9 +39,8 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         ManagedObjectRepresentation managedObjectRep = inventoryApi.create(aSampleMo().build());
 
         // then
-        await().atMost(TEN_SECONDS).until(subscriptionListener::isSubscribed);
-        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
-        assertManagedObjectNotification(subscriptionListener.getNotification(), managedObjectRep, "CREATE");
+        await().atMost(TEN_SECONDS).untilAsserted(() -> assertThat(subscriptionListener.getNotifications())
+                .anySatisfy(notification -> assertCreateManagedObjectNotification(notification, managedObjectRep)));
     }
 
     @Test
@@ -59,7 +61,7 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         // then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
-        assertManagedObjectNotification(subscriptionListener.getNotification(), updatedMO, "UPDATE");
+        assertUpdateManagedObjectNotification(subscriptionListener.getNotification(), updatedMO);
     }
 
     @Test
@@ -84,10 +86,19 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         return anMoRepresentationLike(MO_REPRESENTATION);
     }
 
-    private void assertManagedObjectNotification(RealtimeManagedObjectMessage notification, ManagedObjectRepresentation source, String realtimeAction) {
+    @SuppressWarnings({"rawtypes"})
+    private void assertCreateManagedObjectNotification(AbstractExtensibleRepresentation notification, ManagedObjectRepresentation source) {
+        assertThat(notification.getAttrs().get("data")).isNotNull();
+        assertThat(notification.getAttrs().get("data").getClass()).isEqualTo(HashMap.class);
+        assertThat(((HashMap) notification.getAttrs().get("data")).get("id")).isEqualTo(source.getId().getValue());
+        assertThat(((HashMap) notification.getAttrs().get("data")).get("type")).isEqualTo(source.getType());
+        assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("CREATE");
+    }
+
+    private void assertUpdateManagedObjectNotification(RealtimeManagedObjectMessage notification, ManagedObjectRepresentation source) {
         assertThat(notification.getData().getId()).isEqualTo(source.getId());
         assertThat(notification.getData().getType()).isEqualTo(source.getType());
-        assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo(realtimeAction);
+        assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("UPDATE");
     }
 
     private void assertDeleteManagedObjectNotification(RealtimeDeleteRepresentationWrapper notification, ManagedObjectRepresentation source) {
