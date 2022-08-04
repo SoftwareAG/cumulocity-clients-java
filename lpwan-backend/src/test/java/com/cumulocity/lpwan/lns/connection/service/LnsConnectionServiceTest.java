@@ -18,7 +18,7 @@ import com.cumulocity.lpwan.lns.connection.event.LnsConnectionUpdateEvent;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.platform.repository.LpwanRepository;
-import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;

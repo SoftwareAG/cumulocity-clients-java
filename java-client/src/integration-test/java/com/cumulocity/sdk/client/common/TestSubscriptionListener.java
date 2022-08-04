@@ -5,18 +5,25 @@ import com.cumulocity.sdk.client.notification.SubscribeOperationListener;
 import com.cumulocity.sdk.client.notification.Subscription;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 public class TestSubscriptionListener<T> implements SubscribeOperationListener, com.cumulocity.sdk.client.notification.SubscriptionListener<String, T> {
     private boolean subscribed = false;
-    private T notification;
+    private final List<T> notifications = new ArrayList<>();
+
+    public T getNotification() {
+        return notifications.get(0);
+    }
 
     public boolean notificationReceived() {
-        return notification != null;
+        return !notifications.isEmpty();
     }
 
     @Override
     public void onNotification(Subscription<String> subscription, T received) {
-        this.notification = received;
+        this.notifications.add(received);
     }
 
     @Override

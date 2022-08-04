@@ -8,14 +8,14 @@
 package com.cumulocity.lpwan.lns.connection.model;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
-import com.cumulocity.lpwan.smaple.connection.model.SampleConnection;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.JsonExpectationsHelper;
 
-import static com.cumulocity.lpwan.smaple.connection.model.SampleConnection.*;
+import static com.cumulocity.lpwan.sample.connection.model.SampleConnection.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 

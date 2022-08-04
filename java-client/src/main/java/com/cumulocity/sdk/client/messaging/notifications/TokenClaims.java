@@ -21,6 +21,10 @@ public class TokenClaims extends BaseResourceRepresentation {
 
     private long exp;
 
+    private boolean shared;
+
+    private boolean nonPersistent;
+
     @JSONProperty(value = "sub", ignoreIfNull = true)
     public String getSubscriber() {
         return this.subscriber;
@@ -44,5 +48,15 @@ public class TokenClaims extends BaseResourceRepresentation {
     @JSONProperty(ignoreIfNull = true)
     public long getExp() {
         return this.exp;
+    }
+
+    @JSONProperty(value = "shared", ignoreIfNull = true)
+    public boolean isShared() {
+        return this.shared;
+    }
+
+    @JSONProperty(value = "volatile", ignoreIfNull = true)
+    public boolean isNonPersistent() {
+        return this.nonPersistent;
     }
 }
