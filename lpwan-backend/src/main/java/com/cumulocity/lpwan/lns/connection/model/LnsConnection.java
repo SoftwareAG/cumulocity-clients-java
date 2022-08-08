@@ -17,8 +17,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementers of LnsConnection class have to annotate the fields of the concrete class
