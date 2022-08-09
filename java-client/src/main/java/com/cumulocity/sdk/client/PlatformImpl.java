@@ -312,7 +312,7 @@ public class PlatformImpl extends PlatformParameters implements Platform {
 
     @Override
     public RestConnector rest() {
-        return new RestConnector(this, new ResponseParser(this.getResponseMapper()));
+        return new RestConnector(this, new ResponseParser(this.getResponseMapper(), this));
     }
 
 }
