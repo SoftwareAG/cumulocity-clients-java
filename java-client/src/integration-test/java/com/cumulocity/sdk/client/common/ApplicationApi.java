@@ -6,7 +6,6 @@ import com.cumulocity.rest.representation.application.ApplicationReferenceRepres
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.google.gson.Gson;
-import org.awaitility.Durations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -17,14 +16,11 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_REFERENCE;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Durations.FIVE_MINUTES;
 
 public class ApplicationApi {
 
     private static final String TENANT_URI = "tenant/tenants";
     private static final String APPLICATIONS_URI = "application/applications/";
-    private static final String CEP_URI = "service/cep";
 
     private final PlatformImpl platform;
 
@@ -48,15 +44,9 @@ public class ApplicationApi {
         }
     }
 
-    private void waitTillCepWillBeSubscribed(Client httpClient) {
-        final WebTarget cepApiResponse = httpClient.target(platform.getHost() + CEP_URI).path("/cep");
-        await().timeout(FIVE_MINUTES).pollInterval(Durations.TEN_SECONDS).until(() -> cepApiResponse.request().get().getStatus() == 200);
-    }
-
     private void subscribeApplicationForTenant(Client httpClient, ApplicationRepresentation application) {
         final WebTarget tenantResource = httpClient.target(platform.getHost() + TENANT_URI + "/" + platform.getTenantId() + "/applications");
         tenantResource.request(APPLICATION_REFERENCE).accept(MediaType.ALL_VALUE).post(Entity.json(toReference(application).toJSON()));
-        waitTillCepWillBeSubscribed(httpClient);
     }
 
     private ApplicationReferenceRepresentation toReference(ApplicationRepresentation app) {
