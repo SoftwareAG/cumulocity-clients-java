@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
+import static com.cumulocity.sdk.client.common.JavaSdkITBase.nextTenantId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -56,14 +57,25 @@ public class TenantCreator {
         Client httpClient = new HttpClientFactory().createClient();
         try {
             createTenant(httpClient);
+        } catch (Exception e) {
+            if((e.getMessage().contains("=409") && e.getMessage().contains("Conflict")) ||
+                e.getMessage().toLowerCase().contains("timeout")) {
+                CumulocityBasicCredentials credentials = (CumulocityBasicCredentials) platform.getCumulocityCredentials();
+                credentials.setTenantId(nextTenantId());
+                createTenant(httpClient);
+            } else {
+                throw new IllegalStateException("Tenant creation failed with reason: " + e.getMessage());
+            }
         } finally {
             httpClient.close();
         }
     }
 
     private void createTenant(Client httpClient) {
-        Response tr = postNewTenant(httpClient);
-        assertThat(tr.getStatus(), is(201));
+        Response response = postNewTenant(httpClient);
+        if(response.getStatus() != 201) {
+            throw new IllegalStateException("Tenant creation failed with reason: " + response);
+        }
     }
 
     public void removeTenant() throws IOException {
