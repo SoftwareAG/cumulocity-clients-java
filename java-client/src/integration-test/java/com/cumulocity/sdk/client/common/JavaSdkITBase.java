@@ -72,7 +72,7 @@ public class JavaSdkITBase {
         return platform;
     }
 
-    private static String nextTenantId() {
+    public static String nextTenantId() {
         return "sdk_tenant_" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
     }
 }
