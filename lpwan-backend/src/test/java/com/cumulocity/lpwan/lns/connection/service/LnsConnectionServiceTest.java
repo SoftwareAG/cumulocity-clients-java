@@ -19,6 +19,7 @@ import com.cumulocity.lpwan.lns.connection.model.LnsConnection;
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.platform.repository.LpwanRepository;
 import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
+import com.cumulocity.lpwan.util.LpwanCommonService;
 import com.cumulocity.microservice.context.ContextService;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
@@ -98,6 +99,9 @@ public class LnsConnectionServiceTest {
 
     @Mock
     private LpwanRepository lpwanRepository;
+
+    @Mock
+    private LpwanCommonService lpwanCommonService;
 
     @InjectMocks
     private LnsConnectionService lnsConnectionService;
@@ -821,8 +825,9 @@ public class LnsConnectionServiceTest {
     @Test
     public void shouldMigrateOldDevices() {
         String defaultConnection = "default connection";
-        mockInventoryReturnsWithDevice(null, new GId("12345"), true);
-        lnsConnectionService.migrateOldDevices("sigfox", defaultConnection);
+        List<ManagedObjectRepresentation> moList = getManagedObjectRepresentations(null, new GId("12345"), true);
+        when(lpwanCommonService.getDeviceMosByProvider("Sigfox")).thenReturn(moList);
+        lnsConnectionService.migrateOldDevices("Sigfox", defaultConnection);
         ArgumentCaptor<ManagedObjectRepresentation> argumentCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
         verify(inventoryApi).update(argumentCaptor.capture());
         ManagedObjectRepresentation updatedDeviceMo = argumentCaptor.getValue();
@@ -873,9 +878,9 @@ public class LnsConnectionServiceTest {
         Assert.assertTrue(instantArgumentCaptor.getValue().getEpochSecond() <= Instant.now().plus(Duration.ofHours(1)).getEpochSecond());
 
         List<ILoggingEvent> logsList = listAppender.list;
-        assertEquals(Level.INFO, logsList.get(0).getLevel());
+        assertEquals(Level.INFO, logsList.get(1).getLevel());
         String infoMessage = String.format("All the connections in the tenant '%s' are up", microserviceCredentials.getTenant());
-        assertEquals(infoMessage, logsList.get(0).getFormattedMessage());
+        assertEquals(infoMessage, logsList.get(1).getFormattedMessage());
     }
 
 
@@ -917,6 +922,18 @@ public class LnsConnectionServiceTest {
     }
 
     private void mockInventoryReturnsWithDevice(String lnsConnectionName, GId gId, boolean isDeviceAssociated) {
+        List<ManagedObjectRepresentation> moList = getManagedObjectRepresentations(lnsConnectionName, gId, isDeviceAssociated);
+
+        ManagedObjectCollection managedObjectCollection = mock(ManagedObjectCollection.class);
+        PagedManagedObjectCollectionRepresentation paged = mock(PagedManagedObjectCollectionRepresentation.class);
+        when(managedObjectCollection.get()).thenReturn(paged);
+        when(paged.allPages()).thenReturn(moList);
+
+        when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class))).
+                thenReturn(managedObjectCollection);
+    }
+
+    private static List<ManagedObjectRepresentation> getManagedObjectRepresentations(String lnsConnectionName, GId gId, boolean isDeviceAssociated) {
         List<ManagedObjectRepresentation> moList = new ArrayList<>();
         if(isDeviceAssociated) {
             ManagedObjectRepresentation managedObject = new ManagedObjectRepresentation();
@@ -928,13 +945,6 @@ public class LnsConnectionServiceTest {
             managedObject.setId(gId);
             moList.add(managedObject);
         }
-
-        ManagedObjectCollection managedObjectCollection = mock(ManagedObjectCollection.class);
-        PagedManagedObjectCollectionRepresentation paged = mock(PagedManagedObjectCollectionRepresentation.class);
-        when(managedObjectCollection.get()).thenReturn(paged);
-        when(paged.allPages()).thenReturn(moList);
-
-        when(inventoryApi.getManagedObjectsByFilter(any(InventoryFilter.class))).
-                thenReturn(managedObjectCollection);
+        return moList;
     }
 }
