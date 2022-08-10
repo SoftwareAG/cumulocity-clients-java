@@ -59,7 +59,7 @@ public class LpwanUserPasswordService {
                     return Optional.ofNullable(fetchedOption.getValue());
                 } catch (Exception e) {
                     if (e instanceof SDKException && ((SDKException) e).getHttpStatus() == SC_NOT_FOUND) {
-                        log.error("Error while retrieving the user credentials {} ", e);
+                        log.error("Error while retrieving the user credentials", e);
                         return Optional.empty();
                     }
                     throw e;
@@ -73,7 +73,7 @@ public class LpwanUserPasswordService {
         return String.format(userPasswordKey, LnsConnectionDeserializer.getRegisteredAgentName().toLowerCase());
     }
 
-    static class StrongPasswordGenerator {
+    private static class StrongPasswordGenerator {
 
         public static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
         public static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -102,7 +102,7 @@ public class LpwanUserPasswordService {
             return new String(password);
         }
 
-        static class NextPositionToPlaceChar {
+        private static class NextPositionToPlaceChar {
 
             List<Integer> alreadyReplacedPositions = new ArrayList<>();
             SecureRandom random;

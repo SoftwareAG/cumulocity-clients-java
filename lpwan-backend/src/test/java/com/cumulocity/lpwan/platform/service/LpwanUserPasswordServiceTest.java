@@ -2,22 +2,20 @@ package com.cumulocity.lpwan.platform.service;
 
 import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
-import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
+import com.cumulocity.lpwan.util.ImmediateMicroserviceSubscriptionsService;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
-import lombok.*;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,49 +94,5 @@ public class LpwanUserPasswordServiceTest {
                         }
                 ));
         assertFalse(password.isPresent());
-    }
-
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ImmediateMicroserviceSubscriptionsService implements MicroserviceSubscriptionsService {
-
-        @Setter
-        @Getter
-        private String tenant;
-
-        @Override
-        public void runForEachTenant(Runnable runnable) {
-            runnable.run();
-        }
-
-        @Override
-        public void runForTenant(String tenant, Runnable runnable) {
-            runnable.run();
-        }
-
-        @Override
-        @SneakyThrows
-        public <T> T callForTenant(String tenant, Callable<T> callable) {
-            return callable.call();
-        }
-
-        @Override
-        public void subscribe() {
-
-        }
-
-        @Override
-        public Collection<MicroserviceCredentials> getAll() {
-            return null;
-        }
-
-        @Override
-        public Optional<MicroserviceCredentials> getCredentials(String tenant) {
-            return null;
-        }
-
-        @Override public boolean isRegisteredSuccessfully() {
-            return true;
-        }
     }
 }

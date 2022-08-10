@@ -1,7 +1,9 @@
 package com.cumulocity.lpwan.platform.repository;
 
 import com.cumulocity.lpwan.exception.LpwanUserNotFoundException;
+import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
 import com.cumulocity.lpwan.platform.service.LpwanUserPasswordService;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
 import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
@@ -26,6 +28,7 @@ import com.cumulocity.sdk.client.user.UserApi;
 import com.google.common.base.Optional;
 import org.joda.time.DateTime;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +71,11 @@ public class LpwanRepositoryTest {
     private static final String OUTPUT_USERNAME = "output_loriot-agent";
     
     private static final String EMAIL_HOST = "loriotuser.com";
+
+    @Before
+    public void setup() {
+        LnsConnectionDeserializer.registerLnsConnectionConcreteClass("Loriot", SampleConnection.class);
+    }
 
     @Test
     public void shouldTestCreateExternalId(){

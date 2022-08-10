@@ -157,7 +157,7 @@ public class LpwanRepository {
             if (userPassword.isPresent()) {
                 user.setPassword(userPassword.get());
             } else {
-                throw new LpwanUserNotFoundException( "Unable to find Loriot user credentials.");
+                throw new LpwanUserNotFoundException( String.format("Unable to find %s user credentials.", LnsConnectionDeserializer.getRegisteredAgentName().toLowerCase()));
             }
         } else {
             String generatedUserPassword = lpwanUserPasswordService.generatePasswordAndSave(username);
