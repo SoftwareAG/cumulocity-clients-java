@@ -1,11 +1,22 @@
 package com.cumulocity.lpwan.platform.repository;
 
+import com.cumulocity.lpwan.exception.LpwanUserNotFoundException;
+import com.cumulocity.lpwan.lns.connection.model.LnsConnectionDeserializer;
+import com.cumulocity.lpwan.platform.service.LpwanUserPasswordService;
+import com.cumulocity.lpwan.sample.connection.model.SampleConnection;
+import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjects;
+import com.cumulocity.rest.representation.user.GroupRepresentation;
+import com.cumulocity.rest.representation.user.UserMediaType;
+import com.cumulocity.rest.representation.user.UserRepresentation;
+import com.cumulocity.sdk.client.ClientConfiguration;
+import com.cumulocity.sdk.client.PlatformParameters;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmCollection;
@@ -13,8 +24,11 @@ import com.cumulocity.sdk.client.alarm.AlarmFilter;
 import com.cumulocity.sdk.client.alarm.PagedAlarmCollectionRepresentation;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.user.UserApi;
 import com.google.common.base.Optional;
 import org.joda.time.DateTime;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -27,8 +41,6 @@ import java.util.Arrays;
 
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.ACTIVE;
 import static com.cumulocity.model.event.CumulocityAlarmStatuses.CLEARED;
-import static com.cumulocity.model.idtype.GId.asGId;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,9 +55,27 @@ public class LpwanRepositoryTest {
 
     @Mock
     private AlarmApi alarmApi;
+    
+    @Mock
+    private UserApi userApi;
+    
+    @Mock
+    RestConnector restConnector;
+    
+    @Mock
+    private LpwanUserPasswordService lpwanUserPasswordService;
 
     @InjectMocks
     private LpwanRepository lpwanRepository;
+    
+    private static final String OUTPUT_USERNAME = "output_loriot-agent";
+    
+    private static final String EMAIL_HOST = "loriotuser.com";
+
+    @Before
+    public void setup() {
+        LnsConnectionDeserializer.registerLnsConnectionConcreteClass("Loriot", SampleConnection.class);
+    }
 
     @Test
     public void shouldTestCreateExternalId(){
@@ -122,5 +152,38 @@ public class LpwanRepositoryTest {
 
         verify(alarmApi).getAlarmsByFilter(any(AlarmFilter.class));
         verify(alarmApi).update(alarmRepresentation);
+    }
+
+    @Test
+    public void shouldTestCreateOrGetUserWithEmail() throws LpwanUserNotFoundException {
+        when(userApi.getUser("Dummy_Tenant", OUTPUT_USERNAME)).thenReturn(null);
+        when(lpwanUserPasswordService.generatePasswordAndSave(OUTPUT_USERNAME)).thenReturn("Dummy_Password");
+        MicroserviceCredentials credentials = new MicroserviceCredentials("tenant", "username", "password", null, null, null, "appKey");
+        PlatformParameters platformParameters = new PlatformParameters("http://localhost:1090/", credentials.toCumulocityCredentials(), new ClientConfiguration());
+        when(restConnector.getPlatformParameters()).thenReturn(platformParameters);
+        when(userApi.create(eq("tenant"), any(UserRepresentation.class))).thenAnswer(i -> i.getArguments()[1]);
+        GroupRepresentation groupRepresentation = new GroupRepresentation();
+        groupRepresentation.setId(12345L);
+        when(restConnector.get(anyString(), eq(UserMediaType.GROUP), eq(GroupRepresentation.class))).thenReturn(groupRepresentation);
+        UserRepresentation user = lpwanRepository.createOrGetUser("Dummy_Tenant", OUTPUT_USERNAME, EMAIL_HOST);
+        Assert.assertEquals(user.getEmail(), OUTPUT_USERNAME.concat("@").concat(EMAIL_HOST));
+        Assert.assertEquals(user.getPassword(), "Dummy_Password");
+    }
+
+    @Test
+    public void shouldTestCreateOrGetUserWithOutEmail() throws LpwanUserNotFoundException {
+        when(userApi.getUser("Dummy_Tenant", OUTPUT_USERNAME)).thenReturn(new UserRepresentation());
+        when(lpwanUserPasswordService.get()).thenReturn(java.util.Optional.of("Dummy_Password"));
+        UserRepresentation user = lpwanRepository.createOrGetUser("Dummy_Tenant", OUTPUT_USERNAME, null);
+        Assert.assertEquals(user.getPassword(), "Dummy_Password");
+        Assert.assertNull(user.getEmail());
+    }
+
+    @Test(expected = LpwanUserNotFoundException.class)
+    public void shouldThrowExceptionCreateOrGetUserWithOutEmail() throws LpwanUserNotFoundException {
+        when(userApi.getUser("Dummy_Tenant", OUTPUT_USERNAME)).thenReturn(new UserRepresentation());
+        UserRepresentation user = lpwanRepository.createOrGetUser("Dummy_Tenant", OUTPUT_USERNAME, null);
+        Assert.assertEquals(user.getPassword(), "Dummy_Password");
+        Assert.assertNull(user.getEmail());
     }
 }

@@ -8,8 +8,8 @@
 package com.cumulocity.lpwan.handler;
 
 import com.cumulocity.lpwan.exception.InputDataValidationException;
-import com.cumulocity.lpwan.exception.LpwanErrorMessageRepresentation;
 import com.cumulocity.lpwan.exception.LpwanServiceException;
+import com.cumulocity.lpwan.exception.LpwanUserNotFoundException;
 import com.cumulocity.rest.representation.ErrorDetails;
 import com.cumulocity.rest.representation.ErrorMessageRepresentation;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +57,20 @@ public class LpwanExceptionsHandler {
     public ResponseEntity<ErrorMessageRepresentation> handleInputDataValidationException(InputDataValidationException exception) {
         log.error(exception.getMessage(), exception);
         return buildErrorResponse(exception, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * This method handles the custom <b>{@link com.cumulocity.lpwan.exception.LpwanUserNotFoundException}</b>.
+     *
+     * @param exception       represents the LpwanUserNotFoundException
+     * @return ResponseEntity <code>HttpStatus.NOT_FOUND</code>
+     * @see com.cumulocity.lpwan.exception.LpwanUserNotFoundException {@link com.cumulocity.lpwan.exception.LpwanUserNotFoundException}
+     */
+    @ExceptionHandler(value = LpwanUserNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorMessageRepresentation> handleLpwanUserNotFoundException(LpwanUserNotFoundException exception) {
+        log.error(exception.getMessage(), exception);
+        return buildErrorResponse(exception, HttpStatus.NOT_FOUND);
     }
 
     /**
