@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.cumulocity.model.util.DateTimeUtils.nowLocal;
+import static com.cumulocity.model.util.DateTimeUtils.nowDateTimeLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleAlarmRepresentation.ALARM_REPRESENTATION;
@@ -377,6 +377,6 @@ public class AlarmIT extends JavaSdkITBase {
                 .withSeverity("major")
                 .withSource(source)
                 .withText("Alarm for mo")
-                .withDateTime(nowLocal()).build();
+                .withDateTime(nowDateTimeLocal()).build();
     }
 }
