@@ -1,6 +1,5 @@
 package com.cumulocity.sdk.client.notification;
 
-import com.cumulocity.model.realtime.ClientSvensonJSONContext;
 import com.cumulocity.rest.representation.operation.OperationRepresentation;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;

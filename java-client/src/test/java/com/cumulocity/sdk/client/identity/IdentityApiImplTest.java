@@ -29,13 +29,13 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.cumulocity.model.ID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.cumulocity.model.idtype.GId;
-import com.cumulocity.model.idtype.XtId;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityMediaType;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
@@ -76,7 +76,7 @@ public class IdentityApiImplTest {
         String extIdType = "myExtIdType";
         String extIdValue = "myExtIdValue";
 
-        XtId extID = new XtId(extIdValue);
+        ID extID = new ID(extIdValue);
         extID.setType(extIdType);
 
         Map<String, String> params = new HashMap<String, String>();
@@ -123,7 +123,7 @@ public class IdentityApiImplTest {
     @Test
     public void shouldThrowExceptionWhenExtIdWithoutValueAndType() throws SDKException {
         // Given
-        XtId extID = new XtId();
+        ID extID = new ID();
 
         // When
         Throwable thrown = catchThrowable(() -> identityApiImpl.getExternalId(extID));

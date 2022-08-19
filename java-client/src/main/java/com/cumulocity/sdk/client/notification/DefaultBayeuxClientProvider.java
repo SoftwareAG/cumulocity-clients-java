@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.cumulocity.model.realtime.ClientSvensonJSONContext;
 import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.client.ClientSession.Extension;
 import org.cometd.client.BayeuxClient;
