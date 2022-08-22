@@ -12,9 +12,6 @@ import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
-import com.cumulocity.rest.representation.annotation.Command;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 
 import java.util.Date;
@@ -29,24 +26,16 @@ import static com.cumulocity.model.util.DateTimeUtils.newLocal;
 @EqualsAndHashCode
 public class EventRepresentation extends AbstractExtensibleRepresentation implements SourceableRepresentation {
 
-    @Null(operation = { Command.CREATE })
     private GId id;
 
-    @Null(operation = Command.UPDATE)
-    @NotNull(operation = Command.CREATE)
     private String type;
 
-    @Null(operation = Command.UPDATE)
-    @NotNull(operation = Command.CREATE)
     private DateTime time;
 
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private DateTime creationTime;
 
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private DateTime lastUpdated;
 
-    @NotNull(operation = Command.CREATE)
     private String text;
 
     private ManagedObjectRepresentation managedObject;

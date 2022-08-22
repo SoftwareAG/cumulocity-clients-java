@@ -6,9 +6,6 @@ import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.cumulocity.rest.representation.SourceableConverter;
 import com.cumulocity.rest.representation.SourceableRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import org.joda.time.DateTime;
@@ -21,16 +18,12 @@ import static com.cumulocity.model.util.DateTimeUtils.newLocal;
 
 public class MeasurementRepresentation extends AbstractExtensibleRepresentation implements Cloneable, SourceableRepresentation {
 
-    @Null(operation = Command.CREATE)
     private GId id;
 
-    @NotNull(operation = Command.CREATE)
     private String type;
 
-    @NotNull(operation = Command.CREATE)
     private DateTime time;
 
-    @NotNull(operation = Command.CREATE)
     private ManagedObjectRepresentation source;
 
     private ExternalIDRepresentation externalSource;

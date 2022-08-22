@@ -10,9 +10,6 @@ import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
-import com.cumulocity.rest.representation.annotation.Command;
 import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 
 import java.util.Date;
@@ -25,38 +22,28 @@ import static com.cumulocity.model.util.DateTimeUtils.newLocal;
 @Builder(builderMethodName = "aOperation")
 public class OperationRepresentation extends AbstractExtensibleRepresentation {
 
-    @Null(operation = { Command.CREATE })
     private GId id;
     
-    @NotNull(operation = Command.CREATE)
-    @Null(operation = Command.UPDATE)
     private GId deviceId;
 
     private String deviceName;
 
-    @NotNull(operation = Command.UPDATE)
-    @Null(operation = Command.CREATE)
     private String status;
     
-    @Null(operation = Command.CREATE)
     private String failureReason;
 
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private DateTime creationTime;
 
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private ExternalIDCollectionRepresentation deviceExternalIDs;
 
     private Long bulkOperationId;
 
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     @Setter
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private DeliveryRepresentation delivery;
 
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     @Setter
-    @Null(operation = { Command.UPDATE })
     private ConnectorReferenceRepresentation connector;
 
     @JSONConverter(type = IDTypeConverter.class)

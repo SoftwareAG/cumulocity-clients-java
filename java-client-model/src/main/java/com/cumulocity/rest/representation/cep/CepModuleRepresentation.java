@@ -1,8 +1,6 @@
 package com.cumulocity.rest.representation.cep;
 
 import static com.cumulocity.model.util.DateTimeUtils.newUTC;
-import static com.cumulocity.rest.representation.annotation.Command.CREATE;
-import static com.cumulocity.rest.representation.annotation.Command.UPDATE;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -16,23 +14,17 @@ import org.svenson.converter.JSONConverter;
 
 import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 
 @SuppressWarnings("rawtypes")
 @NoArgsConstructor
 public class CepModuleRepresentation extends AbstractExtensibleRepresentation {
 
-    @Null(operation = { CREATE })
     private String id;
 
-    @NotNull(operation = { CREATE })
     private String name;
 
-    @Null(operation = { CREATE, UPDATE })
     private DateTime lastModified;
 
-    @Null(operation = { CREATE })
     private String status;
     
     private List statements = new LinkedList();

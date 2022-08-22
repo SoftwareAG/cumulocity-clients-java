@@ -1,9 +1,6 @@
 package com.cumulocity.rest.representation.alarm;
 
 import com.cumulocity.model.DateTimeConverter;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.audit.AuditRecordCollectionRepresentation;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 import lombok.EqualsAndHashCode;
@@ -20,15 +17,12 @@ public class AlarmRepresentation extends EventRepresentation {
 
     private String status;
 
-    @NotNull(operation = Command.CREATE)
     private String severity;
 
     private AuditRecordCollectionRepresentation history;
 
-    @Null(operation = Command.UPDATE)
     private Long count;
 
-    @Null(operation = Command.UPDATE)
     private DateTime firstOccurrenceTime;
 
     public AlarmRepresentation() {

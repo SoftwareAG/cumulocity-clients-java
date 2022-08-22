@@ -2,8 +2,6 @@ package com.cumulocity.rest.representation.user;
 
 import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.Null;
 import org.joda.time.DateTime;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -23,10 +21,8 @@ import static com.cumulocity.model.util.DateTimeUtils.newUTC;
  */
 public class CurrentUserRepresentation extends AbstractExtensibleRepresentation {
 
-    @Null(operation = Command.UPDATE)
     private String id;
 
-    @Null(operation = Command.UPDATE)
     private String userName;
 
     private String password;

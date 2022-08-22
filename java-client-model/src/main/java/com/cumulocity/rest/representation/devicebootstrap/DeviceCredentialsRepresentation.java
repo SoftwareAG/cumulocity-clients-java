@@ -1,29 +1,19 @@
 package com.cumulocity.rest.representation.devicebootstrap;
 
-import static com.cumulocity.rest.representation.annotation.Command.CREATE;
-import static com.cumulocity.rest.representation.annotation.Command.UPDATE;
-
 import com.cumulocity.rest.representation.CustomPropertiesMapRepresentation;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import lombok.Getter;
 import org.svenson.JSONProperty;
 
 public class DeviceCredentialsRepresentation extends CustomPropertiesMapRepresentation {
 	
-    @NotNull(operation = {CREATE})
 	private String id;
 
-    @Null(operation = {CREATE})
 	private String tenantId;
 	
-    @Null(operation = {CREATE})
 	private String username;
 	
-    @Null(operation = {CREATE})
 	private String password;
 
-	@Null(operation = {UPDATE})
 	@Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
 	private String securityToken;
 

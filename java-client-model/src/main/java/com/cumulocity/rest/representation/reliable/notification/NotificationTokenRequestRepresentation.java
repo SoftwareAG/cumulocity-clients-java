@@ -1,8 +1,6 @@
 package com.cumulocity.rest.representation.reliable.notification;
 
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +20,9 @@ public class NotificationTokenRequestRepresentation extends AbstractExtensibleRe
         this(subscriber, subscription, null, true, expiresInMinutes, shared, nonPersistent);
     }
 
-    @NotNull(operation = {Command.CREATE})
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String subscriber;
 
-    @NotNull(operation = {Command.CREATE})
     @Getter(onMethod_ = @JSONProperty(ignoreIfNull = true))
     private String subscription;
 
