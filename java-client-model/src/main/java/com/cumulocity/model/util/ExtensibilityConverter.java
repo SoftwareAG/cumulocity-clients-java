@@ -41,8 +41,8 @@ public class ExtensibilityConverter {
     }
 
     /**
-     * Converts the given name into a class using the extensibility rules where underscores are
-     * converted to dots ("_" => "."). For example:<br>
+     * Converts the given name into a class using the extensibility rules where underscores ("_") are
+     * converted to dots ("."). For example:<br>
      * name = "com_cumulocity_model_idtype_Reference" would return the class com.cumulocity.mode.idtype.Reference
      *
      * @throws ClassNotFoundException if the name cannot be converted to a class using the extensibility rules

@@ -39,9 +39,9 @@ public class JSONBase extends AbstractDynamicProperties {
      * There different type converters defined and conversion uses the type
      * converter repository.
      *
-     * @param <T>  The class type
+     * @param type The class type
      * @param json the json string
-     * @return the object of type <T>
+     * @return the object of the given type
      */
     public static <T> T fromJSON(String json, Class<T> type) {
         JSONParser parser = getJSONParser();
@@ -53,9 +53,9 @@ public class JSONBase extends AbstractDynamicProperties {
      * There different type converters defined and conversion uses the type
      * converter repository.
      *
-     * @param <T>  The class type
+     * @param type The class type
      * @param json the json reader
-     * @return the object of type <T>
+     * @return the object of the given type
      */
     public static <T> T fromJSON(final Reader json, Class<T> type) {
         JSONParser parser = getJSONParser();

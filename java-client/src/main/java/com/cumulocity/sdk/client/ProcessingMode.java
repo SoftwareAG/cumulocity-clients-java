@@ -12,7 +12,7 @@ public enum ProcessingMode {
     QUIESCENT,
 
     /**
-     * CEP only. Persistence & real time broadcast are disabled.
+     * CEP only. Persistence and real time broadcast are disabled.
      */
     CEP;
 
