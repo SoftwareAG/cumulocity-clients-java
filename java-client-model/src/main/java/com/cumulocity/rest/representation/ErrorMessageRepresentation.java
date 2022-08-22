@@ -8,8 +8,8 @@ public class ErrorMessageRepresentation extends AbstractExtensibleRepresentation
     private String error;
     // Short text description of the error
     private String message;
-
-    private String info; //   1   URL to error description on the Internet.
+    // URL to error description on the Internet.
+    private String info;
 
     // details     JSON-Object with ErrorDetails. Only available if in DEBUG mode.
     private ErrorDetails details;

@@ -15,11 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Base class for Implementation of the Domain Object Builder Pattern. See also the <a
- * href="https://startups.jira.com/wiki/display/MTM/DomainObject+Patterns">wiki</a>.
- *
- */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractObjectBuilder<T> {
 
@@ -46,64 +41,13 @@ public abstract class AbstractObjectBuilder<T> {
 
     protected abstract T createDomainObject();
 
-    protected Object getFieldValue(final String fieldName) {
-        return values.get(fieldName);
-    }
-
-    public Map<String, Object> toMap() {
-        Map<String, Object> result = new HashMap<String, Object>(values);
-
-        for (Map.Entry<String, AbstractObjectBuilder<?>> entry : builders.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().build());
-        }
-
-        for (Map.Entry<String, Collection<?>> entry : collectionValues.entrySet()) {
-            Collection value = createListValue(List.class, entry.getValue());
-            result.put(entry.getKey(), value);
-        }
-
-        for (Map.Entry<String, List<AbstractObjectBuilder<?>>> entry : collectionBuilders.entrySet()) {
-            Collection value = createBuilderListValue(List.class, entry.getValue());
-            result.put(entry.getKey(), value);
-        }
-        return result;
-    }
-
     protected void setFieldValue(final String fieldName, final Object value) {
         values.put(fieldName, value);
         builders.remove(fieldName);
     }
 
-    protected void setFieldValues(final AbstractObjectBuilder<?> other) {
-        for (String fieldName : other.values.keySet()) {
-            values.put(fieldName, other.values.get(fieldName));
-        }
-    }
-
     protected void setFieldValueBuilder(final String fieldName, final AbstractObjectBuilder<?> builder) {
         builders.put(fieldName, builder);
-    }
-
-    protected void addCollectionFieldValue(final String fieldName, final Object value) {
-        Collection values = collectionValues.get(fieldName);
-        if (values == null) {
-            values = new ArrayList();
-            collectionValues.put(fieldName, values);
-        }
-        values.add(value);
-    }
-
-    protected void addCollectionFieldValueBuilder(final String fieldName, final AbstractObjectBuilder<?> builder) {
-        List<AbstractObjectBuilder<?>> builderList = collectionBuilders.get(fieldName);
-        if (builderList == null) {
-            builderList = new ArrayList<AbstractObjectBuilder<?>>();
-            collectionBuilders.put(fieldName, builderList);
-        }
-        builderList.add(builder);
-    }
-
-    protected void setCollectionFieldValueBuilders(String fieldName, List<AbstractObjectBuilder<?>> groupBuilders) {
-        collectionBuilders.put(fieldName, groupBuilders);
     }
 
     protected void fillInValues(final T domainObject) {
@@ -164,6 +108,5 @@ public abstract class AbstractObjectBuilder<T> {
         makeAccessible(field);
         setField(field, target, value);
     }
-
 
 }
