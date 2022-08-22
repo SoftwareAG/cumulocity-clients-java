@@ -142,13 +142,13 @@ public abstract class Document<T extends ID> extends JSONBase {
 	 * Sets a property referring to the given object. The name of the property
 	 * will be the fully qualified class name with dots replaced by underscores.<br>
 	 * For example, if the object is of type:<br>
-	 * <ul>
+	 * <code>
 	 * com.cumulocity.model.Coordinate
-	 * </ul>
-	 * then the property name will be:<br>
-	 * <ul>
+	 * </code>
+	 * <br>then the property name will be:<br>
+	 * <code>
 	 * "com_cumulocity_model_Coordinate"
-	 * </ul>
+	 * </code>
 	 *
 	 * @param object
 	 */
@@ -176,13 +176,13 @@ public abstract class Document<T extends ID> extends JSONBase {
 	 * This can be useful if you want to name the property after the base class
 	 * rather than the actual class of object.<br>
 	 * For example, if clazz is of type:<br>
-	 * <ul>
+	 * <code>
 	 * com.cumulocity.model.Coordinate
-	 * </ul>
-	 * then the property name will be:<br>
-	 * <ul>
+	 * </code>
+	 * <br>then the property name will be:<br>
+	 * <code>
 	 * "com_cumulocity_model_Coordinate"
-	 * </ul>
+	 * </code>
 	 *
 	 * @param object
 	 * @param clazz
@@ -234,7 +234,6 @@ public abstract class Document<T extends ID> extends JSONBase {
 	 * Remove the fragment whose name is given by clazz if exists
 	 *
 	 * @param clazz
-	 * @return
 	 */
 	public void remove(Class<?> clazz) {
 		removeProperty(ExtensibilityConverter.classToStringRepresentation(clazz));
