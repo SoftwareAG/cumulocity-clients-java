@@ -10,8 +10,6 @@ import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.model.OwnerSource;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.Null;
 
 import java.util.Date;
 
@@ -25,14 +23,12 @@ import static com.cumulocity.model.util.DateTimeUtils.newLocal;
 public class ManagedObjectRepresentation extends AbstractExtensibleRepresentation
         implements ResourceRepresentationWithId,OwnerSource {
 
-    @Null(operation = { Command.CREATE })
     private GId id;
 
     private String type;
 
     private String name;
 
-    @Null(operation = { Command.CREATE, Command.UPDATE })
     private DateTime lastUpdated;
 
     private DateTime creationTime;

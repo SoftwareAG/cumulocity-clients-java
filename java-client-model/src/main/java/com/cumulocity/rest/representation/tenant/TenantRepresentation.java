@@ -5,9 +5,6 @@ import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.model.JSONBase;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.CustomPropertiesMapRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.application.ApplicationReferenceCollectionRepresentation;
 import com.google.common.base.MoreObjects;
 import org.joda.time.DateTime;
@@ -23,14 +20,12 @@ public class TenantRepresentation extends CustomPropertiesMapRepresentation {
     private String id;
 
     @Size(max = 256)
-    @NotNull(operation = Command.CREATE)
     private String domain;
 
     @Pattern(regexp = "ACTIVE|SUSPENDED")
     private String status;
 
     @Size(max = 256)
-    @NotNull(operation = Command.CREATE)
     private String company;
 
     @Size(max = 50)
@@ -39,7 +34,6 @@ public class TenantRepresentation extends CustomPropertiesMapRepresentation {
     @Size(max = 32)
     private String adminPass;
 
-    @NotNull(operation = Command.CREATE)
     private String adminEmail;
 
     @Size(max = 30)
@@ -58,10 +52,8 @@ public class TenantRepresentation extends CustomPropertiesMapRepresentation {
     private SupportUserDetailsRepresentation supportUser;
 
     @Size(max = 32)
-    @Null(operation = { Command.CREATE })
     private String parent;
 
-	@Null(operation = { Command.CREATE })
     private Boolean allowCreateTenants;
 
     private Long storageLimitPerDevice;

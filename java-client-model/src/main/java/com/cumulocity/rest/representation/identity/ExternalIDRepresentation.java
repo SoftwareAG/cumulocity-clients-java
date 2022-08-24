@@ -3,19 +3,15 @@ package com.cumulocity.rest.representation.identity;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import org.svenson.JSONProperty;
 
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 
 import javax.validation.constraints.Size;
 
 public class ExternalIDRepresentation extends AbstractExtensibleRepresentation {
 
-    @NotNull(operation = Command.CREATE)
     @Size(min = 1, message = "field cannot be empty")
     private String externalId;
 
-    @NotNull(operation = Command.CREATE)
     @Size(min = 1, message = "field cannot be empty")
     private String type;
 

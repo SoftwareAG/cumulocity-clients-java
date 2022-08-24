@@ -1,8 +1,6 @@
 package com.cumulocity.rest.representation.user;
 
 import com.cumulocity.rest.representation.CustomPropertiesMapRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -16,7 +14,6 @@ public class GroupRepresentation extends CustomPropertiesMapRepresentation {
 
     private Long id;
 
-    @NotNull(operation = Command.CREATE)
     @Size(max = 254, message = "maximum length is 254 characters")
     private String name;
 

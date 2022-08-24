@@ -2,9 +2,6 @@ package com.cumulocity.rest.representation.user;
 
 import com.cumulocity.model.DateTimeConverter;
 import com.cumulocity.rest.representation.CustomPropertiesMapRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.application.ApplicationRepresentation;
 import org.joda.time.DateTime;
 import org.svenson.JSONProperty;
@@ -21,12 +18,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class UserRepresentation extends CustomPropertiesMapRepresentation {
 
-    @Null(operation = Command.CREATE)
     private String id;
 
     @Size(max = 1000)
-    @Null(operation = Command.UPDATE)
-    @NotNull(operation = Command.CREATE)
     private String userName;
 
     private String owner;
@@ -42,7 +36,6 @@ public class UserRepresentation extends CustomPropertiesMapRepresentation {
     @Size(max = 256, message = "maximum length is 256 characters")
     private String phone;
 
-    @NotNull(operation = Command.CREATE)
     @Size(max = 256, message = "maximum length is 256 characters")
     private String email;
 

@@ -6,9 +6,6 @@ import lombok.EqualsAndHashCode;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
-import com.cumulocity.rest.representation.annotation.Command;
 import com.cumulocity.rest.representation.event.EventRepresentation;
 
 @EqualsAndHashCode(callSuper=true)
@@ -18,12 +15,10 @@ public class AuditRecordRepresentation extends EventRepresentation {
 
     private String application;
 
-    @NotNull(operation = Command.CREATE)
     private String activity;
 
     private String severity;
 
-    @Null(operation = Command.UPDATE)
     private Set<ChangeRepresentation> changes;
 
     @JSONProperty(ignoreIfNull = true)

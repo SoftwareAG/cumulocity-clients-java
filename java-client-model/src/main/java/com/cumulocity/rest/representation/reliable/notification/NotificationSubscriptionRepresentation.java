@@ -4,9 +4,6 @@ import com.cumulocity.model.IDTypeConverter;
 import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.cumulocity.rest.representation.SourceableRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import org.svenson.JSONProperty;
 import org.svenson.converter.JSONConverter;
@@ -15,15 +12,12 @@ import java.util.List;
 
 public class NotificationSubscriptionRepresentation extends AbstractExtensibleRepresentation implements Cloneable, SourceableRepresentation {
 
-    @NotNull(operation = Command.CREATE)
     private String context;
 
-    @NotNull(operation = Command.CREATE)
     private String subscription;
 
     private List<String> fragmentsToCopy;
 
-    @Null(operation = Command.CREATE)
     private GId id;
 
     private boolean nonPersistent;

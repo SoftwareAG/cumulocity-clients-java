@@ -1,9 +1,6 @@
 package com.cumulocity.rest.representation.application;
 
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
-import com.cumulocity.rest.representation.annotation.Command;
-import com.cumulocity.rest.representation.annotation.NotNull;
-import com.cumulocity.rest.representation.annotation.Null;
 import com.cumulocity.rest.representation.tenant.TenantReferenceRepresentation;
 import lombok.*;
 import org.svenson.JSONProperty;
@@ -25,25 +22,19 @@ public class ApplicationRepresentation extends AbstractExtensibleRepresentation 
 
     public static final String MICROSERVICE = "MICROSERVICE";
 
-    @Null(operation = Command.CREATE)
     private String id;
 
-    @NotNull(operation = Command.CREATE)
     @Size(max = 128)
     private String name;
 
-    @NotNull(operation = Command.CREATE)
     @Size(max = 128)
     private String key;
 
-    @NotNull(operation = Command.CREATE)
-    @Null(operation = Command.UPDATE)
     private String type;
 
     @Pattern(regexp = "PRIVATE|MARKET|SHARED")
     private String availability;
 
-    @Null(operation = Command.CREATE)
     private TenantReferenceRepresentation owner;
 
     @Size(max = 255)
