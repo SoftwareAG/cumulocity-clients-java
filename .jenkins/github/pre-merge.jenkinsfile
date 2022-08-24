@@ -10,7 +10,6 @@ VERSIONS = [
     changeList: "${env.CHANGE_ID}.${env.BUILD_NUMBER}.sdk" // Docker registry rejects versions with capital letters!
 ]
 LOCKS = [
-    core: "core-compile-${VERSIONS.changeList}",
     sdk: "sdk-compile-${VERSIONS.changeList}"
 ]
 JOB_ABORTED = false
@@ -100,9 +99,6 @@ def build_and_test() {
       "CHANGE_VERSION=.${VERSIONS.changeList}"
   ]) {
     parallel(
-        'core': {
-          build_core()
-        },
         'sdk': {
           build_sdk()
         },
@@ -114,84 +110,10 @@ def build_and_test() {
   }
 }
 
-def build_core() {
-  node('jdk11') {
-    container('default') {
-      withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-        lock(resource: LOCKS.core) {
-          stage('core checkout') {
-            try {
-              checkoutMatchingBranch('cumulocity-core', env.CHANGE_BRANCH, env.CHANGE_TARGET)
-            } catch (e) {
-              stopPipeline('Checkout core', e)
-            }
-          }
-
-          stage('core compile') {
-            dir('cumulocity-core') {
-              try {
-                sh '.jenkins/scripts/mvn.sh -DskipTests install'
-              } catch (e) {
-                stopPipeline('Core compile', e)
-              }
-            }
-          }
-
-          stage('core stash') {
-            try {
-              stash includes: '.m2/repository/**/cumulocity/**/*.*', name: 'core-m2', useDefaultExcludes: false
-            } catch (e) {
-              stopPipeline('Core stash', e)
-            }
-          }
-        }
-
-        dir('cumulocity-core') {
-          stage('core publish') {
-            try {
-              sh "find ./cumulocity-application -iname '*.rpm' -exec mv {} .jenkins/docker/ \\;"
-              dir('.jenkins/docker') {
-                container('dind-daemon') {
-                  withDockerRegistry(credentialsId: 'registry_stage', url: 'https://registry.stage.c8y.io/testing') {
-                    sh "docker build --build-arg karaf_version=${VERSIONS.currentRpm} -f cumulocity-core.dockerfile -t registry.stage.c8y.io/testing/core:${VERSIONS.currentRpm} ."
-                    sh "docker push registry.stage.c8y.io/testing/core:${VERSIONS.currentRpm}"
-                  }
-                }
-              }
-            } catch (e) {
-              stopPipeline('Publish core image', e)
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-def get_core_m2_repo() {
-  try {
-    println "Waiting for core build to start"
-    sleep(300)
-
-    println "Waiting for core build to compile"
-    lock(resource: LOCKS.core) {
-      println "Core compiled. Let's proceed"
-    }
-
-    unstash 'core-m2'
-  } catch (e) {
-    stopPipeline('get_core_m2_repo', e)
-  }
-}
-
 def build_sdk() {
   container('default') {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       lock(resource: LOCKS.sdk) {
-
-        stage('core unstash') {
-          get_core_m2_repo()
-        }
 
         stage('sdk compile') {
           dir('cumulocity-clients-java') {
@@ -264,7 +186,7 @@ def build_agents() {
         dir('cumulocity-agents') {
           stage('agents build & verify') {
             try {
-              sh '.jenkins/scripts/mvn.sh package'
+              sh '.jenkins/scripts/mvn.sh -pl \'!com.nsn.cumulocity.cep:cep-sdk,!com.nsn.cumulocity.cep:cep-server\' package'
             } catch (e) {
               stopPipeline('Build & test agents', e)
             } finally {
@@ -319,7 +241,7 @@ def spinup_instance(instance) {
           booleanParam(name: 'RUN_CUCUMBER_RUBY_TESTS', value: false),
           booleanParam(name: 'RUN_PERFORMANCE_TESTS', value: false),
           booleanParam(name: 'RUN_READ_PERFORMANCE_TESTS', value: false),
-          string(name: 'PURPOSE', value: 'core-pre-merge-check')
+          string(name: 'PURPOSE', value: 'clients-java-pre-merge-check')
       ],
           propagate: true
     }
@@ -355,10 +277,11 @@ def update_instance(instance) {
             ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 -i ${instance.name}-internal.dev.c8y.io, \
               --user centos --private-key ../.chef/keys/chef_cumulocity.pem pre-merge-deploy.yaml \
               -e 'env_name=${instance.name}-dev-c8y-io' \
-              -e 'core_version=${VERSIONS.currentRpm}' \
               -e 'agents_version=${VERSIONS.currentRpm}' \
               -e 'microservices_version=${VERSIONS.current}' \
-              -e 'pr_number=${VERSIONS.changeList}'
+              -e 'pr_number=${VERSIONS.changeList}' \
+              -e 'deploy_cep=false' \
+              --skip-tags update-core
           """
   } catch (e) {
     stopPipeline('Update instance', e)
