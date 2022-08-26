@@ -2,6 +2,7 @@ library "c8y-common-steps"
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 
 INSTANCES = ['java', 'sdk'].collectEntries { [(it): devInstanceOf(it)] }
+
 SECRETS = [
     management: [ user: 'admin', pass: 'Pyi1bo1r' ],
     tenant: [ pass: 'Pyi1bo1r!' ]
