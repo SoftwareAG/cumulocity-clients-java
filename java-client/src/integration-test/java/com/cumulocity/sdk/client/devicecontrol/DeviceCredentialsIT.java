@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +50,7 @@ public class DeviceCredentialsIT extends JavaSdkITBase {
 
     @Test
     public void shouldPollCredentialsUntilDeviceAccepted() throws Exception {
-        final String deviceId = "3000";
+        final String deviceId = RandomStringUtils.randomNumeric(7);
         final int pollIntervalInSeconds = 2;
         createNewDeviceRequest(deviceId);
         Timer timer = new Timer();
