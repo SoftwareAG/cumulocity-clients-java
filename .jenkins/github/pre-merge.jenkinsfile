@@ -25,7 +25,7 @@ node('jdk11') {
           withEnv([
               "VERSION=${VERSIONS.revision}",
               "CHANGE_VERSION=.${VERSIONS.changeList}",
-              "MAVEN_ARGS=${env.MAVEN_ARGS} -Dcumulocity.core.version=${VERSIONS.coreRelease}"
+              "MAVEN_ARGS=-Dcumulocity.core.version=${VERSIONS.coreRelease}"
           ]) {
             build_sdk()
           }
