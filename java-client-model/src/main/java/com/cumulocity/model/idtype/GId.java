@@ -2,6 +2,7 @@ package com.cumulocity.model.idtype;
 
 import com.cumulocity.model.ID;
 import com.google.common.base.Function;
+import com.google.common.base.Throwables;
 import org.svenson.JSON;
 import org.svenson.JSONable;
 
@@ -57,15 +58,21 @@ public class GId extends ID implements JSONable {
         return JSON.defaultJSON().quote(super.getValue());
     }
 
+    /**
+     * GId is not always a number anymore
+     * The method will be removed with a next release
+     */
+    @Deprecated
     public Long getLong() {
-        try {
-            if (getValue() == null) {
-                return null;
-            }
-            return Long.parseLong(getValue());
-        } catch (Exception e) {
+        if (getValue() == null) {
             return null;
         }
+        try {
+            return Long.parseLong(getValue());
+        } catch (Exception e) {
+            Throwables.propagateIfPossible(e, NumberFormatException.class);
+        }
+        return null;
     }
 
     public static <T> Function<T, GId> asGId() {
