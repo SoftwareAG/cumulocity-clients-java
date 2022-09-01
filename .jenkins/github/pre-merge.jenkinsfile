@@ -9,19 +9,26 @@ SECRETS = [
 VERSIONS = [
     changeList: "${env.CHANGE_ID}.${env.BUILD_NUMBER}.sdk" // Docker registry rejects versions with capital letters!
 ]
-LOCKS = [
-    sdk: "sdk-compile-${VERSIONS.changeList}"
-]
+
 JOB_ABORTED = false
 ERROR_COUNT = 0
+
+AVAILABLE_BRANCHES = null
 
 node('jdk11') {
   try {
     job_options()
-    calculate_versions()
+    checkoutSdkAndCalculateItsVersion()
+    calculateCoreAndAgentsVersions()
     parallel(
-        'build and test': {
-          build_and_test()
+        'sdk pipeline': {
+          withEnv([
+              "VERSION=${VERSIONS.revision}",
+              "CHANGE_VERSION=.${VERSIONS.changeList}",
+              "MAVEN_ARGS=${env.MAVEN_ARGS} -Dcumulocity.core.version=${VERSIONS.coreRelease}"
+          ]) {
+            build_sdk()
+          }
         },
         'spin up instances': {
           spinup_instances()
@@ -57,7 +64,7 @@ def job_options() {
               parameters([string(defaultValue: '@smoke', description: 'to use multiple tags use @smoke or @security, to run full set use not (@ignore or @wip or @local)', name: 'java_test_tags')])])
 }
 
-def calculate_versions() {
+def checkoutSdkAndCalculateItsVersion() {
   container('default') {
     stage('sdk checkout') {
       dir('cumulocity-clients-java') {
@@ -65,12 +72,6 @@ def calculate_versions() {
           checkout scm
         } catch (e) {
           stopPipeline('Checkout clients_java', e)
-        }
-
-        try {
-          checkoutMatchingBranch('cumulocity-sdk', env.CHANGE_BRANCH, env.CHANGE_TARGET)
-        } catch (e) {
-          stopPipeline('Checkout SDK', e)
         }
       }
     }
@@ -81,10 +82,12 @@ def calculate_versions() {
           VERSIONS.revision = sh(returnStdout: true,
               script: './mvnw -N -Dexec.executable=\'echo\' -Dexec.args=\'${revision}\' exec:exec -q'
           ).trim()
-          VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
-          VERSIONS.currentRpm = "${VERSIONS.current}-1"
-          VERSIONS.release = releaseVersionOf(VERSIONS.revision)
-          echo "Building SDK version ${VERSIONS.current} on top of release version ${VERSIONS.release}"
+          VERSIONS.currentSdk = "${VERSIONS.revision}.${VERSIONS.changeList}"
+          VERSIONS.currentSdkRpm = "${VERSIONS.currentSdk}-1"
+          VERSIONS.release = getNearestBuildVersionFor(VERSIONS.revision)
+          VERSIONS.releaseBranch = getNearestGAorLatestCurrentReleaseVersionFor(VERSIONS.revision)
+          echo "Building SDK version ${VERSIONS.currentSdk} on top of release version ${VERSIONS.release}"
+          setAvailableBranches(env.CHANGE_BRANCH, env.CHANGE_TARGET, VERSIONS.releaseBranch)
         } catch (e) {
           stopPipeline('Version sdk', e)
         }
@@ -93,119 +96,105 @@ def calculate_versions() {
   }
 }
 
-def build_and_test() {
-  withEnv([
-      "VERSION=${VERSIONS.revision}",
-      "CHANGE_VERSION=.${VERSIONS.changeList}"
-  ]) {
+def retrieveComponentVersion(componentName) {
+  withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+    try {
+      repoCheckout(componentName)
+
+      dir(componentName) {
+        componentRevision = sh(returnStdout: true,
+                script: './mvnw -N -Dexec.executable=\'echo\' -Dexec.args=\'${revision}\' exec:exec -q'
+        ).trim()
+        versionToReturn = getNearestBuildVersionFor(componentRevision)
+        echo "Current ${componentName} code version ${componentRevision}. Using the latest available build ${versionToReturn}"
+
+        return versionToReturn
+      }
+    } catch (e) {
+      stopPipeline("Retrieving ${componentName} version failed with and exception: ", e)
+    }
+  }
+}
+
+def calculateCoreAndAgentsVersions() {
+  container('default') {
     parallel(
-        'sdk': {
-          build_sdk()
+        'core version' : {
+          VERSIONS.coreRelease = retrieveComponentVersion('cumulocity-core')
         },
-        'agents': {
-          build_agents()
-        },
-        failFast: true
+        'agents version' : {
+          VERSIONS.agentsVersion = retrieveComponentVersion('cumulocity-agents')
+        }
     )
   }
+}
+
+def setAvailableBranches(changeBranch, changeTarget, releaseBranch) {
+  AVAILABLE_BRANCHES = [ changeBranch, changeTarget, "release/r${releaseBranch}", "develop", "master" ]
+}
+
+def getAvailableBranches() {
+  if (AVAILABLE_BRANCHES == null) {
+    setAvailableBranches(env.CHANGE_BRANCH, env.CHANGE_TARGET, VERSIONS.releaseBranch)
+  }
+
+  return AVAILABLE_BRANCHES
+}
+
+def repoCheckout(repository) {
+  echo "Checkout repository: ${repository}"
+  String[] branches = getAvailableBranches()
+  def exception = null
+
+  for (int i = 0; i < branches.length; i++) {
+    exception = null
+
+    try {
+      echo "Trying to checkout ${repository}'s branch ${branches[i]}"
+      checkoutRepo(repository, branches[i])
+      return
+    } catch (e) {
+      echo "Failed to checkout ${repository}'s branch ${branches[i]}. Reason: " + e.getMessage()
+      exception = e
+    }
+  }
+
+  throw exception
 }
 
 def build_sdk() {
   container('default') {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-      lock(resource: LOCKS.sdk) {
-
-        stage('sdk compile') {
-          dir('cumulocity-clients-java') {
-            try {
-              sh '.jenkins/scripts/mvn.sh -DskipTests install'
-            } catch (e) {
-              stopPipeline('Compile SDK', e)
-            }
-          }
-        }
-
-        stage('sdk stash') {
+      stage('checkout cumulocity-sdk') {
+        dir('cumulocity-clients-java') {
           try {
-            stash includes: ".m2/repository/**/cumulocity/**/*.*,.m2/repository/c8y/**/*.*", name: 'sdk-m2', useDefaultExcludes: false
+            repoCheckout('cumulocity-sdk')
           } catch (e) {
-            stopPipeline('Stash SDK / clients_java', e)
-          }
-        }
-
-        stage('sdk verify') {
-          dir('cumulocity-clients-java') {
-            try {
-              sh '.jenkins/scripts/mvn.sh verify'
-            } catch (e) {
-              currentBuild.result = 'UNSTABLE'
-              stageResult = "UNSTABLE"
-            } finally {
-              junit(allowEmptyResults: true, checksName: "cumulocity-clients-java-unit-test", keepLongStdio: true,
-                  testResults: '**/TEST-*.xml')
-            }
+            stopPipeline('Checkout SDK', e)
           }
         }
       }
-    }
-  }
-}
 
-def get_sdk_m2_repo() {
-  try {
-    println "Waiting for sdk build to start"
-    sleep(300)
-
-    println "Waiting for sdk to be compiled"
-    lock(resource: LOCKS.sdk) {
-      println "SDK compiled. Let's proceed"
-    }
-
-    unstash 'sdk-m2'
-  } catch (e) {
-    stopPipeline('get_sdk_m2_repo', e)
-  }
-}
-
-def build_agents() {
-  node('jdk11') {
-    container('default') {
-      withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
-        stage('agents checkout') {
+      stage('sdk compile') {
+        dir('cumulocity-clients-java') {
           try {
-            checkoutMatchingBranch('cumulocity-agents', env.CHANGE_BRANCH, env.CHANGE_TARGET)
+            sh '.jenkins/scripts/mvn.sh -DskipTests install'
           } catch (e) {
-            stopPipeline('Checkout agents', e)
+            stopPipeline('Compile SDK', e)
           }
         }
+      }
 
-        stage('unstash sdk') {
-          get_sdk_m2_repo()
-        }
-
-        dir('cumulocity-agents') {
-          stage('agents build & verify') {
-            try {
-              sh '.jenkins/scripts/mvn.sh -pl \'!com.nsn.cumulocity.cep:cep-sdk,!com.nsn.cumulocity.cep:cep-server\' package'
-            } catch (e) {
-              stopPipeline('Build & test agents', e)
-            } finally {
-              junit(allowEmptyResults: true, checksName: "cumulocity-agents-unit-tests", keepLongStdio: true, testResults: '**/TEST-*.xml')
-            }
-          }
-
-          stage('agents publish') {
-            try {
-              sshagent(credentials: ['jenkins-master']) {
-                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum'"
-                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images'"
-
-                sh "find . -iname '*.rpm' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum/ \\;"
-                sh "find . -iname '*.zip' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images/ \\;"
-              }
-            } catch (e) {
-              stopPipeline('Publish agent artifacts', e)
-            }
+      stage('sdk verify') {
+        dir('cumulocity-clients-java') {
+          try {
+            sh '.jenkins/scripts/mvn.sh verify'
+          } catch (e) {
+            currentBuild.result = 'UNSTABLE'
+            stageResult = "UNSTABLE"
+          } finally {
+            junit(allowEmptyResults: true, checksName: "cumulocity-clients-java-unit-test", keepLongStdio: true,
+                    testResults: '**/TEST-*.xml')
           }
         }
       }
@@ -251,7 +240,7 @@ def spinup_instance(instance) {
 def update_instances() {
   node('smoke-provisioning') {
     container('c8y-tools') {
-      checkoutMatchingBranch('cumulocity-chef', env.CHANGE_BRANCH, "master")
+      repoCheckout('cumulocity-chef')
       dir('cumulocity-chef/smoke') {
         parallel(
             'update java instance': {
@@ -277,11 +266,10 @@ def update_instance(instance) {
             ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 -i ${instance.name}-internal.dev.c8y.io, \
               --user centos --private-key ../.chef/keys/chef_cumulocity.pem pre-merge-deploy.yaml \
               -e 'env_name=${instance.name}-dev-c8y-io' \
-              -e 'agents_version=${VERSIONS.currentRpm}' \
-              -e 'microservices_version=${VERSIONS.current}' \
+              -e 'microservices_version=${VERSIONS.currentSdk}' \
               -e 'pr_number=${VERSIONS.changeList}' \
               -e 'deploy_cep=false' \
-              --skip-tags update-core
+              --skip-tags update-core,ssagents
           """
   } catch (e) {
     stopPipeline('Update instance', e)
@@ -290,7 +278,7 @@ def update_instance(instance) {
 
 def functional_tests() {
   withEnv([
-      "MAVEN_ARGS=--batch-mode --show-version --errors -Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"
+      "MAVEN_ARGS=--batch-mode --show-version --errors -Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList} -Dcumulocity.core.version=${VERSIONS.coreRelease}"
   ]) {
     parallel(
         'java-tests': {
@@ -318,8 +306,7 @@ def cucumber_java(instance) {
               "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
               "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
           ]) {
-            checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
-            unstash 'sdk-m2'
+            repoCheckout('cumulocity-quality')
             try {
               dir('cumulocity-quality') {
                 sh """
@@ -362,8 +349,7 @@ def sdk_tests(instance) {
         withEnv([
             "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository"
         ]) {
-          checkoutMatchingBranch('cumulocity-clients-java', env.CHANGE_BRANCH, env.CHANGE_TARGET)
-          unstash 'sdk-m2'
+          repoCheckout('cumulocity-clients-java')
           try {
             dir('cumulocity-clients-java') {
               sh ".jenkins/scripts/new_sdk_tests.sh ${instance.domain} ${SECRETS.management.pass} ${SECRETS.management.user}"
@@ -395,8 +381,7 @@ def java_token_tests(instance) {
             "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
             "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
         ]) {
-          checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
-          unstash 'sdk-m2'
+          repoCheckout('cumulocity-quality')
           try {
             dir('cumulocity-quality') {
               sh """
@@ -463,19 +448,32 @@ def devInstanceOf(String label, String tld = 'dev.c8y.io') {
   ]
 }
 
-def releaseVersionOf(String revision) {
+static def getNearestGAorLatestCurrentReleaseVersionFor(revision) {
+  return getNearestBuildVersionFor(revision, true)
+}
+
+static def getNearestBuildVersionFor(revision, takeOfficialRelease = false) {
   String[] versions = revision.split('\\.')
+
   if (versions.length < 3) {
     return revision
   }
+
   int major = Integer.parseInt(versions[0])
   int minor = Integer.parseInt(versions[1])
   int maintenance = Integer.parseInt(versions[2])
+
+  if (takeOfficialRelease && minor == 0) {
+    return "${major}.${minor}.0".toString()
+  }
+
   if (maintenance > 0) {
     return "${major}.${minor}.${maintenance - 1}".toString()
-  } else if (minor > 0) {
-    return "${major}.${minor - 1}.${maintenance}".toString()
-  } else {
-    return revision
   }
+
+  if (minor > 0) {
+    return "${major}.${minor - 1}.${maintenance}".toString()
+  }
+
+  return revision
 }
