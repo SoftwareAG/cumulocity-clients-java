@@ -118,14 +118,9 @@ def retrieveComponentVersion(componentName) {
 
 def calculateCoreAndAgentsVersions() {
   container('default') {
-    parallel(
-        'core version' : {
-          VERSIONS.coreRelease = retrieveComponentVersion('cumulocity-core')
-        },
-        'agents version' : {
-          VERSIONS.agentsVersion = retrieveComponentVersion('cumulocity-agents')
-        }
-    )
+    stage('core version') {
+      VERSIONS.coreRelease = retrieveComponentVersion('cumulocity-core')
+    }
   }
 }
 
