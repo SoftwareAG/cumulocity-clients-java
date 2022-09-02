@@ -47,6 +47,20 @@ public class SampleConnection extends LnsConnection {
                                                                             .password("**********")
                                                                             .build();
 
+    public static final SampleConnection VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_1 = SampleConnection.builder()
+            .name("a!#cd~^ (76 5$)")
+            .description("Sample Connection Description")
+            .user("USER NAME")
+            .password("**********")
+            .build();
+
+    public static final SampleConnection VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_2 = SampleConnection.builder()
+            .name("(null null !@#$^::~`),.")
+            .description("Sample Connection Description")
+            .user("USER NAME")
+            .password("**********")
+            .build();
+
     // Use the below commented code to generate the Json for INTERNAL VIEW (which includes "password" field)
     // System.out.println(new ObjectMapper().writerWithView(LnsConnection.InternalView.class).writeValueAsString(VALID_SAMPLE_CONNECTION));
     //    {

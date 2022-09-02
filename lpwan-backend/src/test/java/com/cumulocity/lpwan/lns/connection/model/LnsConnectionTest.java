@@ -29,6 +29,12 @@ class LnsConnectionTest {
     }
 
     @Test
+    void doValidateLnsConnection_valid_name_special_characters() throws InputDataValidationException {
+        assertTrue(VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_1.isValid());
+        assertTrue(VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_2.isValid());
+    }
+
+    @Test
     void doValidateLnsConnection_invalid_name_null() {
         LnsConnection invalid_connection = SampleConnection.builder()
                 .name(null)
@@ -55,6 +61,29 @@ class LnsConnectionTest {
     }
 
     @Test
+    void doValidateLnsConnection_invalid_name_special_characters() {
+        LnsConnection invalid_connection = SampleConnection.builder()
+                .name("null null !@#$%^*::&'\"")
+                .description(null)
+                .user("USER NAME")
+                .password("**********")
+                .build();
+
+        InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
+        assertEquals("SampleConnection has special characters that are not allowed. These are %, ;, /, &, \", ', \\, *", inputDataValidationException.getMessage());
+
+        LnsConnection invalid_connection_2 = SampleConnection.builder()
+                .name("a!#c&d~^(76*5$) '")
+                .description(null)
+                .user("USER NAME")
+                .password("**********")
+                .build();
+
+        InputDataValidationException inputDataValidationException_2 = Assert.assertThrows(InputDataValidationException.class, invalid_connection_2::isValid);
+        assertEquals("SampleConnection has special characters that are not allowed. These are %, ;, /, &, \", ', \\, *", inputDataValidationException_2.getMessage());
+    }
+
+    @Test
     void doValidateLnsConnection_invalid_user_null() {
         LnsConnection invalid_connection = SampleConnection.builder()
                                                 .name("Sample Connection Name")
@@ -68,7 +97,7 @@ class LnsConnectionTest {
     }
 
     @Test
-    void doValidateLnsConnection_invalid_user_balnk() {
+    void doValidateLnsConnection_invalid_user_blank() {
         LnsConnection invalid_connection = SampleConnection.builder()
                                             .name("Sample Connection Name")
                                             .description("Sample Connection Description")
