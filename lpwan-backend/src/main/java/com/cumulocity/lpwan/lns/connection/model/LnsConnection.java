@@ -32,6 +32,8 @@ import java.util.*;
 @NoArgsConstructor
 public abstract class LnsConnection {
 
+    private static final String VALID_CONNECTION = "^[^\\%\\;\\/\\&\\\"\\'\\\\\\*]*$";
+
     @NotBlank
     @JsonView(LnsConnection.PublicView.class)
     private String name;
@@ -80,6 +82,10 @@ public abstract class LnsConnection {
 
         if (!missingFields.isEmpty()) {
             throw new InputDataValidationException(this.getClass().getSimpleName() + " is missing mandatory fields: " + String.join(", ", missingFields));
+        }
+
+        if(!name.matches(VALID_CONNECTION)) {
+            throw new InputDataValidationException(this.getClass().getSimpleName() + " has restricted special characters %, ;, /, &, \", ', \\, *");
         }
 
         this.validate();
