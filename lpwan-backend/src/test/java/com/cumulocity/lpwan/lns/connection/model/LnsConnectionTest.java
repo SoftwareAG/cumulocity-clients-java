@@ -70,7 +70,7 @@ class LnsConnectionTest {
                 .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
-        assertEquals("SampleConnection has special characters that are not allowed. These are %, ;, /, &, \", ', \\, *", inputDataValidationException.getMessage());
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, \", ', \\, *", inputDataValidationException.getMessage());
 
         LnsConnection invalid_connection_2 = SampleConnection.builder()
                 .name("a!#c&d~^(76*5$) '")
@@ -80,7 +80,7 @@ class LnsConnectionTest {
                 .build();
 
         InputDataValidationException inputDataValidationException_2 = Assert.assertThrows(InputDataValidationException.class, invalid_connection_2::isValid);
-        assertEquals("SampleConnection has special characters that are not allowed. These are %, ;, /, &, \", ', \\, *", inputDataValidationException_2.getMessage());
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, \", ', \\, *", inputDataValidationException_2.getMessage());
     }
 
     @Test

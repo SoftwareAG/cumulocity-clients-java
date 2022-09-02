@@ -85,7 +85,7 @@ public abstract class LnsConnection {
         }
 
         if(!name.matches(VALID_CONNECTION)) {
-            throw new InputDataValidationException(this.getClass().getSimpleName() + " has special characters that are not allowed. These are %, ;, /, &, \", ', \\, *");
+            throw new InputDataValidationException(this.getClass().getSimpleName() + " has restricted special characters %, ;, /, &, \", ', \\, *");
         }
 
         this.validate();
