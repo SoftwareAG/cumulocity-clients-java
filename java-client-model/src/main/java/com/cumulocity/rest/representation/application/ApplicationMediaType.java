@@ -35,7 +35,9 @@ public class ApplicationMediaType extends CumulocityMediaType {
     public static final String APPLICATION_USER_COLLECTION_TYPE = APPLICATION_VND_COM_NSN_CUMULOCITY + "applicationUserCollection+json;" + VND_COM_NSN_CUMULOCITY_PARAMS;
 
     public static final String APPLICATION_LOGS_TYPE = APPLICATION_VND_COM_NSN_CUMULOCITY + "applicationLogs+json;" + VND_COM_NSN_CUMULOCITY_PARAMS;
-    
+
+    public static final String APPLICATION_VERSION_TYPE = APPLICATION_VND_COM_NSN_CUMULOCITY + "applicationVersion+json;" + VND_COM_NSN_CUMULOCITY_PARAMS;
+
     public ApplicationMediaType(String entity) {
         super(entity);
     }
