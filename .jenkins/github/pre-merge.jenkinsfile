@@ -2,10 +2,7 @@ library "c8y-common-steps"
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 
 INSTANCES = ['java', 'sdk'].collectEntries { [(it): devInstanceOf(it)] }
-SECRETS = [
-    management: [ user: 'admin', pass: 'Pyi1bo1r' ],
-    tenant: [ pass: 'Pyi1bo1r!' ]
-]
+
 VERSIONS = [
     changeList: "${env.CHANGE_ID}.${env.BUILD_NUMBER}.sdk" // Docker registry rejects versions with capital letters!
 ]
@@ -321,14 +318,17 @@ def cucumber_java(instance) {
             checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
             unstash 'sdk-m2'
             try {
-              dir('cumulocity-quality') {
-                sh """
-                .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
-                  ${SECRETS.management.pass} ${SECRETS.tenant.pass} "${params.java_test_tags}" \
-                  ${instance.name}-dev-c8y-io.svc.cluster.local common ${licence} \
-                  ${instance.licence} ${instance.name}-enterprise-second.dev.c8y.io \
-                  ${SECRETS.management.user} "${RESOURCES_URL}" "${RESOURCES_URL}" "${RESOURCES_URL}"
-                  """
+              withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+                               string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
+                dir('cumulocity-quality') {
+                  sh """
+                  .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
+                    ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} "${params.java_test_tags}" \
+                    ${instance.name}-dev-c8y-io.svc.cluster.local common ${licence} \
+                    ${instance.licence} ${instance.name}-enterprise-second.dev.c8y.io \
+                    ${MANAGEMENT_USER} "${RESOURCES_URL}" "${RESOURCES_URL}" "${RESOURCES_URL}"
+                    """
+                }
               }
             } catch (Exception e) {
               currentBuild.result = "UNSTABLE"
@@ -365,8 +365,10 @@ def sdk_tests(instance) {
           checkoutMatchingBranch('cumulocity-clients-java', env.CHANGE_BRANCH, env.CHANGE_TARGET)
           unstash 'sdk-m2'
           try {
-            dir('cumulocity-clients-java') {
-              sh ".jenkins/scripts/new_sdk_tests.sh ${instance.domain} ${SECRETS.management.pass} ${SECRETS.management.user}"
+            withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')]) {
+              dir('cumulocity-clients-java') {
+                sh ".jenkins/scripts/new_sdk_tests.sh ${instance.domain} ${MANAGEMENT_PASSWD} ${MANAGEMENT_USER}"
+              }
             }
           } catch (Exception e) {
             currentBuild.result = "UNSTABLE"
@@ -398,13 +400,16 @@ def java_token_tests(instance) {
           checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
           unstash 'sdk-m2'
           try {
-            dir('cumulocity-quality') {
-              sh """
-            .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
-              ${SECRETS.management.pass} ${SECRETS.tenant.pass} \
-              ${instance.name}-dev-c8y-io.svc.cluster.local common \
-              ${SECRETS.management.user} ${RESOURCES_URL} ${RESOURCES_URL} ${RESOURCES_URL}
-              """
+            withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+                             string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
+              dir('cumulocity-quality') {
+                sh """
+              .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
+                ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} \
+                ${instance.name}-dev-c8y-io.svc.cluster.local common \
+                ${MANAGEMENT_USER} ${RESOURCES_URL} ${RESOURCES_URL} ${RESOURCES_URL}
+                """
+              }
             }
           } catch (Exception e) {
             currentBuild.result = "UNSTABLE"
