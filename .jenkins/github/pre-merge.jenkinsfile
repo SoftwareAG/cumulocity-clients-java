@@ -318,8 +318,8 @@ def cucumber_java(instance) {
             checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
             unstash 'sdk-m2'
             try {
-              withCredentials([usernamePassword(credentialsId: 'Dynamic_env', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')],
-                      [usernamePassword(credentialsId: 'management-tenant', passwordVariable: 'TENANT_PASSWD')]) {
+              withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+                               string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
                 dir('cumulocity-quality') {
                   sh """
                   .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
@@ -365,7 +365,7 @@ def sdk_tests(instance) {
           checkoutMatchingBranch('cumulocity-clients-java', env.CHANGE_BRANCH, env.CHANGE_TARGET)
           unstash 'sdk-m2'
           try {
-            withCredentials([usernamePassword(credentialsId: 'Dynamic_env', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')]) {
+            withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')]) {
               dir('cumulocity-clients-java') {
                 sh ".jenkins/scripts/new_sdk_tests.sh ${instance.domain} ${MANAGEMENT_PASSWD} ${MANAGEMENT_USER}"
               }
@@ -400,8 +400,8 @@ def java_token_tests(instance) {
           checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
           unstash 'sdk-m2'
           try {
-            withCredentials([usernamePassword(credentialsId: 'Dynamic_env', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')],
-                    [usernamePassword(credentialsId: 'management-tenant', passwordVariable: 'TENANT_PASSWD')]) {
+            withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+                             string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
               dir('cumulocity-quality') {
                 sh """
               .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
