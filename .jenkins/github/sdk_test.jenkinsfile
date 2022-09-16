@@ -41,7 +41,7 @@ def job_options()
                 copyArtifactPermission('/*/**'),
                 parameters([string(defaultValue: 'develop', description: 'tests branch/revision', name: 'TEST_BRANCH'),
                             string(defaultValue: 'smoke1.dev.c8y.io', description: '', name: 'DEPLOY_ENVIRONMENT'),
-                            string(defaultValue: 'Pyi1bo1r', description: 'management tenant password', name: 'MANAGE_PASS'),
+                            string(defaultValue: '', description: 'management tenant password', name: 'MANAGE_PASS'),
                             string(defaultValue: 'admin', description: 'management tenant username', name: 'MANAGE_USER')])])
 }
 
