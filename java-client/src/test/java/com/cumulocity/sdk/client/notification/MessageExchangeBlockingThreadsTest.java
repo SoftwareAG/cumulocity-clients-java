@@ -42,7 +42,7 @@ class MessageExchangeBlockingThreadsTest {
         final Client client = mock(Client.class);
         final TransportListener listener = mock(TransportListener.class);
         final MessageExchange messageExchange = new MessageExchange(mock(CumulocityLongPollingTransport.class), client, executorService, listener, mock(ConnectionHeartBeatWatcher.class), mock(UnauthorizedConnectionWatcher.class), Collections.emptyList());
-        assertTimeoutPreemptively(Duration.ofMillis(2000), () -> {
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
 
             givenUnfinishedClientResponse(client);
 
