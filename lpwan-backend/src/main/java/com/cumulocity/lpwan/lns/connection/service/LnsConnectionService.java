@@ -158,6 +158,13 @@ public class LnsConnectionService {
         newLnsConnection.isValid();
 
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
+
+        if(lnsConnections.size() == 10){
+            String errorMessage = "Maximum 10 connections are allowed per tenant.";
+            log.error(errorMessage);
+            throw new LpwanServiceException(errorMessage);
+        }
+
         String newLnsConnectionName = newLnsConnection.getName();
         if (lnsConnections.containsKey(newLnsConnectionName)) {
             String message = String.format("LNS connection named '%s' already exists.", newLnsConnectionName);

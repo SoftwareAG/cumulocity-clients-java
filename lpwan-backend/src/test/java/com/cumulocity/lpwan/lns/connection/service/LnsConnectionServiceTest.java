@@ -429,6 +429,37 @@ public class LnsConnectionServiceTest {
     }
 
     @Test
+    public void doCreate_valid_connection_check_limit() throws Exception {
+        OptionPK lnsConnectionsOptionKey = new OptionPK("sample", "credentials.lns.connections.map");
+        OptionRepresentation lnsConnectionsOptionRepresentation = OptionRepresentation.asOptionRepresentation(lnsConnectionsOptionKey.getCategory(), lnsConnectionsOptionKey.getKey(), EMPTY_LNS_CONNECTIONS_MAP_JSON);
+
+        when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
+        when(tenantOptionApi.save(any())).thenReturn(null);
+
+        for(int i=1; i<=10; i++) {
+            createConnection("Sample Connection "+i);
+        }
+
+        String errorMessage = "Maximum 10 connections are allowed per tenant.";
+        try{
+            createConnection("Sample Connection 11");
+        } catch (LpwanServiceException e){
+            assertEquals(errorMessage, e.getMessage());
+        }
+    }
+
+    private void createConnection(String connectionName) throws LpwanServiceException {
+        LnsConnection connectionToCreate = SampleConnection.builder()
+                .name(connectionName)
+                .description("Sample Connection Description")
+                .user("USER NAME")
+                .password("**********")
+                .build();
+        connectionToCreate.setName(connectionName);
+        lnsConnectionService.create(connectionToCreate);
+    }
+
+    @Test
     public void doCreate_null_connection() {
         InputDataValidationException inputDataValidationException = assertThrows(InputDataValidationException.class, () -> lnsConnectionService.create(null));
         assertEquals("New LNS connection can't be null.", inputDataValidationException.getMessage());
