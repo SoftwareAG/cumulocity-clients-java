@@ -436,8 +436,8 @@ public class LnsConnectionServiceTest {
         when(tenantOptionApi.getOption(eq(lnsConnectionsOptionKey))).thenReturn(lnsConnectionsOptionRepresentation);
         when(tenantOptionApi.save(any())).thenReturn(null);
 
-        for(int i=1; i<=10; i++) {
-            createConnection("Sample Connection "+i);
+        for (int counter = 1; counter <= 10; counter++) {
+            createConnection("Sample Connection " + counter);
         }
 
         String errorMessage = "Maximum 10 connections are allowed per tenant.";

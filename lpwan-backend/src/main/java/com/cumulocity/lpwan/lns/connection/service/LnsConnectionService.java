@@ -71,6 +71,8 @@ public class LnsConnectionService {
 
     private static final String LNS_CONNECTIONS_KEY = "credentials.lns.connections.map";
 
+    private static final int MAXIMUM_NUMBER_OF_ALLOWED_CONNECTIONS = 10;
+
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private static final MapType mapType = JSON_MAPPER.getTypeFactory().constructMapType(ConcurrentHashMap.class, String.class, LnsConnection.class);
 
@@ -159,7 +161,7 @@ public class LnsConnectionService {
 
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
 
-        if(lnsConnections.size() == 10){
+        if(lnsConnections.size() == MAXIMUM_NUMBER_OF_ALLOWED_CONNECTIONS){
             String errorMessage = "Maximum 10 connections are allowed per tenant.";
             log.error(errorMessage);
             throw new LpwanServiceException(errorMessage);
