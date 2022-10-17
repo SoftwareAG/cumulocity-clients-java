@@ -161,7 +161,7 @@ public class LnsConnectionService {
 
         Map<String, LnsConnection> lnsConnections = getLnsConnections();
 
-        if(lnsConnections.size() == MAXIMUM_NUMBER_OF_ALLOWED_CONNECTIONS){
+        if(lnsConnections.size() >= MAXIMUM_NUMBER_OF_ALLOWED_CONNECTIONS){
             String errorMessage = "Maximum 10 connections are allowed per tenant.";
             log.error(errorMessage);
             throw new LpwanServiceException(errorMessage);
