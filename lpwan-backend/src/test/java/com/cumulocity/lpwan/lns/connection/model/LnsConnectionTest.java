@@ -70,7 +70,7 @@ class LnsConnectionTest {
                 .build();
 
         InputDataValidationException inputDataValidationException = Assert.assertThrows(InputDataValidationException.class, invalid_connection::isValid);
-        assertEquals("SampleConnection has restricted special characters %, ;, /, &, \", ', \\, *", inputDataValidationException.getMessage());
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, #, ?, \", ', \\, *", inputDataValidationException.getMessage());
 
         LnsConnection invalid_connection_2 = SampleConnection.builder()
                 .name("a!#c&d~^(76*5$) '")
@@ -80,7 +80,27 @@ class LnsConnectionTest {
                 .build();
 
         InputDataValidationException inputDataValidationException_2 = Assert.assertThrows(InputDataValidationException.class, invalid_connection_2::isValid);
-        assertEquals("SampleConnection has restricted special characters %, ;, /, &, \", ', \\, *", inputDataValidationException_2.getMessage());
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, #, ?, \", ', \\, *", inputDataValidationException_2.getMessage());
+
+        LnsConnection invalid_connection_3 = SampleConnection.builder()
+                .name("!@#rtw")
+                .description(null)
+                .user("USER NAME")
+                .password("**********")
+                .build();
+
+        InputDataValidationException inputDataValidationException_3 = Assert.assertThrows(InputDataValidationException.class, invalid_connection_3::isValid);
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, #, ?, \", ', \\, *", inputDataValidationException_3.getMessage());
+
+        LnsConnection invalid_connection_4 = SampleConnection.builder()
+                .name("rtw#$")
+                .description(null)
+                .user("USER NAME")
+                .password("**********")
+                .build();
+
+        InputDataValidationException inputDataValidationException_4 = Assert.assertThrows(InputDataValidationException.class, invalid_connection_4::isValid);
+        assertEquals("SampleConnection has restricted special characters %, ;, /, &, #, ?, \", ', \\, *", inputDataValidationException_4.getMessage());
     }
 
     @Test
