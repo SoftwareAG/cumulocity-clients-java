@@ -183,7 +183,7 @@ def build_agents() {
         dir('cumulocity-agents') {
           stage('agents build & verify') {
             try {
-              sh '.jenkins/scripts/mvn.sh -pl \'!com.nsn.cumulocity.cep:cep-sdk,!com.nsn.cumulocity.cep:cep-server\' package'
+              sh '.jenkins/scripts/mvn.sh package'
             } catch (e) {
               stopPipeline('Build & test agents', e)
             } finally {
