@@ -32,7 +32,7 @@ import java.util.*;
 @NoArgsConstructor
 public abstract class LnsConnection {
 
-    private static final String VALID_CONNECTION = "^[^\\%\\;\\/\\&\\\"\\'\\\\\\*]*$";
+    private static final String VALID_CONNECTION = "^[^\\%\\#\\?\\;\\/\\&\\\"\\'\\\\\\*]*$";
 
     @NotBlank
     @JsonView(LnsConnection.PublicView.class)
@@ -85,7 +85,7 @@ public abstract class LnsConnection {
         }
 
         if(!name.matches(VALID_CONNECTION)) {
-            throw new InputDataValidationException(this.getClass().getSimpleName() + " has restricted special characters %, ;, /, &, \", ', \\, *");
+            throw new InputDataValidationException(this.getClass().getSimpleName() + " has restricted special characters %, ;, /, &, #, ?, \", ', \\, *");
         }
 
         this.validate();
