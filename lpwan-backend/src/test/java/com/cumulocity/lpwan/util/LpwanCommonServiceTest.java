@@ -49,11 +49,21 @@ public class LpwanCommonServiceTest {
     LpwanCommonService lpwanCommonService;
 
     @Test
-    public void shouldMigrateOldDeviceWithNewAgentFragment() {
+    public void shouldMigrateOldDeviceWithNewAgentFragment() throws Exception {
+        MicroserviceCredentials microserviceCredentials = new MicroserviceCredentials("aTenant", "aServiceUser", "aPassword", null, null, null, null);
+        when(platformProperties.getMicroserviceBoostrapUser()).thenReturn(microserviceCredentials);
+        ArgumentCaptor<Callable> callableArgumentCaptor = ArgumentCaptor.forClass(Callable.class);
+
         mockInventoryReturnsWithDevice("lns-connection-1", GId.asGId("12345"));
         LnsConnectionDeserializer.registerLnsConnectionConcreteClass("SampleConnection", SampleConnection.class);
+
         lpwanCommonService.migrateOldDeviceWithNewAgentFragment();
-        ArgumentCaptor<ManagedObjectRepresentation> deviceMoCaptor =  ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
+
+        verify(contextService).callWithinContext(eq(microserviceCredentials), callableArgumentCaptor.capture());
+        callableArgumentCaptor.getValue().call();
+        verify(applicationApi).currentApplication();
+
+        ArgumentCaptor<ManagedObjectRepresentation> deviceMoCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
         verify(inventoryApi).update(deviceMoCaptor.capture());
         ManagedObjectRepresentation deviceMoToBeUpdated = deviceMoCaptor.getValue();
         assertEquals(GId.asGId("12345"), deviceMoToBeUpdated.getId());
@@ -63,17 +73,46 @@ public class LpwanCommonServiceTest {
     }
 
     @Test
+    public void shouldMigrateOldDeviceWithNewAgentFragmentWithPrePopulatedVersion() {
+        mockInventoryReturnsWithDevice("lns-connection-1", GId.asGId("12345"));
+        LnsConnectionDeserializer.registerLnsConnectionConcreteClass("SampleConnection", SampleConnection.class);
+        lpwanCommonService.migrateOldDeviceWithNewAgentFragment("Sample Version");
+        ArgumentCaptor<ManagedObjectRepresentation> deviceMoCaptor = ArgumentCaptor.forClass(ManagedObjectRepresentation.class);
+        verify(inventoryApi).update(deviceMoCaptor.capture());
+        ManagedObjectRepresentation deviceMoToBeUpdated = deviceMoCaptor.getValue();
+        assertEquals(GId.asGId("12345"), deviceMoToBeUpdated.getId());
+        Agent agent = deviceMoToBeUpdated.get(Agent.class);
+        assertEquals(LpwanCommonService.MAINTAINER, agent.getMaintainer());
+        assertEquals("SampleConnection", agent.getName());
+        assertEquals("Sample Version", agent.getVersion());
+    }
+
+    @Test
     public void shouldPrepareAgentFragment() throws Exception {
         MicroserviceCredentials microserviceCredentials = new MicroserviceCredentials("aTenant", "aServiceUser", "aPassword", null, null, null, null);
         when(platformProperties.getMicroserviceBoostrapUser()).thenReturn(microserviceCredentials);
         ArgumentCaptor<Callable> callableArgumentCaptor = ArgumentCaptor.forClass(Callable.class);
         LnsConnectionDeserializer.registerLnsConnectionConcreteClass("SampleConnection", SampleConnection.class);
         Agent agent = lpwanCommonService.prepareAgentFragment();
-        verify(contextService).callWithinContext(eq(microserviceCredentials),callableArgumentCaptor.capture());
+        verify(contextService).callWithinContext(eq(microserviceCredentials), callableArgumentCaptor.capture());
         callableArgumentCaptor.getValue().call();
         verify(applicationApi).currentApplication();
         assertEquals(LpwanCommonService.MAINTAINER, agent.getMaintainer());
         assertEquals("SampleConnection", agent.getName());
+    }
+
+    @Test
+    public void shouldPrepareAgentFragmentWithPrePopulatedVersion() throws Exception {
+        MicroserviceCredentials microserviceCredentials = new MicroserviceCredentials("aTenant", "aServiceUser", "aPassword", null, null, null, null);
+        when(platformProperties.getMicroserviceBoostrapUser()).thenReturn(microserviceCredentials);
+        ArgumentCaptor<Callable> callableArgumentCaptor = ArgumentCaptor.forClass(Callable.class);
+        LnsConnectionDeserializer.registerLnsConnectionConcreteClass("SampleConnection", SampleConnection.class);
+        Agent agent = lpwanCommonService.prepareAgentFragment("Sample Version");
+        verify(contextService, never()).callWithinContext(eq(microserviceCredentials), callableArgumentCaptor.capture());
+        verify(applicationApi, never()).currentApplication();
+        assertEquals(LpwanCommonService.MAINTAINER, agent.getMaintainer());
+        assertEquals("SampleConnection", agent.getName());
+        assertEquals("Sample Version", agent.getVersion());
     }
 
     private void mockInventoryReturnsWithDevice(String lnsConnectionName, GId gId) {

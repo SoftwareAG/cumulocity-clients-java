@@ -38,7 +38,7 @@ public class LpwanCommonService {
     @Autowired
     PlatformProperties platformProperties;
 
-    public void migrateOldDeviceWithNewAgentFragment() {
+    public void migrateOldDeviceWithNewAgentFragment(String version) {
         Iterable<ManagedObjectRepresentation> managedObjectRepresentations = getDeviceMosByProvider(LnsConnectionDeserializer.getRegisteredAgentName());
         if (managedObjectRepresentations == null) return;
 
@@ -46,7 +46,7 @@ public class LpwanCommonService {
             Agent agentFromMo = deviceMo.get(Agent.class);
             if (Objects.isNull(agentFromMo)) {
                 ManagedObjectRepresentation deviceMoToBeUpdated = ManagedObjects.asManagedObject(deviceMo.getId());
-                deviceMoToBeUpdated.set(prepareAgentFragment());
+                deviceMoToBeUpdated.set(prepareAgentFragment(version));
                 try {
                     inventoryApi.update(deviceMoToBeUpdated);
                     log.info("The device with the Managed object Id '{}' is updated with fragment 'c8y_Agent'", deviceMo.getId());
@@ -56,6 +56,10 @@ public class LpwanCommonService {
                 }
             }
         }
+    }
+
+    public void migrateOldDeviceWithNewAgentFragment() {
+        migrateOldDeviceWithNewAgentFragment(getVersion());
     }
 
     public Iterable<ManagedObjectRepresentation> getDeviceMosByProvider(String lpwanProviderName) {
@@ -71,13 +75,17 @@ public class LpwanCommonService {
         return managedObjectRepresentations;
     }
 
-    public Agent prepareAgentFragment() {
+    public Agent prepareAgentFragment(String version) {
         Agent agent = new Agent();
         agent.setName(LnsConnectionDeserializer.getRegisteredAgentName());
-        agent.setVersion(getVersion());
+        agent.setVersion(version);
         agent.setMaintainer(MAINTAINER);
 
         return agent;
+    }
+
+    public Agent prepareAgentFragment() {
+        return prepareAgentFragment(getVersion());
     }
 
     public String getVersion() {
