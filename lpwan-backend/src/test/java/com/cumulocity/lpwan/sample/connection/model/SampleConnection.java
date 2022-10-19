@@ -48,14 +48,14 @@ public class SampleConnection extends LnsConnection {
                                                                             .build();
 
     public static final SampleConnection VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_1 = SampleConnection.builder()
-            .name("a!#cd~^ (76 5$)")
+            .name("a!cd~^ (76 5$)")
             .description("Sample Connection Description")
             .user("USER NAME")
             .password("**********")
             .build();
 
     public static final SampleConnection VALID_SAMPLE_CONNECTION_SPECIAL_CHARACTERS_2 = SampleConnection.builder()
-            .name("(null null !@#$^::~`),.")
+            .name("(null null !@$^::~`),.")
             .description("Sample Connection Description")
             .user("USER NAME")
             .password("**********")
