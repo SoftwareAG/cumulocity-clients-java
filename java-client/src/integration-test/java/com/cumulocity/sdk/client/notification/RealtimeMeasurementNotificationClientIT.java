@@ -1,15 +1,20 @@
 package com.cumulocity.sdk.client.notification;
 
+import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.rest.representation.tenant.OptionRepresentation;
+import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeMeasurementMessage;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
 import org.joda.time.DateTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -24,6 +29,20 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final MeasurementApi measurementApi = platform.getMeasurementApi();
+    final TenantOptionApi tenantOptionApi = platform.getTenantOptionApi();
+
+    @AfterEach
+    public void deleteMeasurements() {
+        deleteTenantOptionWhenPresent();
+    }
+
+    private void deleteTenantOptionWhenPresent() {
+        try {
+            tenantOptionApi.delete(new OptionPK("configuration", "timeseries.mongodb.collections.mode"));
+        } catch (SDKException e) {
+
+        }
+    }
 
     @Test
     public void shouldReceiveCreateMeasurementNotification() throws Exception {
@@ -46,6 +65,7 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
     @Test
     public void shouldReceiveDeleteMeasurementNotification() throws Exception {
         // given
+        disableTimeseries();
         Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         MeasurementRepresentation measurement = measurementApi.create(createMeasurementRep(mo));
@@ -60,6 +80,11 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
         assertDeleteMeasurementNotification(subscriptionListener.getNotification(), measurement);
+    }
+
+    public void disableTimeseries() {
+        OptionRepresentation disableTimeseries = OptionRepresentation.asOptionRepresentation("configuration", "timeseries.mongodb.collections.mode", "DISABLED");
+            tenantOptionApi.save(disableTimeseries);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
