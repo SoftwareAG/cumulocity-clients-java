@@ -20,12 +20,15 @@
 package com.cumulocity.sdk.client.measurement;
 
 import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementCollectionRepresentation;
 import com.cumulocity.rest.representation.measurement.MeasurementRepresentation;
+import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.*;
 
@@ -55,7 +58,7 @@ public class MeasurementIT extends JavaSdkITBase {
     private List<MeasurementRepresentation> result2;
     private MeasurementCollectionRepresentation collection1;
     private MeasurementApi measurementApi;
-
+    private TenantOptionApi tenantOptionApi;
     private int status;
 
     @BeforeAll
@@ -69,6 +72,7 @@ public class MeasurementIT extends JavaSdkITBase {
     @BeforeEach
     public void setup() throws Exception {
         measurementApi = platform.getMeasurementApi();
+        tenantOptionApi = platform.getTenantOptionApi();
         input = new ArrayList<>();
         result1 = new ArrayList<>();
         result2 = new ArrayList<>();
@@ -76,11 +80,16 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
     @AfterEach
-    public void deleteManagedObjects() {
-        List<MeasurementRepresentation> measOn1stPage = getMeasurementsFrom1stPage();
-        while (!measOn1stPage.isEmpty()) {
-            deleteMeasurements(measOn1stPage);
-            measOn1stPage = getMeasurementsFrom1stPage();
+    public void deleteMeasurements() {
+        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+        deleteTenantOptionWhenPresent();
+    }
+
+    private void deleteTenantOptionWhenPresent() {
+        try {
+            tenantOptionApi.delete(new OptionPK("configuration", "timeseries.mongodb.collections.mode"));
+        } catch (SDKException e) {
+
         }
     }
 
@@ -318,6 +327,7 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void deleteMeasurement() throws Exception {
         // given
+        disableTimeseries();
         iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
         // when
         iCreateAllMeasurements();
@@ -325,6 +335,11 @@ public class MeasurementIT extends JavaSdkITBase {
         iGetMeasurementWithCreatedId();
         // then
         shouldNotBeFound();
+    }
+
+    public void disableTimeseries() {
+        OptionRepresentation disableTimeseries = OptionRepresentation.asOptionRepresentation("configuration", "timeseries.mongodb.collections.mode", "DISABLED");
+        tenantOptionApi.save(disableTimeseries);
     }
 
     @Test
