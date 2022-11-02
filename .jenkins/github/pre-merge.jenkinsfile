@@ -1,0 +1,210 @@
+env.REPOSITORY_CLIENTS_JAVA="github.com/SoftwareAG"
+env.REPOSITORY_SDK="github.softwareag.com/IOTA"
+
+pipeline {
+    agent {
+        kubernetes {
+            label 'jdk11'
+            inheritFrom 'jdk11'
+            defaultContainer 'default'
+        }
+    }
+    triggers{
+        githubPush()
+    }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 1, unit: 'HOURS')
+        disableConcurrentBuilds()
+        copyArtifactPermission('OVAS-scanner-integration');
+    }
+    parameters {
+        choice(name: 'build_type', choices: ['DEFAULT', 'RELEASE', 'HOTFIX']);
+        string(name: 'release_version', defaultValue: '9.91.0', description: "version you want to release");
+        string(name: 'hotfix_version', defaultValue: '9.91.1-SNAPSHOT', description: "version with micro part bump, available in release branch");
+        string(name: 'development_version', defaultValue: '9.92.0-SNAPSHOT', description: "version that will be in develop branch after process")
+
+    }
+
+    stages {
+        stage('Disable release from develop branch') {
+            when {
+                expression { params.build_type == "RELEASE" && env.BRANCH_NAME == "develop" }
+            }
+            steps {
+                script {
+                    currentBuild.result = 'ABORTED'
+                    error('Release build from develop should be no longer executed. New releases are running from new CI/CD proccess')
+                }
+            }
+        }
+        stage('Fail in case of incorrect input parameters') {
+            when {
+                not {
+                    anyOf {
+                        allOf {
+                            equals expected: 'HOTFIX', actual: params.build_type;
+                            branch 'release/*'
+                        }
+                        equals expected: 'DEFAULT', actual: params.build_type
+                    }
+                }
+            }
+            steps {
+                error("Incorrect input parameters")
+            }
+        }
+        stage('Checkout') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+        stage('Build') {
+            options {
+                retry(3)
+            }
+            steps {
+
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh ".jenkins/scripts/build.sh"
+                }
+            }
+            post {
+                always {
+                    junit(testResults: '**/TEST-*.xml', keepLongStdio: true)
+                    jacoco()
+                }
+            }
+        }
+        stage('Verify maven repo') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'release/**'
+                }
+            }
+            steps {
+                sh "mkdir -p ~/.ssh"
+                sh "grep -qF github.com ~/.ssh/known_hosts || ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts"
+                sh "grep -qF github.softwareag.com ~/.ssh/known_hosts || ssh-keyscan -t rsa github.softwareag.com >> ~/.ssh/known_hosts"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "develop"]],//[[name: "${env.BRANCH_NAME}"]],
+                    extensions: [
+                        [$class: 'CleanCheckout'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'cumulocity-sdk'],
+                        [$class: 'LocalBranch', localBranch: "**"]
+                    ],
+                    userRemoteConfigs: [[url: 'ssh://git@github.softwareag.com/IOTA/cumulocity-sdk', credentialsId:'jenkins-master']]
+                ])
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh ".jenkins/scripts/repo.sh"
+                }
+            }
+        }
+        stage('Deploy to Nexus') {
+            when {
+                allOf {
+                    equals expected: 'DEFAULT', actual: params.build_type
+                    anyOf {
+                        branch 'release/**';
+                        branch 'develop'
+                    }
+                }
+
+            }
+            steps {
+                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                    sh ".jenkins/scripts/deploy.sh"
+                }
+            }
+        }
+        stage('Release') {
+            when {
+                anyOf {
+                    allOf {
+                        equals expected: 'RELEASE', actual: params.build_type;
+                        branch 'develop'
+                    };
+                    allOf {
+                        equals expected: 'HOTFIX', actual: params.build_type;
+                        branch 'release/*'
+                    }
+                }
+            }
+            stages {
+                stage('Prepare release') {
+                    when {
+                        equals expected: 'RELEASE', actual: params.build_type
+                    }
+                    steps {
+                        sh ".jenkins/scripts/prepare_release.sh ${params.release_version}"
+                    }
+                }
+                stage('Release') {
+                    when {
+                        anyOf {
+                            equals expected: 'RELEASE', actual: params.build_type;
+                            equals expected: 'HOTFIX', actual: params.build_type
+                        }
+                    }
+                    steps {
+                        sshagent(['hudson-ssh-resources']) {
+                            withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+                                             string(credentialsId: 'tech-c8y-github.softwareag.com', variable: 'SDK_CREDENTIALS'),
+                                             string(credentialsId: 'github.com_write', variable: 'CLIENTS_CREDENTIALS')]) {
+                                sh ".jenkins/scripts/update_dependencies.sh ${params.release_version}"
+                                sh ".jenkins/scripts/release.sh -r ${params.release_version} -d ${params.hotfix_version} -b ${params.build_type}"
+                            }
+                        }
+                    }
+                }
+                stage('Finish release') {
+                    when {
+                        equals expected: 'RELEASE', actual: params.build_type
+                    }
+                    stages {
+                        stage('Close and merge release branch') {
+                            steps {
+                                withCredentials([string(credentialsId: 'tech-c8y-github.softwareag.com', variable: 'SDK_CREDENTIALS'),
+                                                 string(credentialsId: 'github.com_write', variable: 'CLIENTS_CREDENTIALS')]) {
+                                    sh ".jenkins/scripts/finish_release.sh ${params.release_version}"
+                               }
+                            }
+                        }
+                        stage('Bump develop branch') {
+                            steps {
+                                withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
+                                                 string(credentialsId: 'tech-c8y-github.softwareag.com', variable: 'SDK_CREDENTIALS'),
+                                                 string(credentialsId: 'github.com_write', variable: 'CLIENTS_CREDENTIALS')]) {
+                                    sh ".jenkins/scripts/update_develop.sh ${params.hotfix_version} ${params.development_version}"
+                                }
+                            }
+                        }
+                    }
+                }
+/*                 stage('Scan third party dependencies') {
+                    steps {
+                        echo "executing scan of third party dependencies"
+                        withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
+                          sh ".jenkins/scripts/scan_dependencies.sh ${params.release_version}"
+                        }
+                    }
+                } */
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts:"**"
+        }
+        failure {
+            script {
+                if (env.BRANCH_NAME ==~ '(develop|release/.*)') {
+//                     chat 'AAAAvnc5o90'
+                }
+            }
+        }
+    }
+}
