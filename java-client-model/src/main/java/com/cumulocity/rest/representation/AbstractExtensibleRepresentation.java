@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.EqualsAndHashCode;
 import org.svenson.DynamicProperties;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.util.ExtensibilityConverter;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AbstractExtensibleRepresentation  extends BaseResourceRepresentation implements DynamicProperties {
 
     private Map<String, Object> attrs = new HashMap<String, Object>();

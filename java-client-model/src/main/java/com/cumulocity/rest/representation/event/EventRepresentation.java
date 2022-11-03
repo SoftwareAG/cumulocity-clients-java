@@ -23,23 +23,31 @@ import static com.cumulocity.model.util.DateTimeUtils.newLocal;
  *
  */
 
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class EventRepresentation extends AbstractExtensibleRepresentation implements SourceableRepresentation {
 
+    @EqualsAndHashCode.Include
     private GId id;
 
+    @EqualsAndHashCode.Include
     private String type;
 
+    @EqualsAndHashCode.Include
     private DateTime time;
 
+    @EqualsAndHashCode.Include
     private DateTime creationTime;
 
+    @EqualsAndHashCode.Include
     private DateTime lastUpdated;
 
+    @EqualsAndHashCode.Include
     private String text;
 
+    @EqualsAndHashCode.Include
     private ManagedObjectRepresentation managedObject;
 
+    @EqualsAndHashCode.Include
     private ExternalIDRepresentation externalSource;
 
     public EventRepresentation() {
@@ -144,4 +152,8 @@ public class EventRepresentation extends AbstractExtensibleRepresentation implem
         this.lastUpdated = lastUpdated;
     }
 
+    @EqualsAndHashCode.Include
+    GId getSourceId() {
+        return managedObject == null ? null : managedObject.getId();
+    }
 }

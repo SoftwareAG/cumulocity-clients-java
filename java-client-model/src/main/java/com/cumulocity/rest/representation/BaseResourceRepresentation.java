@@ -3,10 +3,12 @@ package com.cumulocity.rest.representation;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import lombok.EqualsAndHashCode;
 import org.svenson.JSONProperty;
 
 import com.cumulocity.model.JSONBase;
 
+@EqualsAndHashCode
 public class BaseResourceRepresentation implements ResourceRepresentation {
 
     private String self;
