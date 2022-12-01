@@ -271,14 +271,16 @@ def update_instance(instance) {
 
             chmod 600 ../.chef/keys/chef_cumulocity.pem
 
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 -i ${instance.name}-internal.dev.c8y.io, \
-              --user centos --private-key ../.chef/keys/chef_cumulocity.pem pre-merge-deploy.yaml \
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 \
+              -i ${instance.name}-internal.dev.c8y.io, \
+              --user centos \
+              --private-key ../.chef/keys/chef_cumulocity.pem \
+              --skip-tags 'update-core,layeredproducts' \
               -e 'env_name=${instance.name}-dev-c8y-io' \
               -e 'agents_version=${VERSIONS.currentRpm}' \
               -e 'microservices_version=${VERSIONS.current}' \
               -e 'pr_number=${VERSIONS.changeList}' \
-              -e 'deploy_cep=false' \
-              --skip-tags update-core
+              pre-merge-deploy.yaml
           """
   } catch (e) {
     stopPipeline('Update instance', e)
