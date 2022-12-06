@@ -80,6 +80,7 @@ def calculate_versions() {
               script: './mvnw -N -Dexec.executable=\'echo\' -Dexec.args=\'${revision}\' exec:exec -q'
           ).trim()
           VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
+          VERSIONS.currentCep = "${VERSIONS.current}".replaceFirst('10', '10.')
           VERSIONS.currentRpm = "${VERSIONS.current}-1"
           VERSIONS.release = releaseVersionOf(VERSIONS.revision)
           echo "Building SDK version ${VERSIONS.current} on top of release version ${VERSIONS.release}"
@@ -272,11 +273,14 @@ def build_agents() {
           stage('agents publish') {
             try {
               sshagent(credentials: ['jenkins-master']) {
-                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum'"
-                sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images'"
+                sh "ssh -T hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.current}/yum'"
+                sh "ssh -T hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.current}/kubernetes-images'"
+                sh "ssh -T hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/sag/cep/${VERSIONS.currentCep}/kubernetes-images'"
+                sh "echo '${VERSIONS.currentCep}' | ssh hudson@staging-resources.cumulocity.com -T 'cat > /var/www/staging-resources/pre-merge/sag/cep/${VERSIONS.currentCep}/version.txt'"
 
-                sh "find . -iname '*.rpm' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum/ \\;"
-                sh "find . -iname '*.zip' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images/ \\;"
+                sh "find . -type f -iname '*.rpm' ! -iname '*cep*' -exec scp -v {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.current}/yum/ \\;"
+                sh "find . -type f -iname '*.zip' ! -iname '*cep*' -exec scp -v {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.current}/kubernetes-images/ \\;"
+                sh "find . -type f -iname '*.zip' -iname '*cep*' -exec sh -c 'scp -v {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/sag/cep/${VERSIONS.currentCep}/kubernetes-images/\$(basename {} | sed s/-${VERSIONS.current}//)' \\;"
               }
             } catch (e) {
               stopPipeline('Publish agent artifacts', e)
@@ -349,13 +353,18 @@ def update_instance(instance) {
 
             chmod 600 ../.chef/keys/chef_cumulocity.pem
 
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 -i ${instance.name}-internal.dev.c8y.io, \
-              --user centos --private-key ../.chef/keys/chef_cumulocity.pem pre-merge-deploy.yaml \
-              -e 'env_name=${instance.name}-dev-c8y-io' \
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 \
+              -i ${instance.name}-internal.dev.c8y.io, \
+              --user centos \
+              --private-key ../.chef/keys/chef_cumulocity.pem \
               -e 'core_version=${VERSIONS.currentRpm}' \
+              -e 'env_name=${instance.name}-dev-c8y-io' \
               -e 'agents_version=${VERSIONS.currentRpm}' \
               -e 'microservices_version=${VERSIONS.current}' \
-              -e 'pr_number=${VERSIONS.changeList}'
+              -e 'lp_microservices_version=${VERSIONS.currentCep}' \
+              -e 'pr_number=${VERSIONS.current}' \
+              -e "{'deploy_cep':true}" \
+              pre-merge-deploy.yaml
           """
   } catch (e) {
     stopPipeline('Update instance', e)
@@ -386,26 +395,25 @@ def cucumber_java(instance) {
       container('default') {
         withCredentials([
             file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
-            usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS')
+            usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS'),
+            usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+            string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')
         ]) {
           withEnv([
               "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
-              "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
+              "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge"
           ]) {
             checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
             unstash 'sdk-m2'
             try {
-              withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
-                               string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
-                dir('cumulocity-quality') {
-                  sh """
-                  .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
-                    ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} "${params.java_test_tags}" \
-                    ${instance.name}-dev-c8y-io.svc.cluster.local common ${licence} \
-                    ${instance.licence} ${instance.name}-enterprise-second.dev.c8y.io \
-                    ${MANAGEMENT_USER} "${RESOURCES_URL}" "${RESOURCES_URL}" "${RESOURCES_URL}"
-                    """
-                }
+              dir('cumulocity-quality') {
+                sh """
+                .jenkins/scripts/new_cucumber_java.sh ${instance.domain} \
+                  ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} "${params.java_test_tags}" \
+                  ${instance.name}-dev-c8y-io.svc.cluster.local common ${licence} \
+                  ${instance.licence} ${instance.name}-enterprise-second.dev.c8y.io \
+                  ${MANAGEMENT_USER} "${RESOURCES_URL}/${VERSIONS.current}" "${RESOURCES_URL}" "${RESOURCES_URL}/${VERSIONS.current}"
+                  """
               }
             } catch (Exception e) {
               currentBuild.result = "UNSTABLE"
@@ -468,25 +476,24 @@ def java_token_tests(instance) {
     container('default') {
       withCredentials([
           file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS'),
-          usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS')
+          usernameColonPassword(credentialsId: 'resources-pre-merge', variable: 'RESOURCES_CREDENTIALS'),
+          usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
+          string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')
       ]) {
         withEnv([
             "BUILD_ARGS=${env.MAVEN_ARGS} -Dmaven.repo.local=${WORKSPACE}/.m2/repository",
-            "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge/${VERSIONS.changeList}"
+            "RESOURCES_URL=https://${RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com/pre-merge"
         ]) {
           checkoutMatchingBranch('cumulocity-quality', env.CHANGE_BRANCH, env.CHANGE_TARGET)
           unstash 'sdk-m2'
           try {
-            withCredentials([usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
-                             string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')]) {
-              dir('cumulocity-quality') {
-                sh """
-                .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
-                  ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} \
-                  ${instance.name}-dev-c8y-io.svc.cluster.local common \
-                  ${MANAGEMENT_USER} ${RESOURCES_URL} ${RESOURCES_URL} ${RESOURCES_URL}
-                  """
-              }
+            dir('cumulocity-quality') {
+              sh """
+              .jenkins/scripts/new_cucumber_token_java.sh ${instance.domain} \
+                ${MANAGEMENT_PASSWD} ${TENANT_PASSWD} \
+                ${instance.name}-dev-c8y-io.svc.cluster.local common \
+                ${MANAGEMENT_USER} "${RESOURCES_URL}/${VERSIONS.current}" "${RESOURCES_URL}" "${RESOURCES_URL}/${VERSIONS.current}"
+                """
             }
           } catch (Exception e) {
             currentBuild.result = "UNSTABLE"
@@ -510,7 +517,8 @@ def teardown_instance(instance) {
 
 def clean_up_resources() {
   sshagent(credentials: ['jenkins-master']) {
-    sh "ssh -o 'StrictHostKeyChecking=no' hudson@staging-resources.cumulocity.com 'rm -rf /var/www/staging-resources/pre-merge/${VERSIONS.changeList}'"
+    sh "ssh -o 'StrictHostKeyChecking=no' hudson@staging-resources.cumulocity.com 'rm -rf /var/www/staging-resources/pre-merge/${VERSIONS.current}'"
+    sh "ssh -o 'StrictHostKeyChecking=no' hudson@staging-resources.cumulocity.com 'rm -rf /var/www/staging-resources/pre-merge/sag/cep/${VERSIONS.currentCep}'"
   }
 }
 
