@@ -7,7 +7,7 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
+import org.springframework.boot.actuate.endpoint.ApiVersion;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -34,7 +34,7 @@ public class SubscriptionHealthIndicatorTest {
         given(subscriptionsService.isRegisteredSuccessfully()).willReturn(false);
 
         RestAssuredMockMvc.given()
-                .accept(ActuatorMediaType.V3_JSON).
+                .accept(ApiVersion.V3.getProducedMimeType().toString()).
         when()
                 .get("/health").
 

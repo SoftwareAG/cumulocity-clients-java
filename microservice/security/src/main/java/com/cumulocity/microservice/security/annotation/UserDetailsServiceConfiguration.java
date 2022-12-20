@@ -7,7 +7,6 @@ import com.cumulocity.microservice.security.service.impl.RoleServiceImpl;
 import com.cumulocity.microservice.security.service.impl.SecurityExpressionServiceImpl;
 import com.cumulocity.microservice.subscription.repository.application.ApplicationApi;
 import com.cumulocity.model.authentication.CumulocityCredentials;
-import com.cumulocity.sdk.client.Platform;
 import com.cumulocity.sdk.client.user.UserApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;

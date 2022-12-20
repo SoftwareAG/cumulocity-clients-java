@@ -8,6 +8,7 @@ import com.cumulocity.microservice.properties.ConfigurationFileProvider;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ConfigurableBootstrapContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -16,6 +17,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import static java.nio.file.Files.exists;
 
@@ -27,20 +29,20 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
     public LoggingEnvironmentRunListener(SpringApplication application, String[] args) {
     }
 
-    @Override
     public void starting() {
-
-    }
-
-    /**
-     * for older spring boot versions
-     */
-    public void started() {
     }
 
     @Override
+    public void starting(ConfigurableBootstrapContext bootstrapContext) {
+    }
+
     public void environmentPrepared(ConfigurableEnvironment configurableEnvironment) {
         initLogging(new ConfigurationFileProvider(configurableEnvironment));
+    }
+
+    @Override
+    public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
+        environmentPrepared(environment);
     }
 
     @Override
@@ -53,19 +55,30 @@ public class LoggingEnvironmentRunListener implements SpringApplicationRunListen
 
     }
 
-    @Override
-    public void started(ConfigurableApplicationContext context) {
-
+    public void started() {
     }
 
     @Override
-    public void running(ConfigurableApplicationContext context) {
+    public void started(ConfigurableApplicationContext context) {
+    }
 
+    @Override
+    public void started(ConfigurableApplicationContext context, Duration timeTaken) {
+        this.started(context);
+    }
+
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+    }
+
+    @Override
+    public void ready(ConfigurableApplicationContext context, Duration timeTaken) {
+        this.running(context);
     }
 
     @Override
     public void failed(ConfigurableApplicationContext context, Throwable exception) {
-
     }
 
     // temporary for backward compatibility with spring-boot 1.x
