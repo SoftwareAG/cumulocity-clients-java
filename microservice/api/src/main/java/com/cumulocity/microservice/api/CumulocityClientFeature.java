@@ -153,14 +153,6 @@ public class CumulocityClientFeature {
         @Override
         @Primary
         @TenantScope
-        @Bean(name = {"cepApi", "tenantCepApi"})
-        public CepApi getCepApi() throws SDKException {
-            return delegate.getCepApi();
-        }
-
-        @Override
-        @Primary
-        @TenantScope
         @Bean(name = {"deviceCredentialsApi", "tenantDeviceCredentialsApi"})
         public DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException {
             return delegate.getDeviceCredentialsApi();
@@ -305,13 +297,6 @@ public class CumulocityClientFeature {
         @Bean(name = "userAuditRecordApi")
         public AuditRecordApi getAuditRecordApi() throws SDKException {
             return delegate.getAuditRecordApi();
-        }
-
-        @Override
-        @UserScope
-        @Bean(name = "userCepApi")
-        public CepApi getCepApi() throws SDKException {
-            return delegate.getCepApi();
         }
 
         @Override

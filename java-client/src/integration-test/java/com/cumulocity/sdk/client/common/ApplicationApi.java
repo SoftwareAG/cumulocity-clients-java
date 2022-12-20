@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import java.io.IOException;
 import java.util.Optional;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION_REFERENCE;
@@ -30,18 +29,6 @@ public class ApplicationApi {
     public ApplicationApi(PlatformImpl platform) {
         this.platform = platform;
         gson = new Gson();
-    }
-
-    public void unsubscribeApamaAndSubscribeEsper() throws IOException {
-        Client httpClient = new HttpClientFactory().createClient();
-        try {
-            final Optional<ApplicationRepresentation> apamaSubscribedToTenant = findApamaSubscribedToTenant(httpClient);
-            apamaSubscribedToTenant.ifPresent(apama -> unsubscribeApplicationForTenant(httpClient, apama.getId()));
-            final Optional<ApplicationRepresentation> cepEsper = findCepEsper(httpClient);
-            cepEsper.ifPresent(esper -> subscribeApplicationForTenant(httpClient, esper));
-        } finally {
-            httpClient.close();
-        }
     }
 
     private void subscribeApplicationForTenant(Client httpClient, ApplicationRepresentation application) {
