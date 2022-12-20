@@ -59,10 +59,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
 
         authenticationManager = mock(AuthenticationManager.class);
         contextService = mock(ContextService.class);
-        filter = new CumulocityOAuthMicroserviceFilter();
-        filter.setAuthenticationManager(authenticationManager);
-        filter.setAuthenticationEntryPoint(authenticationEntryPoint);
-        filter.setUserContextService(contextService);
+        filter = new CumulocityOAuthMicroserviceFilter(authenticationManager, authenticationEntryPoint, contextService);
     }
 
     @Test

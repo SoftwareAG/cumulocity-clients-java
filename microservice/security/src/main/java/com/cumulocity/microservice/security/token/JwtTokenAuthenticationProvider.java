@@ -5,21 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
 public class JwtTokenAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
 
     protected MessageSourceAccessor messages;
-    private StandardEnvironment environment;
-    private JwtAuthenticatedTokenCache tokenCache;
+    private final Environment environment;
+    private final JwtAuthenticatedTokenCache tokenCache;
 
-    public JwtTokenAuthenticationProvider(StandardEnvironment environment, JwtAuthenticatedTokenCache tokenCache) {
+    public JwtTokenAuthenticationProvider(Environment environment, JwtAuthenticatedTokenCache tokenCache) {
         this.environment = environment;
         this.tokenCache = tokenCache;
         this.messages = SpringSecurityMessageSource.getAccessor();

@@ -2,7 +2,7 @@ package com.cumulocity.microservice.monitoring.health.controller;
 
 import com.cumulocity.microservice.monitoring.health.controller.configuration.TestConfiguration;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.endpoint.http.ActuatorMediaType;
+import org.springframework.boot.actuate.endpoint.ApiVersion;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -21,7 +21,7 @@ public class PlatformNotPresentInContextTest {
     @WithMockUser(authorities = "ROLE_ACTUATOR")
     public void healthShouldBeUp() {
         given()
-                .accept(ActuatorMediaType.V3_JSON).
+                .accept(ApiVersion.V3.getProducedMimeType().toString()).
         when()
                 .get("/health").
 

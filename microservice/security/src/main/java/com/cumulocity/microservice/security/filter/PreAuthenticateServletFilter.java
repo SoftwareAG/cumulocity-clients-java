@@ -7,9 +7,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -21,17 +19,16 @@ import java.util.List;
 
 import static com.google.common.collect.FluentIterable.from;
 
-@Component
+@Slf4j
 public class PreAuthenticateServletFilter extends OncePerRequestFilter {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(PreAuthenticateServletFilter.class);
-    @Autowired(required = false)
-    private List<PreAuthorizationContextProvider<HttpServletRequest>> credentialsResolvers;
+    private final List<PreAuthorizationContextProvider<HttpServletRequest>> credentialsResolvers;
+    private final ContextService<Credentials> contextService;
 
-    @Autowired(required = false)
-    private ContextService<Credentials> contextService;
-
-    public PreAuthenticateServletFilter() {
+    public PreAuthenticateServletFilter(List<PreAuthorizationContextProvider<HttpServletRequest>> credentialsResolvers,
+                                        ContextService<Credentials> contextService) {
+        this.credentialsResolvers = credentialsResolvers;
+        this.contextService = contextService;
     }
 
     @Override
