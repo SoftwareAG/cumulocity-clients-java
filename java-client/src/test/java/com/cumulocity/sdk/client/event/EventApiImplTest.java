@@ -184,6 +184,23 @@ public class EventApiImplTest {
     }
 
     @Test
+    public void shouldRetrieveEventsByFragmentTypeAndValue() {
+        // Given
+        String sampleFragmentType = "c8y_type";
+        String sampleFragmentValue = "fragmentValue";
+        EventFilter filter = new EventFilter().byFragmentType(sampleFragmentType).byFragmentValue(sampleFragmentValue);
+        String filterUrl = String.format(EVENTS_COLLECTION_URL + "?fragmentType=%s&fragmentValue=%s", sampleFragmentType, sampleFragmentValue);
+        when(urlProcessor.replaceOrAddQueryParam(EVENTS_COLLECTION_URL, filter.getQueryParams())).thenReturn(filterUrl);
+        EventCollectionImpl expected = new EventCollectionImpl(restConnector, filterUrl, DEFAULT_PAGE_SIZE);
+
+        // When
+        EventCollection result = eventApi.getEventsByFilter(filter);
+
+        // Then
+        assertThat((EventCollectionImpl) result, is(expected));
+    }
+
+    @Test
     public void testCreateEventInCollection() throws SDKException {
         // Given
         EventRepresentation eventRepresentation = new EventRepresentation();

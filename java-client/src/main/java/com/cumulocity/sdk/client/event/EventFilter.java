@@ -28,6 +28,7 @@ import com.cumulocity.model.util.ExtensibilityConverter;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Filter;
 import com.cumulocity.sdk.client.ParamSource;
+import lombok.Getter;
 
 /**
  * A filter to be used in event queries.
@@ -38,6 +39,10 @@ public class EventFilter extends Filter {
 
     @ParamSource
     private String fragmentType;
+
+    @ParamSource
+    @Getter
+    private String fragmentValue;
 
     @ParamSource
     private String dateFrom;
@@ -112,6 +117,11 @@ public class EventFilter extends Filter {
 
     public EventFilter byFragmentType(String fragmentType) {
         this.fragmentType = fragmentType;
+        return this;
+    }
+
+    public EventFilter byFragmentValue(String fragmentValue) {
+        this.fragmentValue = fragmentValue;
         return this;
     }
 
