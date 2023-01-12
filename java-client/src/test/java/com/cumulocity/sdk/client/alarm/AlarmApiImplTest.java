@@ -39,8 +39,8 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 public class AlarmApiImplTest {

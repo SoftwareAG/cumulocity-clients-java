@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import static com.cumulocity.model.sms.Protocol.ICCID;
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 

@@ -31,8 +31,8 @@ import java.util.Random;
 import java.util.Set;
 
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @Slf4j

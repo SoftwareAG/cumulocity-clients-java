@@ -29,7 +29,7 @@ import java.util.Collections;
 import static com.cumulocity.microservice.security.token.CookieReader.AUTHORIZATION_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.or;
-import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.*;
 
 public class CumulocityOAuthMicroserviceFilterTest {

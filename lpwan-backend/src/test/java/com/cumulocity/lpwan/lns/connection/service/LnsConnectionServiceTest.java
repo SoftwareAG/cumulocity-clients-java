@@ -63,8 +63,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.cumulocity.lpwan.platform.repository.LpwanRepository.ALARM_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
