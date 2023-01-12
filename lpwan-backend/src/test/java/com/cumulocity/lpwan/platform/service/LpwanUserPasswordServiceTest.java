@@ -18,8 +18,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -36,7 +36,7 @@ import java.util.List;
 import static org.awaitility.Awaitility.*;
 import static org.awaitility.Durations.TWO_SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.*;
 
 public class OperationsQueueHandlerTest {

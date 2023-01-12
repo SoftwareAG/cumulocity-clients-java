@@ -23,7 +23,7 @@ import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 
 @Slf4j
