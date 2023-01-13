@@ -46,8 +46,8 @@ import java.net.URISyntaxException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,7 +82,7 @@ public class RestConnectorTest {
 
         when(client.target(PATH)).thenReturn(webResource);
 
-        when(parser.write(anyObject())).thenAnswer(AdditionalAnswers.returnsFirstArg());
+        when(parser.write(any())).thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
     @Test

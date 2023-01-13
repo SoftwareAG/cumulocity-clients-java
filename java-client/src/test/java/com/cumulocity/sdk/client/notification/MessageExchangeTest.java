@@ -31,7 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -168,7 +167,7 @@ public class MessageExchangeTest {
         receivedSuccessfulResponse();
         responseConsumed();
         //Then
-        verify(listener, never()).onMessages(ArgumentMatchers.anyListOf(Mutable.class));
+        verify(listener, never()).onMessages(Mockito.anyList());
         verify(listener).onFailure(any(TransportException.class), eq(Arrays.asList(message)));
         verifyNoMoreInteractions(listener);
         verify(watcher).stop();
