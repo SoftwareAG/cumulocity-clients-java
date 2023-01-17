@@ -24,7 +24,7 @@ import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MA
 import static com.cumulocity.rest.representation.inventory.InventoryMediaType.MANAGED_OBJECT_REFERENCE_COLLECTION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

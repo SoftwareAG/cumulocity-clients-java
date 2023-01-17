@@ -6,15 +6,11 @@ import com.cumulocity.microservice.security.filter.provider.PostAuthorizationCon
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Slf4j
-@Component
 class OAuthPostAuthorizationContextProvider implements PostAuthorizationContextProvider<SecurityContext> {
 
     private final String applicationName;
@@ -22,12 +18,10 @@ class OAuthPostAuthorizationContextProvider implements PostAuthorizationContextP
     //Optional dependency
     private MicroserviceSubscriptionsService subscriptionsService;
 
-
-    public OAuthPostAuthorizationContextProvider(@Value("${application.name:}") String applicationName) {
+    public OAuthPostAuthorizationContextProvider(String applicationName) {
         this.applicationName = applicationName;
     }
 
-    @Autowired(required = false)
     public void setSubscriptionsService(MicroserviceSubscriptionsService subscriptionsService) {
         this.subscriptionsService = subscriptionsService;
     }

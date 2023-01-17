@@ -10,11 +10,9 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -27,13 +25,16 @@ import java.util.List;
 import static com.google.common.collect.FluentIterable.from;
 
 @Slf4j
-@Component
 public class PostAuthenticateServletFilter extends OncePerRequestFilter {
-    @Autowired(required = false)
-    private List<PostAuthorizationContextProvider<SecurityContext>> credentialsResolvers;
 
-    @Autowired(required = false)
-    private ContextService<Credentials> contextService;
+    private final List<PostAuthorizationContextProvider<SecurityContext>> credentialsResolvers;
+    private final ContextService<Credentials> contextService;
+
+    public PostAuthenticateServletFilter(List<PostAuthorizationContextProvider<SecurityContext>> credentialsResolvers,
+                                         ContextService<Credentials> contextService) {
+        this.credentialsResolvers = credentialsResolvers;
+        this.contextService = contextService;
+    }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws IOException, ServletException {

@@ -5,28 +5,22 @@ import com.cumulocity.microservice.context.credentials.MicroserviceCredentials;
 import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.microservice.security.filter.util.HttpRequestUtils;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 @Slf4j
-@Component
+@RequiredArgsConstructor
 public class SpringSecurityContextProvider implements PostAuthorizationContextProvider<SecurityContext> {
 
-    @Autowired(required = false)
-    private MicroserviceSubscriptionsService subscriptionsService;
-
-    @Autowired(required = false)
-    private ContextService<UserCredentials> user;
-
-    @Value("${application.name:}")
-    private String applicationName;
+    private final ContextService<UserCredentials> userContext;
+    private final MicroserviceSubscriptionsService subscriptionsService;
+    private final String applicationName;
 
     /**
      * true if context.authentication.principal instance of UserDetails
@@ -69,8 +63,8 @@ public class SpringSecurityContextProvider implements PostAuthorizationContextPr
 
         if (split.length > 1) {
             return split[0];
-        } else if (user != null && user.isInContext()) {
-            return user.getContext().getTenant();
+        } else if (userContext != null && userContext.isInContext()) {
+            return userContext.getContext().getTenant();
         }
         return null;
     }

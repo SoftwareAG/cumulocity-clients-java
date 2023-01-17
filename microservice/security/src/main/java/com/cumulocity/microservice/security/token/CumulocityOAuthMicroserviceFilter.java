@@ -34,12 +34,19 @@ import java.util.Enumeration;
  * 2. Access token in cookies
  */
 @Slf4j
-@Component
 public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
 
-    private AuthenticationManager authenticationManager;
-    private AuthenticationEntryPoint authenticationEntryPoint;
-    private ContextService<UserCredentials> userContextService;
+    private final AuthenticationManager authenticationManager;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final ContextService<UserCredentials> userContextService;
+
+    public CumulocityOAuthMicroserviceFilter(AuthenticationManager authenticationManager,
+                                             AuthenticationEntryPoint authenticationEntryPoint,
+                                             ContextService<UserCredentials> userContextService) {
+        this.authenticationManager = authenticationManager;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.userContextService = userContextService;
+    }
 
     @Override
     public void doFilter(final ServletRequest req, final ServletResponse res, final FilterChain chain) throws IOException, ServletException {
@@ -115,19 +122,4 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         }
         return Optional.empty();
     }
-
-    @Autowired
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
-    @Autowired(required = false)
-    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) {
-        this.authenticationEntryPoint = authenticationEntryPoint;
-    }
-    @Autowired
-    public void setUserContextService(ContextService<UserCredentials> userContextService) {
-        this.userContextService = userContextService;
-    }
 }
-

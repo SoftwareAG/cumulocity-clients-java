@@ -1,6 +1,7 @@
 package com.cumulocity.microservice.properties;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ConfigurableBootstrapContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -19,6 +20,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,17 +38,13 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     public PropertiesRunListener(SpringApplication application, String[] args) {
     }
 
-    @Override
     public void starting() {
     }
 
-    /**
-     * for older spring boot versions
-     */
-    public void started() {
+    @Override
+    public void starting(ConfigurableBootstrapContext bootstrapContext) {
     }
 
-    @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         final ConfigurationFileProvider provider = new ConfigurationFileProvider(environment);
         Iterable<Path> locations = provider.find(".properties", "-server.properties", "-agent-server.properties", "-default.properties");
@@ -57,6 +55,11 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     }
 
     @Override
+    public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
+        environmentPrepared(environment);
+    }
+
+    @Override
     public void contextPrepared(ConfigurableApplicationContext configurableApplicationContext) {
     }
 
@@ -64,19 +67,30 @@ public class PropertiesRunListener implements SpringApplicationRunListener {
     public void contextLoaded(ConfigurableApplicationContext configurableApplicationContext) {
     }
 
-    @Override
-    public void started(ConfigurableApplicationContext context) {
-
+    public void started() {
     }
 
     @Override
-    public void running(ConfigurableApplicationContext context) {
+    public void started(ConfigurableApplicationContext context) {
+    }
 
+    @Override
+    public void started(ConfigurableApplicationContext context, Duration timeTaken) {
+        this.started(context);
+    }
+
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+    }
+
+    @Override
+    public void ready(ConfigurableApplicationContext context, Duration timeTaken) {
+        this.running(context);
     }
 
     @Override
     public void failed(ConfigurableApplicationContext context, Throwable exception) {
-
     }
 
     // temporary for backward compatibility with spring-boot 1.x
