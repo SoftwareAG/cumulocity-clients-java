@@ -13,7 +13,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,12 +45,6 @@ public class EnableWebSecurityConfiguration {
     }
 
     @Bean
-    public static WebSecurityCustomizer allowObservability() {
-        return web -> web.ignoring()
-                .antMatchers("/metadata", "/health", "/prometheus", "/metrics");
-    }
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    CumulocityOAuthMicroserviceFilter cumulocityOAuthMicroserviceFilter,
                                                    PreAuthenticateServletFilter preAuthenticateServletFilter,
@@ -59,7 +52,10 @@ public class EnableWebSecurityConfiguration {
             throws Exception {
 
         http
-                .authorizeRequests(authorize -> authorize.anyRequest().fullyAuthenticated())
+                .authorizeRequests(authorize -> authorize
+                        .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
+                        .anyRequest().fullyAuthenticated()
+                )
                 .httpBasic(withDefaults())
                 .csrf().disable()
                 .securityContext().disable()
