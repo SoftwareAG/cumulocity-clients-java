@@ -40,6 +40,9 @@ public class EventFilter extends Filter {
     private String fragmentType;
 
     @ParamSource
+    private String fragmentValue;
+
+    @ParamSource
     private String dateFrom;
 
     @ParamSource
@@ -115,8 +118,17 @@ public class EventFilter extends Filter {
         return this;
     }
 
+    public EventFilter byFragmentValue(String fragmentValue) {
+        this.fragmentValue = fragmentValue;
+        return this;
+    }
+
     public String getFragmentType() {
         return fragmentType;
+    }
+
+    public String getFragmentValue() {
+        return fragmentValue;
     }
 
     public EventFilter byDate(Date fromDate, Date toDate) {
