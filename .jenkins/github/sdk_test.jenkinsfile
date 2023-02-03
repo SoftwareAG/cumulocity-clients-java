@@ -50,11 +50,10 @@ def scm_checkout()
 
     try
     {
-        checkout([
-            $class: 'GitSCM',
-            branches: [[name: "${params.TEST_BRANCH}"]],
-            userRemoteConfigs: [[url: 'git@github.com:SoftwareAG/cumulocity-clients-java.git', credentialsId:'jenkins-master']]
-        ])
+        checkout resolveScm(source: [$class: "GitSCMSource",
+            remote: "git@github.com:SoftwareAG/cumulocity-clients-java.git",
+            traits: [gitBranchDiscovery()], credentialsId:"jenkins-master"],
+            targets: ["${params.TEST_BRANCH}", "develop"])
         currentBuild.result = "SUCCESS"
     }
     catch (Exception err)
