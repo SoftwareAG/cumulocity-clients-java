@@ -50,10 +50,10 @@ def scm_checkout()
 
     try
     {
-        branchList = params.TEST_BRANCH.split(',').collect()
+        branchList = params.TEST_BRANCH.replace('refs/tags/','').split(',').collect()
         checkout resolveScm(source: [$class: "GitSCMSource",
             remote: "git@github.com:SoftwareAG/cumulocity-clients-java.git",
-            traits: [gitBranchDiscovery()], credentialsId:"jenkins-master"],
+            traits: [gitBranchDiscovery(), gitTagDiscovery()], credentialsId:"jenkins-master"],
             targets: branchList)
         currentBuild.result = "SUCCESS"
     }
