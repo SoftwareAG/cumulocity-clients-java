@@ -1,4 +1,4 @@
-FROM alpine:3
+FROM @package.docker.baseImage@
 RUN apk add  --no-cache coreutils openjdk@package.java-version@
 COPY etc/ /etc/@package.directory@/
 ADD resources/* /data/
