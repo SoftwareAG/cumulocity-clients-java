@@ -118,6 +118,9 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "agent-package.metaspace")
     private Memory metaspace;
 
+    @Parameter(property = "package.docker.baseImage", defaultValue = "alpine:3")
+    protected String baseImage;
+
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
                                                                                  ImmutableList.of(), ImmutableList.of(),
@@ -140,6 +143,7 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
         props.put("package.arguments", Joiner.on(' ').join(arguments));
         props.put("package.java-version", getJavaVersion());
         props.put("package.required-java", javaRuntime);
+        props.put("package.docker.baseImage", baseImage);
         execution.setAdditionalProperties(props);
         mavenResourcesFiltering.filterResources(execution);
     }
