@@ -1,11 +1,14 @@
 package com.cumulocity.generic.mqtt;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class GenericMqttMessage {
 
-    private final byte[] payload;
-    private final GenericMqttMetadata metadata;
+    private byte[] payload;
+    private GenericMqttMetadata metadata;
 
 }

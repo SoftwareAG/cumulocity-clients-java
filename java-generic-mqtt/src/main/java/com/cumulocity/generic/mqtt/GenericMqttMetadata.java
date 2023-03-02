@@ -1,17 +1,20 @@
 package com.cumulocity.generic.mqtt;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.Map;
 
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class GenericMqttMetadata {
 
-    private final String clientId;
-    private final boolean dupFlag;
-    private final Map<String, String> userProperties;
-    private final PayloadFormatIndicator payloadFormatIndicator;
-    private final String contentType;
-    private final byte[] correlationData;
-    private final String responseTopic;
+    private String clientId;
+    private boolean dupFlag;
+    private Map<String, String> userProperties;
+    private PayloadFormatIndicator payloadFormatIndicator;
+    private String contentType;
+    private byte[] correlationData;
+    private String responseTopic;
 }
