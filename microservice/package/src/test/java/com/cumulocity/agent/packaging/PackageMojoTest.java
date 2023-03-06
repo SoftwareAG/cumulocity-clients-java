@@ -294,6 +294,7 @@ public class PackageMojoTest {
         packageMojo.srcDockerDir = srcDockerDir;
 
         packageMojo.javaRuntime = System.getProperty("java.version");
+        packageMojo.baseImage = "alpine:3";
         packageMojo.manifestFile = manifestFile;
 
         //the following fields are private, let's use reflection :)
