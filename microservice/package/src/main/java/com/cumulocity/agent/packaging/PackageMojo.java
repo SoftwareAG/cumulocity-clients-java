@@ -181,8 +181,10 @@ public class PackageMojo extends BaseMicroserviceMojo {
 //            copy content of project src/main/docker to docker work directory replacing placeholders
             copyFromProjectSubdirectoryAndReplacePlaceholders(resource(srcDockerDir.getAbsolutePath()), dockerWorkDir, true);
 
-//          build docker image with target architecture
-            buildDockerImage(targetArchitecture);
+            if(!containerImageBuildSkip) { //  So that we can do it by the Build script like GithubAction
+//              build docker image with target architecture
+                buildDockerImage(targetArchitecture);
+            }
 
 //          cleaning up directory created by spotify docker plugin
             cleanDirectory(new File(build, "docker"));

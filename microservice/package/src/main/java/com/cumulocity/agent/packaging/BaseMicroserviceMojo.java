@@ -84,6 +84,9 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip.agent.package.container")
     protected boolean containerSkip;
 
+    @Parameter(defaultValue = "false", property = "skip.agent.package.containerImageBuild")
+    protected boolean containerImageBuildSkip;
+
     @Parameter(defaultValue = "false", property = "skip.microservice.package")
     protected boolean skipMicroservicePackage;
 
