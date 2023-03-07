@@ -496,7 +496,7 @@ public class MeasurementIT extends JavaSdkITBase {
             }
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
-            log.error("Measurement creation failed with status code: " + status);
+            log.error("Measurement creation failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
@@ -588,7 +588,7 @@ public class MeasurementIT extends JavaSdkITBase {
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
-            log.error("Measurement query by source failed with status code: " + status);
+            log.error("Measurement creation failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
