@@ -29,6 +29,7 @@ import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.*;
 
@@ -45,6 +46,7 @@ import static org.hamcrest.Matchers.*;
 
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
+@Slf4j
 public class MeasurementIT extends JavaSdkITBase {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<>();
@@ -494,6 +496,7 @@ public class MeasurementIT extends JavaSdkITBase {
             }
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
+            log.error("Measurement creation failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
@@ -585,6 +588,7 @@ public class MeasurementIT extends JavaSdkITBase {
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
+            log.error("Measurement query by source failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
