@@ -8,6 +8,7 @@ import com.cumulocity.rest.representation.reliable.notification.NotificationToke
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
@@ -47,7 +48,7 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
             consumer = new GenericMqttWebSocketClient(uri, messageListener);
-            consumer.connectBlocking();
+            consumer.connectBlocking(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new GenericMqttWebSocketClientException("WebSocket connection could not be established!", e);
         }

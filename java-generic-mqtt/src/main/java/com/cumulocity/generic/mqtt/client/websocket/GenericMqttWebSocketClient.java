@@ -24,6 +24,10 @@ class GenericMqttWebSocketClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
+        if (genericMqttMessageListener == null) {
+            return;
+        }
+
         genericMqttMessageListener.onOpen(this.uri);
     }
 
@@ -50,6 +54,10 @@ class GenericMqttWebSocketClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
+        if (genericMqttMessageListener == null) {
+            return;
+        }
+
         genericMqttMessageListener.onClose(code, reason, remote);
     }
 

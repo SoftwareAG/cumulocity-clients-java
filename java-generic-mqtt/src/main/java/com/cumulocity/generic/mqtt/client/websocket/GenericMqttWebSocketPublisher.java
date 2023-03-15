@@ -6,9 +6,12 @@ import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.generic.mqtt.client.websocket.exception.GenericMqttWebSocketClientException;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.pulsar.client.api.Schema;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
@@ -20,6 +23,7 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
 
+    private final AtomicInteger sequence = new AtomicInteger();
     private final GenericMqttConnectionConfig config;
 
     private GenericMqttWebSocketClient producer;
@@ -45,7 +49,7 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
                 producer = new GenericMqttWebSocketClient(uri);
-                producer.connectBlocking();
+                producer.connectBlocking(5, TimeUnit.SECONDS);
             } catch (Exception e) {
                 throw new GenericMqttWebSocketClientException("Error publishing message!", e);
             }
@@ -54,7 +58,7 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
         final Schema<GenericMqttMessage> avro = Schema.AVRO(GenericMqttMessage.class);
         final byte[] data = avro.encode(genericMqttMessage);
 
-        producer.send(data);
+        producer.send(sequence.incrementAndGet() + "\n" + data);
     }
 
     @Override
