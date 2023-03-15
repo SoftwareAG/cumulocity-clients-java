@@ -17,6 +17,11 @@
     <name>Cumulocity :: Clients Java :: Java Generic MQTT</name>
     <url>http://startups.jira.com/wiki/display/MTM/Home</url>
 
+    <properties>
+        <tootallnate.websocket.version>1.5.3</tootallnate.websocket.version>
+        <pulsar.version>2.8.0</pulsar.version>
+    </properties>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -49,9 +54,27 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>java-client-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nsn.cumulocity.clients-java</groupId>
+            <artifactId>java-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>${tootallnate.websocket.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-client</artifactId>
+            <version>${pulsar.version}</version>
         </dependency>
     </dependencies>
 

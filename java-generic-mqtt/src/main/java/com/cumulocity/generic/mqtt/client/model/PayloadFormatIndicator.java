@@ -1,4 +1,4 @@
-package com.cumulocity.generic.mqtt;
+package com.cumulocity.generic.mqtt.client.model;
 
 public enum PayloadFormatIndicator {
 
