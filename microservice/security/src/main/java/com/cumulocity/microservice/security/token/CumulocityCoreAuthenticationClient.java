@@ -29,11 +29,9 @@ import java.io.IOException;
 class CumulocityCoreAuthenticationClient {
 
     private static final int CONNECTION_TIMEOUT = 30000;
-    @Setter
-    private static HttpServletRequest request;
 
-    public static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
-        Client client = createClientWithAuthenticationFilter(jwtTokenAuthentication);
+    public static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication, HttpServletRequest request) {
+        Client client = createClient(jwtTokenAuthentication, request);
         try {
             CurrentUserRepresentation currUserRepresentation = getCurrentUser(client, baseUrl);
             String tenantName = getTenantName(client, baseUrl);
@@ -44,36 +42,44 @@ class CumulocityCoreAuthenticationClient {
         }
     }
 
+
     /**
      * Remember to release resources when client is not needed
      */
-    public static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
-        ClientConfig clientConfig = createClientConfig();
 
-        Client client = ClientBuilder.newClient(clientConfig);
-        if (jwtTokenAuthentication != null) {
+    public static Client createClient(JwtTokenAuthentication jwtTokenAuthentication, HttpServletRequest request) {
+        ClientBuilder clientBuilder = ClientBuilder.newBuilder().withConfig(createClientConfig());
+                if (jwtTokenAuthentication != null) {
+                    clientBuilder.register(createClientWithAuthenticationFilter(jwtTokenAuthentication));
+                }
+                if (request != null) {
+                    clientBuilder.register(createForwardedHeaderOnRequestFilter(request));
+                }
+                return clientBuilder.build();
+    }
+
+    private static CumulocityAuthenticationFilter createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
             JwtCredentials jwtCredentials = jwtTokenAuthentication.getCredentials();
             if (jwtCredentials instanceof JwtAndXsrfTokenCredentials) {
                 JwtAndXsrfTokenCredentials jwtAndXsrfCred = (JwtAndXsrfTokenCredentials) jwtCredentials;
-                client.register(new CumulocityAuthenticationFilter(
+                return new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.COOKIE)
                                 .oAuthAccessToken(jwtAndXsrfCred.getJwt().serialize())
                                 .xsrfToken(jwtAndXsrfCred.getXsrfToken())
-                                .build()
-                ));
+                                .build());
             } else {
-                client.register(new CumulocityAuthenticationFilter(
+                return new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.HEADER)
                                 .oAuthAccessToken(jwtCredentials.getJwt().serialize())
-                                .build()
-                ));
+                                .build());
             }
-        }
-        return client;
     }
 
+    private static ForwardedHeaderOnRequestFilter createForwardedHeaderOnRequestFilter(HttpServletRequest request) {
+            return new ForwardedHeaderOnRequestFilter(request);
+    }
 
     private static ClientConfig createClientConfig() {
         ClientConfig clientConfig = new ClientConfig();
@@ -81,11 +87,6 @@ class CumulocityCoreAuthenticationClient {
         clientConfig.register(ErrorMessageRepresentationReader.class);
         clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
-        // forward tenant id header back to core
-        if (request != null) {
-            clientConfig.register(ForwardedHeaderOnRequestFilter.class);
-        }
-
         return clientConfig;
     }
 
@@ -125,6 +126,7 @@ class CumulocityCoreAuthenticationClient {
 
         private final static String TENANT_ID = "Tenant-ID";
 
+        private final HttpServletRequest request;
         @Override
         public void filter(ClientRequestContext clientRequestContext) throws IOException {
             clientRequestContext.getHeaders().add(TENANT_ID, request.getHeader(TENANT_ID));

@@ -22,6 +22,7 @@ import java.util.Set;
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.SAMPLE_XSRF_TOKEN;
 import static com.cumulocity.microservice.security.token.JwtTokenTestsHelper.mockedJwtImpl;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +47,7 @@ public class CumulocityCoreAuthenticationTest {
         JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(accessToken, SAMPLE_XSRF_TOKEN);
         JwtTokenAuthentication jwtTokenAuthenticationWithXsrf = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
-        Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtTokenAuthenticationWithXsrf);
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtTokenAuthenticationWithXsrf, mockHttpServletRequest());
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.COOKIE);
@@ -75,7 +76,7 @@ public class CumulocityCoreAuthenticationTest {
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
 
-        Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtOnlyTokenAuthentication);
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication, mockHttpServletRequest());
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
@@ -88,10 +89,18 @@ public class CumulocityCoreAuthenticationTest {
         Jwt accessToken = mockedJwtImpl();
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
-        CumulocityCoreAuthenticationClient.setRequest(mock(HttpServletRequest.class));
-        Client client = CumulocityCoreAuthenticationClient.createClientWithAuthenticationFilter(jwtOnlyTokenAuthentication);
+        HttpServletRequest request = mockHttpServletRequest();
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication, request);
 
+        CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
+        assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
+        assertThat(credentials.getAuthenticationString()).isEqualTo("Bearer " + accessToken.getEncoded());
+        assertThat(credentials.getXsrfToken()).isEqualTo(null);
         assertThatClientRequestHeaderConfigured(client);;
+    }
+
+    private HttpServletRequest mockHttpServletRequest() {
+        return mock(HttpServletRequest.class);
     }
 
     @Test
