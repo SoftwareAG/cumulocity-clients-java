@@ -66,6 +66,8 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                 final boolean debug = logger.isDebugEnabled();
                 try {
                     JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials.get());
+                    // we build the core client with additional information from the request
+                    CumulocityCoreAuthenticationClient.setRequest(request);
                     Authentication authResult = authenticationManager.authenticate(jwtTokenAuthentication);
                     if (debug) {
                         logger.debug("Authentication success: " + authResult);

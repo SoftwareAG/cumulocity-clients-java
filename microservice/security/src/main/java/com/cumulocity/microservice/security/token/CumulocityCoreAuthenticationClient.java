@@ -11,22 +11,28 @@ import com.cumulocity.sdk.client.rest.mediatypes.ErrorMessageRepresentationReade
 import com.cumulocity.sdk.client.rest.providers.CumulocityJSONMessageBodyReader;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.ext.Provider;
+import java.io.IOException;
 
 class CumulocityCoreAuthenticationClient {
 
     private static final int CONNECTION_TIMEOUT = 30000;
+    @Setter
+    private static HttpServletRequest request;
 
-    private CumulocityCoreAuthenticationClient() { }
-
-    static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
+    public static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
         Client client = createClientWithAuthenticationFilter(jwtTokenAuthentication);
         try {
             CurrentUserRepresentation currUserRepresentation = getCurrentUser(client, baseUrl);
@@ -41,13 +47,8 @@ class CumulocityCoreAuthenticationClient {
     /**
      * Remember to release resources when client is not needed
      */
-    static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
-
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(CumulocityJSONMessageBodyReader.class);
-        clientConfig.register(ErrorMessageRepresentationReader.class);
-        clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
+    public static Client createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
+        ClientConfig clientConfig = createClientConfig();
 
         Client client = ClientBuilder.newClient(clientConfig);
         if (jwtTokenAuthentication != null) {
@@ -71,6 +72,21 @@ class CumulocityCoreAuthenticationClient {
             }
         }
         return client;
+    }
+
+
+    private static ClientConfig createClientConfig() {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(CumulocityJSONMessageBodyReader.class);
+        clientConfig.register(ErrorMessageRepresentationReader.class);
+        clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, new PoolingHttpClientConnectionManager());
+        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
+        // forward tenant id header back to core
+        if (request != null) {
+            clientConfig.register(ForwardedHeaderOnRequestFilter.class);
+        }
+
+        return clientConfig;
     }
 
     private static CurrentUserRepresentation getCurrentUser(Client client, String baseUrl) {
@@ -102,4 +118,17 @@ class CumulocityCoreAuthenticationClient {
         @Setter
         private String name;
     }
+
+    @RequiredArgsConstructor
+    @Provider
+    private static class ForwardedHeaderOnRequestFilter implements ClientRequestFilter {
+
+        private final static String TENANT_ID = "Tenant-ID";
+
+        @Override
+        public void filter(ClientRequestContext clientRequestContext) throws IOException {
+            clientRequestContext.getHeaders().add(TENANT_ID, request.getHeader(TENANT_ID));
+        }
+    }
+
 }
