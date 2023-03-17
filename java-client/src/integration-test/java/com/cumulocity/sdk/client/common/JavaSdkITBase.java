@@ -23,12 +23,14 @@ import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
 import org.apache.commons.lang.RandomStringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.util.Properties;
 
+@Slf4j
 public class JavaSdkITBase {
 
     private static TenantCreator tenantCreator;
@@ -45,7 +47,7 @@ public class JavaSdkITBase {
         tenantCreator.createTenant();
 
         ((CumulocityBasicCredentials) bootstrapPlatform.getCumulocityCredentials()).setTenantId(platform.getTenantId());
-
+        log.info("Created tenant for application with name: {}", platform.getTenantId());
     }
 
     @AfterAll
