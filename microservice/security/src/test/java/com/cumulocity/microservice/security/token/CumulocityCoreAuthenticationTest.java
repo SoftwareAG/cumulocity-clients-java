@@ -5,12 +5,12 @@ import com.cumulocity.model.authentication.AuthenticationMethod;
 import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.google.common.collect.Iterables;
+import com.nimbusds.jwt.JWT;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.ws.rs.client.Client;
@@ -39,7 +39,7 @@ public class CumulocityCoreAuthenticationTest {
 
     @Test
     public void shouldCreateClientWithFilterForCookieAuth() {
-        Jwt accessToken = mockedJwtImpl();
+        JWT accessToken = mockedJwtImpl();
         JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(accessToken, SAMPLE_XSRF_TOKEN);
         JwtTokenAuthentication jwtTokenAuthenticationWithXsrf = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
@@ -47,7 +47,7 @@ public class CumulocityCoreAuthenticationTest {
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.COOKIE);
-        assertThat(credentials.getAuthenticationString()).isEqualTo(accessToken.getEncoded());
+        assertThat(credentials.getAuthenticationString()).isEqualTo(accessToken.serialize());
         assertThat(credentials.getXsrfToken()).isEqualTo(SAMPLE_XSRF_TOKEN);
     }
 
@@ -62,7 +62,7 @@ public class CumulocityCoreAuthenticationTest {
 
     @Test
     public void shouldCreateClientWithFilterForHeaderAuth() {
-        Jwt accessToken = mockedJwtImpl();
+        JWT accessToken = mockedJwtImpl();
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
 
@@ -70,7 +70,7 @@ public class CumulocityCoreAuthenticationTest {
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
-        assertThat(credentials.getAuthenticationString()).isEqualTo("Bearer " + accessToken.getEncoded());
+        assertThat(credentials.getAuthenticationString()).isEqualTo("Bearer " + accessToken.serialize());
         assertThat(credentials.getXsrfToken()).isEqualTo(null);
     }
 
