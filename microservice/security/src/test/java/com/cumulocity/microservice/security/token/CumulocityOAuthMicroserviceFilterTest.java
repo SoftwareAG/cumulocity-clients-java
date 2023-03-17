@@ -76,7 +76,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         Authentication actualAuthentication = captor.getValue();
         assertThat(actualAuthentication).isExactlyInstanceOf(JwtTokenAuthentication.class);
         JwtCredentials credentials = (JwtCredentials) actualAuthentication.getCredentials();
-        assertThat(credentials.getJwt().getEncoded()).isEqualTo(SAMPLE_TOKEN);
+        assertThat(credentials.getJwt().serialize()).isEqualTo(SAMPLE_TOKEN);
 
         verify(chain).doFilter(request, response);
         verify(context).setAuthentication(actualAuthentication);
@@ -99,7 +99,7 @@ public class CumulocityOAuthMicroserviceFilterTest {
         Authentication actualAuthentication = captor.getValue();
         assertThat(actualAuthentication).isExactlyInstanceOf(JwtTokenAuthentication.class);
         JwtAndXsrfTokenCredentials credentials = (JwtAndXsrfTokenCredentials) actualAuthentication.getCredentials();
-        assertThat(credentials.getJwt().getEncoded()).isEqualTo(SAMPLE_TOKEN);
+        assertThat(credentials.getJwt().serialize()).isEqualTo(SAMPLE_TOKEN);
         assertThat(credentials.getXsrfToken()).isEqualTo(SAMPLE_X_XSRF_TOKEN);
 
         verify(chain).doFilter(request, response);
