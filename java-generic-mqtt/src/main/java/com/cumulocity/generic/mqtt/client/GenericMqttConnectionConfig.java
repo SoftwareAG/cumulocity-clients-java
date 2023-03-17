@@ -7,4 +7,5 @@ import lombok.Getter;
 @Getter
 public class GenericMqttConnectionConfig {
     private final String topic;
+    private final long connectionTimeoutInMilliSeconds;
 }

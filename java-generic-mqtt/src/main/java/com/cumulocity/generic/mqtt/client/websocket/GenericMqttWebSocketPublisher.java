@@ -57,8 +57,9 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
 
         final Schema<GenericMqttMessage> avro = Schema.AVRO(GenericMqttMessage.class);
         final byte[] data = avro.encode(genericMqttMessage);
+        final String publishMessage = sequence.incrementAndGet() + "\n" + Base64.encodeBase64String(data);
 
-        producer.send(sequence.incrementAndGet() + "\n" + data);
+        producer.send(publishMessage);
     }
 
     @Override
