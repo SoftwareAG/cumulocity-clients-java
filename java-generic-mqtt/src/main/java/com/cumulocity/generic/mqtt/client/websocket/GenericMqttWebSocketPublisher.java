@@ -2,12 +2,12 @@ package com.cumulocity.generic.mqtt.client.websocket;
 
 import com.cumulocity.generic.mqtt.client.GenericMqttConnectionConfig;
 import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
+import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.generic.mqtt.client.websocket.exception.GenericMqttWebSocketClientException;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.pulsar.client.api.Schema;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +22,8 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
 
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
+
+    private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
     private final GenericMqttConnectionConfig config;
@@ -49,14 +51,13 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
                 producer = new GenericMqttWebSocketClient(uri);
-                producer.connectBlocking(5, TimeUnit.SECONDS);
+                producer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new GenericMqttWebSocketClientException("Error publishing message!", e);
             }
         }
 
-        final Schema<GenericMqttMessage> avro = Schema.AVRO(GenericMqttMessage.class);
-        final byte[] data = avro.encode(genericMqttMessage);
+        final byte[] data = genericMqttMessageConverter.encode(genericMqttMessage);
         final String publishMessage = sequence.incrementAndGet() + "\n" + Base64.encodeBase64String(data);
 
         producer.send(publishMessage);

@@ -48,7 +48,7 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
             consumer = new GenericMqttWebSocketClient(uri, messageListener);
-            consumer.connectBlocking(5, TimeUnit.SECONDS);
+            consumer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new GenericMqttWebSocketClientException("WebSocket connection could not be established!", e);
         }

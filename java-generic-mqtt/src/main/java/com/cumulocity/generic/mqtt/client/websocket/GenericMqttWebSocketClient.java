@@ -1,8 +1,8 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
 import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
+import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
-import org.apache.pulsar.client.api.Schema;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -10,6 +10,8 @@ import java.net.URI;
 import java.util.Optional;
 
 class GenericMqttWebSocketClient extends WebSocketClient {
+
+    private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private GenericMqttMessageListener genericMqttMessageListener;
 
@@ -42,8 +44,7 @@ class GenericMqttWebSocketClient extends WebSocketClient {
         final Optional<String> ackHeader = webSocketMessage.getAckHeader();
         final byte[] avroPayload = webSocketMessage.getAvroPayload();
 
-        final Schema<GenericMqttMessage> avro = Schema.AVRO(GenericMqttMessage.class);
-        final GenericMqttMessage genericMqttMessage = avro.decode(avroPayload);
+        final GenericMqttMessage genericMqttMessage = genericMqttMessageConverter.decode(avroPayload);
 
         genericMqttMessageListener.onMessage(genericMqttMessage);
 

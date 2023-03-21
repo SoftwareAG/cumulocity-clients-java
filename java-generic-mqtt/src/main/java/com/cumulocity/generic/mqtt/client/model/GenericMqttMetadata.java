@@ -1,20 +1,66 @@
 package com.cumulocity.generic.mqtt.client.model;
 
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
+/**
+ * Metadata for {@link GenericMqttMessage}.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class GenericMqttMetadata {
 
+    /**
+     * The client id of the MQTT client.
+     */
     private String clientId;
+
+    /**
+     * The message id of the message.
+     */
+    private int messageId;
+
+    /**
+     * The duplicate delivery flag.
+     * <p>
+     * If <code>false</code> this is the first occasion the message is sent to the receiver. If <code>true</code> the
+     * message has already been sent once to the receiver.
+     */
     private boolean dupFlag;
+
+    /**
+     * The user properties of an MQTT payload.
+     */
     private Map<String, String> userProperties;
+
+    /**
+     * Indicator for the payload.
+     */
     private PayloadFormatIndicator payloadFormatIndicator;
+
+    /**
+     * This is the content type.
+     * <p>
+     * For an MQTT 3 PUBLISH this MQTT 5 property will always be null.
+     */
     private String contentType;
+
+    /**
+     * This is the correlation data.
+     * <p>
+     * For an MQTT 3 PUBLISH this MQTT 5 property will always be null.
+     */
     private byte[] correlationData;
+
+    /**
+     * This is the response topic.
+     * <p>
+     * For an MQTT 3 PUBLISH this MQTT 5 property will always be null.
+     */
     private String responseTopic;
 }
