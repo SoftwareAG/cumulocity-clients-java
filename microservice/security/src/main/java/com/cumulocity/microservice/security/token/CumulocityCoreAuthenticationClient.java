@@ -42,7 +42,6 @@ class CumulocityCoreAuthenticationClient {
         }
     }
 
-
     /**
      * Remember to release resources when client is not needed
      */
@@ -124,12 +123,14 @@ class CumulocityCoreAuthenticationClient {
     @Provider
     private static class ForwardedHeaderOnRequestFilter implements ClientRequestFilter {
 
-        private final static String TENANT_ID = "Tenant-ID";
+        // this header added by proxy contains domain of origin client. It is forwarded
+        // to cumulocity in microservice request
+        private final static String X_Forwarded_Host = "X-Forwarded-Host";
 
         private final HttpServletRequest request;
         @Override
         public void filter(ClientRequestContext clientRequestContext) throws IOException {
-            clientRequestContext.getHeaders().add(TENANT_ID, request.getHeader(TENANT_ID));
+            clientRequestContext.getHeaders().add(X_Forwarded_Host, request.getHeader(X_Forwarded_Host));
         }
     }
 
