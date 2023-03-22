@@ -54,7 +54,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         final HttpServletResponse response = (HttpServletResponse) res;
 
         if (shouldAuthenticate()) {
-            Optional<JwtCredentials> jwtCredentials = null;
+            Optional<JwtCredentials> jwtCredentials;
             try {
                 jwtCredentials = readCredentials(request);
             } catch (ParseException e) {
