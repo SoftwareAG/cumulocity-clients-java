@@ -28,6 +28,7 @@ public interface AvroMessageConverter<T> {
     /**
      * Create an Avro schema type by default configuration of the class.
      *
+     * @param <T>   This is the type parameter
      * @param clazz the POJO class to be used to extract the Avro schema
      * @return a Schema instance
      */

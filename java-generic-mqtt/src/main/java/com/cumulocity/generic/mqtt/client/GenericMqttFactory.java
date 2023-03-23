@@ -8,7 +8,7 @@ public interface GenericMqttFactory {
     /**
      * Creates an instance of <code>GenericMqttPublisher</code> with the configured topic.
      *
-     * @param config
+     * @param config <code>GenericMqttConnectionConfig</code>
      * @return the instance of <code>GenericMqttPublisher</code>
      */
     GenericMqttPublisher buildPublisher(GenericMqttConnectionConfig config);
@@ -16,7 +16,7 @@ public interface GenericMqttFactory {
     /**
      * Creates an instance of <code>GenericMqttSubscriber</code> with the configured topic.
      *
-     * @param config
+     * @param config <code>GenericMqttConnectionConfig</code>
      * @return the instance of <code>GenericMqttSubscriber</code>
      */
     GenericMqttSubscriber buildSubscriber(GenericMqttConnectionConfig config);

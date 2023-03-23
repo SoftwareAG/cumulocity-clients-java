@@ -146,6 +146,7 @@
                     <doctitle>Cumulocity SDK - Generic MQTT</doctitle>
                     <windowtitle>Cumulocity SDK - Generic MQTT Java Client</windowtitle>
                     <sourcepath>${project.build.directory}/dependenciesSources;./src/main/java</sourcepath>
+                    <source>8</source>
                 </configuration>
             </plugin>
             <plugin>
