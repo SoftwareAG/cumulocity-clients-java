@@ -31,7 +31,6 @@
         <module>java-client-services</module>
         <module>java-mqtt-client</module>
         <module>java-generic-mqtt</module>
-        <module>java-messaging-client</module>
     </modules>
 
     <properties>
