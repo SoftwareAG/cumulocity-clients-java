@@ -1,19 +1,19 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import org.springframework.security.jwt.Jwt;
+import com.nimbusds.jwt.JWT;
 
 import java.util.Objects;
 
 public class JwtOnlyCredentials implements JwtCredentials{
-    private final Jwt jwt;
+    private final JWT jwt;
 
-    public JwtOnlyCredentials(Jwt jwt) {
+    public JwtOnlyCredentials(JWT jwt) {
         this.jwt = jwt;
     }
 
     @Override
-    public Jwt getJwt() {
+    public JWT getJwt() {
         return jwt;
     }
 
@@ -22,7 +22,7 @@ public class JwtOnlyCredentials implements JwtCredentials{
         return UserCredentials.builder()
                 .tenant(tenantName)
                 .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())
-                .oAuthAccessToken((jwtTokenAuthentication.getCredentials()).getJwt().getEncoded())
+                .oAuthAccessToken((jwtTokenAuthentication.getCredentials()).getJwt().serialize())
                 .build();
     }
 
@@ -31,11 +31,11 @@ public class JwtOnlyCredentials implements JwtCredentials{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JwtOnlyCredentials that = (JwtOnlyCredentials) o;
-        return Objects.equals(jwt.getEncoded(), that.jwt.getEncoded());
+        return Objects.equals(jwt.serialize(), that.jwt.serialize());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jwt.getEncoded());
+        return Objects.hash(jwt.serialize());
     }
 }

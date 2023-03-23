@@ -57,7 +57,7 @@ class CumulocityCoreAuthenticationClient {
                 client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.COOKIE)
-                                .oAuthAccessToken(jwtAndXsrfCred.getJwt().getEncoded())
+                                .oAuthAccessToken(jwtAndXsrfCred.getJwt().serialize())
                                 .xsrfToken(jwtAndXsrfCred.getXsrfToken())
                                 .build()
                 ));
@@ -65,7 +65,7 @@ class CumulocityCoreAuthenticationClient {
                 client.register(new CumulocityAuthenticationFilter(
                         CumulocityOAuthCredentials.builder()
                                 .authenticationMethod(AuthenticationMethod.HEADER)
-                                .oAuthAccessToken(jwtCredentials.getJwt().getEncoded())
+                                .oAuthAccessToken(jwtCredentials.getJwt().serialize())
                                 .build()
                 ));
             }
