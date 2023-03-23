@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.cumulocity.model.DateConverter.string2Date;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,7 +84,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     @AfterEach
     public void deleteMeasurements() {
-        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
         deleteTenantOptionWhenPresent();
     }
 
@@ -528,7 +529,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void iDeleteMeasurementCollection() throws SDKException {
         try {
-            measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+            measurementApi.deleteMeasurementsByFilter(new MeasurementFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -536,7 +537,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void iDeleteMeasurementsByType(String type) throws SDKException {
         try {
-            MeasurementFilter typeFilter = new MeasurementFilter().byType(type);
+            MeasurementFilter typeFilter = new MeasurementFilter().byType(type).byFromDate(string2Date("2000-01-01T00:00:00.000+00:00"));
             measurementApi.deleteMeasurementsByFilter(typeFilter);
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
