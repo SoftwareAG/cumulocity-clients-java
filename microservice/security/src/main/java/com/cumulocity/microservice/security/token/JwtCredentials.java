@@ -1,9 +1,9 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import com.nimbusds.jwt.JWT;
+import org.springframework.security.jwt.Jwt;
 
 public interface JwtCredentials {
-     JWT getJwt();
+    Jwt getJwt();
     UserCredentials toUserCredentials(String tenantName, JwtTokenAuthentication jwtTokenAuthentication);
 }
