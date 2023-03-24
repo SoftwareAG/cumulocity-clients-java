@@ -3,7 +3,6 @@ package com.cumulocity.rest.representation.platform;
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
 import com.cumulocity.rest.representation.alarm.AlarmsApiRepresentation;
 import com.cumulocity.rest.representation.audit.AuditRecordsRepresentation;
-import com.cumulocity.rest.representation.cep.CepApiRepresentation;
 import com.cumulocity.rest.representation.event.EventsApiRepresentation;
 import com.cumulocity.rest.representation.identity.IdentityRepresentation;
 import com.cumulocity.rest.representation.inventory.InventoryRepresentation;
@@ -11,7 +10,6 @@ import com.cumulocity.rest.representation.measurement.MeasurementsApiRepresentat
 import com.cumulocity.rest.representation.operation.DeviceControlRepresentation;
 import com.cumulocity.rest.representation.tenant.TenantApiRepresentation;
 import com.cumulocity.rest.representation.user.UsersApiRepresentation;
-import org.svenson.JSONProperty;
 
 public class PlatformApiRepresentation extends AbstractExtensibleRepresentation {
 	
@@ -31,8 +29,6 @@ public class PlatformApiRepresentation extends AbstractExtensibleRepresentation 
 	
 	private DeviceControlRepresentation deviceControl;
 	
-	private CepApiRepresentation cep;
-
 	private TenantApiRepresentation tenant;
 
 	public InventoryRepresentation getInventory() {
@@ -98,15 +94,6 @@ public class PlatformApiRepresentation extends AbstractExtensibleRepresentation 
 	public void setDeviceControl(DeviceControlRepresentation deviceControl) {
 		this.deviceControl = deviceControl;
 	}
-
-    @JSONProperty(ignoreIfNull = true)
-    public CepApiRepresentation getCep() {
-        return cep;
-    }
-
-    public void setCep(CepApiRepresentation cep) {
-        this.cep = cep;
-    }
 
 	public TenantApiRepresentation getTenant() {
 		return tenant;
