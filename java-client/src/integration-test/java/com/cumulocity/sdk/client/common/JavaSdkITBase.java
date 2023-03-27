@@ -75,6 +75,6 @@ public class JavaSdkITBase {
     }
 
     public static String nextTenantId() {
-        return "sdk_tenant_" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
+        return "plama-sdk" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
     }
 }
