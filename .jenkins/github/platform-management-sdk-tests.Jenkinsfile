@@ -1,4 +1,3 @@
-@Library('c8y-common-steps') _
 def INSTANCE_NAME
 def ADMIN_CREDENTIALS_ID
 pipeline {
@@ -134,7 +133,11 @@ pipeline {
 
         stage('Checkout clients-java repository') {
             steps {
-                checkoutRepo('cumulocity-clients-java', "refs/tags/clients-java-${env.SYSTEM_VERSION}")
+                checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "refs/tags/clients-java-${env.SYSTEM_VERSION}"]],
+                        userRemoteConfigs: scm.userRemoteConfigs
+                ])
             }
         }
 
@@ -148,7 +151,6 @@ pipeline {
                     script {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             sh """
-                            cd cumulocity-clients-java
                             ./mvnw -B -s $MVN_SETTINGS verify \
                               -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}.stage.c8y.io \
                               -Dcumulocity.management.password=$ADMIN_CREDENTIALS_PSW \
