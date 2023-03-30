@@ -2,6 +2,7 @@ package com.cumulocity.microservice.security.token;
 
 import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -10,12 +11,17 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.SpringSecurityMessageSource;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Slf4j
 public class JwtTokenAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
 
     protected MessageSourceAccessor messages;
     private final Environment environment;
     private final JwtAuthenticatedTokenCache tokenCache;
+    @Autowired
+    private HttpServletRequest request;
+
 
     public JwtTokenAuthenticationProvider(Environment environment, JwtAuthenticatedTokenCache tokenCache) {
         this.environment = environment;
@@ -37,7 +43,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
                 @Override
                 public JwtTokenAuthentication call() {
                     String baseUrl = environment.getProperty("C8Y.baseURL");
-                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
+                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication, request);
                 }
             });
         } catch (ExecutionException e) {
