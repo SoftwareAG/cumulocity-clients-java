@@ -152,7 +152,7 @@ pipeline {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             sh """
                             ./mvnw -B -s $MVN_SETTINGS verify \
-                              -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}.stage.c8y.io \
+                              -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}.stage.c8y.io:8111 \
                               -Dcumulocity.management.password=$ADMIN_CREDENTIALS_PSW \
                               -Dcumulocity.management.username=$ADMIN_CREDENTIALS_USR
                             """
