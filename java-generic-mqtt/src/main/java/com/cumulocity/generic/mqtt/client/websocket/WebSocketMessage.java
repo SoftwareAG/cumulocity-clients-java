@@ -13,7 +13,7 @@ class WebSocketMessage {
     private final String ackHeader;
     private final byte[] avroPayload;
 
-    public static WebSocketMessage parse(String message) {
+    static WebSocketMessage parse(String message) {
         String header = "";
         int i = message.indexOf('\n');
         if (i != -1) {
@@ -30,11 +30,11 @@ class WebSocketMessage {
         return new WebSocketMessage(header, avroPayload);
     }
 
-    public Optional<String> getAckHeader() {
+    Optional<String> getAckHeader() {
         return Optional.ofNullable(ackHeader);
     }
 
-    public byte[] getAvroPayload() {
+    byte[] getAvroPayload() {
         return avroPayload;
     }
 

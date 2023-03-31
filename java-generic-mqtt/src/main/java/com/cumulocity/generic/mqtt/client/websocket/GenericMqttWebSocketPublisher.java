@@ -1,6 +1,6 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttConnectionConfig;
+import com.cumulocity.generic.mqtt.client.GenericMqttConfig;
 import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
 import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
@@ -26,11 +26,11 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
-    private final GenericMqttConnectionConfig config;
+    private final GenericMqttConfig config;
 
-    private GenericMqttWebSocketClient producer;
+    private WebSocketClient producer;
 
-    public GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConnectionConfig config) {
+    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
@@ -50,7 +50,7 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
         if (producer == null) {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-                producer = new GenericMqttWebSocketClient(uri);
+                producer = new WebSocketClient(uri);
                 producer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new GenericMqttWebSocketClientException("Error publishing message!", e);

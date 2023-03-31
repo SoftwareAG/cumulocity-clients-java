@@ -1,6 +1,6 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttConnectionConfig;
+import com.cumulocity.generic.mqtt.client.GenericMqttConfig;
 import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
 import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
 import com.cumulocity.generic.mqtt.client.websocket.exception.GenericMqttWebSocketClientException;
@@ -19,18 +19,18 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
-    private final GenericMqttConnectionConfig config;
+    private final GenericMqttConfig config;
 
-    private GenericMqttWebSocketClient consumer;
+    private WebSocketClient consumer;
 
-    public GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConnectionConfig config) {
+    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
     }
 
     @Override
-    public void subscribe(GenericMqttMessageListener messageListener) {
+    public void subscribe(GenericMqttMessageListener listener) {
 
         if (consumer != null) {
             return;
@@ -47,7 +47,7 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-            consumer = new GenericMqttWebSocketClient(uri, messageListener);
+            consumer = new WebSocketClient(uri, listener);
             consumer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new GenericMqttWebSocketClientException("WebSocket connection could not be established!", e);

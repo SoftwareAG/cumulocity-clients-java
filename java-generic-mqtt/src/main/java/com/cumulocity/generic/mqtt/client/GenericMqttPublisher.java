@@ -5,11 +5,11 @@ import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 /**
  * <code>GenericMqttPublisher</code> is used to publish messages to a topic.
  * <p>
- * Topic is configured when obtaining the instance of <code>GenericMqttPublisher</code> using {@link GenericMqttFactory#buildPublisher(GenericMqttConnectionConfig)}
+ * Topic is configured when obtaining the instance of <code>GenericMqttPublisher</code> using {@link GenericMqttClient#builder()}
  */
 public interface GenericMqttPublisher extends AutoCloseable {
     /**
-     * Sends {@link GenericMqttMessage genericMqttMessage} to the connected websocket server.
+     * Sends {@link GenericMqttMessage genericMqttMessage} to the Generic MQTT.
      *
      * @param genericMqttMessage The <code>GenericMqttMessage</code> which will be published.
      */
