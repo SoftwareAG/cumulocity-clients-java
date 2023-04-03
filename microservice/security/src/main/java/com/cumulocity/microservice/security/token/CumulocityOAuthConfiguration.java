@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.web.context.request.RequestContextListener;
 
 @Configuration(proxyBeanMethods = false)
 public class CumulocityOAuthConfiguration implements EnvironmentAware {
@@ -38,6 +39,11 @@ public class CumulocityOAuthConfiguration implements EnvironmentAware {
     public JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider(
             JwtAuthenticatedTokenCache jwtAuthenticatedTokenCache ) {
         return new JwtTokenAuthenticationProvider(environment, jwtAuthenticatedTokenCache);
+    }
+
+    @Bean
+    public RequestContextListener requestContextListener(){
+        return new RequestContextListener();
     }
 
     @Configuration(proxyBeanMethods = false)
