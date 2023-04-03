@@ -6,16 +6,18 @@ import com.cumulocity.model.authentication.CumulocityOAuthCredentials;
 import com.cumulocity.sdk.client.CumulocityAuthenticationFilter;
 import com.google.common.collect.Iterables;
 import com.nimbusds.jwt.JWT;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientRequestFilter;
 
 import java.util.Set;
 
@@ -40,13 +42,18 @@ public class CumulocityCoreAuthenticationTest {
         jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials);
     }
 
+    @AfterEach
+    void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
+    }
+
     @Test
     public void shouldCreateClientWithFilterForCookieAuth() {
         JWT accessToken = mockedJwtImpl();
         JwtAndXsrfTokenCredentials jwtAndXsrfTokenCredentials = new JwtAndXsrfTokenCredentials(accessToken, SAMPLE_XSRF_TOKEN);
         JwtTokenAuthentication jwtTokenAuthenticationWithXsrf = new JwtTokenAuthentication(jwtAndXsrfTokenCredentials);
 
-        Client client = CumulocityCoreAuthenticationClient.createClient(jwtTokenAuthenticationWithXsrf, mockHttpServletRequest());
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtTokenAuthenticationWithXsrf);
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.COOKIE);
@@ -63,19 +70,13 @@ public class CumulocityCoreAuthenticationTest {
         return (CumulocityOAuthCredentials)object;
     }
 
-    private void assertThatClientRequestHeaderConfigured(Client client) {
-        Set<Object> providers = client.getConfiguration().getInstances();
-        Object provider =  Iterables.find(providers, p -> p instanceof ClientRequestFilter);
-        assertThat(provider).isNotNull();
-    }
-
     @Test
     public void shouldCreateClientWithFilterForHeaderAuth() {
         JWT accessToken = mockedJwtImpl();
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
 
-        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication, mockHttpServletRequest());
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication);
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
@@ -88,8 +89,8 @@ public class CumulocityCoreAuthenticationTest {
         JWT accessToken = mockedJwtImpl();
         JwtOnlyCredentials jwtOnlyCredentials = new JwtOnlyCredentials(accessToken);
         JwtTokenAuthentication jwtOnlyTokenAuthentication = new JwtTokenAuthentication(jwtOnlyCredentials);
-        HttpServletRequest request = mockHttpServletRequest();
-        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication, request);
+        mockHttpServletRequest();
+        Client client = CumulocityCoreAuthenticationClient.createClient(jwtOnlyTokenAuthentication);
 
         CumulocityOAuthCredentials credentials = retrieveOAuthCredentialsFromFilter(client);
         assertThat(credentials.getAuthenticationMethod()).isEqualTo(AuthenticationMethod.HEADER);
@@ -98,8 +99,16 @@ public class CumulocityCoreAuthenticationTest {
         assertThatClientRequestHeaderConfigured(client);;
     }
 
-    private HttpServletRequest mockHttpServletRequest() {
-        return mock(HttpServletRequest.class);
+    private void assertThatClientRequestHeaderConfigured(Client client) {
+        Set<Object> providers = client.getConfiguration().getInstances();
+        Object provider =  Iterables.find(providers, p -> p instanceof CumulocityCoreAuthenticationClient.ForwardedHeaderOnRequestFilter);
+        assertThat(provider).isNotNull();
+    }
+
+    private void mockHttpServletRequest() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ServletRequestAttributes requestAttributes = new ServletRequestAttributes(request);
+        RequestContextHolder.setRequestAttributes(requestAttributes);
     }
 
     @Test

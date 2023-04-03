@@ -5,6 +5,7 @@ import com.cumulocity.microservice.context.credentials.UserCredentials;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,7 @@ public class CumulocityOAuthConfiguration implements EnvironmentAware {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public RequestContextListener requestContextListener(){
         return new RequestContextListener();
     }

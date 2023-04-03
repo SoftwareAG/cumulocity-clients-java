@@ -9,11 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
 public class JwtTokenAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
@@ -43,20 +38,11 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
                 @Override
                 public JwtTokenAuthentication call() {
                     String baseUrl = environment.getProperty("C8Y.baseURL");
-                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication, getRequest());
+                    return CumulocityCoreAuthenticationClient.authenticateUserAndUpdateToken(baseUrl, jwtTokenAuthentication);
                 }
             });
         } catch (ExecutionException e) {
             throw new TokenCacheException("Problem with token cache.", e);
-        }
-    }
-
-    private HttpServletRequest getRequest() {
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (attributes instanceof ServletRequestAttributes) {
-            return ((ServletRequestAttributes) attributes).getRequest();
-        } else {
-            return null;
         }
     }
 
