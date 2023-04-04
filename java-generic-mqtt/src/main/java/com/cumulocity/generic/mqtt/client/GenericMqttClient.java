@@ -1,5 +1,7 @@
 package com.cumulocity.generic.mqtt.client;
 
+import com.cumulocity.generic.mqtt.client.websocket.GenericMqttWebSocketClientBuilder;
+
 /**
  * {@link GenericMqttClient} is used to configure and create instances of {@link GenericMqttPublisher} and {@link GenericMqttSubscriber}.
  */
@@ -11,23 +13,17 @@ public interface GenericMqttClient extends AutoCloseable {
      * @return the created builder
      */
     static GenericMqttClientBuilder builder() {
-        return new GenericMqttClientBuilder();
+        return new GenericMqttWebSocketClientBuilder();
     }
 
     /**
-     * Creates an instance of <code>GenericMqttPublisher</code> with the configured topic.
-     *
-     * @param config <code>GenericMqttConfig</code>
-     * @return the instance of <code>GenericMqttPublisher</code>
+     * Starts creation of new {@link GenericMqttPublisher} with returned {@link GenericMqttPublisherBuilder}.
      */
-    GenericMqttPublisher buildPublisher(GenericMqttConfig config);
+    GenericMqttPublisherBuilder newPublisher();
 
     /**
-     * Creates an instance of <code>GenericMqttSubscriber</code> with the configured topic.
-     *
-     * @param config <code>GenericMqttConfig</code>
-     * @return the instance of <code>GenericMqttSubscriber</code>
+     * Starts creation of new {@link GenericMqttSubscriber} with returned {@link GenericMqttSubscriberBuilder}.
      */
-    GenericMqttSubscriber buildSubscriber(GenericMqttConfig config);
+    GenericMqttSubscriberBuilder newSubscriber();
 
 }

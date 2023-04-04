@@ -1,26 +1,58 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttClient;
-import com.cumulocity.generic.mqtt.client.GenericMqttConfig;
-import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
-import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
+import com.cumulocity.generic.mqtt.client.*;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class GenericMqttWebSocketClient implements GenericMqttClient {
+class GenericMqttWebSocketClient implements GenericMqttClient {
 
     private final String url;
     private final TokenApi tokenApi;
+    private final WebSocketConfig config = new WebSocketConfig();
 
     @Override
-    public GenericMqttPublisher buildPublisher(final GenericMqttConfig config) {
-        return new GenericMqttWebSocketPublisher(url, tokenApi, config);
+    public GenericMqttPublisherBuilder newPublisher() {
+        return new GenericMqttPublisherBuilder() {
+            @Override
+            public GenericMqttPublisherBuilder topic(final String topic) {
+                config.setTopic(topic);
+                return this;
+            }
+
+            @Override
+            public GenericMqttPublisherBuilder connectionTimeout(final long timeoutInMillis) {
+                config.setConnectionTimeout(timeoutInMillis);
+                return null;
+            }
+
+            @Override
+            public GenericMqttPublisher create() {
+                return new GenericMqttWebSocketPublisher(url, tokenApi, config);
+            }
+        };
     }
 
     @Override
-    public GenericMqttSubscriber buildSubscriber(final GenericMqttConfig config) {
-        return new GenericMqttWebSocketSubscriber(url, tokenApi, config);
+    public GenericMqttSubscriberBuilder newSubscriber() {
+        return new GenericMqttSubscriberBuilder() {
+            @Override
+            public GenericMqttSubscriberBuilder topic(final String topic) {
+                config.setTopic(topic);
+                return this;
+            }
+
+            @Override
+            public GenericMqttSubscriberBuilder connectionTimeout(final long timeoutInMillis) {
+                config.setConnectionTimeout(timeoutInMillis);
+                return null;
+            }
+
+            @Override
+            public GenericMqttSubscriber create() {
+                return new GenericMqttWebSocketSubscriber(url, tokenApi, config);
+            }
+        };
     }
 
     @Override

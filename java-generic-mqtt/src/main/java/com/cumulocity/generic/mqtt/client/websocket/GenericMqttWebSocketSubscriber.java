@@ -1,9 +1,8 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttConfig;
 import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
 import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
-import com.cumulocity.generic.mqtt.client.websocket.exception.GenericMqttWebSocketClientException;
+import com.cumulocity.generic.mqtt.client.exception.GenericMqttClientException;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 
@@ -19,11 +18,11 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
-    private final GenericMqttConfig config;
+    private final WebSocketConfig config;
 
     private WebSocketClient consumer;
 
-    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConfig config) {
+    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, WebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
@@ -42,15 +41,15 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
                 .getTokenString();
 
         if (token == null) {
-            throw new GenericMqttWebSocketClientException(String.format("Token could not be created for topic %s", config.getTopic()));
+            throw new GenericMqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
         }
 
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
             consumer = new WebSocketClient(uri, listener);
-            consumer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
+            consumer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw new GenericMqttWebSocketClientException("WebSocket connection could not be established!", e);
+            throw new GenericMqttClientException("WebSocket connection could not be established!", e);
         }
     }
 

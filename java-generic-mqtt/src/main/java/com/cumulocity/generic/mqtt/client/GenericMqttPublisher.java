@@ -9,9 +9,9 @@ import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
  */
 public interface GenericMqttPublisher extends AutoCloseable {
     /**
-     * Sends {@link GenericMqttMessage genericMqttMessage} to the Generic MQTT.
+     * Sends {@link GenericMqttMessage message} to the Generic MQTT.
      *
-     * @param genericMqttMessage The <code>GenericMqttMessage</code> which will be published.
+     * @param message The <code>GenericMqttMessage</code> which will be published.
      */
-    void publish(GenericMqttMessage genericMqttMessage);
+    void publish(GenericMqttMessage message);
 }

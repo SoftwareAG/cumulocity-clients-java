@@ -10,9 +10,9 @@ public interface GenericMqttMessageListener {
     /**
      * Callback for GenericMqttMessage messages received from the remote host. The messages will be acknowledged if no exception is raised.
      *
-     * @param genericMqttMessage The {@link GenericMqttMessage} that was received.
+     * @param message The {@link GenericMqttMessage} that was received.
      */
-    void onMessage(GenericMqttMessage genericMqttMessage);
+    void onMessage(GenericMqttMessage message);
 
     /**
      * Called when errors occurs.
