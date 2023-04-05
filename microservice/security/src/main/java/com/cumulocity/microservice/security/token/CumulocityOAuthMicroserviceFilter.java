@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.util.Optional;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
+import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -54,13 +55,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         final HttpServletResponse response = (HttpServletResponse) res;
 
         if (shouldAuthenticate()) {
-            Optional<JwtCredentials> jwtCredentials;
-            try {
-                jwtCredentials = readCredentials(request);
-            } catch (ParseException e) {
-                log.error("Failed to decode access token", e);
-                throw new AuthenticationServiceException("Authentication failed: token is wrong format", e);
-            }
+            Optional<JwtCredentials> jwtCredentials = readCredentials(request);
 
             if (jwtCredentials.isPresent()) {
                 final boolean debug = logger.isDebugEnabled();
@@ -107,13 +102,13 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
         return false;
     }
 
-    private Optional<JwtCredentials> readCredentials(HttpServletRequest req) throws ParseException {
+    private Optional<JwtCredentials> readCredentials(HttpServletRequest req) {
         Enumeration<String> headers = req.getHeaders("Authorization");
         if (headers != null) {
             while (headers.hasMoreElements()) {
                 String header = headers.nextElement();
                 if (header.toLowerCase().startsWith("bearer")) {
-                    return Optional.of(new JwtOnlyCredentials(JWTParser.parse(header.substring(7))));
+                    return Optional.of(new JwtOnlyCredentials(decodeAccessToken(header.substring(7))));
                 }
             }
         }
@@ -122,10 +117,19 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
             String xsrfToken = req.getHeader("X-XSRF-TOKEN");
             if (!StringUtils.isEmpty(xsrfToken)) {
                 return Optional.of(new JwtAndXsrfTokenCredentials(
-                        JWTParser.parse(accessToken.get().getValue()),
+                        decodeAccessToken(accessToken.get().getValue()),
                         xsrfToken));
             }
         }
         return Optional.empty();
+    }
+
+    private JWT decodeAccessToken(String accessToken) {
+        try {
+            return JWTParser.parse(accessToken);
+        } catch (ParseException e) {
+            log.error("Failed to parse access token", e);
+            throw new AuthenticationServiceException("Authentication failed: could not parse access token", e);
+        }
     }
 }
