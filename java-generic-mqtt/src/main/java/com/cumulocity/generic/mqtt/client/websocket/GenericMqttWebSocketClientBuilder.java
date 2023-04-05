@@ -1,11 +1,12 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
 import com.cumulocity.generic.mqtt.client.*;
+import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class GenericMqttWebSocketClientBuilder implements GenericMqttClientBuilder {
+public class GenericMqttWebSocketClientBuilder {
 
     private String url;
     private TokenApi tokenApi;
@@ -37,43 +38,32 @@ public class GenericMqttWebSocketClientBuilder implements GenericMqttClientBuild
         return this;
     }
 
-    @Override
+    /**
+     * Constructs a {@link GenericMqttClient} instance and sets it to connect to the specified URI. The
+     * client does not attempt to connect automatically. The connection will only be established once you
+     * obtain the instance of {@link GenericMqttPublisher} or {@link GenericMqttSubscriber} and invoke
+     * {@link GenericMqttPublisher#publish(GenericMqttMessage)} or {@link GenericMqttSubscriber#subscribe(GenericMqttMessageListener)}
+     */
     public GenericMqttClient build() {
         checkNotNull(url, "Web socket url has to be provided");
         checkNotNull(tokenApi, "Token API cannot be null");
         if (!url.startsWith("ws://")) {
             url = "ws://" + url;
         }
-
         return new GenericMqttClient() {
-
             @Override
-            public GenericMqttPublisher buildPublisher(String topic, GenericMqttClientProperties properties) {
-                validateProperties(properties);
-
-                final GenericMqttWebSocketClientConfiguration config = new GenericMqttWebSocketClientConfiguration();
-                config.setTopic(topic);
-
-                return new GenericMqttWebSocketPublisher(url, tokenApi, config);
+            public GenericMqttPublisher buildPublisher(final GenericMqttConfig config) {
+                return new GenericMqttWebSocketPublisher(url, tokenApi, (GenericMqttWebSocketConfig) config);
             }
 
             @Override
-            public GenericMqttSubscriber buildSubscriber(String topic, GenericMqttClientProperties properties) {
-                validateProperties(properties);
-
-                final GenericMqttWebSocketClientConfiguration config = new GenericMqttWebSocketClientConfiguration();
-                config.setTopic(topic);
-
-                return new GenericMqttWebSocketSubscriber(url, tokenApi, config);
+            public GenericMqttSubscriber buildSubscriber(final GenericMqttConfig config) {
+                return new GenericMqttWebSocketSubscriber(url, tokenApi, (GenericMqttWebSocketConfig) config);
             }
 
             @Override
             public void close() throws Exception {
                 // do nothing
-            }
-
-            private void validateProperties(GenericMqttClientProperties properties) {
-                // TODO
             }
         };
     }

@@ -14,6 +14,7 @@ import java.util.Optional;
 class GenericMqttWebSocketClient extends WebSocketClient {
 
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
+
     private GenericMqttMessageListener listener;
 
     public GenericMqttWebSocketClient(URI serverUri) {

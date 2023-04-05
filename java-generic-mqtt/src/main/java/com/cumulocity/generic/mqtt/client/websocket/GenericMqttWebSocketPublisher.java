@@ -2,8 +2,8 @@ package com.cumulocity.generic.mqtt.client.websocket;
 
 import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
 import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
-import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.generic.mqtt.client.exception.GenericMqttClientException;
+import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import org.apache.commons.codec.binary.Base64;
@@ -25,11 +25,11 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
-    private final GenericMqttWebSocketClientConfiguration config;
+    private final GenericMqttWebSocketConfig config;
 
     private GenericMqttWebSocketClient producer;
 
-    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketClientConfiguration config) {
+    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
