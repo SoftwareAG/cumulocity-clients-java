@@ -25,11 +25,11 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
-    private final WebSocketConfig config;
+    private final GenericMqttWebSocketConfig config;
 
-    private WebSocketClient producer;
+    private GenericMqttWebSocketClient producer;
 
-    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, WebSocketConfig config) {
+    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
@@ -49,7 +49,7 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
         if (producer == null) {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-                producer = new WebSocketClient(uri);
+                producer = new GenericMqttWebSocketClient(uri);
                 producer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new GenericMqttClientException("Error publishing message!", e);

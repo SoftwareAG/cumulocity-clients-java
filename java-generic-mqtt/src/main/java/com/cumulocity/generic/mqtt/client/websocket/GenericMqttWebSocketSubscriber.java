@@ -18,11 +18,11 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
-    private final WebSocketConfig config;
+    private final GenericMqttWebSocketConfig config;
 
-    private WebSocketClient consumer;
+    private GenericMqttWebSocketClient consumer;
 
-    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, WebSocketConfig config) {
+    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
@@ -46,7 +46,7 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-            consumer = new WebSocketClient(uri, listener);
+            consumer = new GenericMqttWebSocketClient(uri, listener);
             consumer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new GenericMqttClientException("WebSocket connection could not be established!", e);

@@ -1,61 +1,65 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.*;
-import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
-import lombok.RequiredArgsConstructor;
+import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
+import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
+import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 
-@RequiredArgsConstructor
-class GenericMqttWebSocketClient implements GenericMqttClient {
+import java.net.URI;
+import java.util.Optional;
 
-    private final String url;
-    private final TokenApi tokenApi;
-    private final WebSocketConfig config = new WebSocketConfig();
+@Slf4j
+class GenericMqttWebSocketClient extends WebSocketClient {
 
-    @Override
-    public GenericMqttPublisherBuilder newPublisher() {
-        return new GenericMqttPublisherBuilder() {
-            @Override
-            public GenericMqttPublisherBuilder topic(final String topic) {
-                config.setTopic(topic);
-                return this;
-            }
+    private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
-            @Override
-            public GenericMqttPublisherBuilder connectionTimeout(final long timeoutInMillis) {
-                config.setConnectionTimeout(timeoutInMillis);
-                return null;
-            }
+    private GenericMqttMessageListener listener;
 
-            @Override
-            public GenericMqttPublisher create() {
-                return new GenericMqttWebSocketPublisher(url, tokenApi, config);
-            }
-        };
+    public GenericMqttWebSocketClient(URI serverUri) {
+        super(serverUri);
+    }
+
+    public GenericMqttWebSocketClient(URI serverUri, GenericMqttMessageListener listener) {
+        super(serverUri);
+        this.listener = listener;
     }
 
     @Override
-    public GenericMqttSubscriberBuilder newSubscriber() {
-        return new GenericMqttSubscriberBuilder() {
-            @Override
-            public GenericMqttSubscriberBuilder topic(final String topic) {
-                config.setTopic(topic);
-                return this;
-            }
-
-            @Override
-            public GenericMqttSubscriberBuilder connectionTimeout(final long timeoutInMillis) {
-                config.setConnectionTimeout(timeoutInMillis);
-                return null;
-            }
-
-            @Override
-            public GenericMqttSubscriber create() {
-                return new GenericMqttWebSocketSubscriber(url, tokenApi, config);
-            }
-        };
+    public void onOpen(ServerHandshake handshake) {
+        log.debug("Web socket connection open for '{}' with status '{}' and message '{}'", uri, handshake.getHttpStatus(), handshake.getHttpStatusMessage());
     }
 
     @Override
-    public void close() throws Exception {
+    public void onMessage(String message) {
+        if (listener == null) {
+            return;
+        }
+
+        final WebSocketMessage webSocketMessage = WebSocketMessage.parse(message);
+
+        final Optional<String> ackHeader = webSocketMessage.getAckHeader();
+        final byte[] avroPayload = webSocketMessage.getAvroPayload();
+
+        final GenericMqttMessage genericMqttMessage = genericMqttMessageConverter.decode(avroPayload);
+
+        listener.onMessage(genericMqttMessage);
+
+        ackHeader.ifPresent(this::send);
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        log.debug("Web socket connection closed for '{}' with core '{}' reason '{}' by {}", uri, code, reason, remote ? "client" : "server");
+    }
+
+    @Override
+    public void onError(Exception e) {
+        if (listener == null) {
+            return;
+        }
+
+        listener.onError(e);
     }
 }
