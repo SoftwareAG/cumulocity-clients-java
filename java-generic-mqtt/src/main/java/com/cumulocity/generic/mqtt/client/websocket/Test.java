@@ -1,12 +1,7 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttClient;
-import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
-import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
-import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
+import com.cumulocity.generic.mqtt.client.*;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
-
-import java.util.Properties;
 
 @Deprecated
 public class Test {
@@ -27,12 +22,12 @@ public class Test {
 
         // Publish
 
-        GenericMqttPublisher genericMqttPublisher = genericMqttClient.buildPublisher(topic, new Properties());
+        GenericMqttPublisher genericMqttPublisher = genericMqttClient.buildPublisher(topic, new GenericMqttClientProperties());
         genericMqttPublisher.publish(genericMqttMessage);
 
         // Subscribe
 
-        GenericMqttSubscriber genericMqttSubscriber = genericMqttClient.buildSubscriber(topic, new Properties());
+        GenericMqttSubscriber genericMqttSubscriber = genericMqttClient.buildSubscriber(topic, new GenericMqttClientProperties());
         genericMqttSubscriber.subscribe(new GenericMqttMessageListener() {
             @Override
             public void onMessage(GenericMqttMessage message) {

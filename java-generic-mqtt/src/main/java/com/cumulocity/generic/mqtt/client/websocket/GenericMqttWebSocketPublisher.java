@@ -25,11 +25,11 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
-    private final GenericMqttWebSocketConfig config;
+    private final GenericMqttWebSocketClientConfiguration config;
 
     private GenericMqttWebSocketClient producer;
 
-    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
+    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketClientConfiguration config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;

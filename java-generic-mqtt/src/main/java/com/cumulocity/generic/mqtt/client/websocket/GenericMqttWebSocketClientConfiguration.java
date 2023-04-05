@@ -3,7 +3,7 @@ package com.cumulocity.generic.mqtt.client.websocket;
 import lombok.Data;
 
 @Data
-class GenericMqttWebSocketConfig {
+class GenericMqttWebSocketClientConfiguration {
 
     private final static long DEFAULT_CONNECTION_TIMEOUT_IN_MILLIS = 2000;
 

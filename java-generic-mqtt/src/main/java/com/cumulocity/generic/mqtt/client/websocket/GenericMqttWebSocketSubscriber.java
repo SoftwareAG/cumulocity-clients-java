@@ -18,11 +18,11 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
     private final String webSocketBaseUrl;
     private final TokenApi tokenApi;
-    private final GenericMqttWebSocketConfig config;
+    private final GenericMqttWebSocketClientConfiguration config;
 
     private GenericMqttWebSocketClient consumer;
 
-    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
+    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketClientConfiguration config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;

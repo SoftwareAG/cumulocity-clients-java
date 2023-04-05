@@ -1,12 +1,7 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttClient;
-import com.cumulocity.generic.mqtt.client.GenericMqttClientBuilder;
-import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
-import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
+import com.cumulocity.generic.mqtt.client.*;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
-
-import java.util.Properties;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -53,20 +48,20 @@ public class GenericMqttWebSocketClientBuilder implements GenericMqttClientBuild
         return new GenericMqttClient() {
 
             @Override
-            public GenericMqttPublisher buildPublisher(String topic, Properties properties) {
+            public GenericMqttPublisher buildPublisher(String topic, GenericMqttClientProperties properties) {
                 validateProperties(properties);
 
-                final GenericMqttWebSocketConfig config = new GenericMqttWebSocketConfig();
+                final GenericMqttWebSocketClientConfiguration config = new GenericMqttWebSocketClientConfiguration();
                 config.setTopic(topic);
 
                 return new GenericMqttWebSocketPublisher(url, tokenApi, config);
             }
 
             @Override
-            public GenericMqttSubscriber buildSubscriber(String topic, Properties properties) {
+            public GenericMqttSubscriber buildSubscriber(String topic, GenericMqttClientProperties properties) {
                 validateProperties(properties);
 
-                final GenericMqttWebSocketConfig config = new GenericMqttWebSocketConfig();
+                final GenericMqttWebSocketClientConfiguration config = new GenericMqttWebSocketClientConfiguration();
                 config.setTopic(topic);
 
                 return new GenericMqttWebSocketSubscriber(url, tokenApi, config);
@@ -77,8 +72,8 @@ public class GenericMqttWebSocketClientBuilder implements GenericMqttClientBuild
                 // do nothing
             }
 
-            private void validateProperties(Properties properties) {
-
+            private void validateProperties(GenericMqttClientProperties properties) {
+                // TODO
             }
         };
     }
