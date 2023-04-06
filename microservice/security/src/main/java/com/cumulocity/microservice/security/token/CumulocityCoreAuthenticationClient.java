@@ -17,6 +17,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
@@ -30,8 +33,8 @@ class CumulocityCoreAuthenticationClient {
 
     private static final int CONNECTION_TIMEOUT = 30000;
 
-    public static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication, HttpServletRequest request) {
-        Client client = createClient(jwtTokenAuthentication, request);
+    public static JwtTokenAuthentication authenticateUserAndUpdateToken(String baseUrl, JwtTokenAuthentication jwtTokenAuthentication) {
+        Client client = createClient(jwtTokenAuthentication);
         try {
             CurrentUserRepresentation currUserRepresentation = getCurrentUser(client, baseUrl);
             String tenantName = getTenantName(client, baseUrl);
@@ -46,15 +49,19 @@ class CumulocityCoreAuthenticationClient {
      * Remember to release resources when client is not needed
      */
 
-    public static Client createClient(JwtTokenAuthentication jwtTokenAuthentication, HttpServletRequest request) {
+    public static Client createClient(JwtTokenAuthentication jwtTokenAuthentication) {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder().withConfig(createClientConfig());
                 if (jwtTokenAuthentication != null) {
                     clientBuilder.register(createClientWithAuthenticationFilter(jwtTokenAuthentication));
                 }
-                if (request != null) {
-                    clientBuilder.register(createForwardedHeaderOnRequestFilter(request));
-                }
-                return clientBuilder.build();
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes) {
+            HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
+            if (request != null) {
+                clientBuilder.register(new ForwardedHeaderOnRequestFilter(request));
+            }
+        }
+        return clientBuilder.build();
     }
 
     private static CumulocityAuthenticationFilter createClientWithAuthenticationFilter(JwtTokenAuthentication jwtTokenAuthentication) {
@@ -74,10 +81,6 @@ class CumulocityCoreAuthenticationClient {
                                 .oAuthAccessToken(jwtCredentials.getJwt().serialize())
                                 .build());
             }
-    }
-
-    private static ForwardedHeaderOnRequestFilter createForwardedHeaderOnRequestFilter(HttpServletRequest request) {
-            return new ForwardedHeaderOnRequestFilter(request);
     }
 
     private static ClientConfig createClientConfig() {
@@ -121,7 +124,7 @@ class CumulocityCoreAuthenticationClient {
 
     @RequiredArgsConstructor
     @Provider
-    private static class ForwardedHeaderOnRequestFilter implements ClientRequestFilter {
+    static class ForwardedHeaderOnRequestFilter implements ClientRequestFilter {
 
         // this header added by proxy contains domain of origin client. It is forwarded
         // to cumulocity in microservice request
