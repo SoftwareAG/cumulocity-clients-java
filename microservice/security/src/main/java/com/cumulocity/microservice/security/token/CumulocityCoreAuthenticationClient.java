@@ -42,7 +42,7 @@ class CumulocityCoreAuthenticationClient {
             return updateUserCredentials(tenantName, jwtTokenAuthentication);
         } finally {
             client.close();
-        }
+        }//
     }
 
     /**
