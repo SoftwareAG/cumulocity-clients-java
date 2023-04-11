@@ -1,9 +1,9 @@
 package com.cumulocity.generic.mqtt.client;
 
 /**
- * <code>GenericMqttSubscriber</code> is used subscribe to messages on a topic.
+ * Interface for subscribing to messages from the server.
  * <p>
- * Topic is configured after obtaining the instance of <code>GenericMqttSubscriber</code>. For example: {@link GenericMqttClient#webSocket()}
+ * <code>GenericMqttSubscriber</code> instances are setup using {@link GenericMqttClient#buildSubscriber(GenericMqttConfig)}
  */
 public interface GenericMqttSubscriber extends AutoCloseable {
 

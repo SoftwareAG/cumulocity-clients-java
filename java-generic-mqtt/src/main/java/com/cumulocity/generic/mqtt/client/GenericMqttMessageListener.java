@@ -3,7 +3,8 @@ package com.cumulocity.generic.mqtt.client;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 
 /**
- * Implement this interface to handle Generic MQTT messages after {@link GenericMqttSubscriber#subscribe(GenericMqttMessageListener)}.
+ * Users must implement this interface and pass the instance of it to {@link GenericMqttSubscriber#subscribe(GenericMqttMessageListener)}
+ * in order to handle Generic MQTT messages received from the server.
  */
 public interface GenericMqttMessageListener {
 

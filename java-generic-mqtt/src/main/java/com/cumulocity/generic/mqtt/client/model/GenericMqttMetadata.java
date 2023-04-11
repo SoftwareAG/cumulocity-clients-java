@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.Map;
 
 /**
- * Metadata for {@link GenericMqttMessage}.
+ * Represents the Metadata of a {@link GenericMqttMessage}
  */
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,15 +21,15 @@ public class GenericMqttMetadata {
     private String clientId;
 
     /**
-     * The message id of the message.
+     * The message id.
      */
     private int messageId;
 
     /**
      * The duplicate delivery flag.
      * <p>
-     * If <code>false</code> this is the first occasion the message is sent to the receiver. If <code>true</code> the
-     * message has already been sent once to the receiver.
+     *
+     * @return false this is the first occasion the message is sent to the receiver, true otherwise.
      */
     private boolean dupFlag;
 

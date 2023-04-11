@@ -4,7 +4,7 @@ import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.SchemaSerializationException;
 
 /**
- * A converter to serialize message object to byte array and vice versa.
+ * Avro message converter to serialize message object to byte array and vice versa.
  */
 public interface AvroMessageConverter<T> {
 
@@ -18,7 +18,7 @@ public interface AvroMessageConverter<T> {
     byte[] encode(T message);
 
     /**
-     * Decode a byte array into an object using the schema definition and deserializer implementation.
+     * Decode a byte array into an object of type <code>T</code>.
      *
      * @param bytes the byte array to decode
      * @return the deserialized object
@@ -26,7 +26,7 @@ public interface AvroMessageConverter<T> {
     T decode(byte[] bytes);
 
     /**
-     * Create an Avro schema type by default configuration of the class.
+     * Create an Avro schema type using the default configuration for the class.
      *
      * @param <T>   This is the type parameter
      * @param clazz the POJO class to be used to extract the Avro schema

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Generic MQTT message. This message contains payload and the associated {@link GenericMqttMetadata metadata}.
+ * A Generic MQTT message containing a payload and associated {@link GenericMqttMetadata metadata}.
  */
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class GenericMqttMessage {
 
     /**
-     * The payload of this message as a byte array. Empty byte array if the payload is not present.
+     * The payload of this message as a byte array. This will be an empty array if the payload is not present.
      */
     private byte[] payload;
 

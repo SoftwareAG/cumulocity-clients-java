@@ -3,9 +3,9 @@ package com.cumulocity.generic.mqtt.client;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 
 /**
- * <code>GenericMqttPublisher</code> is used to publish messages to a topic.
+ * Interface for publishing messages to the server.
  * <p>
- * Topic is configured after obtaining the instance of <code>GenericMqttPublisher</code>. For example: {@link GenericMqttClient#webSocket()}
+ * <code>GenericMqttPublisher</code> instances are setup using {@link GenericMqttClient#buildPublisher(GenericMqttConfig)}.
  */
 public interface GenericMqttPublisher extends AutoCloseable {
     /**
