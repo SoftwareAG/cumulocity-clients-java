@@ -1,8 +1,11 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
 import com.cumulocity.generic.mqtt.client.*;
+import com.cumulocity.generic.mqtt.client.exception.GenericMqttClientException;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+
+import java.net.MalformedURLException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -10,6 +13,9 @@ public class GenericMqttWebSocketClientBuilder {
 
     private String url;
     private TokenApi tokenApi;
+
+    private GenericMqttWebSocketClientBuilder() {
+    }
 
     /**
      * Creates a builder for {@link GenericMqttClient}.
@@ -45,11 +51,9 @@ public class GenericMqttWebSocketClientBuilder {
      * {@link GenericMqttPublisher#publish(GenericMqttMessage)} or {@link GenericMqttSubscriber#subscribe(GenericMqttMessageListener)}
      */
     public GenericMqttClient build() {
-        checkNotNull(url, "Web socket url has to be provided");
+        validateURL(url);
         checkNotNull(tokenApi, "Token API cannot be null");
-        if (!url.startsWith("ws://")) {
-            url = "ws://" + url;
-        }
+
         return new GenericMqttClient() {
             @Override
             public GenericMqttPublisher buildPublisher(final GenericMqttConfig config) {
@@ -66,6 +70,14 @@ public class GenericMqttWebSocketClientBuilder {
                 // do nothing
             }
         };
+    }
+
+    private void validateURL(String url) {
+        checkNotNull(url, "Server URI has to be provided");
+
+        if (!(url.startsWith("ws://") || url.startsWith("wss://"))) {
+            throw new GenericMqttClientException("Server URI should specify either 'ws://' or 'wss://' protocol", new MalformedURLException());
+        }
     }
 
 }
