@@ -23,4 +23,6 @@ public class GenericMqttWebSocketConfig implements GenericMqttConfig {
     @Builder.Default
     private long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_IN_MILLIS;
 
+    public static class GenericMqttWebSocketConfigBuilder {
+    }
 }

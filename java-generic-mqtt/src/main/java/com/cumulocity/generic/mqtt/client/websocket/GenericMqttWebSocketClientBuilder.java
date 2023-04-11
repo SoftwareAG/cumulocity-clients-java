@@ -49,6 +49,8 @@ public class GenericMqttWebSocketClientBuilder {
      * client does not attempt to connect automatically. The connection will only be established once you
      * obtain the instance of {@link GenericMqttPublisher} or {@link GenericMqttSubscriber} and invoke
      * {@link GenericMqttPublisher#publish(GenericMqttMessage)} or {@link GenericMqttSubscriber#subscribe(GenericMqttMessageListener)}
+     *
+     * @return a GenericMqttClient instance
      */
     public GenericMqttClient build() {
         validateURL(url);
