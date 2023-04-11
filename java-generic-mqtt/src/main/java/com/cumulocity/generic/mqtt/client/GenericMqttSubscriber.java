@@ -3,7 +3,7 @@ package com.cumulocity.generic.mqtt.client;
 /**
  * <code>GenericMqttSubscriber</code> is used subscribe to messages on a topic.
  * <p>
- * Topic is configured when obtaining the instance of <code>GenericMqttSubscriber</code> using {@link GenericMqttFactory#buildSubscriber(GenericMqttConnectionConfig)}
+ * Topic is configured after obtaining the instance of <code>GenericMqttSubscriber</code>. For example: {@link GenericMqttClient#webSocket()}
  */
 public interface GenericMqttSubscriber extends AutoCloseable {
 
@@ -12,7 +12,7 @@ public interface GenericMqttSubscriber extends AutoCloseable {
      * <p>
      * When a {@link GenericMqttMessageListener} is set, application will receive messages through it.
      *
-     * @param messageListener the listener object
+     * @param listener the listener object
      */
-    void subscribe(GenericMqttMessageListener messageListener);
+    void subscribe(GenericMqttMessageListener listener);
 }

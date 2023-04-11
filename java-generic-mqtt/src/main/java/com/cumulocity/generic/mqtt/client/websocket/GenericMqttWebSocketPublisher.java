@@ -1,10 +1,9 @@
 package com.cumulocity.generic.mqtt.client.websocket;
 
-import com.cumulocity.generic.mqtt.client.GenericMqttConnectionConfig;
 import com.cumulocity.generic.mqtt.client.GenericMqttPublisher;
 import com.cumulocity.generic.mqtt.client.converter.GenericMqttMessageConverter;
+import com.cumulocity.generic.mqtt.client.exception.GenericMqttClientException;
 import com.cumulocity.generic.mqtt.client.model.GenericMqttMessage;
-import com.cumulocity.generic.mqtt.client.websocket.exception.GenericMqttWebSocketClientException;
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import org.apache.commons.codec.binary.Base64;
@@ -26,38 +25,38 @@ class GenericMqttWebSocketPublisher implements GenericMqttPublisher {
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
     private final AtomicInteger sequence = new AtomicInteger();
-    private final GenericMqttConnectionConfig config;
+    private final GenericMqttWebSocketConfig config;
 
     private GenericMqttWebSocketClient producer;
 
-    public GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttConnectionConfig config) {
+    GenericMqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.tokenApi = tokenApi;
         this.config = config;
     }
 
     @Override
-    public void publish(GenericMqttMessage genericMqttMessage) {
+    public void publish(GenericMqttMessage message) {
         final NotificationTokenRequestRepresentation tokenRequestRepresentation = getTokenRepresentation(config.getTopic());
         final String token = tokenApi
                 .create(tokenRequestRepresentation)
                 .getTokenString();
 
         if (token == null) {
-            throw new GenericMqttWebSocketClientException(String.format("Token could not be created for topic %s", config.getTopic()));
+            throw new GenericMqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
         }
 
         if (producer == null) {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
                 producer = new GenericMqttWebSocketClient(uri);
-                producer.connectBlocking(config.getConnectionTimeoutInMillis(), TimeUnit.MILLISECONDS);
+                producer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
-                throw new GenericMqttWebSocketClientException("Error publishing message!", e);
+                throw new GenericMqttClientException("Error publishing message!", e);
             }
         }
 
-        final byte[] data = genericMqttMessageConverter.encode(genericMqttMessage);
+        final byte[] data = genericMqttMessageConverter.encode(message);
         final String publishMessage = sequence.incrementAndGet() + "\n" + Base64.encodeBase64String(data);
 
         producer.send(publishMessage);

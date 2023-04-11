@@ -12,25 +12,26 @@ MQTT Broker.
     Example usage for publishing messages to Generic MQTT Broker via WebSocket:
 
 <pre>
-
         // Message to be sent
         final String payload = "Hello World";
 
         // Construct a new GenericMqttMessage and set the payload
         final GenericMqttMessage genericMqttMessage = new GenericMqttMessage();
-        genericMqttMessage.setPayload(message.getBytes());
+        genericMqttMessage.setPayload(payload.getBytes());
 
-        // Build GenericMqttConnectionConfig with topic to which the message is to be sent
-        final GenericMqttConnectionConfig mqttConnectionConfig =
-        GenericMqttConnectionConfig.builder().topic(topic).build();
+        // Build GenericMqttConfig with topic to which the message is to be sent
+        final GenericMqttConfig mqttConnectionConfig =
+                GenericMqttConfig.webSocket().topic(topic).build();
 
-        // Create an instance of GenericMqttWebSocketFactory by specifying the server URI to connect to along with TokenApi
-        final GenericMqttFactory genericMqttFactory = new GenericMqttWebSocketFactory(webSocketBaseUrl, tokenApi);
+        // Create an instance of GenericMqttClient by specifying the server URI to connect to along with TokenApi
+        final GenericMqttClient genericMqttClient = GenericMqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
 
-        // Build GenericMqttPublisher and publish GenericMqttMessage. Close the resource either with usage as below or
-        by calling genericMqttPublisher.close()
-        try (final GenericMqttPublisher genericMqttPublisher = genericMqttFactory.buildPublisher(mqttConnectionConfig))
-        {
+
+        // Build GenericMqttPublisher and publish GenericMqttMessage. Close the resource either with usage as below or by calling genericMqttPublisher.close()
+        try (final GenericMqttPublisher genericMqttPublisher = genericMqttClient.buildPublisher(mqttConnectionConfig)) {
             genericMqttPublisher.publish(genericMqttMessage);
         } catch (Exception e) {
             log.error("Could not sent message to {}", topic, e);
@@ -43,36 +44,29 @@ MQTT Broker.
 
 <pre>
 
-        // Build GenericMqttConnectionConfig with topic
-        final GenericMqttConnectionConfig mqttConnectionConfig = GenericMqttConnectionConfig.builder().topic(topic).build();
+        // Build GenericMqttConfig with topic
+        final GenericMqttConfig mqttConnectionConfig = GenericMqttConfig.webSocket().topic(topic).build();
 
-        // Create an instance of GenericMqttWebSocketFactory by specifying the server URI to connect to along with TokenApi
-        final GenericMqttFactory genericMqttFactory = new GenericMqttWebSocketFactory(properties.getWebSocketURL(), tokenApi);
+        // Create an instance of GenericMqttClient by specifying the server URI to connect to along with TokenApi
+        final GenericMqttClient genericMqttClient = GenericMqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
 
         // Build GenericMqttSubscriber
-        final GenericMqttSubscriber genericMqttSubscriber = genericMqttFactory.buildSubscriber(mqttConnectionConfig);
+        final GenericMqttSubscriber genericMqttSubscriber = genericMqttClient.buildSubscriber(mqttConnectionConfig);
 
         // Subscribe by passing implementation of GenericMqttMessageListener to handle events from the websocket server.
         genericMqttSubscriber.subscribe(new GenericMqttMessageListener() {
-                &#64;Override
-                public void onOpen(URI serverUri) {
-                    log.debug("Connected to &lt;{}&gt;", serverUri);
-                }
+            &#64;Override
+            public void onMessage(GenericMqttMessage message) {
+                log.info("Message Received: {}", new String(genericMqttMessage.getPayload()));
+            }
 
-                &#64;Override
-                public void onMessage(GenericMqttMessage genericMqttMessage) {
-                    log.info("Message Received: {}", new String(genericMqttMessage.getPayload()));
-                }
-
-                &#64;Override
-                public void onError(Throwable t) {
-                    log.error("WebSocket Error", t);
-                }
-
-                &#64;Override
-                public void onClose(int code, String reason, boolean remote) {
-                    log.debug("WebSocket closed " + (remote ? "by server. " : "") + " Code:" + code + ", reason: " + reason);
-                }
+            &#64;Override
+            public void onError(Throwable t) {
+                log.error("WebSocket Error", t);
+            }
         });
 
         // Close the resource after usage
