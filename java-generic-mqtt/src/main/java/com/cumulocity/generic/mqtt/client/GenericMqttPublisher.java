@@ -11,7 +11,7 @@ public interface GenericMqttPublisher extends AutoCloseable {
     /**
      * Sends {@link GenericMqttMessage message} to the Generic MQTT.
      *
-     * @param message The <code>GenericMqttMessage</code> which will be published.
+     * @param message The <code>GenericMqttMessage</code> to be published.
      */
     void publish(GenericMqttMessage message);
 }
