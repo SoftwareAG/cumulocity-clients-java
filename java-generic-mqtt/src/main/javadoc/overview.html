@@ -58,12 +58,12 @@ MQTT Broker.
 
         // Subscribe by passing implementation of GenericMqttMessageListener to handle events from the websocket server.
         genericMqttSubscriber.subscribe(new GenericMqttMessageListener() {
-            @Override
+            &#64;Override
             public void onMessage(GenericMqttMessage message) {
                 log.info("Message Received: {}", new String(genericMqttMessage.getPayload()));
             }
 
-            @Override
+            &#64;Override
             public void onError(Throwable t) {
                 log.error("WebSocket Error", t);
             }
