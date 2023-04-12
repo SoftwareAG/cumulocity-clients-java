@@ -15,10 +15,10 @@ class GenericMqttWebSocketClient extends WebSocketClient {
 
     private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
 
-    private GenericMqttMessageListener listener;
+    private final GenericMqttMessageListener listener;
 
     public GenericMqttWebSocketClient(URI serverUri) {
-        super(serverUri);
+        this(serverUri, new EmptyGenericMqttMessageListener());
     }
 
     public GenericMqttWebSocketClient(URI serverUri, GenericMqttMessageListener listener) {
@@ -61,5 +61,17 @@ class GenericMqttWebSocketClient extends WebSocketClient {
         }
 
         listener.onError(e);
+    }
+
+    private static class EmptyGenericMqttMessageListener implements GenericMqttMessageListener {
+        @Override
+        public void onMessage(GenericMqttMessage message) {
+            // Do Nothing
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Do Nothing
+        }
     }
 }
