@@ -33,10 +33,6 @@ class GenericMqttWebSocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        if (listener == null) {
-            return;
-        }
-
         final WebSocketMessage webSocketMessage = WebSocketMessage.parse(message);
 
         final Optional<String> ackHeader = webSocketMessage.getAckHeader();
@@ -56,10 +52,6 @@ class GenericMqttWebSocketClient extends WebSocketClient {
 
     @Override
     public void onError(Exception e) {
-        if (listener == null) {
-            return;
-        }
-
         listener.onError(e);
     }
 

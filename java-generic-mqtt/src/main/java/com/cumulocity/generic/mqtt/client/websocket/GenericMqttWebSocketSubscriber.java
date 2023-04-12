@@ -3,42 +3,35 @@ package com.cumulocity.generic.mqtt.client.websocket;
 import com.cumulocity.generic.mqtt.client.GenericMqttMessageListener;
 import com.cumulocity.generic.mqtt.client.GenericMqttSubscriber;
 import com.cumulocity.generic.mqtt.client.exception.GenericMqttClientException;
-import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-
 class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
 
+    private final static String SUBSCRIBER = "javaGenericMqttWSClientSub";
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/consumer/?token=%s";
-    private static final String TOKEN_TYPE = "mqtt";
 
     private final String webSocketBaseUrl;
-    private final TokenApi tokenApi;
     private final GenericMqttWebSocketConfig config;
+    private final TokenSupplier tokenSupplier;
 
     private GenericMqttWebSocketClient consumer;
 
     GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
-        this.tokenApi = tokenApi;
         this.config = config;
+        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
     }
 
     @Override
     public void subscribe(GenericMqttMessageListener listener) {
-
         if (consumer != null) {
             return;
         }
 
-        final NotificationTokenRequestRepresentation tokenRequestRepresentation = getTokenRepresentation(config.getTopic());
-        final String token = tokenApi
-                .create(tokenRequestRepresentation)
-                .getTokenString();
+        final String token = tokenSupplier.get();
 
         if (token == null) {
             throw new GenericMqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
@@ -58,17 +51,5 @@ class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
         if (consumer != null) {
             consumer.close();
         }
-    }
-
-    private NotificationTokenRequestRepresentation getTokenRepresentation(String topic) {
-        final NotificationTokenRequestRepresentation representation = new NotificationTokenRequestRepresentation();
-        representation.setSubscriber("javaGenericMqttWSClientSub" + randomAlphabetic(10));
-        representation.setSubscription(topic);
-        representation.setType(TOKEN_TYPE);
-        representation.setSigned(true);
-        representation.setExpiresInMinutes(1440);
-        representation.setShared(false);
-        representation.setNonPersistent(false);
-        return representation;
     }
 }

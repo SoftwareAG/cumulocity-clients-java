@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public class GenericMqttWebSocketConfig implements GenericMqttConfig {
 
-    private final static long DEFAULT_CONNECTION_TIMEOUT_IN_MILLIS = 2000;
+    private final static long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 2000;
 
     /**
      * Specify the topic to which instance of {@link GenericMqttPublisher} or {@link GenericMqttSubscriber} will connect to.
@@ -21,7 +21,7 @@ public class GenericMqttWebSocketConfig implements GenericMqttConfig {
      * Connection timeout in millis second until the websocket connected or failed to do so.
      */
     @Builder.Default
-    private long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_IN_MILLIS;
+    private long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_MILLIS;
 
     public static class GenericMqttWebSocketConfigBuilder {
     }

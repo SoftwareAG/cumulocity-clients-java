@@ -14,7 +14,7 @@ public interface GenericMqttClient extends AutoCloseable {
     /**
      * Creates an instance of <code>GenericMqttPublisher</code> with the configured topic.
      *
-     * @param config <code>GenericMqttConnectionConfig</code>
+     * @param config <code>GenericMqttConfig</code>
      * @return the instance of <code>GenericMqttPublisher</code>
      */
     GenericMqttPublisher buildPublisher(GenericMqttConfig config);
@@ -22,7 +22,7 @@ public interface GenericMqttClient extends AutoCloseable {
     /**
      * Creates an instance of <code>GenericMqttSubscriber</code> with the configured topic.
      *
-     * @param config <code>GenericMqttConnectionConfig</code>
+     * @param config <code>GenericMqttConfig</code>
      * @return the instance of <code>GenericMqttSubscriber</code>
      */
     GenericMqttSubscriber buildSubscriber(GenericMqttConfig config);
