@@ -36,7 +36,7 @@ public class GenericMqttWebSocketClientBuilder {
     }
 
     /**
-     * @param tokenApi see {@link TokenApi}
+     * @param tokenApi see <code>TokenApi</code>
      * @return self
      */
     public GenericMqttWebSocketClientBuilder tokenApi(final TokenApi tokenApi) {
