@@ -1,20 +1,20 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.ContextService;
+
+import java.text.ParseException;
 import java.util.Optional;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import lombok.Setter;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -61,6 +61,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
                 final boolean debug = logger.isDebugEnabled();
                 try {
                     JwtTokenAuthentication jwtTokenAuthentication = new JwtTokenAuthentication(jwtCredentials.get());
+
                     Authentication authResult = authenticationManager.authenticate(jwtTokenAuthentication);
                     if (debug) {
                         logger.debug("Authentication success: " + authResult);
@@ -107,7 +108,7 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
             while (headers.hasMoreElements()) {
                 String header = headers.nextElement();
                 if (header.toLowerCase().startsWith("bearer")) {
-                    return Optional.of(new JwtOnlyCredentials(JwtHelper.decode(header.substring(7))));
+                    return Optional.of(new JwtOnlyCredentials(decodeAccessToken(header.substring(7))));
                 }
             }
         }
@@ -116,10 +117,19 @@ public class CumulocityOAuthMicroserviceFilter extends GenericFilterBean {
             String xsrfToken = req.getHeader("X-XSRF-TOKEN");
             if (!StringUtils.isEmpty(xsrfToken)) {
                 return Optional.of(new JwtAndXsrfTokenCredentials(
-                        JwtHelper.decode(accessToken.get().getValue()),
+                        decodeAccessToken(accessToken.get().getValue()),
                         xsrfToken));
             }
         }
         return Optional.empty();
+    }
+
+    private JWT decodeAccessToken(String accessToken) {
+        try {
+            return JWTParser.parse(accessToken);
+        } catch (ParseException e) {
+            log.error("Failed to parse access token", e);
+            throw new AuthenticationServiceException("Authentication failed: could not parse access token", e);
+        }
     }
 }

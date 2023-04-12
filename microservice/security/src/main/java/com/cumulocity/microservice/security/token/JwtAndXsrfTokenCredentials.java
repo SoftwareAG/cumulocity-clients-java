@@ -1,21 +1,21 @@
 package com.cumulocity.microservice.security.token;
 
 import com.cumulocity.microservice.context.credentials.UserCredentials;
-import org.springframework.security.jwt.Jwt;
+import com.nimbusds.jwt.JWT;
 
 import java.util.Objects;
 
 public class JwtAndXsrfTokenCredentials implements JwtCredentials{
-    private final Jwt jwt;
+    private final JWT jwt;
     private final String xsrfToken;
 
-    public JwtAndXsrfTokenCredentials(Jwt jwt, String xsrfToken) {
+    public JwtAndXsrfTokenCredentials(JWT jwt, String xsrfToken) {
         this.jwt = jwt;
         this.xsrfToken = xsrfToken;
     }
 
     @Override
-    public Jwt getJwt() {
+    public JWT getJwt() {
         return jwt;
     }
 
@@ -25,7 +25,7 @@ public class JwtAndXsrfTokenCredentials implements JwtCredentials{
         return UserCredentials.builder()
                 .tenant(tenantName)
                 .username(jwtTokenAuthentication.getCurrentUserRepresentation().getUserName())
-                .oAuthAccessToken(credentials.getJwt().getEncoded())
+                .oAuthAccessToken(credentials.getJwt().serialize())
                 .xsrfToken(credentials.getXsrfToken())
                 .build();    }
 
@@ -38,12 +38,12 @@ public class JwtAndXsrfTokenCredentials implements JwtCredentials{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JwtAndXsrfTokenCredentials that = (JwtAndXsrfTokenCredentials) o;
-        return Objects.equals(jwt.getEncoded(), that.jwt.getEncoded()) &&
+        return Objects.equals(jwt.serialize(), that.jwt.serialize()) &&
                 Objects.equals(xsrfToken, that.xsrfToken);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jwt.getEncoded(), xsrfToken);
+        return Objects.hash(jwt.serialize(), xsrfToken);
     }
 }

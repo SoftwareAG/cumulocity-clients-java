@@ -22,7 +22,6 @@ package com.cumulocity.sdk.client;
 
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
-import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
 import com.cumulocity.sdk.client.event.EventApi;
@@ -53,8 +52,6 @@ public interface Platform extends AutoCloseable {
     EventApi getEventApi() throws SDKException;
 
     AuditRecordApi getAuditRecordApi() throws SDKException;
-    
-    CepApi getCepApi() throws SDKException;
     
     DeviceCredentialsApi getDeviceCredentialsApi() throws SDKException;
     

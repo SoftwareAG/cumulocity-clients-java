@@ -28,8 +28,6 @@ import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.alarm.AlarmApiImpl;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApiImpl;
-import com.cumulocity.sdk.client.cep.CepApi;
-import com.cumulocity.sdk.client.cep.CepApiImpl;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApiImpl;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
@@ -243,12 +241,6 @@ public class PlatformImpl extends PlatformParameters implements Platform {
     public AuditRecordApi getAuditRecordApi() throws SDKException {
         RestConnector restConnector = createRestConnector();
         return new AuditRecordApiImpl(restConnector, new UrlProcessor(), getPlatformApi(restConnector).getAudit(), getPageSize());
-    }
-
-    @Override
-    public CepApi getCepApi() throws SDKException {
-        RestConnector restConnector = createRestConnector();
-        return new CepApiImpl(this, restConnector, getPageSize());
     }
 
     @Override

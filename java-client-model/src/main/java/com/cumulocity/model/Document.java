@@ -254,7 +254,7 @@ public abstract class Document<T extends ID> extends JSONBase {
      * Returns the object associated with the given property name, or null if no
      * such property exists.
      * Such an accessor is required when bean naming conventions are used to
-     * discover available properties, eg in Esper.
+     * discover available properties.
      *
      * Same as a call to {@link #get(String name)}
      *

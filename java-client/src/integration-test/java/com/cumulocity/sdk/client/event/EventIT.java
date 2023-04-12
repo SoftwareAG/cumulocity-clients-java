@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.cumulocity.model.DateConverter.string2Date;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.awaitility.Awaitility.await;
@@ -447,7 +448,7 @@ public class EventIT extends JavaSdkITBase {
 
     private void iDeleteEventCollection() throws SDKException {
         try {
-            eventApi.deleteEventsByFilter(new EventFilter());
+            eventApi.deleteEventsByFilter(new EventFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -455,7 +456,7 @@ public class EventIT extends JavaSdkITBase {
 
     private void iDeleteAllByType(String type) throws SDKException {
         try {
-            EventFilter typeFilter = new EventFilter().byType(type);
+            EventFilter typeFilter = new EventFilter().byType(type).byFromDate(string2Date("2000-01-01T00:00:00.000+00:00"));
             eventApi.deleteEventsByFilter(typeFilter);
         } catch (SDKException ex) {
             status = ex.getHttpStatus();

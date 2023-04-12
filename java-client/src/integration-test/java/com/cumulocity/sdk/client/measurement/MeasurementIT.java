@@ -29,6 +29,7 @@ import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.option.TenantOptionApi;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.*;
 
@@ -36,15 +37,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.cumulocity.model.DateConverter.string2Date;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
 import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Index.atIndex;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 
 //TODO inline step definitions (see AlarmIT or InventoryIT)
+@Slf4j
 public class MeasurementIT extends JavaSdkITBase {
 
     private static List<ManagedObjectRepresentation> managedObjects = new ArrayList<>();
@@ -81,7 +84,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     @AfterEach
     public void deleteMeasurements() {
-        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
         deleteTenantOptionWhenPresent();
     }
 
@@ -398,15 +401,15 @@ public class MeasurementIT extends JavaSdkITBase {
         // when
         MeasurementCollectionRepresentation measurements = measurementApi.getMeasurements().get();
         // then
-        assertThat(measurements.getMeasurements().size(), is(equalTo(5)));
+        assertThat(measurements.getMeasurements()).hasSize(5);
         // when
         MeasurementCollectionRepresentation page1st = measurementApi.getMeasurements().getPage(measurements, 1);
         // then
-        assertThat(page1st.getMeasurements().size(), is(equalTo(5)));
+        assertThat(page1st.getMeasurements()).hasSize(5);
         // when
         MeasurementCollectionRepresentation page2nd = measurementApi.getMeasurements().getPage(measurements, 2);
         // then
-        assertThat(page2nd.getMeasurements().size(), is(equalTo(5)));
+        assertThat(page2nd.getMeasurements()).hasSize(5);
     }
 
     private MeasurementRepresentation aSampleMeasurement(ManagedObjectRepresentation source) {
@@ -494,6 +497,7 @@ public class MeasurementIT extends JavaSdkITBase {
             }
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
+            log.error("Measurement creation failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
@@ -525,7 +529,7 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void iDeleteMeasurementCollection() throws SDKException {
         try {
-            measurementApi.deleteMeasurementsByFilter(new MeasurementFilter());
+            measurementApi.deleteMeasurementsByFilter(new MeasurementFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -533,16 +537,8 @@ public class MeasurementIT extends JavaSdkITBase {
 
     private void iDeleteMeasurementsByType(String type) throws SDKException {
         try {
-            MeasurementFilter typeFilter = new MeasurementFilter().byType(type);
+            MeasurementFilter typeFilter = new MeasurementFilter().byType(type).byFromDate(string2Date("2000-01-01T00:00:00.000+00:00"));
             measurementApi.deleteMeasurementsByFilter(typeFilter);
-        } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-        }
-    }
-
-    private void iQueryAll() throws SDKException {
-        try {
-            collection1 = measurementApi.getMeasurements().get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
@@ -585,6 +581,7 @@ public class MeasurementIT extends JavaSdkITBase {
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
+            log.error("Measurement query by source failed with status code: {}, msg: {}", status, ex.getMessage());
         }
     }
 
@@ -641,14 +638,14 @@ public class MeasurementIT extends JavaSdkITBase {
     // then
     // ------------------------------------------------------------------------
     private void allShouldBeCreated() {
-        assertThat(result1.size(), is(equalTo(input.size())));
+        assertThat(result1).hasSameSizeAs(input);
         for (MeasurementRepresentation rep : result1) {
-            assertThat(rep.getId(), is(notNullValue()));
+            assertThat(rep.getId()).isNotNull();
         }
     }
 
     private void iShouldGetNumberOfMeasurements(int count) {
-        assertThat(collection1.getMeasurements().size(), is(equalTo(count)));
+        assertThat(collection1.getMeasurements()).hasSize(count);
     }
 
     private void iShouldEventuallyGetNumberOfMeasurements(int count) {
@@ -656,25 +653,23 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
     private void shouldBeBadRequest() {
-        assertThat(status, is(UNPROCESSABLE));
+        assertThat(status)
+                .describedAs("HTTP status is 422 Unprocessable Content")
+                .isEqualTo(UNPROCESSABLE);
     }
 
     private void shouldGetTheMeasurement() {
-        assertThat(result1.get(0).getId(), is(equalTo(result2.get(0).getId())));
+        assertThat(result1)
+                .describedAs("has first element ID equal to %s", result2.get(0).getId())
+                .satisfies(
+                        representation -> assertThat(representation.getId()).isEqualTo(result2.get(0).getId()),
+                        atIndex(0));
     }
 
     private void shouldNotBeFound() {
-        assertThat(status, is(equalTo(NOT_FOUND)));
-    }
-
-    private void deleteMeasurements(List<MeasurementRepresentation> measOn1stPage) throws SDKException {
-        for (MeasurementRepresentation m : measOn1stPage) {
-            measurementApi.delete(m);
-        }
-    }
-
-    private List<MeasurementRepresentation> getMeasurementsFrom1stPage() throws SDKException {
-        return measurementApi.getMeasurements().get().getMeasurements();
+        assertThat(status)
+                .describedAs("HTTP status is 404 Not Found")
+                .isEqualTo(NOT_FOUND);
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {

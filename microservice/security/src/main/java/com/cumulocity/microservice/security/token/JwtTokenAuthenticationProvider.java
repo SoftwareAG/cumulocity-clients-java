@@ -17,6 +17,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider, M
     private final Environment environment;
     private final JwtAuthenticatedTokenCache tokenCache;
 
+
     public JwtTokenAuthenticationProvider(Environment environment, JwtAuthenticatedTokenCache tokenCache) {
         this.environment = environment;
         this.tokenCache = tokenCache;

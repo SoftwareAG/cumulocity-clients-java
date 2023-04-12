@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client.common;
 import com.cumulocity.model.authentication.CumulocityBasicCredentials;
 import com.cumulocity.sdk.client.PlatformImpl;
 import com.cumulocity.sdk.client.inventory.InventoryIT;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import java.io.IOException;
 import java.util.Properties;
 
+@Slf4j
 public class JavaSdkITBase {
 
     private static TenantCreator tenantCreator;
@@ -45,7 +47,7 @@ public class JavaSdkITBase {
         tenantCreator.createTenant();
 
         ((CumulocityBasicCredentials) bootstrapPlatform.getCumulocityCredentials()).setTenantId(platform.getTenantId());
-
+        log.info("Created tenant for application with name: {}", platform.getTenantId());
     }
 
     @AfterAll
@@ -73,6 +75,6 @@ public class JavaSdkITBase {
     }
 
     public static String nextTenantId() {
-        return "sdk_tenant_" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
+        return "plama-sdk" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
     }
 }

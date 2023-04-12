@@ -12,7 +12,6 @@ import com.cumulocity.sdk.client.*;
 import com.cumulocity.sdk.client.alarm.AlarmApi;
 import com.cumulocity.sdk.client.audit.AuditRecordApi;
 import com.cumulocity.sdk.client.base.Supplier;
-import com.cumulocity.sdk.client.cep.CepApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceControlApi;
 import com.cumulocity.sdk.client.devicecontrol.DeviceCredentialsApi;
 import com.cumulocity.sdk.client.event.EventApi;
@@ -148,14 +147,6 @@ public class CumulocityClientFeature {
         @Bean(name = {"auditRecordApi", "tenantAuditRecordApi"})
         public AuditRecordApi getAuditRecordApi() throws SDKException {
             return delegate.getAuditRecordApi();
-        }
-
-        @Override
-        @Primary
-        @TenantScope
-        @Bean(name = {"cepApi", "tenantCepApi"})
-        public CepApi getCepApi() throws SDKException {
-            return delegate.getCepApi();
         }
 
         @Override
@@ -305,13 +296,6 @@ public class CumulocityClientFeature {
         @Bean(name = "userAuditRecordApi")
         public AuditRecordApi getAuditRecordApi() throws SDKException {
             return delegate.getAuditRecordApi();
-        }
-
-        @Override
-        @UserScope
-        @Bean(name = "userCepApi")
-        public CepApi getCepApi() throws SDKException {
-            return delegate.getCepApi();
         }
 
         @Override

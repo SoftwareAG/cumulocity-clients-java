@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.cumulocity.model.DateConverter.string2Date;
 import static com.cumulocity.model.util.DateTimeUtils.nowDateTimeLocal;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anAlarmRepresentationLike;
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -309,10 +310,10 @@ public class AlarmIT extends JavaSdkITBase {
             alarmApi.create(aSampleAlarm(mo3));
         }
 
-        AlarmFilter emptyFilter = new AlarmFilter();
+        AlarmFilter requiredFilter = new AlarmFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00"));
 
         //When
-        alarmApi.deleteAlarmsByFilter(emptyFilter);
+        alarmApi.deleteAlarmsByFilter(requiredFilter);
 
         //wait as bulk delete is asynchronous
         Thread.sleep(5000);
@@ -350,7 +351,9 @@ public class AlarmIT extends JavaSdkITBase {
                 .withStatus("CLEARED")
                 .withSource(mo2).build());
 
-        AlarmFilter alarmFilter = new AlarmFilter().byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED"));
+        AlarmFilter alarmFilter = new AlarmFilter()
+                .byFromDate(string2Date("2000-01-01T00:00:00.000+00:00"))
+                .byStatus(CumulocityAlarmStatuses.valueOf("ACKNOWLEDGED"));
 
         // When
         alarmApi.deleteAlarmsByFilter(alarmFilter);
