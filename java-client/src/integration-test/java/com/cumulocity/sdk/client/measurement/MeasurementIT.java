@@ -20,6 +20,7 @@
 package com.cumulocity.sdk.client.measurement;
 
 import com.cumulocity.model.DateConverter;
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -63,14 +64,7 @@ public class MeasurementIT extends JavaSdkITBase {
     private MeasurementApi measurementApi;
     private TenantOptionApi tenantOptionApi;
     private int status;
-
-    @BeforeAll
-    public static void createManagedObjects() {
-        for (int i = 0; i < 3; ++i) {
-            ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().withName("MO" + i).build());
-            managedObjects.add(mo);
-        }
-    }
+    private boolean removeTimeseriesOption;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -80,30 +74,32 @@ public class MeasurementIT extends JavaSdkITBase {
         result1 = new ArrayList<>();
         result2 = new ArrayList<>();
         status = OK;
+        removeTimeseriesOption = false;
     }
 
     @AfterEach
-    public void deleteMeasurements() {
-        measurementApi.deleteMeasurementsByFilter(new MeasurementFilter().byFromDate(string2Date("2000-01-01T00:00:00.000+00:00")));
-        deleteTenantOptionWhenPresent();
-    }
-
-    private void deleteTenantOptionWhenPresent() {
-        try {
-            tenantOptionApi.delete(new OptionPK("configuration", "timeseries.mongodb.collections.mode"));
-        } catch (SDKException e) {
-
+    public void deleteTenantOptionWhenPresent() {
+        if(removeTimeseriesOption) {
+            try {
+                tenantOptionApi.delete(new OptionPK("configuration", "timeseries.mongodb.collections.mode"));
+            } catch (SDKException e) {
+                log.error("Timeseries tenant option deletion failed with status code: {} and reason: {}", e.getHttpStatus(), e.getMessage());
+            }
         }
     }
 
-    @AfterAll
-    public static void clearManagedObjects() {
+    @AfterEach
+    public void clearManagedObjects() {
+        for(ManagedObjectRepresentation mo : managedObjects) {
+            platform.getInventoryApi().delete(mo.getId());
+        }
         managedObjects = new ArrayList<>();
     }
 
     @Test
     public void createMeasurements() {
         // given
+        createSingleMOWithName("1MO");
         iHaveMeasurements(2, "com.type1");
         // when
         iCreateAllMeasurements();
@@ -114,7 +110,8 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void createMeasurementsWithoutTime() {
         // given
-        iHaveAMeasurementWithNoTime("com.type1");
+        createSingleMOWithName("2MO");
+        iHaveAMeasurementWithNoTime("com.type2");
         // when
         iCreateAllMeasurements();
         // then
@@ -124,6 +121,7 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionByFragmentType() throws Exception {
         // given
+        createSingleMOWithName("3MO");
         iHaveMeasurementsWithFragments(2, "com.cumulocity.sdk.client.measurement.FragmentOne");
         iHaveMeasurementsWithFragments(3, "com.cumulocity.sdk.client.measurement.FragmentTwo");
         // when
@@ -142,21 +140,22 @@ public class MeasurementIT extends JavaSdkITBase {
     }
 
     @Test
-    public void getMeasurementCollectionBySource() throws Exception {
+    public void getMeasurementCollectionBySource() {
         // given
-        iHaveMeasurementsForSource(1, 0);
-        iHaveMeasurementsForSource(2, 1);
+        createMOWithPrefix("4MO", 3);
+        iHaveMeasurementsForSource(1, "4MO0");
+        iHaveMeasurementsForSource(2, "4MO1");
         // when
         iCreateAllMeasurements();
-        iQueryAllBySource(0);
+        iQueryAllBySource("4MO0");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySource(1);
+        iQueryAllBySource("4MO1");
         // then
         iShouldGetNumberOfMeasurements(2);
         // when
-        iQueryAllBySource(2);
+        iQueryAllBySource("4MO2");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -164,15 +163,16 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionByTime() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
+        createSingleMOWithName("5MO");
+        iHaveAMeasurementWithTypeAndTime("2010-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "5MO");
+        iHaveAMeasurementWithTypeAndTime("2010-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "5MO");
         // when
         iCreateAllMeasurements();
-        iQueryAllByTime("2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
+        iQueryAllByTime("2010-11-03T11:00:00.000+05:30", "2010-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(2);
         // when
-        iQueryAllByTime("2011-11-03T10:00:00.000+05:30", "2011-11-03T11:00:00.000+05:30");
+        iQueryAllByTime("2010-11-03T10:00:00.000+05:30", "2010-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -180,23 +180,24 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionBySourceAndTime() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
+        createMOWithPrefix("6MO", 2);
+        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "6MO0");
+        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "6MO1");
         // when
         iCreateAllMeasurements();
-        iQueryAllBySourceAndTime(0, "2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceAndTime("6MO0", "2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceAndTime(1, "2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceAndTime("6MO1", "2011-11-03T11:00:00.000+05:30", "2011-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceAndTime(0, "2011-11-03T10:00:00.000+05:30", "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceAndTime("6MO0", "2011-11-03T10:00:00.000+05:30", "2011-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceAndTime(1, "2011-11-03T10:00:00.000+05:30", "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceAndTime("6MO1", "2011-11-03T10:00:00.000+05:30", "2011-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -204,23 +205,24 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionBySourceAndFragmentType() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
+        createMOWithPrefix("7MO", 2);
+        iHaveAMeasurementWithTypeAndTime("2012-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "7MO0");
+        iHaveAMeasurementWithTypeAndTime("2012-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "7MO1");
         // when
         iCreateAllMeasurements();
-        iQueryAllBySourceAndType(0, "com.cumulocity.sdk.client.measurement.FragmentOne");
+        iQueryAllBySourceAndType("7MO0", "com.cumulocity.sdk.client.measurement.FragmentOne");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceAndType(1, "com.cumulocity.sdk.client.measurement.FragmentOne");
+        iQueryAllBySourceAndType("7MO1", "com.cumulocity.sdk.client.measurement.FragmentOne");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceAndType(0, "com.cumulocity.sdk.client.measurement.FragmentTwo");
+        iQueryAllBySourceAndType("7MO0", "com.cumulocity.sdk.client.measurement.FragmentTwo");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceAndType(0, "com.cumulocity.sdk.client.measurement.FragmentTwo");
+        iQueryAllBySourceAndType("7MO1", "com.cumulocity.sdk.client.measurement.FragmentTwo");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -228,22 +230,23 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionByFragmentTypeAndTime() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
+        createMOWithPrefix("8MO", 2);
+        iHaveAMeasurementWithTypeAndTime("2013-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "8MO0");
+        iHaveAMeasurementWithTypeAndTime("2013-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "8MO1");
         // when
         iCreateAllMeasurements();
-        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentOne", "2013-11-03T11:00:00.000+05:30",
+                "2013-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(2);
         // when
-        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentTwo", "2013-11-03T11:00:00.000+05:30",
+                "2013-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllByTypeAndTime("com.cumulocity.sdk.client.measurement.FragmentOne", "2013-11-03T10:00:00.000+05:30",
+                "2013-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -251,67 +254,68 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionBySourceAndFragmentTypeAndTime() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 1);
+        createMOWithPrefix("9MO", 3);
+        iHaveAMeasurementWithTypeAndTime("2014-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "9MO0");
+        iHaveAMeasurementWithTypeAndTime("2014-11-03T11:05:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "9MO1");
         // when
         iCreateAllMeasurements();
-        iQueryAllBySourceTypeAndTime(0, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO0", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceTypeAndTime(0, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO0", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(0, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO0", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(0, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO0", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(1, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO1", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(1);
         // when
-        iQueryAllBySourceTypeAndTime(1, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO1", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(1, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO1", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(1, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO1", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(2, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO2", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(2, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T11:00:00.000+05:30",
-                "2011-11-03T11:10:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO2", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T11:00:00.000+05:30",
+                "2014-11-03T11:10:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(2, "com.cumulocity.sdk.client.measurement.FragmentOne", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO2", "com.cumulocity.sdk.client.measurement.FragmentOne", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
         // when
-        iQueryAllBySourceTypeAndTime(2, "com.cumulocity.sdk.client.measurement.FragmentTwo", "2011-11-03T10:00:00.000+05:30",
-                "2011-11-03T11:00:00.000+05:30");
+        iQueryAllBySourceTypeAndTime("9MO2", "com.cumulocity.sdk.client.measurement.FragmentTwo", "2014-11-03T10:00:00.000+05:30",
+                "2014-11-03T11:00:00.000+05:30");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
@@ -319,7 +323,8 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurement() throws Exception {
         // given
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
+        createSingleMOWithName("10MO");
+        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "10MO");
         // when
         iCreateAllMeasurements();
         iGetMeasurementWithCreatedId();
@@ -330,8 +335,9 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void deleteMeasurement() throws Exception {
         // given
+        createSingleMOWithName("11MO");
         disableTimeseries();
-        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", 0);
+        iHaveAMeasurementWithTypeAndTime("2011-11-03T11:01:00.000+05:30", "com.cumulocity.sdk.client.measurement.FragmentOne", "11MO");
         // when
         iCreateAllMeasurements();
         iDeleteMeasurementWithCreatedId();
@@ -340,51 +346,49 @@ public class MeasurementIT extends JavaSdkITBase {
         shouldNotBeFound();
     }
 
-    public void disableTimeseries() {
-        OptionRepresentation disableTimeseries = OptionRepresentation.asOptionRepresentation("configuration", "timeseries.mongodb.collections.mode", "DISABLED");
-        tenantOptionApi.save(disableTimeseries);
-    }
-
     @Test
-    public void deleteMeasurementCollectionByEmptyFilter() throws Exception {
+    public void deleteMeasurementCollectionByEmptyFilter() {
         // given
-        iHaveMeasurements(3, "com.type1");
-        iHaveMeasurements(2, "com.type2");
+        createSingleMOWithName("12MO");
+        iHaveMeasurements(3, "com.type3");
+        iHaveMeasurements(2, "com.type4");
         iCreateAllMeasurements();
         allShouldBeCreated();
-        iShouldEventuallyGetNumberOfMeasurements(5);
+        iShouldEventuallyGetNumberOfMeasurements(5, "12MO");
         // when
         iDeleteMeasurementCollection();
         // then
-        iShouldEventuallyGetNumberOfMeasurements(0);
+        iShouldEventuallyGetNumberOfMeasurements(0, "12MO");
     }
 
     @Test
-    public void deleteMeasurementsByTypeFilter() throws Exception {
+    public void deleteMeasurementsByTypeFilter() {
         // given
-        iHaveMeasurements(3, "com.type1");
-        iHaveMeasurements(2, "com.type2");
+        createSingleMOWithName("13MO");
+        iHaveMeasurements(3, "com.type5");
+        iHaveMeasurements(2, "com.type6");
         iCreateAllMeasurements();
         allShouldBeCreated();
-        iShouldEventuallyGetNumberOfMeasurements(5);
+        iShouldEventuallyGetNumberOfMeasurements(5, "13MO");
         // when
-        iDeleteMeasurementsByType("com.type2");
+        iDeleteMeasurementsByType("com.type6");
         // then
-        iShouldEventuallyGetNumberOfMeasurements(3);
+        iShouldEventuallyGetNumberOfMeasurements(3, "13MO");
         // when
-        iQueryAllByType("com.type1");
+        iQueryAllByType("com.type5");
         // then
         iShouldGetNumberOfMeasurements(3);
         // when
-        iQueryAllByType("com.type2");
+        iQueryAllByType("com.type6");
         // then
         iShouldGetNumberOfMeasurements(0);
     }
 
     @Test
-    public void createMeasurementsInBulk() throws Exception {
+    public void createMeasurementsInBulk() {
         // given
-        iHaveMeasurements(3, "com.type2");
+        createSingleMOWithName("14MO");
+        iHaveMeasurements(3, "com.type7");
         // when
         iCreateAllBulk();
         // then
@@ -394,8 +398,9 @@ public class MeasurementIT extends JavaSdkITBase {
     @Test
     public void getMeasurementCollectionByDefaultPageSettings() {
         // given
+        createSingleMOWithName("15MO");
         for (int i = 0; i < 12; i++) {
-            MeasurementRepresentation rep = aSampleMeasurement(managedObjects.get(0));
+            MeasurementRepresentation rep = aSampleMeasurement(getMoWithName("15MO"));
             measurementApi.create(rep);
         }
         // when
@@ -412,6 +417,10 @@ public class MeasurementIT extends JavaSdkITBase {
         assertThat(page2nd.getMeasurements()).hasSize(5);
     }
 
+    // ------------------------------------------------------------------------
+    // given
+    // ------------------------------------------------------------------------
+
     private MeasurementRepresentation aSampleMeasurement(ManagedObjectRepresentation source) {
         MeasurementRepresentation rep = new MeasurementRepresentation();
         rep.setDateTime(new DateTime());
@@ -421,11 +430,6 @@ public class MeasurementIT extends JavaSdkITBase {
         rep.set(new FragmentOne());
         return rep;
     }
-
-
-    // ------------------------------------------------------------------------
-    // given
-    // ------------------------------------------------------------------------
 
     private void iHaveMeasurements(int n, String type) {
         for (int i = 0; i < n; i++) {
@@ -454,12 +458,16 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
-    private void iHaveMeasurementsForSource(int n, int index) {
-        for (int i = 0; i < n; i++) {
+    private ManagedObjectRepresentation getMoWithName(String moName) {
+        return managedObjects.stream().filter(moRep -> moRep.getName().equalsIgnoreCase(moName)).findFirst().get();
+    }
+
+    private void iHaveMeasurementsForSource(int measurementNumber, String moName) {
+        for (int i = 0; i < measurementNumber; i++) {
             MeasurementRepresentation rep = new MeasurementRepresentation();
             rep.setDateTime(new DateTime());
             rep.setType("com.type1");
-            rep.setSource(managedObjects.get(index));
+            rep.setSource(getMoWithName(moName));
             input.add(rep);
         }
     }
@@ -471,12 +479,12 @@ public class MeasurementIT extends JavaSdkITBase {
         input.add(rep);
     }
 
-    private void iHaveAMeasurementWithTypeAndTime(String time, String fragmentType, int index)
+    private void iHaveAMeasurementWithTypeAndTime(String time, String fragmentType, String moName)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         MeasurementRepresentation rep = new MeasurementRepresentation();
         rep.setType("com.type1");
         rep.setDateTime(DateTime.parse(time));
-        rep.setSource(managedObjects.get(index));
+        rep.setSource(getMoWithName(moName));
 
         // Set fragment
         Class<?> cls = Class.forName(fragmentType);
@@ -484,6 +492,12 @@ public class MeasurementIT extends JavaSdkITBase {
         rep.set(fragment);
 
         input.add(rep);
+    }
+
+    private void disableTimeseries() {
+        OptionRepresentation disableTimeseries = OptionRepresentation.asOptionRepresentation("configuration", "timeseries.mongodb.collections.mode", "DISABLED");
+        tenantOptionApi.save(disableTimeseries);
+        removeTimeseriesOption = true;
     }
 
     // ------------------------------------------------------------------------
@@ -574,34 +588,33 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
-    private void iQueryAllBySource(int index) throws SDKException {
+    private void iQueryAllBySource(String sourceName) throws SDKException {
         try {
-            ManagedObjectRepresentation source = managedObjects.get(index);
-            MeasurementFilter filter = new MeasurementFilter().bySource(source);
+            ManagedObjectRepresentation source = getMoWithName(sourceName);
+            MeasurementFilter filter = new MeasurementFilter().bySource(source.getId());
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
-            status = ex.getHttpStatus();
-            log.error("Measurement query by source failed with status code: {}, msg: {}", status, ex.getMessage());
+            log.error("Measurement query by source failed with status code: {}, msg: {}", ex.getHttpStatus(), ex.getMessage());
         }
     }
 
-    private void iQueryAllBySourceAndTime(int index, String from, String to) throws SDKException {
+    private void iQueryAllBySourceAndTime(String moName, String from, String to) throws SDKException {
         try {
-            ManagedObjectRepresentation source = managedObjects.get(index);
+            GId sourceId = getMoWithName(moName).getId();
             Date fromDate = DateConverter.string2Date(from);
             Date toDate = DateConverter.string2Date(to);
-            MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).bySource(source);
+            MeasurementFilter filter = new MeasurementFilter().byDate(fromDate, toDate).bySource(sourceId);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
         }
     }
 
-    private void iQueryAllBySourceAndType(int index, String fragmentType) throws SDKException, ClassNotFoundException {
+    private void iQueryAllBySourceAndType(String moName, String fragmentType) throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
-            ManagedObjectRepresentation source = managedObjects.get(index);
-            MeasurementFilter filter = new MeasurementFilter().byFragmentType(fragmentClass).bySource(source);
+            GId sourceId = getMoWithName(moName).getId();
+            MeasurementFilter filter = new MeasurementFilter().byFragmentType(fragmentClass).bySource(sourceId);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
@@ -620,14 +633,14 @@ public class MeasurementIT extends JavaSdkITBase {
         }
     }
 
-    private void iQueryAllBySourceTypeAndTime(int index, String fragmentType, String from, String to)
+    private void iQueryAllBySourceTypeAndTime(String moName, String fragmentType, String from, String to)
             throws SDKException, ClassNotFoundException {
         try {
             Class<?> fragmentClass = Class.forName(fragmentType);
-            ManagedObjectRepresentation source = managedObjects.get(index);
+            GId sourceId = getMoWithName(moName).getId();
             Date fromDate = DateConverter.string2Date(from);
             Date toDate = DateConverter.string2Date(to);
-            MeasurementFilter filter = new MeasurementFilter().bySource(source).byDate(fromDate, toDate).byFragmentType(fragmentClass);
+            MeasurementFilter filter = new MeasurementFilter().bySource(sourceId).byDate(fromDate, toDate).byFragmentType(fragmentClass);
             collection1 = measurementApi.getMeasurementsByFilter(filter).get();
         } catch (SDKException ex) {
             status = ex.getHttpStatus();
@@ -648,8 +661,10 @@ public class MeasurementIT extends JavaSdkITBase {
         assertThat(collection1.getMeasurements()).hasSize(count);
     }
 
-    private void iShouldEventuallyGetNumberOfMeasurements(int count) {
-        await().atMost(TEN_SECONDS).until(() -> measurementApi.getMeasurements().get().getMeasurements().size() == count);
+    private void iShouldEventuallyGetNumberOfMeasurements(int count, String moName) {
+        GId sourceId = getMoWithName(moName).getId();
+        MeasurementFilter filter = new MeasurementFilter().bySource(sourceId);
+        await().atMost(TEN_SECONDS).until(() -> measurementApi.getMeasurementsByFilter(filter).get().getMeasurements().size() == count);
     }
 
     private void shouldBeBadRequest() {
@@ -672,8 +687,18 @@ public class MeasurementIT extends JavaSdkITBase {
                 .isEqualTo(NOT_FOUND);
     }
 
+    private void createMOWithPrefix(String moPrefix, int moNumber) {
+        for (int i = 0; i < moNumber; ++i) {
+            createSingleMOWithName(moPrefix + i);
+        }
+    }
+
+    private void createSingleMOWithName(String moName) {
+        ManagedObjectRepresentation mo = platform.getInventoryApi().create(aSampleMo().withName(moName).build());
+        managedObjects.add(mo);
+    }
+
     private static ManagedObjectRepresentationBuilder aSampleMo() {
         return anMoRepresentationLike(MO_REPRESENTATION);
     }
 }
-
