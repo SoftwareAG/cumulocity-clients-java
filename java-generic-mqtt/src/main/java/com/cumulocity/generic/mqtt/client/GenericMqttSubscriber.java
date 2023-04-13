@@ -8,9 +8,9 @@ package com.cumulocity.generic.mqtt.client;
 public interface GenericMqttSubscriber extends AutoCloseable {
 
     /**
-     * Sets a {@link GenericMqttMessageListener} for the subscriber
+     * Sets a <code>GenericMqttMessageListener</code> for the subscriber
      * <p>
-     * When a {@link GenericMqttMessageListener} is set, application will receive messages through it.
+     * When a <code>GenericMqttMessageListener</code> is set, application will receive messages through it.
      *
      * @param listener the listener object
      */
