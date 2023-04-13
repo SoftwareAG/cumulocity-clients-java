@@ -1,0 +1,79 @@
+<HTML>
+<BODY>
+Cumulocity SDK - Java Generic MQTT Client library provides the classes necessary to interact with the Cumulocity Generic
+MQTT Broker.
+
+<p>The Cumulocity SDK Java Generic MQTT Client library provides means to the following operations:
+<ul>
+    <li>Publishing messages to Cumulocity Generic MQTT Broker via WebSocket protocol</li>
+    <li>Subscribing to messages from Cumulocity Generic MQTT Broker via WebSocket protocol</li>
+</ul>
+<p>
+    Example usage for publishing messages to Generic MQTT Broker via WebSocket:
+
+<pre>
+        // Message to be sent
+        final String payload = "Hello World";
+
+        // Construct a new GenericMqttMessage and set the payload
+        final GenericMqttMessage genericMqttMessage = new GenericMqttMessage();
+        genericMqttMessage.setPayload(payload.getBytes());
+
+        // Build GenericMqttConfig with topic to which the message is to be sent
+        final GenericMqttConfig mqttConnectionConfig =
+                GenericMqttConfig.webSocket().topic(topic).build();
+
+        // Create an instance of GenericMqttClient by specifying the server URI to connect to along with TokenApi
+        final GenericMqttClient genericMqttClient = GenericMqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
+
+
+        // Build GenericMqttPublisher and publish GenericMqttMessage. Close the resource either with usage as below or by calling genericMqttPublisher.close()
+        try (final GenericMqttPublisher genericMqttPublisher = genericMqttClient.buildPublisher(mqttConnectionConfig)) {
+            genericMqttPublisher.publish(genericMqttMessage);
+        } catch (Exception e) {
+            log.error("Could not sent message to {}", topic, e);
+        }
+
+    </pre>
+
+<p>
+    Example usage for subscribing to messages from Generic MQTT Broker via WebSocket:
+
+<pre>
+
+        // Build GenericMqttConfig with topic
+        final GenericMqttConfig mqttConnectionConfig = GenericMqttConfig.webSocket().topic(topic).build();
+
+        // Create an instance of GenericMqttClient by specifying the server URI to connect to along with TokenApi
+        final GenericMqttClient genericMqttClient = GenericMqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
+
+        // Build GenericMqttSubscriber
+        final GenericMqttSubscriber genericMqttSubscriber = genericMqttClient.buildSubscriber(mqttConnectionConfig);
+
+        // Subscribe by passing implementation of GenericMqttMessageListener to handle events from the websocket server.
+        genericMqttSubscriber.subscribe(new GenericMqttMessageListener() {
+            &#64;Override
+            public void onMessage(GenericMqttMessage message) {
+                log.info("Message Received: {}", new String(genericMqttMessage.getPayload()));
+            }
+
+            &#64;Override
+            public void onError(Throwable t) {
+                log.error("WebSocket Error", t);
+            }
+        });
+
+        // Close the resource after usage
+        genericMqttSubscriber.close();
+
+    </pre>
+
+
+</BODY>
+</HTML>
