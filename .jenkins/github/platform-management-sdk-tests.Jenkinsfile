@@ -40,35 +40,10 @@ pipeline {
             when {
                 expression { return env.ghprbSourceBranch.contains('/PostMerge') }
             }
-            stages {
-                stage('Set Post-Merge credential ID') {
-                    steps{
-                        script {
-                            ADMIN_CREDENTIALS_ID = "post-merge-admin"
-                        }
-                    }
-                }
-                stage('Instance name until 10.16 ') {
-                    when {
-                        expression { return env.ghprbSourceBranch =~ /10.1[3456].0.x/ }
-                    }
-                    steps {
-                        script {
-                            INSTANCE_NAME = "pm-${env.ghprbSourceBranch.split('/')[0].replaceAll('\\.','-')}"
-                        }
-                        echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}.stage.c8y.io"
-                    }
-                }
-                stage('Instance name since 10.17') {
-                    when {
-                        expression { return !(env.ghprbSourceBranch =~ /10.1[3456].0.x/) }
-                    }
-                    steps {
-                        script {
-                            INSTANCE_NAME = "pm-${env.ghprbSourceBranch.split('/')[0].replaceAll('\\.','').replaceAll('0x','')}-cumulo"
-                        }
-                        echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}-cumulo.stage.c8y.io"
-                    }
+            steps{
+                script {
+                    ADMIN_CREDENTIALS_ID = "post-merge-admin"
+                    INSTANCE_NAME = postMergeTestingDomain(env.ghprbSourceBranch)
                 }
             }
         }
@@ -77,42 +52,10 @@ pipeline {
             when {
                 expression { return "${env.ghprbSourceBranch}".contains('/Staging') }
             }
-            stages {
-                stage('Set Staging credential ID') {
-                    steps{
-                        script {
-                            ADMIN_CREDENTIALS_ID = "e2eAdmin"
-                        }
-                    }
-                }
-                stage('Instance name until 10.17 ') {
-                    when {
-                        expression { return env.ghprbSourceBranch =~ /10.1[34567].0.x/ }
-                    }
-                    steps {
-                        script {
-                            OLD_INSTANCES = [
-                                    "10.13.0.x" : "4",
-                                    "10.14.0.x" : "3",
-                                    "10.15.0.x" : "2",
-                                    "10.16.0.x" : "1",
-                                    "10.17.0.x" : "basic"
-                            ]
-                            INSTANCE_NAME = OLD_INSTANCES[env.ghprbSourceBranch.split('/')[0]]
-                        }
-                        echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}.stage.c8y.io"
-                    }
-                }
-                stage('Instance name since 10.18') {
-                    when {
-                        expression { return !(env.ghprbSourceBranch =~ /10.1[34567].0.x/) }
-                    }
-                    steps {
-                        script {
-                            INSTANCE_NAME = "stg-${env.ghprbSourceBranch.split('/')[0].replaceAll('\\.','-')}"
-                        }
-                        echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}.stage.c8y.io"
-                    }
+            steps{
+                script {
+                    ADMIN_CREDENTIALS_ID = "e2eAdmin"
+                    INSTANCE_NAME = stagingTestingDomain(env.ghprbSourceBranch)
                 }
             }
         }
@@ -122,12 +65,13 @@ pipeline {
                 ADMIN_CREDENTIALS = credentials("${ADMIN_CREDENTIALS_ID}")
             }
             steps {
-                sh 'curl -k -u ${ADMIN_CREDENTIALS} http://management.'+ INSTANCE_NAME + '.stage.c8y.io:8111/tenant/system/options/system/version > system-version.json'
+                echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}"
+                sh 'curl -k -u ${ADMIN_CREDENTIALS} http://management.'+ INSTANCE_NAME + ':8111/tenant/system/options/system/version > system-version.json'
                 script {
                     def systemVersion = readJSON file: 'system-version.json'
                     env.SYSTEM_VERSION = systemVersion.value
                 }
-                echo "Running tests for platform version ${env.SYSTEM_VERSION} on ${INSTANCE_NAME}.stage.c8y.io"
+                echo "Running tests for platform version ${env.SYSTEM_VERSION} on ${INSTANCE_NAME}"
             }
         }
 
@@ -152,7 +96,7 @@ pipeline {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             sh """
                             ./mvnw -B -s $MVN_SETTINGS verify \
-                              -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}.stage.c8y.io:8111 \
+                              -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}:8111 \
                               -Dcumulocity.management.password=$ADMIN_CREDENTIALS_PSW \
                               -Dcumulocity.management.username=$ADMIN_CREDENTIALS_USR
                             """
@@ -180,7 +124,7 @@ pipeline {
                 if (env.ghprbSourceBranch.contains('/Staging')) {
                     build job: "cucumber-tenants-cleanup",
                         parameters: [
-                                string(name: "DOMAIN", value: "${INSTANCE_NAME}.stage.c8y.io"),
+                                string(name: "DOMAIN", value: "${INSTANCE_NAME}"),
                                 string(name: "TENANT_PREFIX", value: "plama-sdk"),
                                 string(name: "TEST_MODE", value: "false")
                         ],
