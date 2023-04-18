@@ -1,3 +1,4 @@
+@Library('c8y-common-steps') _
 def INSTANCE_NAME
 def ADMIN_CREDENTIALS_ID
 pipeline {
