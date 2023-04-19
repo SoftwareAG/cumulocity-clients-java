@@ -48,6 +48,24 @@
 			<artifactId>java-client-model</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.cometd.java</groupId>
+			<artifactId>cometd-java-client</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>jetty-client</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-io</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-http</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>org.glassfish.jersey.connectors</groupId>
 			<artifactId>jersey-apache-connector</artifactId>
 		</dependency>
