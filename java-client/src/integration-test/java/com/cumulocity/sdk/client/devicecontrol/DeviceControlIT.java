@@ -58,6 +58,11 @@ import com.cumulocity.sdk.client.polling.FixedRatePoller;
 @Slf4j
 public class DeviceControlIT extends JavaSdkITBase {
 
+    String SOME_AGENT = "SomeAgent";
+    String OTHER_AGENT = "OtherAgent";
+    String SOME_DEVICE = "SomeDevice";
+    String OTHER_DEVICE = "OtherDevice";
+
     private List<ManagedObjectRepresentation> managedObjects = new LinkedList<>();
     private DeviceControlApi deviceControlResource;
     private InventoryApi inventoryApi;
@@ -91,7 +96,7 @@ public class DeviceControlIT extends JavaSdkITBase {
         // given
         iHaveAPollerForAgent();
         // when
-        iCreateAnOperationForDevice("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
         // then
         iShouldReceiveOperation(1);
     }
@@ -99,12 +104,12 @@ public class DeviceControlIT extends JavaSdkITBase {
     @Test
     public void addingOperationToQueue() {
         // given
-        iGetAllOperationsForAgent("Device");
+        iGetAllOperationsForAgent(SOME_DEVICE);
         // then
         iShouldReceiveXOperations(0);
         // when
-        iCreateAnOperationForDevice("Device");
-        iGetAllOperationsForDeviceX("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
+        iGetAllOperationsForDeviceX(SOME_DEVICE);
         // then
         iShouldReceiveXOperations(1);
     }
@@ -114,7 +119,7 @@ public class DeviceControlIT extends JavaSdkITBase {
         // given
         iHaveAOperationSubscriberForAgent();
         // when
-        iCreateAnOperationForDevice("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
         // then
         iShouldReceiveOperation(1);
     }
@@ -122,7 +127,7 @@ public class DeviceControlIT extends JavaSdkITBase {
     @Test
     public void operationCRUD() {
         // given
-        iCreateAnOperationForDevice("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
         // when
         iCallGetOnCreatedOperation();
         // then
@@ -142,9 +147,9 @@ public class DeviceControlIT extends JavaSdkITBase {
         iQueryOperationsWithStatusX("PENDING");
         int numOfPending = allOperations.getOperations().size();
         // when
-        iCreateAnOperationForDevice("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
         iUpdateCreatedOperationWithStatusX("EXECUTING");
-        iCreateAnOperationForDevice("Device");
+        iCreateAnOperationForDevice(SOME_DEVICE);
         iQueryOperationsWithStatusX("PENDING");
         // then
         iShouldReceiveXOperations(numOfPending + 1);
@@ -159,15 +164,15 @@ public class DeviceControlIT extends JavaSdkITBase {
     @Test
     public void queryOperationsByDevice() {
         // given
-        iCreateAnOperationForDevice("Device");
-        iCreateAnOperationForDevice("Device");
-        iCreateAnOperationForDevice("Device2");
+        iCreateAnOperationForDevice(SOME_DEVICE);
+        iCreateAnOperationForDevice(SOME_DEVICE);
+        iCreateAnOperationForDevice(OTHER_DEVICE);
         // when
-        iGetAllOperationsForDeviceX("Device");
+        iGetAllOperationsForDeviceX(SOME_DEVICE);
         // then
         iShouldReceiveXOperations(2);
         // when
-        iGetAllOperationsForDeviceX("Device2");
+        iGetAllOperationsForDeviceX(OTHER_DEVICE);
         // then
         iShouldReceiveXOperations(1);
     }
@@ -176,28 +181,28 @@ public class DeviceControlIT extends JavaSdkITBase {
     @Test
     public void queryOperationsByAgent() {
         // given
-        iCreateAnOperationForDevice("Device");
-        iCreateAnOperationForDevice("Device");
-        iCreateAnOperationForDevice("Device2");
+        iCreateAnOperationForDevice(SOME_DEVICE);
+        iCreateAnOperationForDevice(SOME_DEVICE);
+        iCreateAnOperationForDevice(OTHER_DEVICE);
         // when
-        iGetAllOperationsForAgent("Agent");
+        iGetAllOperationsForAgent(SOME_AGENT);
         // then
         iShouldReceiveXOperations(2);
         // when
-        iGetAllOperationsForAgent("Agent2");
+        iGetAllOperationsForAgent(OTHER_AGENT);
         // then
         iShouldReceiveXOperations(1);
     }
 
     private void iHaveAPollerForAgent() {
-        GId agentId = getMoId("Agent");
+        GId agentId = getMoId(SOME_AGENT);
         poller = new OperationsByAgentAndStatusPollerImpl(deviceControlResource, agentId.getValue(), OperationStatus.PENDING,
                 operationProcessor);
         poller.start();
     }
 
     private void iHaveAOperationSubscriberForAgent() {
-        GId agentId = getMoId("Agent");
+        GId agentId = getMoId(SOME_AGENT);
         subscriber = new OperationNotificationSubscriber(platform);
         subscriber.subscribe(agentId, new SubscriptionListener<GId, OperationRepresentation>() {
             @Override
@@ -273,10 +278,10 @@ public class DeviceControlIT extends JavaSdkITBase {
     }
 
     private void createManagedObjects() {
-        ManagedObjectRepresentation agent = aSampleMo().withName("Agent").withType("com.type").with(new Agent()).build();
-        ManagedObjectRepresentation device = aSampleMo().withName("Device").withType("com.type").build();
-        ManagedObjectRepresentation agent2 = aSampleMo().withName("Agent2").withType("com.type").with(new Agent()).build();
-        ManagedObjectRepresentation device2 = aSampleMo().withName("Device2").withType("com.type").build();
+        ManagedObjectRepresentation agent = aSampleMo().withName(SOME_AGENT).withType("com.type").with(new Agent()).build();
+        ManagedObjectRepresentation device = aSampleMo().withName(SOME_DEVICE).withType("com.type").build();
+        ManagedObjectRepresentation agent2 = aSampleMo().withName(OTHER_AGENT).withType("com.type").with(new Agent()).build();
+        ManagedObjectRepresentation device2 = aSampleMo().withName(OTHER_DEVICE).withType("com.type").build();
 
         inventoryApi = platform.getInventoryApi();
 
