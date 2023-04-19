@@ -8,6 +8,8 @@ pipeline {
         apiVersion: v1
         kind: Pod
         spec:
+          imagePullSecrets:
+          - name: "ci-registry-pull"
           containers:
           - name: "java"
             image: "registry.stage.c8y.io/ci/jdk:11"
