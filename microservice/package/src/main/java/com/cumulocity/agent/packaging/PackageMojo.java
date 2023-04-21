@@ -7,6 +7,8 @@ import com.cumulocity.model.application.MicroserviceManifest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.dockerjava.api.model.AuthConfig;
+import com.github.dockerjava.api.model.AuthConfigurations;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -14,6 +16,7 @@ import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecution;
@@ -41,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
 import static java.nio.file.Files.createDirectories;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
@@ -234,7 +238,12 @@ public class PackageMojo extends BaseMicroserviceMojo {
             log.warn("Your image might be incompatible with cloud hosting!");
         }
 
-        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork, dockerBuildTimeout);
+       AuthConfigurations authConfigurations = new AuthConfigurations();
+        if(isNotBlank(pullRegistry)){
+            authConfigurations.addConfig(new AuthConfig().withRegistryAddress(pullRegistry).withUsername(pullUsername).withPassword(pullPassword));
+        }
+
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork, dockerBuildTimeout, authConfigurations);
 
     }
 

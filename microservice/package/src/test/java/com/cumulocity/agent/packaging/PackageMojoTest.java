@@ -114,7 +114,7 @@ public class PackageMojoTest {
         packageMojo.execute();
 
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
         
         //and there is a zip file with the expected name for the microservice
@@ -135,7 +135,7 @@ public class PackageMojoTest {
         //As a default, running the packaging plugin does package a container
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch),any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch),any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -156,7 +156,7 @@ public class PackageMojoTest {
         //and I package
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(),eq(expectedBuildArch), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(),eq(expectedBuildArch), any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -181,7 +181,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : expectedBuildArch) {
             validateZipFileForArchitecture(expected);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected),any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected),any(), any(), any());
         }
 
         //3 Images saved
@@ -217,7 +217,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : dockerBuildSpec.getTargetBuildArchitectures()) {
             validateZipFileForArchitecture(expected, jsonManifest);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected), any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected), any(), any(), any());
         }
 
         //3 Images saved

@@ -3,10 +3,7 @@ package com.cumulocity.agent.packaging.microservice.impl;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.BuildResponseItem;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.PushResponseItem;
-import com.github.dockerjava.api.model.ResponseItem;
+import com.github.dockerjava.api.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
@@ -67,7 +64,7 @@ public class MicroserviceDockerClientImplTest {
         pepareBuildCommandMock(false);
 
         //and I build the image with our client
-        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60);
+        dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60, new AuthConfigurations());
 
         //then docker was instructed to build the file and parameters are passed into the build command.
         verify(dockerClientMock, times(1)).buildImageCmd(eq(new File(dockerDir)));
@@ -89,7 +86,7 @@ public class MicroserviceDockerClientImplTest {
 
         //and I build the image with our client, then the docker error is propagated
 
-        assertThrows(RuntimeException.class, () -> dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60));
+        assertThrows(RuntimeException.class, () -> dockerClient.buildDockerImage(dockerDir, tags, buildArgs, "amd64", networkMode, 60, new AuthConfigurations()));
 
         verify(dockerClientMock, times(1)).buildImageCmd(eq(new File(dockerDir)));
     }
@@ -116,6 +113,7 @@ public class MicroserviceDockerClientImplTest {
         when(buildImageCmd.withPlatform(any())).thenReturn(buildImageCmd);
         when(buildImageCmd.withTags(any())).thenReturn(buildImageCmd);
         when(buildImageCmd.withBuildArg(any(),any())).thenReturn(buildImageCmd);
+        when(buildImageCmd.withBuildAuthConfigs(any())).thenReturn(buildImageCmd);
     }
 
     private void prepareDockerClientMockForBuild() {

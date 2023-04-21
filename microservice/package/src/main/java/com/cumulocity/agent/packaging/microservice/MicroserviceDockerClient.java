@@ -1,5 +1,6 @@
 package com.cumulocity.agent.packaging.microservice;
 
+import com.github.dockerjava.api.model.AuthConfigurations;
 import org.apache.maven.MavenExecutionException;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.Set;
 public interface MicroserviceDockerClient {
     void saveDockerImage(final String image, final OutputStream outputStream) throws IOException, MavenExecutionException;
 
-    void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs,  String platform, String networkMode, Integer dockerClientTimeout);
+    void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerClientTimeout, AuthConfigurations pullConfiguration);
 
     void deleteAll(String image, boolean withForce);
 

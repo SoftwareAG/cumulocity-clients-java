@@ -121,6 +121,16 @@ public abstract class BaseMicroserviceMojo extends AbstractMojo {
     @Parameter(property = "package.docker.baseImage", defaultValue = "alpine:3")
     protected String baseImage;
 
+    @Parameter(property = "pull.image.registry")
+    protected String pullRegistry;
+
+    @Parameter(property = "pull.image.username")
+    protected String pullUsername;
+
+    @Parameter(property = "pull.image.password")
+    protected String pullPassword;
+
+
     protected void copyFromProjectSubdirectoryAndReplacePlaceholders(Resource src, File destination, boolean override) throws Exception {
         final MavenResourcesExecution execution = new MavenResourcesExecution(ImmutableList.of(src), destination, project, encoding,
                                                                                  ImmutableList.of(), ImmutableList.of(),
