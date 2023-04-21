@@ -1,15 +1,22 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 
-export MAVEN_OPTS="-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m ${MAVEN_OPTS}"
+# Allows to run Maven build, with additional parameters specified using environmental variables
 
-MVN_SETTINGS="${MVN_SETTINGS:-$HOME/.m2/settings.xml}"
+MAVEN_ARGS="${MAVEN_ARGS:-} ${@}"
+VERBOSE=true
+FILE=false
 
-MAVEN_PROFILES="${MAVEN_PROFILES:-ci}"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -f | --file ) FILE=true; shift ;;
+    -q | --quiet ) VERBOSE=false; shift ;;
+    * ) shift ;;
+  esac
+done
 
-MAVEN_ARGS="${MAVEN_ARGS:-}"
-
-if [ -n "$WORKSPACE" ]; then
-  MAVEN_ARGS="--define maven.repo.local=${WORKSPACE}/.m2/repository ${MAVEN_ARGS}"
+if [ -n "${ADMIN_CREDENTIALS}" ]; then
+  MAVEN_ARGS="--define \"management.admin.username=${ADMIN_CREDENTIALS_USR}\" ${MAVEN_ARGS}"
+  MAVEN_ARGS="--define \"management.admin.password=${ADMIN_CREDENTIALS_PSW}\" ${MAVEN_ARGS}"
 fi
 
 if [ -n "${VERSION}" ]; then
@@ -25,9 +32,29 @@ else
   fi
 fi
 
-for project in '.' 'microservice' 'lpwan-backend' 'cumulocity-sdk'; do
+MAVEN_PROFILES="${MAVEN_PROFILES:-ci}"
+MAVEN_ARGS="--activate-profiles $MAVEN_PROFILES ${MAVEN_ARGS}"
+
+if [ -n "$WORKSPACE" ]; then
+  MAVEN_ARGS="--define \"maven.repo.local=${WORKSPACE}/.m2/repository\" ${MAVEN_ARGS}"
+fi
+
+MVN_SETTINGS="${MVN_SETTINGS:-$HOME/.m2/settings.xml}"
+MAVEN_ARGS="--settings $MVN_SETTINGS ${MAVEN_ARGS}"
+
+if [ $VERBOSE = true ]; then
+  MAVEN_ARGS="--show-version --errors ${MAVEN_ARGS}"
+  set -x
+fi
+
+export MAVEN_OPTS="-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m ${MAVEN_OPTS}"
+
+if [ $FILE = true ]; then # run specified file only
+  ./mvnw --batch-mode ${MAVEN_ARGS}
+else # run all contained sub-projects
+  for project in '.' 'microservice' 'lpwan-backend' 'cumulocity-sdk'; do
   if [ -d "$project" ]; then
-    ./mvnw --batch-mode --show-version --errors --settings $MVN_SETTINGS \
-      --file $project --activate-profiles $MAVEN_PROFILES $MAVEN_ARGS "$@"
+    ./mvnw --batch-mode --file ${project} ${MAVEN_ARGS}
   fi
 done
+fi
