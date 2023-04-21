@@ -7,6 +7,8 @@ import com.cumulocity.model.application.MicroserviceManifest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.dockerjava.api.model.AuthConfig;
+import com.github.dockerjava.api.model.AuthConfigurations;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -31,16 +33,14 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static com.cumulocity.agent.packaging.RpmDsl.configuration;
 import static com.cumulocity.agent.packaging.RpmDsl.*;
 import static java.nio.file.Files.createDirectories;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.RUNTIME;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
@@ -234,7 +234,7 @@ public class PackageMojo extends BaseMicroserviceMojo {
             log.warn("Your image might be incompatible with cloud hosting!");
         }
 
-        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork, dockerBuildTimeout);
+        dockerClient.buildDockerImage(dockerWorkDir.getAbsolutePath(),tags,buildArgs, targetBuildArch, dockerBuildNetwork, dockerBuildTimeout, new PullCredentials().asAuthConfigurations());
 
     }
 
@@ -432,5 +432,42 @@ public class PackageMojo extends BaseMicroserviceMojo {
         String message;
     }
 
+    private class PullCredentials {
 
+        public AuthConfigurations asAuthConfigurations(){
+            AuthConfigurations authConfigurations = new AuthConfigurations();
+            String registryAddress = getRegistryAddress();
+            if (credentialsDefined()) {
+                authConfigurations.addConfig(new AuthConfig()
+                        .withRegistryAddress(registryAddress)
+                        .withUsername(registryUser)
+                        .withPassword(registryPass));
+            } else if (isNonDefaultRegistry(registryAddress)) {
+                getLog().info("Using unauthenticated access to " + registryAddress + ". " +
+                        "To define credentials, configure both registryUser and registryPass.");
+            }
+
+            return authConfigurations;
+        }
+
+        private boolean credentialsDefined() {
+            return isNotBlank(registryUser) && isNotBlank(registryPass);
+        }
+
+        private String getRegistryAddress() {
+            if (isNotBlank(registryUrl)) {
+                return registryUrl;
+            }
+            int registryUrlIndex = baseImage.lastIndexOf("/");
+            if (registryUrlIndex > 0) {
+                return "https://" + baseImage.substring(0, registryUrlIndex);
+            } else {
+                return AuthConfig.DEFAULT_SERVER_ADDRESS;
+            }
+        }
+
+        private boolean isNonDefaultRegistry(String registryAddress) {
+            return !AuthConfig.DEFAULT_SERVER_ADDRESS.equals(registryAddress);
+        }
+    }
 }

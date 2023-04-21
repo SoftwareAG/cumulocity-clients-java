@@ -5,6 +5,7 @@ import com.cumulocity.agent.packaging.microservice.MicroserviceDockerClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.dockerjava.api.model.AuthConfigurations;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -20,11 +21,11 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -43,6 +44,8 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -114,7 +117,7 @@ public class PackageMojoTest {
         packageMojo.execute();
 
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
         
         //and there is a zip file with the expected name for the microservice
@@ -135,7 +138,7 @@ public class PackageMojoTest {
         //As a default, running the packaging plugin does package a container
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch),any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch),any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -156,7 +159,7 @@ public class PackageMojoTest {
         //and I package
         packageMojo.execute();
         //Validate Docker client invocations
-        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(),eq(expectedBuildArch), any(), any());
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(),eq(expectedBuildArch), any(), any(), any());
         verify(dockerClient, times(1)).saveDockerImage(eq(ARTIFACT_NAME + ":" + TEST_VERSION), any());
 
         //and there is a zip file with the expected name for the microservice
@@ -181,7 +184,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : expectedBuildArch) {
             validateZipFileForArchitecture(expected);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected),any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected),any(), any(), any());
         }
 
         //3 Images saved
@@ -217,7 +220,7 @@ public class PackageMojoTest {
         //Validate Docker client invocations and if there are a zip files with the expected name for each architecture
         for (String expected : dockerBuildSpec.getTargetBuildArchitectures()) {
             validateZipFileForArchitecture(expected, jsonManifest);
-            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected), any(), any());
+            verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expected), any(), any(), any());
         }
 
         //3 Images saved
@@ -226,6 +229,79 @@ public class PackageMojoTest {
         //and containers are deleted again
         verify(dockerClient, times(3)).deleteAll(ARTIFACT_NAME + ":" + TEST_VERSION, true);
 
+    }
+
+    @Test
+    public void pullRegistryShouldOverrideBaseImageInAuthSettings() throws Exception {
+        String expectedBuildArch = "linux/amd64";
+
+        //Add pull image configuration
+        packageMojo.baseImage = "test.registry/image:1";
+        packageMojo.registryUrl = "https://not.test.registry";
+        packageMojo.registryUser = "user";
+        packageMojo.registryPass = "pass";
+
+        //As a default, running the packaging plugin does package a container
+        packageMojo.execute();
+
+        ArgumentCaptor<AuthConfigurations> authConfiguration = ArgumentCaptor.forClass(AuthConfigurations.class);
+
+        //Validate Docker client invocations
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any(), authConfiguration.capture());
+
+        AuthConfigurations authConfig = authConfiguration.getValue();
+
+        assertEquals(1, authConfig.getConfigs().size(), "Size of list of auth configurations.");
+        assertTrue(authConfig.getConfigs().containsKey("https://not.test.registry"), "Contains auth config for registry: not.test.registry");
+        assertEquals("user", authConfig.getConfigs().get("https://not.test.registry").getUsername());
+        assertEquals("pass", authConfig.getConfigs().get("https://not.test.registry").getPassword());
+    }
+
+    @Test
+    public void pullRegistryShouldCalculateBaseImageIfEmpty() throws Exception {
+        String expectedBuildArch = "linux/amd64";
+
+        //Add pull image configuration without registry
+        packageMojo.baseImage = "test.registry/image:1";
+        packageMojo.registryUser = "user";
+        packageMojo.registryPass = "pass";
+
+        //As a default, running the packaging plugin does package a container
+        packageMojo.execute();
+
+        ArgumentCaptor<AuthConfigurations> authConfiguration = ArgumentCaptor.forClass(AuthConfigurations.class);
+
+        //Validate Docker client invocations
+        verify(dockerClient, times(1))
+                .buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any(), authConfiguration.capture());
+
+        AuthConfigurations authConfig = authConfiguration.getValue();
+
+        assertEquals(1, authConfig.getConfigs().size(), "Size of list of auth configurations.");
+        assertTrue(authConfig.getConfigs().containsKey("https://test.registry"), "Contains auth config for registry: test.registry");
+        assertEquals("user", authConfig.getConfigs().get("https://test.registry").getUsername());
+        assertEquals("pass", authConfig.getConfigs().get("https://test.registry").getPassword());
+    }
+
+    @Test
+    public void noPullImageAuthConfigShouldBeAddedWhenUserPasswordNotSpecified() throws Exception {
+        String expectedBuildArch = "linux/amd64";
+
+        //Add pull image configuration without registry
+        packageMojo.baseImage = "test.registry/image:1";
+        packageMojo.registryUrl = "not.test.registry";
+
+        //As a default, running the packaging plugin does package a container
+        packageMojo.execute();
+
+        ArgumentCaptor<AuthConfigurations> authConfiguration = ArgumentCaptor.forClass(AuthConfigurations.class);
+
+        //Validate Docker client invocations
+        verify(dockerClient, times(1)).buildDockerImage(eq(resources.toString()), eq(getExpectedTags()), any(), eq(expectedBuildArch), any(), any(), authConfiguration.capture());
+
+        AuthConfigurations authConfig = authConfiguration.getValue();
+
+        assertEquals(0, authConfig.getConfigs().size(), "Size of list of auth configurations.");
     }
 
     @SneakyThrows
@@ -238,33 +314,33 @@ public class PackageMojoTest {
 
         //first, check if there is a properly named zip file
         Path zipFilePath = getExpectedZipFilePath(buildArch);
-        Assertions.assertTrue(Files.exists(zipFilePath));
+        assertTrue(Files.exists(zipFilePath));
 
         //and the zip file contains a cumulocity.json and an image tar
         Map<String, String> zipArguments = Maps.newHashMap();
         zipArguments.put("create", "false");
 
         ZipFile zipFile = new ZipFile(zipFilePath.toFile());
-        Assertions.assertTrue(Objects.nonNull(zipFile.getEntry("image.tar")), "image tar not in microservice.zip");
+        assertTrue(Objects.nonNull(zipFile.getEntry("image.tar")), "image tar not in microservice.zip");
 
         ZipEntry manifestFileEntry = zipFile.getEntry("cumulocity.json");
-        Assertions.assertTrue(Objects.nonNull(manifestFileEntry), "manifest entry is null");
+        assertTrue(Objects.nonNull(manifestFileEntry), "manifest entry is null");
 
         //Let's check if the docker build info was added and if it contains valid information
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode manifest = objectMapper.readTree(zipFile.getInputStream(manifestFileEntry));
 
         DockerBuildInfo dockerBuildInfo = objectMapper.convertValue(manifest.get("dockerBuildInfo"), DockerBuildInfo.class);
-        Assertions.assertEquals(buildArch, dockerBuildInfo.getImageArch(), "Docker build arch mismatch");
-        Assertions.assertEquals(SystemUtils.OS_NAME, dockerBuildInfo.getHostOS(), "Host information is valid");
-        Assertions.assertTrue(Math.abs(System.currentTimeMillis() - dockerBuildInfo.getBuildDate().getTime()) < 60000, "The build date in the cumulocity.json seems to be wrong");
+        assertEquals(buildArch, dockerBuildInfo.getImageArch(), "Docker build arch mismatch");
+        assertEquals(SystemUtils.OS_NAME, dockerBuildInfo.getHostOS(), "Host information is valid");
+        assertTrue(Math.abs(System.currentTimeMillis() - dockerBuildInfo.getBuildDate().getTime()) < 60000, "The build date in the cumulocity.json seems to be wrong");
 
-        Assertions.assertTrue(manifest instanceof ObjectNode);
+        assertTrue(manifest instanceof ObjectNode);
 
         //Let us make sure there are no unwanted mutations to the cumulocity.json by the package plugin
         //If we remove the docker build info fragment, the cumulocity.json must be equivalent to original file again.
         ObjectNode manifestWithoutDockerBuildinfo = ((ObjectNode) originalManifest).remove(Lists.newArrayList("dockerBuildInfo"));
-        Assertions.assertEquals(originalManifest, manifestWithoutDockerBuildinfo, "There seem to be extra mutations in the json by package");
+        assertEquals(originalManifest, manifestWithoutDockerBuildinfo, "There seem to be extra mutations in the json by package");
 
     }
 

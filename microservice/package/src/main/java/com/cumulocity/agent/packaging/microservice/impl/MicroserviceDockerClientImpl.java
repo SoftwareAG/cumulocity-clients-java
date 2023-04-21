@@ -45,9 +45,9 @@ public class MicroserviceDockerClientImpl extends AbstractLogEnabled implements 
     private final static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @SneakyThrows
-    synchronized public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerBuildTimeout) {
+    synchronized public void buildDockerImage(String dockerDirectory, Set<String> tags, Map<String, String> buildArgs, String platform, String networkMode, Integer dockerBuildTimeout, AuthConfigurations pullConfiguration) {
 
-        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags).withPlatform(platform);
+        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(new File(dockerDirectory)).withTags(tags).withPlatform(platform).withBuildAuthConfigs(pullConfiguration);
         for (Map.Entry<String, String> buildArgument : buildArgs.entrySet()) {
             buildImageCmd = buildImageCmd.withBuildArg(buildArgument.getKey(), buildArgument.getValue());
         }
