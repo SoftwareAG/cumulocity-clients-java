@@ -1,6 +1,9 @@
 @Library('c8y-common-steps') _
-def INSTANCE_NAME
-def ADMIN_CREDENTIALS_ID
+
+def adminCredentialsId
+def testInstanceDomain
+def systemVersion
+
 pipeline {
     agent {
         kubernetes {
@@ -45,64 +48,75 @@ pipeline {
             }
             steps{
                 script {
-                    ADMIN_CREDENTIALS_ID = "post-merge-admin"
-                    INSTANCE_NAME = postMergeTestingDomain(env.ghprbSourceBranch)
+                    adminCredentialsId = "post-merge-admin"
+                    testInstanceDomain = postMergeTestingDomain(env.ghprbSourceBranch)
                 }
             }
         }
 
         stage('Initialize for staging') {
             when {
-                expression { return "${env.ghprbSourceBranch}".contains('/Staging') }
+                expression { return env.ghprbSourceBranch.contains('/Staging') }
             }
             steps{
                 script {
-                    ADMIN_CREDENTIALS_ID = "e2eAdmin"
-                    INSTANCE_NAME = stagingTestingDomain(env.ghprbSourceBranch)
+                    adminCredentialsId = "e2eAdmin"
+                    testInstanceDomain = stagingTestingDomain(env.ghprbSourceBranch)
                 }
             }
         }
 
         stage('Get platform version') {
             environment {
-                ADMIN_CREDENTIALS = credentials("${ADMIN_CREDENTIALS_ID}")
+                ADMIN_CREDENTIALS = credentials("${adminCredentialsId}")
             }
             steps {
-                echo "Running from branch ${env.ghprbSourceBranch} on ${INSTANCE_NAME}"
-                sh 'curl -k -u ${ADMIN_CREDENTIALS} http://management.'+ INSTANCE_NAME + ':8111/tenant/system/options/system/version > system-version.json'
+                echo "Running from branch ${env.ghprbSourceBranch} on ${testInstanceDomain}"
+                sh 'curl -k -u ${ADMIN_CREDENTIALS} http://management.'+ testInstanceDomain + ':8111/tenant/system/options/system/version > system-version.json'
                 script {
-                    def systemVersion = readJSON file: 'system-version.json'
-                    env.SYSTEM_VERSION = systemVersion.value
+                    systemVersion = readJSON file: 'system-version.json'
                 }
-                echo "Running tests for platform version ${env.SYSTEM_VERSION} on ${INSTANCE_NAME}"
+                echo "Running tests for platform version ${systemVersion.value} on ${testInstanceDomain}"
             }
         }
 
-        stage('Checkout clients-java repository') {
+        stage('Checkout') {
             steps {
-                checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "refs/tags/clients-java-${env.SYSTEM_VERSION}"]],
-                        userRemoteConfigs: scm.userRemoteConfigs
+                echo 'Checkout current version of jenkins scripts'
+                checkout(scm: [
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    userRemoteConfigs: scm.userRemoteConfigs,
+                    extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '.jenkins/*']]]]
                 ])
+                sh 'mv ${WORKSPACE}/.jenkins ${WORKSPACE_TMP}/'
+
+                echo "Checkout version ${systemVersion.value} of tests"
+                checkout(scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: "refs/tags/clients-java-${systemVersion.value}"]],
+                    userRemoteConfigs: scm.userRemoteConfigs,
+                    extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/*'], [path: '!.jenkins']]]]
+                ])
+                sh 'mv ${WORKSPACE_TMP}/.jenkins ${WORKSPACE}/'
             }
         }
 
-        stage('Execute SDK tests') {
+        stage('Run tests') {
             environment {
-                ADMIN_CREDENTIALS = credentials("${ADMIN_CREDENTIALS_ID}")
-                MVN_SETTINGS = credentials("maven-settings")
+                MVN_SETTINGS = credentials('maven-settings')
+                ADMIN_CREDENTIALS = credentials("${adminCredentialsId}")
             }
             steps {
                 container('java') {
                     script {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            sh """
-                            ./mvnw -B -s $MVN_SETTINGS verify \
-                              -Pintegration -Dcumulocity.host=http://${INSTANCE_NAME}:8111 \
-                              -Dcumulocity.management.password=$ADMIN_CREDENTIALS_PSW \
-                              -Dcumulocity.management.username=$ADMIN_CREDENTIALS_USR
-                            """
+                            sh """\
+                                .jenkins/scripts/mvn.sh verify \\
+                                    --file java-client \\
+                                    --profile integration \\
+                                    --define 'cumulocity.host=http://${testInstanceDomain}:8111'
+                               """
                         }
                     }
                 }
@@ -110,7 +124,6 @@ pipeline {
             post {
                 always {
                     junit(testResults: '**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
-                    archiveArtifacts(artifacts: '**/TEST-*.xml', allowEmptyArchive: true)
                 }
                 success {
                     createSummary(icon: 'green.gif', text: 'SDK tests passed')
@@ -127,7 +140,7 @@ pipeline {
                 if (env.ghprbSourceBranch.contains('/Staging')) {
                     build job: "cucumber-tenants-cleanup",
                         parameters: [
-                                string(name: "DOMAIN", value: "${INSTANCE_NAME}"),
+                                string(name: "DOMAIN", value: "${testInstanceDomain}"),
                                 string(name: "TENANT_PREFIX", value: "plama-sdk"),
                                 string(name: "TEST_MODE", value: "false")
                         ],
