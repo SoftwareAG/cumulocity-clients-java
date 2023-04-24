@@ -15,8 +15,8 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -n "${ADMIN_CREDENTIALS}" ]; then
-  MAVEN_ARGS="--define \"management.admin.username=${ADMIN_CREDENTIALS_USR}\" ${MAVEN_ARGS}"
-  MAVEN_ARGS="--define \"management.admin.password=${ADMIN_CREDENTIALS_PSW}\" ${MAVEN_ARGS}"
+  MAVEN_ARGS="--define \"cumulocity.management.username=${ADMIN_CREDENTIALS_USR}\" ${MAVEN_ARGS}"
+  MAVEN_ARGS="--define \"cumulocity.management.password=${ADMIN_CREDENTIALS_PSW}\" ${MAVEN_ARGS}"
 fi
 
 if [ -n "${VERSION}" ]; then

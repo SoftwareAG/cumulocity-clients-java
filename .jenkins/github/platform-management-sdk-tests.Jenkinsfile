@@ -105,6 +105,7 @@ pipeline {
         stage('Run tests') {
             environment {
                 MVN_SETTINGS = credentials('maven-settings')
+                MAVEN_PROFILES = 'integration'
                 ADMIN_CREDENTIALS = credentials("${adminCredentialsId}")
             }
             steps {
@@ -114,7 +115,6 @@ pipeline {
                             sh """\
                                 .jenkins/scripts/mvn.sh verify \\
                                     --file java-client \\
-                                    --profile integration \\
                                     --define 'cumulocity.host=http://${testInstanceDomain}:8111'
                                """
                         }
