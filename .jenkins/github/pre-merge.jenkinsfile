@@ -239,7 +239,7 @@ def spinup_instance(instance) {
           booleanParam(name: 'RUN_PERFORMANCE_TESTS', value: false),
           booleanParam(name: 'RUN_READ_PERFORMANCE_TESTS', value: false),
           string(name: 'PURPOSE', value: 'clients-java-pre-merge-check'),
-          string(name: 'DEV_TEAM', value: 'Common Infrastructure')
+          string(name: 'DEV_TEAM', value: 'C8Y Core')
       ],
           propagate: true
     }
