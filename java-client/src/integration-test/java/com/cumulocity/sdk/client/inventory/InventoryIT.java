@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.cumulocity.sdk.client.PagingParam;
+import com.cumulocity.sdk.client.QueryParam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -553,7 +555,7 @@ public class InventoryIT extends JavaSdkITBase {
         }
 
         // When
-        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get();
+        ManagedObjectCollectionRepresentation mos = inventory.getManagedObjects().get(new QueryParam(PagingParam.WITH_TOTAL_PAGES, "true"));
 
         // Then
         assertThat(mos.getPageStatistics().getTotalPages()).isGreaterThanOrEqualTo(4);
