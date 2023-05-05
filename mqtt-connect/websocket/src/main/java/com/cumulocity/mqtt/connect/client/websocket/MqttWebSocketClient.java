@@ -1,8 +1,7 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
-import com.cumulocity.mqtt.connect.client.GenericMqttMessageListener;
-import com.cumulocity.mqtt.connect.client.converter.GenericMqttMessageConverter;
-import com.cumulocity.mqtt.connect.client.model.GenericMqttMessage;
+import com.cumulocity.mqtt.connect.client.MqttMessageListener;
+import com.cumulocity.mqtt.connect.client.model.MqttMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -11,17 +10,27 @@ import java.net.URI;
 import java.util.Optional;
 
 @Slf4j
-class GenericMqttWebSocketClient extends WebSocketClient {
+class MqttWebSocketClient extends WebSocketClient {
 
-    private final GenericMqttMessageConverter genericMqttMessageConverter = new GenericMqttMessageConverter();
+    private static final MqttMessageListener EMPTY_LISTENER = new MqttMessageListener() {
+        @Override
+        public void onMessage(final MqttMessage message) {
+            // Do Nothing
+        }
 
-    private final GenericMqttMessageListener listener;
+        @Override
+        public void onError(final Throwable t) {
+            // Do Nothing
+        }
+    };
 
-    public GenericMqttWebSocketClient(URI serverUri) {
-        this(serverUri, new EmptyGenericMqttMessageListener());
+    private final MqttMessageListener listener;
+
+    public MqttWebSocketClient(URI serverUri) {
+        this(serverUri, EMPTY_LISTENER);
     }
 
-    public GenericMqttWebSocketClient(URI serverUri, GenericMqttMessageListener listener) {
+    public MqttWebSocketClient(URI serverUri, MqttMessageListener listener) {
         super(serverUri);
         this.listener = listener;
     }
@@ -38,9 +47,7 @@ class GenericMqttWebSocketClient extends WebSocketClient {
         final Optional<String> ackHeader = webSocketMessage.getAckHeader();
         final byte[] avroPayload = webSocketMessage.getAvroPayload();
 
-        final GenericMqttMessage genericMqttMessage = genericMqttMessageConverter.decode(avroPayload);
-
-        listener.onMessage(genericMqttMessage);
+        listener.onMessage(MqttMessageConverter.decode(avroPayload));
 
         ackHeader.ifPresent(this::send);
     }
@@ -55,15 +62,4 @@ class GenericMqttWebSocketClient extends WebSocketClient {
         listener.onError(e);
     }
 
-    private static class EmptyGenericMqttMessageListener implements GenericMqttMessageListener {
-        @Override
-        public void onMessage(GenericMqttMessage message) {
-            // Do Nothing
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            // Do Nothing
-        }
-    }
 }

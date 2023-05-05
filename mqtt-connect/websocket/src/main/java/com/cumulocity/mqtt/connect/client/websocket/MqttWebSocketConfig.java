@@ -1,19 +1,19 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
-import com.cumulocity.mqtt.connect.client.GenericMqttConfig;
-import com.cumulocity.mqtt.connect.client.GenericMqttPublisher;
-import com.cumulocity.mqtt.connect.client.GenericMqttSubscriber;
+import com.cumulocity.mqtt.connect.client.MqttConfig;
+import com.cumulocity.mqtt.connect.client.MqttPublisher;
+import com.cumulocity.mqtt.connect.client.MqttSubscriber;
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
-public class GenericMqttWebSocketConfig implements GenericMqttConfig {
+public class MqttWebSocketConfig implements MqttConfig {
 
     private final static long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 2000;
 
     /**
-     * Specify the topic to which instance of {@link GenericMqttPublisher} or {@link GenericMqttSubscriber} will connect to.
+     * Specify the topic to which instance of {@link MqttPublisher} or {@link MqttSubscriber} will connect to.
      */
     private final String topic;
 
@@ -23,6 +23,6 @@ public class GenericMqttWebSocketConfig implements GenericMqttConfig {
     @Builder.Default
     private long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_MILLIS;
 
-    public static class GenericMqttWebSocketConfigBuilder {
+    public static class MqttWebSocketConfigBuilder {
     }
 }
