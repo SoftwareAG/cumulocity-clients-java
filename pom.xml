@@ -31,8 +31,8 @@
     </modules>
 
     <properties>
-        <revision>1014.0.360</revision>
-        <changelist>-SNAPSHOT</changelist>
+        <revision>1014.0.361</revision>
+        <changelist></changelist>
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
