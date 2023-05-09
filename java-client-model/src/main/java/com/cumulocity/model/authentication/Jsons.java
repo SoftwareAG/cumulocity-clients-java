@@ -1,11 +1,12 @@
 package com.cumulocity.model.authentication;
 
 import com.google.common.base.Optional;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.svenson.JSONParser;
+
+import java.util.Map;
 
 @Slf4j
 @UtilityClass
@@ -14,7 +15,7 @@ public class Jsons {
     public static Optional<String> readField(String field, String json) {
         try {
             return readValueAsString(field, json);
-        } catch (PathNotFoundException e) {
+        } catch (Exception e) {
             return Optional.absent();
         }
     }
@@ -23,7 +24,7 @@ public class Jsons {
         if (StringUtils.isEmpty(field)) {
             return Optional.absent();
         }
-        Object value = JsonPath.read(json, "$." + field);
-        return value == null ? Optional.absent() : Optional.of(value.toString());
+        Map<?, ?> data = JSONParser.defaultJSONParser().parse(Map.class, json);
+        return Optional.fromNullable(data.get(field)).transform(String::valueOf);
     }
 }
