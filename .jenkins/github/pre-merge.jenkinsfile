@@ -169,8 +169,7 @@ def build_and_verify() {
             try {
               sh '.jenkins/scripts/mvn.sh verify'
             } catch (e) {
-              currentBuild.result = 'UNSTABLE'
-              stageResult = "UNSTABLE"
+              unstable('SDK verification failed')
             } finally {
               junit(allowEmptyResults: true, checksName: "cumulocity-clients-java-unit-test", keepLongStdio: true,
                   testResults: '**/TEST-*.xml')
@@ -235,8 +234,7 @@ def agents_verify() {
             try {
               sh ".jenkins/scripts/mvn.sh verify -Dcumulocity.core.version=${VERSIONS.release}"
             } catch (e) {
-              currentBuild.result = 'UNSTABLE'
-              stageResult = "UNSTABLE"
+              unstable('Agents verification failed')
             } finally {
               junit(allowEmptyResults: true, checksName: "cumulocity-agents-unit-tests", keepLongStdio: true, testResults: '**/TEST-*.xml')
             }
@@ -272,8 +270,7 @@ def examples_verify() {
             try {
               sh ".jenkins/scripts/mvn.sh install"
             } catch (e) {
-              currentBuild.result = 'UNSTABLE'
-              stageResult = "UNSTABLE"
+              unstable('Examples verification failed')
             } finally {
               junit(allowEmptyResults: true, checksName: "cumulocity-agents-unit-tests", keepLongStdio: true, testResults: '**/TEST-*.xml')
             }
@@ -387,8 +384,7 @@ def cucumber_java(instance) {
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
-            currentBuild.result = "UNSTABLE"
-            stageResult = "UNSTABLE"
+            unstable('Cucumber Java tests failed')
           }
           copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch-cumulocity_cucumber_java', selector: specific("${job.number}"), target: 'java', optional: true)
           junit(testResults: 'java/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
@@ -412,8 +408,7 @@ def sdk_tests(instance) {
         ], wait: true, propagate: false
 
         if (job.result != 'SUCCESS') {
-          currentBuild.result = "UNSTABLE"
-          stageResult = "UNSTABLE"
+          unstable('SDK functional tests failed')
         }
         copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_java_sdk', selector: specific("${job.number}"), target: 'sdk', optional: true)
         junit(testResults: 'sdk/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
@@ -447,8 +442,7 @@ def java_token_tests(instance) {
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
-            currentBuild.result = "UNSTABLE"
-            stageResult = "UNSTABLE"
+            unstable('SDK token tests failed')
           }
           copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_cucumber_token_java', selector: specific("${job.number}"), target: 'token', optional: true)
           junit(testResults: 'token/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
