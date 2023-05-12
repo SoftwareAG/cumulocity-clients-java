@@ -67,16 +67,12 @@ pipeline {
         }
 
         stage('Get platform version') {
-            environment {
-                ADMIN_CREDENTIALS = credentials("${adminCredentialsId}")
-            }
             steps {
                 echo "Running from branch ${env.ghprbSourceBranch} on ${testInstanceDomain}"
-                sh 'curl -k -u ${ADMIN_CREDENTIALS} http://management.'+ testInstanceDomain + ':8111/tenant/system/options/system/version > system-version.json'
                 script {
-                    systemVersion = readJSON file: 'system-version.json'
+                    systemVersion = GetVersionFromSourceBranch('cumulocity')
                 }
-                echo "Running tests for platform version ${systemVersion.value} on ${testInstanceDomain}"
+                echo "Running tests for platform version ${systemVersion} on ${testInstanceDomain}"
             }
         }
 
@@ -91,10 +87,10 @@ pipeline {
                 ])
                 sh 'mv ${WORKSPACE}/.jenkins ${WORKSPACE_TMP}/'
 
-                echo "Checkout version ${systemVersion.value} of tests"
+                echo "Checkout version ${systemVersion} of tests"
                 checkout(scm: [
                     $class: 'GitSCM',
-                    branches: [[name: "refs/tags/clients-java-${systemVersion.value}"]],
+                    branches: [[name: "refs/tags/clients-java-${systemVersion}"]],
                     userRemoteConfigs: scm.userRemoteConfigs,
                     extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/*'], [path: '!.jenkins']]]]
                 ])
