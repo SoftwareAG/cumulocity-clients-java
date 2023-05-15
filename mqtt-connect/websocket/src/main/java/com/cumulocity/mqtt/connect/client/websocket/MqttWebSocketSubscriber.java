@@ -1,53 +1,51 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
-import com.cumulocity.mqtt.connect.client.GenericMqttMessageListener;
-import com.cumulocity.mqtt.connect.client.GenericMqttSubscriber;
-import com.cumulocity.mqtt.connect.client.exception.GenericMqttClientException;
+import com.cumulocity.mqtt.connect.client.MqttClientException;
+import com.cumulocity.mqtt.connect.client.MqttMessageListener;
+import com.cumulocity.mqtt.connect.client.MqttSubscriber;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-class GenericMqttWebSocketSubscriber implements GenericMqttSubscriber {
+class MqttWebSocketSubscriber implements MqttSubscriber {
 
-    private final static String SUBSCRIBER = "javaGenericMqttWSClientSub";
+    private final static String SUBSCRIBER = "mqttConnectSubscriber";
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/consumer/?token=%s";
 
     private final String webSocketBaseUrl;
-    private final GenericMqttWebSocketConfig config;
+    private final MqttWebSocketConfig config;
     private final TokenSupplier tokenSupplier;
 
-    private GenericMqttWebSocketClient consumer;
+    private MqttWebSocketClient consumer;
 
-    GenericMqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, GenericMqttWebSocketConfig config) {
+    MqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
         this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
     }
 
     @Override
-    public void subscribe(GenericMqttMessageListener listener) {
+    public void subscribe(MqttMessageListener listener) {
         if (consumer != null) {
             return;
         }
 
         final String token = tokenSupplier.get();
-
         if (token == null) {
-            throw new GenericMqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
+            throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
         }
-
         try {
             final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-            consumer = new GenericMqttWebSocketClient(uri, listener);
+            consumer = new MqttWebSocketClient(uri, listener);
             consumer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw new GenericMqttClientException("WebSocket connection could not be established!", e);
+            throw new MqttClientException("WebSocket connection could not be established!", e);
         }
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (consumer != null) {
             consumer.close();
         }
