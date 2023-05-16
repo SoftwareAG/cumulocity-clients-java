@@ -5,6 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.codec.binary.Base64;
+import org.svenson.JSONParser;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static java.util.Optional.ofNullable;
 
 @EqualsAndHashCode
 @ToString(of = {"oAuthAccessToken", "xsrfToken", "applicationKey", "requestOrigin"})
@@ -13,7 +20,9 @@ public class CumulocityOAuthCredentials implements CumulocityCredentials {
     public static final String CUMULOCITY_USER_ID_CLAIM = "sub";
     public static final String TENANT_ID_CLAIM = "ten";
 
-    private String oAuthAccessToken;
+    private final String oAuthAccessToken;
+    private final Map<String, Object> accessTokenHeader = new HashMap<>();
+    private final Map<String, Object> accessTokenClaims = new HashMap<>();
 
     @Getter
     private String xsrfToken;
@@ -34,6 +43,18 @@ public class CumulocityOAuthCredentials implements CumulocityCredentials {
         this.applicationKey = applicationKey;
         this.requestOrigin = requestOrigin;
         this.authenticationMethod = authenticationMethod != null ? authenticationMethod : AuthenticationMethod.COOKIE;
+        parseAccessToken();
+    }
+
+    private void parseAccessToken() {
+        String[] headerAndClaims = oAuthAccessToken.split("\\.");
+        accessTokenHeader.putAll(parseAccessTokenFragment(headerAndClaims[0]));
+        accessTokenClaims.putAll(parseAccessTokenFragment(headerAndClaims[1]));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseAccessTokenFragment(String tokenFragment) {
+        return JSONParser.defaultJSONParser().parse(Map.class, new String(Base64.decodeBase64(tokenFragment)));
     }
 
     @Override
@@ -49,16 +70,19 @@ public class CumulocityOAuthCredentials implements CumulocityCredentials {
 
     @Override
     public String getUsername() {
-        String claims = new String(Base64.decodeBase64(oAuthAccessToken.split("\\.")[1]));
-        return Jsons.readField(CUMULOCITY_USER_ID_CLAIM, claims).orNull();
+        return ofNullable(accessTokenClaims.get(CUMULOCITY_USER_ID_CLAIM))
+                .map(String::valueOf)
+                .orElse(null);
     }
 
     @Override
     public String getTenantId() {
-        String[] token = oAuthAccessToken.split("\\.");
-        String header = new String(Base64.decodeBase64(token[0]));
-        String claims = new String(Base64.decodeBase64(token[1]));
-        return Jsons.readField(TENANT_ID_CLAIM, claims).or(Jsons.readField(TENANT_ID_CLAIM, header)).orNull();
+        return Stream.of(accessTokenClaims, accessTokenHeader)
+                .filter(m -> m.containsKey(TENANT_ID_CLAIM))
+                .map(m -> m.get(TENANT_ID_CLAIM))
+                .map(String::valueOf)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
