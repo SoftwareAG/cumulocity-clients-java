@@ -25,13 +25,17 @@ import com.cumulocity.rest.representation.CumulocityMediaType;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import com.google.common.net.HttpHeaders;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.AdditionalAnswers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,13 +45,14 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -413,5 +418,25 @@ public class RestConnectorTest {
 
         // Then
         verify(typeBuilder, times(invocations)).header(eq(RestConnector.X_CUMULOCITY_REQUEST_ORIGIN), invocations > 0 ? eq(requestOrigin) : any());
+    }
+
+    @Test
+    void shouldSetFileTypeInMultiPartRequest() {
+        //given
+        MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
+        ByteArrayInputStream inputStream = new ByteArrayInputStream("payload".getBytes(StandardCharsets.UTF_8));
+        when(webResource.request()).thenReturn(typeBuilder);
+        when(typeBuilder.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(typeBuilder);
+
+        //when
+        restConnector.postStreamWithoutResponse(PATH, inputStream, mediaType);
+
+        //then
+        ArgumentCaptor<Entity> captor = ArgumentCaptor.forClass(Entity.class);
+        verify(typeBuilder).post(captor.capture());
+        Assertions.assertThat(captor.getValue().getEntity())
+                .asInstanceOf(InstanceOfAssertFactories.type(FormDataMultiPart.class))
+                .extracting(form -> form.getField("file").getMediaType())
+                .isEqualTo(mediaType);
     }
 }

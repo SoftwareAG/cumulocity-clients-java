@@ -202,6 +202,15 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
+    public void postStreamWithoutResponse(String path, InputStream inputStream, MediaType inputStreamMediaType) {
+        Builder builder = getResourceBuilder(path);
+        FormDataMultiPart form = new FormDataMultiPart();
+        form.bodyPart(new FormDataBodyPart("file", inputStream, inputStreamMediaType));
+        Response response = builder.post(Entity.entity(form, addBoundary(form.getMediaType())));
+        responseParser.checkStatus(response, CREATED.getStatusCode(), ACCEPTED.getStatusCode(), PARTIAL_CONTENT.getStatusCode());
+    }
+
+    @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
                                                          Class<T> responseClass) {
         Builder builder = getResourceBuilder(path);
