@@ -192,7 +192,7 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
             }
 
             @Override
-            public void postStreamWithoutResponse(final String path, final InputStream inputStream, final MediaType inputStreamMediaType) {
+            public void postStream(final String path, final InputStream inputStream, final MediaType inputStreamMediaType) {
                 throw new UnsupportedOperationException("unsuported");
             }
 

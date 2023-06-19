@@ -421,7 +421,7 @@ public class RestConnectorTest {
     }
 
     @Test
-    void shouldSetFileTypeInMultiPartRequest() {
+    void shouldSetFileTypeWhenPostingFileStream() {
         //given
         MediaType mediaType = MediaType.TEXT_PLAIN_TYPE;
         ByteArrayInputStream inputStream = new ByteArrayInputStream("payload".getBytes(StandardCharsets.UTF_8));
@@ -429,7 +429,7 @@ public class RestConnectorTest {
         when(typeBuilder.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(typeBuilder);
 
         //when
-        restConnector.postStreamWithoutResponse(PATH, inputStream, mediaType);
+        restConnector.postStream(PATH, inputStream, mediaType);
 
         //then
         ArgumentCaptor<Entity> captor = ArgumentCaptor.forClass(Entity.class);
