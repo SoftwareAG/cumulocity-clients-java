@@ -32,9 +32,7 @@ import java.util.*;
 
 import static com.cumulocity.rest.representation.application.ApplicationMediaType.APPLICATION;
 import static lombok.AccessLevel.NONE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.HttpMethod.*;
 
 @Getter
 @Slf4j
@@ -103,7 +101,7 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
                         return (T) bootstrapUserFor(app);
                     }
 
-                } else if(responseType.equals(ApplicationUserCollectionRepresentation.class)){
+                } else if (responseType.equals(ApplicationUserCollectionRepresentation.class)) {
                     ApplicationUserCollectionRepresentation applicationUserRepresentations = new ApplicationUserCollectionRepresentation();
                     applicationUserRepresentations.setUsers(listOfCurrentApplicationUsers);
                     return (T) applicationUserRepresentations;
@@ -190,6 +188,11 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
 
             @Override
             public <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content, Class<T> responseClass) {
+                throw new UnsupportedOperationException("unsuported");
+            }
+
+            @Override
+            public void postStreamWithoutResponse(final String path, final InputStream inputStream, final MediaType inputStreamMediaType) {
                 throw new UnsupportedOperationException("unsuported");
             }
 
@@ -356,7 +359,7 @@ public class FakeCredentialsSwitchingPlatform implements CredentialsSwitchingPla
         applications.put(app.getId(), app);
     }
 
-    public void addApplicationUserRepresentation(ApplicationUserRepresentation applicationUserRepresentation){
+    public void addApplicationUserRepresentation(ApplicationUserRepresentation applicationUserRepresentation) {
         this.listOfCurrentApplicationUsers.add(applicationUserRepresentation);
     }
 }
