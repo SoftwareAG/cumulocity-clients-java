@@ -240,7 +240,8 @@ def spinup_instance(instance) {
           booleanParam(name: 'RUN_READ_PERFORMANCE_TESTS', value: false),
           string(name: 'PURPOSE', value: 'clients-java-pre-merge-check'),
           string(name: 'DEV_TEAM', value: 'Common Infrastructure'),
-          string(name: 'LP_LIST', value: 'cep')
+          string(name: 'LP_LIST', value: 'cep'),
+          string(name: 'PROJECT', value: 'C8Y Core')
       ],
           propagate: true
     }
