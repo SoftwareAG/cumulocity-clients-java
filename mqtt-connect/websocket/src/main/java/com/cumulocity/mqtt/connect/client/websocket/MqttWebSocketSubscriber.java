@@ -22,7 +22,7 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
     MqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
-        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
+        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), config.getSubscriber());
     }
 
     @Override

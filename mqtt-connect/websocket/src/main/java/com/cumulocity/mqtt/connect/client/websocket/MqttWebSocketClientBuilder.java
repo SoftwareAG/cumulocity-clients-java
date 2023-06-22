@@ -3,6 +3,7 @@ package com.cumulocity.mqtt.connect.client.websocket;
 import com.cumulocity.mqtt.connect.client.*;
 import com.cumulocity.mqtt.connect.client.model.MqttMessage;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.MalformedURLException;
 
@@ -63,6 +64,9 @@ public class MqttWebSocketClientBuilder {
 
             @Override
             public MqttSubscriber buildSubscriber(final MqttConfig config) {
+                if (StringUtils.isBlank(config.getSubscriber())) {
+                    throw new MqttClientException("Subscriber has to be provided");
+                }
                 return new MqttWebSocketSubscriber(url, tokenApi, (MqttWebSocketConfig) config);
             }
 
