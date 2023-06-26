@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 class MqttWebSocketPublisher implements MqttPublisher {
 
@@ -61,10 +60,6 @@ class MqttWebSocketPublisher implements MqttPublisher {
     }
 
     private String getSubscriber() {
-        if (isBlank(config.getSubscriber())) {
-            return SUBSCRIBER_PREFIX + randomAlphabetic(10);
-        }
-
-        return config.getSubscriber();
+        return SUBSCRIBER_PREFIX + randomAlphabetic(10);
     }
 }

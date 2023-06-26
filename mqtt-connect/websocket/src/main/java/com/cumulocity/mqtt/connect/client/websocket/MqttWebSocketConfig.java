@@ -18,8 +18,7 @@ public class MqttWebSocketConfig implements MqttConfig {
     private final String topic;
 
     /**
-     * Specify the subscriber (consumer) name which will be used by the instance of {@link MqttPublisher} or {@link MqttSubscriber}.
-     * It is mandatory for instance of {@link MqttSubscriber}.
+     * Specify the subscriber name (consumer name) which will be used by the instance of {@link MqttSubscriber}.
      */
     private final String subscriber;
 

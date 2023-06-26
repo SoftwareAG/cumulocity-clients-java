@@ -64,9 +64,7 @@ public class MqttWebSocketClientBuilder {
 
             @Override
             public MqttSubscriber buildSubscriber(final MqttConfig config) {
-                if (StringUtils.isBlank(config.getSubscriber())) {
-                    throw new MqttClientException("Subscriber has to be provided");
-                }
+                validateSubscriber(config.getSubscriber());
                 return new MqttWebSocketSubscriber(url, tokenApi, (MqttWebSocketConfig) config);
             }
 
@@ -82,6 +80,12 @@ public class MqttWebSocketClientBuilder {
 
         if (!(url.startsWith("ws://") || url.startsWith("wss://"))) {
             throw new MqttClientException("Server URI should specify either 'ws://' or 'wss://' protocol", new MalformedURLException());
+        }
+    }
+
+    private void validateSubscriber(String subscriber) {
+        if (StringUtils.isBlank(subscriber)) {
+            throw new MqttClientException("Subscriber has to be provided");
         }
     }
 
