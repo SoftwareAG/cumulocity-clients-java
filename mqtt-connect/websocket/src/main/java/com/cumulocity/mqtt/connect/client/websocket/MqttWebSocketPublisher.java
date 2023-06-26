@@ -10,11 +10,9 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-
 class MqttWebSocketPublisher implements MqttPublisher {
 
-    private final static String SUBSCRIBER_PREFIX = "mqttConnectPublisher";
+    private final static String SUBSCRIBER = "mqttConnectPublisher";
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/producer/?token=%s";
     private final String webSocketBaseUrl;
 
@@ -27,7 +25,7 @@ class MqttWebSocketPublisher implements MqttPublisher {
     MqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
-        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), getSubscriber());
+        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
     }
 
     @Override
@@ -57,9 +55,5 @@ class MqttWebSocketPublisher implements MqttPublisher {
         if (producer != null) {
             producer.close();
         }
-    }
-
-    private String getSubscriber() {
-        return SUBSCRIBER_PREFIX + randomAlphabetic(10);
     }
 }
