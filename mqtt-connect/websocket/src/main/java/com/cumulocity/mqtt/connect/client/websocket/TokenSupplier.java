@@ -32,7 +32,7 @@ class TokenSupplier {
     }
 
     public void unsubscribe() {
-        tokenApi.unsubscribe(get());
+        tokenApi.unsubscribe(this.get());
     }
 
     private Token create() {
