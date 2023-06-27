@@ -48,9 +48,12 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
     }
 
     @Override
-    public void close() {
+    public void unsubscribe() {
         tokenSupplier.unsubscribe();
+    }
 
+    @Override
+    public void close() {
         if (consumer != null) {
             consumer.close();
         }
