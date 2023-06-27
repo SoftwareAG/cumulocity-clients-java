@@ -15,14 +15,14 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
 
     private final String webSocketBaseUrl;
     private final MqttWebSocketConfig config;
-    private final TokenSupplier tokenSupplier;
+    private final TokenService tokenService;
 
     private MqttWebSocketClient consumer;
 
     MqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
-        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), config.getSubscriber());
+        this.tokenService = new TokenService(tokenApi, config.getTopic(), config.getSubscriber());
     }
 
     @Override
@@ -31,9 +31,7 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
             return;
         }
 
-        final String token = tokenSupplier
-                .get()
-                .getTokenString();
+        final String token = tokenService.get().getTokenString();
 
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
@@ -49,7 +47,7 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
 
     @Override
     public void unsubscribe() {
-        tokenSupplier.unsubscribe();
+        tokenService.unsubscribe();
     }
 
     @Override
