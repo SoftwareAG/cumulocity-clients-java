@@ -14,6 +14,10 @@ public interface MqttSubscriber extends AutoCloseable {
      */
     void subscribe(MqttMessageListener listener);
 
+
+    /**
+     * Unsubscribes the subscriber and shuts down
+     */
     @Override
     void close();
 
