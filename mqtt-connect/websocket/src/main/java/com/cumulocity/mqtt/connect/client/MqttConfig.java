@@ -14,4 +14,5 @@ public interface MqttConfig {
 
     String getTopic();
 
+    String getSubscriber();
 }

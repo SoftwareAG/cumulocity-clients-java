@@ -7,8 +7,6 @@ import com.google.common.base.Suppliers;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-
 class TokenSupplier {
 
     private static long TOKEN_EXPIRATION_IN_MINUTES = 1440;
@@ -39,7 +37,7 @@ class TokenSupplier {
 
     private NotificationTokenRequestRepresentation getTokenRepresentation() {
         final NotificationTokenRequestRepresentation representation = new NotificationTokenRequestRepresentation();
-        representation.setSubscriber(subscriber + randomAlphabetic(10));
+        representation.setSubscriber(subscriber);
         representation.setSubscription(topic);
         representation.setType(TOKEN_TYPE);
         representation.setSigned(true);
