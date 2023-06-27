@@ -31,7 +31,10 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
             return;
         }
 
-        final String token = tokenSupplier.get();
+        final String token = tokenSupplier
+                .get()
+                .getTokenString();
+
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
         }
@@ -46,6 +49,8 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
 
     @Override
     public void close() {
+        tokenSupplier.unsubscribe();
+
         if (consumer != null) {
             consumer.close();
         }

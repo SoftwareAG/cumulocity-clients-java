@@ -1,6 +1,7 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
+import com.cumulocity.sdk.client.messaging.notifications.Token;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -16,7 +17,7 @@ class TokenSupplier {
     private final TokenApi tokenApi;
     private final String topic;
     private final String subscriber;
-    private final Supplier<String> memoizedTokenSupplier;
+    private final Supplier<Token> memoizedTokenSupplier;
 
     TokenSupplier(TokenApi tokenApi, String topic, String subscriber) {
         this.tokenApi = tokenApi;
@@ -25,14 +26,17 @@ class TokenSupplier {
         this.memoizedTokenSupplier = Suppliers.memoizeWithExpiration(() -> create(), CACHE_EXPIRATION_IN_MINUTES, TimeUnit.MINUTES);
     }
 
-    public String get() {
-        return memoizedTokenSupplier.get();
+    public Token get() {
+        return memoizedTokenSupplier
+                .get();
     }
 
-    private String create() {
-        return tokenApi
-                .create(getTokenRepresentation())
-                .getTokenString();
+    public void unsubscribe() {
+        tokenApi.unsubscribe(get());
+    }
+
+    private Token create() {
+        return tokenApi.create(getTokenRepresentation());
     }
 
     private NotificationTokenRequestRepresentation getTokenRepresentation() {

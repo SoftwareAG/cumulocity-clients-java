@@ -30,7 +30,9 @@ class MqttWebSocketPublisher implements MqttPublisher {
 
     @Override
     public void publish(MqttMessage message) {
-        final String token = tokenSupplier.get();
+        final String token = tokenSupplier
+                .get()
+                .getTokenString();
 
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
