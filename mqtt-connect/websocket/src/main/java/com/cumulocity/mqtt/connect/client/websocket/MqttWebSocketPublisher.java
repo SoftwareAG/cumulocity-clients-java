@@ -18,19 +18,19 @@ class MqttWebSocketPublisher implements MqttPublisher {
 
     private final AtomicInteger sequence = new AtomicInteger();
     private final MqttWebSocketConfig config;
-    private final TokenSupplier tokenSupplier;
+    private final TokenService tokenService;
 
     private MqttWebSocketClient producer;
 
     MqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
-        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
+        this.tokenService = new TokenService(tokenApi, config.getTopic(), SUBSCRIBER);
     }
 
     @Override
     public void publish(MqttMessage message) {
-        final String token = tokenSupplier.get();
+        final String token = tokenService.getToken().getTokenString();
 
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
