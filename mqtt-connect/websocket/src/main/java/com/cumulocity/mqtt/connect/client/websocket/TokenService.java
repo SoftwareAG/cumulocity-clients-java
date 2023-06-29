@@ -1,13 +1,14 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
 import com.cumulocity.rest.representation.reliable.notification.NotificationTokenRequestRepresentation;
+import com.cumulocity.sdk.client.messaging.notifications.Token;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import java.util.concurrent.TimeUnit;
 
-class TokenSupplier {
+class TokenService {
 
     private static long TOKEN_EXPIRATION_IN_MINUTES = 1440;
     private static long CACHE_EXPIRATION_IN_MINUTES = 1320;
@@ -16,23 +17,25 @@ class TokenSupplier {
     private final TokenApi tokenApi;
     private final String topic;
     private final String subscriber;
-    private final Supplier<String> memoizedTokenSupplier;
+    private final Supplier<Token> memoizedTokenSupplier;
 
-    TokenSupplier(TokenApi tokenApi, String topic, String subscriber) {
+    TokenService(TokenApi tokenApi, String topic, String subscriber) {
         this.tokenApi = tokenApi;
         this.topic = topic;
         this.subscriber = subscriber;
         this.memoizedTokenSupplier = Suppliers.memoizeWithExpiration(() -> create(), CACHE_EXPIRATION_IN_MINUTES, TimeUnit.MINUTES);
     }
 
-    public String get() {
+    public Token getToken() {
         return memoizedTokenSupplier.get();
     }
 
-    private String create() {
-        return tokenApi
-                .create(getTokenRepresentation())
-                .getTokenString();
+    public void unsubscribe() {
+        tokenApi.unsubscribe(this.getToken());
+    }
+
+    private Token create() {
+        return tokenApi.create(getTokenRepresentation());
     }
 
     private NotificationTokenRequestRepresentation getTokenRepresentation() {
