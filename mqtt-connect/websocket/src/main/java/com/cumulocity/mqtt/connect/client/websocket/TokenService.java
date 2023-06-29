@@ -26,12 +26,12 @@ class TokenService {
         this.memoizedTokenSupplier = Suppliers.memoizeWithExpiration(() -> create(), CACHE_EXPIRATION_IN_MINUTES, TimeUnit.MINUTES);
     }
 
-    public Token get() {
+    public Token getToken() {
         return memoizedTokenSupplier.get();
     }
 
     public void unsubscribe() {
-        tokenApi.unsubscribe(this.get());
+        tokenApi.unsubscribe(this.getToken());
     }
 
     private Token create() {

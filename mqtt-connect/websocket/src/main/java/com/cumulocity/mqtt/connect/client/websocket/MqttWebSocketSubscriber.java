@@ -31,7 +31,7 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
             return;
         }
 
-        final String token = tokenService.get().getTokenString();
+        final String token = tokenService.getToken().getTokenString();
 
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
