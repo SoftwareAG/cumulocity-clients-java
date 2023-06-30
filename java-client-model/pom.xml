@@ -47,6 +47,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.victools</groupId>
+            <artifactId>jsonschema-generator</artifactId>
+            <version>4.31.1</version>
+        </dependency>
 
         <!-- Testing -->
         <dependency>
