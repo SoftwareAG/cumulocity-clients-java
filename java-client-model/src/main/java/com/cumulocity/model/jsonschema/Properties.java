@@ -1,21 +1,14 @@
 package com.cumulocity.model.jsonschema;
 
 import com.cumulocity.rest.representation.AbstractExtensibleRepresentation;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-
-public class Properties extends AbstractExtensibleRepresentation {
-
-    public void addPropertyDescriptor(String propertyName, PropertyDescriptor propertyDescriptor) {
-        this.set(propertyDescriptor,propertyName);
-    }
+public class Properties{
+    @JsonProperty("Rotor/Blade/Inclination_P01")
+    public RotorBladeInclinationP01 rotorBladeInclination_P01;
 }
