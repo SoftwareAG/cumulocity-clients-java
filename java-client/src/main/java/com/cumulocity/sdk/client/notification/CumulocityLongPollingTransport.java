@@ -25,12 +25,10 @@ import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.HttpClientTransport;
 import org.cometd.client.transport.TransportListener;
 import org.glassfish.jersey.client.ClientProperties;
-import javax.ws.rs.core.Response;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.core.NewCookie;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.text.ParseException;
@@ -107,7 +105,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     @Override
     public void send(final TransportListener listener, List<Mutable> messages) {
-        logger.debug("sending messages {} ", (Object) messages);
+        logger.debug("sending messages {} ", messages);
         final String content = generateJSON(messages);
         try {
             synchronized (exchanges) {
@@ -143,7 +141,6 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
                     exchanges.remove(exchange);
                 }
             }
-
         });
         exchanges.add(exchange);
     }
@@ -152,25 +149,6 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
         final long heartbeat = Long.getLong(CumulocityLongPollingTransport.class.getName()+ ".long-poll.heartbeat-interval", TimeUnit.MINUTES.toSeconds(12));
         logger.debug("Long poll heartbeat interval resolved to {} seconds", heartbeat);
         return heartbeat;
-    }
-
-    private Response copyCookies(final Response clientResponse) {
-        CookieStore cookieStore = getCookieStore();
-        for (NewCookie cookie : clientResponse.getCookies().values()) {
-            cookieStore.add(null, toHttpCookie(cookie));
-        }
-        return clientResponse;
-    }
-
-    private HttpCookie toHttpCookie(NewCookie newCookie) {
-        HttpCookie httpCookie = new HttpCookie(newCookie.getName(), newCookie.getValue());
-        httpCookie.setDomain(newCookie.getDomain());
-        httpCookie.setPath(newCookie.getPath());
-        httpCookie.setVersion(newCookie.getVersion());
-        httpCookie.setSecure(newCookie.isSecure());
-        httpCookie.setMaxAge(newCookie.getMaxAge());
-        httpCookie.setComment(newCookie.getComment());
-        return httpCookie;
     }
 
     @Override

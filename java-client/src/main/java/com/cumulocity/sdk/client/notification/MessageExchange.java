@@ -23,8 +23,6 @@ import lombok.Synchronized;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
-import javax.ws.rs.core.Response;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -33,6 +31,7 @@ import org.svenson.JSONParser;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.InvocationCallback;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
