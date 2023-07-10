@@ -59,7 +59,6 @@ class ConnectionHeartBeatWatcher {
                 } else {
                     onConnectionActive();
                 }
-
             }
 
             private void onConnectionActive() {
