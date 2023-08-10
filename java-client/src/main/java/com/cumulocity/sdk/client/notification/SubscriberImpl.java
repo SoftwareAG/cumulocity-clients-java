@@ -20,8 +20,11 @@
 package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.SDKException;
+import com.cumulocity.sdk.client.util.StringUtils;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
 import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
@@ -34,7 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
@@ -48,9 +54,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private final BayeuxSessionProvider bayeuxSessionProvider;
 
-    private final Set<SubscriptionRecord> subscriptions = new CopyOnWriteArraySet<>();
-
-    private final Set<SubscriptionRecord> pendingSubscriptions = new CopyOnWriteArraySet<>();
+    private final SubscriptionsCache subscriptions;
 
     private final Object connectionLock = new Object();
 
@@ -63,6 +67,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         this.subscriptionNameResolver = channelNameResolver;
         this.bayeuxSessionProvider = bayeuxSessionProvider;
         unauthorizedConnectionWatcher.addListener(this);
+        subscriptions = new SubscriptionsCache();
         subscriptionWatcher = new SubscriptionWatcher();
     }
 
@@ -120,10 +125,10 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         // Add to pending subscriptions list if autoRetry and this is first subscriber
         if (autoRetry && firstSubscriber) {
-            pendingSubscriptions.add(subscriptionRecord);
+            subscriptions.markAsPending(subscriptionRecord);
         } else if (!firstSubscriber) {
             log.info("Added listener to a channel that has been subscribed by other");
-            subscriptions.add(subscriptionRecord);
+            subscriptions.markAsActive(subscriptionRecord);
         }
 
         // Notify immediately if there would be no interaction with server
@@ -153,7 +158,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     private ClientSessionChannel getChannel(final T object) {
         final String channelId = subscriptionNameResolver.apply(object);
-        checkState(channelId != null && channelId.length() > 0, "channelId is null or empty for object : " + object);
+        checkState(StringUtils.isNotBlank(channelId), "channelId is null or empty for object : " + object);
         return session.getChannel(channelId);
     }
 
@@ -163,7 +168,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             if (isConnected()) {
                 subscriptionWatcher.stop();
                 subscriptions.clear();
-                pendingSubscriptions.clear();
                 session.disconnect();
                 session = null;
             }
@@ -182,50 +186,26 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
-    private void resubscribeAll() {
-        Set<SubscriptionRecord> allSubscriptions = new HashSet<>(subscriptions);
-        allSubscriptions.addAll(pendingSubscriptions);
-
-        resubscribe(allSubscriptions);
-    }
-
-    private void resubscribePending() {
-        if (pendingSubscriptions.isEmpty()) {
+    private void resubscribe(Set<SubscriptionRecord> subscriptionsToResubscribe) {
+        if (subscriptionsToResubscribe.isEmpty()) {
             return;
         }
 
-        resubscribe(new HashSet<>(pendingSubscriptions));
-    }
-
-    private void resubscribe(Set<SubscriptionRecord> subscriptionsToResubscribe) {
         removeBrokenListeners();
 
         for (SubscriptionRecord subscribed : subscriptionsToResubscribe) {
-            removeBrokenSubscription(subscribed);
-            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.subscribeOperationListener,
-                    subscribed.listener, true);
+            log.debug("Removing broken subscription: {}", subscribed.getId());
+            subscriptions.remove(subscribed);
+
+            Subscription<T> subscription = subscribe(subscribed.getId(), subscribed.getSubscribeOperationListener(),
+                    subscribed.getListener(), true);
+
             try {
                 subscribed.getListener().onError(subscription,
                         new ReconnectedSDKException("bayeux client reconnected clientId: " + session.getId()));
             } catch (Exception e) {
                 log.warn("Error when executing onError of listener: {}, {}", subscribed.getListener(), e.getMessage());
             }
-        }
-    }
-
-    private void removeBrokenSubscription(SubscriptionRecord subscription) {
-        log.debug("Removing broken subscription: {}", subscription.id);
-
-        // Remove pending subscription
-        boolean foundInPendingSubscriptions = pendingSubscriptions.remove(subscription);
-        if (foundInPendingSubscriptions) {
-            log.debug("Removed subscription from pending subscriptions list");
-        }
-
-        // Remove subscription from list
-        boolean foundInSubscriptions = subscriptions.remove(subscription);
-        if (foundInSubscriptions) {
-            log.debug("Removed subscription from subscriptions list");
         }
     }
 
@@ -250,7 +230,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
     @Override
     public void onDisconnection(final int httpCode) {
-        for (final SubscriptionRecord subscription : subscriptions) {
+        for (final SubscriptionRecord subscription : subscriptions.active()) {
             subscription.getListener().onError(new DummySubscription(subscription),
                     new SDKException(httpCode, "bayeux client disconnected  clientId: " + session.getId()));
         }
@@ -286,12 +266,12 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 log.debug("reconnect operation detected for session {} - {} ", bayeuxSessionProvider, session.getId());
                 reHandshakeSuccessful = false;
                 reconnectedSuccessful = false;
-                resubscribeAll();
+                resubscribe(subscriptions.all());
             }
             // Subscribe pending on each successful /meta/connect
             if (reconnectedSuccessful) {
                 reconnectedSuccessful = false;
-                resubscribePending();
+                resubscribe(subscriptions.pending());
             }
             return true;
         }
@@ -356,10 +336,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             try {
                 if (message.isSuccessful()) {
                     log.debug("subscribed successfully to channel {}, {}", this.channel, message);
-                    if (autoRetry) {
-                        pendingSubscriptions.remove(subscription);
-                    }
-                    subscriptions.add(subscription);
+                    subscriptions.markAsActive(subscription);
                     subscribeOperationListener.onSubscribingSuccess(this.channel.getId());
                 } else {
                     log.debug("Error subscribing channel: {}, {}", this.channel.getId(), message);
@@ -385,7 +362,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry);
             } else {
                 log.warn("Not Connected for channel {}", this.channel.getId());
-                pendingSubscriptions.add(subscription);
+                subscriptions.markAsPending(subscription);
             }
         }
 
@@ -459,7 +436,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         @Override
         public void unsubscribe() {
             log.debug("unsubscribing from channel {}", channel.getId());
-            pendingSubscriptions.remove(subscriptionRecord);
             subscriptions.remove(subscriptionRecord);
             channel.unsubscribe(listener);
         }
@@ -469,6 +445,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             return object;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -512,6 +489,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final SubscriptionListener<T, Message> handler;
 
+        @Getter
         private final Subscription<T> subscription;
 
         MessageListenerAdapter(SubscriptionListener<T, Message> handler, ClientSessionChannel channel, T object, SubscriptionRecord subscriptionRecord) {
@@ -528,10 +506,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             handler.onNotification(subscription, message);
         }
 
-        public Subscription<T> getSubscription() {
-            return subscription;
-        }
-
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -551,6 +526,8 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
+    @Getter
+    @ToString
     private final class SubscriptionRecord {
 
         private final T id;
@@ -566,14 +543,6 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             this.subscribeOperationListener = subscribeOperationListener;
         }
 
-        public T getId() {
-            return id;
-        }
-
-        public SubscriptionListener<T, Message> getListener() {
-            return listener;
-        }
-
         @Override
         public int hashCode() {
             int result = id != null ? id.hashCode() : 0;
@@ -582,6 +551,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             return result;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -595,7 +565,73 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         }
     }
 
+    private final class SubscriptionsCache {
+
+        private final Set<SubscriptionRecord> active = new HashSet<>();
+
+        private final Set<SubscriptionRecord> pending = new HashSet<>();
+
+        public synchronized Set<SubscriptionRecord> all() {
+            return ImmutableSet.<SubscriptionRecord>builder()
+                    .addAll(active)
+                    .addAll(pending)
+                    .build();
+        }
+
+        public synchronized Set<SubscriptionRecord> active() {
+            return ImmutableSet.<SubscriptionRecord>builder()
+                    .addAll(active)
+                    .build();
+        }
+
+        public synchronized Set<SubscriptionRecord> pending() {
+            return ImmutableSet.<SubscriptionRecord>builder()
+                    .addAll(pending)
+                    .build();
+        }
+
+        public synchronized boolean isPending(SubscriptionRecord subRec) {
+            return pending.contains(subRec);
+        }
+
+        public synchronized void markAsPending(SubscriptionRecord subRec) {
+            if (pending.contains(subRec)) {
+                log.debug("Subscription {} is already pending", subRec);
+                return;
+            }
+            pending.add(subRec);
+            boolean activeRemoved = active.remove(subRec);
+            log.debug("Marked subscription {} as pending (previously {})", subRec, activeRemoved ? "active" : "n/a");
+        }
+
+        public synchronized void markAsActive(SubscriptionRecord subRec) {
+            if (active.contains(subRec)) {
+                log.debug("Subscription {} is already active", subRec);
+                return;
+            }
+            active.add(subRec);
+            boolean pendingRemoved = pending.remove(subRec);
+            log.debug("Marked subscription {} as active (previously {})", subRec, pendingRemoved ? "pending" : "n/a");
+        }
+
+        public synchronized void remove(SubscriptionRecord subRec) {
+            if (active.remove(subRec)) {
+                log.debug("Removed active subscription {}", subRec);
+            }
+            if (pending.remove(subRec)) {
+                log.debug("Removed pending subscription {}", subRec);
+            }
+        }
+
+        public synchronized void clear() {
+            active.clear();
+            pending.clear();
+            log.debug("Cleared active and pending subscriptions");
+        }
+    }
+
     private final class SubscriptionWatcher {
+
         private final ScheduledExecutorService executorService;
 
         public SubscriptionWatcher() {
@@ -620,10 +656,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         private Runnable checkSubscriptionsRunner() {
             return () -> {
                 log.debug("Running watcher to check subscriptions");
-                ImmutableSet.<SubscriptionRecord>builder()
-                        .addAll(subscriptions)
-                        .addAll(pendingSubscriptions)
-                        .build()
+                subscriptions.all()
                         .forEach(this::checkSubscription);
             };
         }
@@ -632,7 +665,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
             ClientSessionChannel channel = getChannel(subRec.getId());
             if (channel.getSubscribers().isEmpty()) {
                 log.warn("{} bayeux channel {} has no client subscribers",
-                        pendingSubscriptions.contains(subRec) ? "Pending" : "Subscribed", subRec.getId());
+                        subscriptions.isPending(subRec) ? "Pending" : "Subscribed", subRec.getId());
                 reSubscribe(subRec);
             } else {
                 log.debug("Bayeux channel {} has {} client subscriptions (OK)",
@@ -646,8 +679,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                 subscribe(subRec.getId(), subRec.subscribeOperationListener, subRec.listener, true);
             } else {
                 log.warn("Session is not connected, adding channel {} to pending subscriptions", subRec.getId());
-                subscriptions.remove(subRec);
-                pendingSubscriptions.add(subRec);
+                subscriptions.markAsPending(subRec);
             }
         }
     }
