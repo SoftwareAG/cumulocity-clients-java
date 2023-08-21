@@ -43,10 +43,10 @@ class DecoderUtilsTest {
         assertEquals(2021, dateTime.getYear());
         assertEquals(12, dateTime.getMonthOfYear());
         assertEquals(29, dateTime.getDayOfMonth());
-        assertEquals(11, dateTime.getHourOfDay());
-        assertEquals(12, dateTime.getMinuteOfHour());
+        assertEquals(5, dateTime.getHourOfDay());
+        assertEquals(42, dateTime.getMinuteOfHour());
         assertEquals(53, dateTime.getSecondOfMinute());
-        assertEquals("Asia/Kolkata", dateTime.getZone().toString());
+        assertEquals("Etc/GMT", dateTime.getZone().toString());
     }
 
     @Test
