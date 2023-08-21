@@ -195,7 +195,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.1.2</version>
                     <configuration>
-                        <argLine>-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m</argLine>
+                        <argLine>-Xms256m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=128m -Duser.timezone=GMT</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
