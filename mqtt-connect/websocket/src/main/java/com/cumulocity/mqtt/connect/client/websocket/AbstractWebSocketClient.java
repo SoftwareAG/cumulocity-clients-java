@@ -1,43 +1,21 @@
 package com.cumulocity.mqtt.connect.client.websocket;
 
-import com.cumulocity.mqtt.connect.client.MqttMessageListener;
-import com.cumulocity.mqtt.connect.client.model.MqttMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
-class MqttWebSocketClient extends WebSocketClient {
-
-    private static final MqttMessageListener EMPTY_LISTENER = new MqttMessageListener() {
-        @Override
-        public void onMessage(final MqttMessage message) {
-            // Do Nothing
-        }
-
-        @Override
-        public void onError(final Throwable t) {
-            // Do Nothing
-        }
-    };
-
-    private final MqttMessageListener listener;
+abstract class AbstractWebSocketClient extends WebSocketClient {
 
     private String connectionError;
 
-    public MqttWebSocketClient(URI serverUri) {
-        this(serverUri, EMPTY_LISTENER);
-    }
-
-    public MqttWebSocketClient(URI serverUri, MqttMessageListener listener) {
+    AbstractWebSocketClient(final URI serverUri) {
         super(serverUri);
-        this.listener = listener;
     }
 
     @Override
@@ -54,18 +32,6 @@ class MqttWebSocketClient extends WebSocketClient {
     }
 
     @Override
-    public void onMessage(String message) {
-        final WebSocketMessage webSocketMessage = WebSocketMessage.parse(message);
-
-        final Optional<String> ackHeader = webSocketMessage.getAckHeader();
-        final byte[] avroPayload = webSocketMessage.getAvroPayload();
-
-        listener.onMessage(MqttMessageConverter.decode(avroPayload));
-
-        ackHeader.ifPresent(this::send);
-    }
-
-    @Override
     public void onClose(int code, String reason, boolean remote) {
         if (!super.isOpen()) {
             connectionError = String.format("Cannot connect: %s %s", reason, code);
@@ -78,7 +44,7 @@ class MqttWebSocketClient extends WebSocketClient {
         if (!super.isOpen()) {
             connectionError = String.format("Cannot connect: %s", e.getMessage());
         }
-        listener.onError(e);
+        log.warn("Web socket error", e);
     }
 
 }
