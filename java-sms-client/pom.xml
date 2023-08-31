@@ -58,7 +58,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.nsn.cumulocity.clients-java</groupId>
+			<groupId>com.google.code.svenson</groupId>
 			<artifactId>svenson</artifactId>
 		</dependency>
 

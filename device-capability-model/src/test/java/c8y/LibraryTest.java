@@ -78,19 +78,17 @@ public class LibraryTest {
     @SuppressWarnings("unchecked")
     public void shouldReadArrayOnIncorrectPropertyFields() {
         // should be able to read as
-        Map<String, Object> customFragment = incorrectFragmentLib.getAttrs();
-        List<Object> positions = (List<Object>) customFragment.get("c8y_Position");
+        List<Object> positions = (List<Object>) incorrectFragmentLib.getFragment("c8y_Position");
         assertEquals("alt", positions.get(0));
         assertEquals(67L, positions.get(1));
 
-        assertEquals(true, customFragment.get("c8y_Relay"));
+        assertEquals(true, incorrectFragmentLib.getFragment("c8y_Relay"));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldReadObjectOnIncorrectPropertyFields() {
-        Map<String, Object> customFragments = incorrectFragmentLib2.getAttrs();
-        Map<String, Object> position = (Map<String, Object>) customFragments.get("c8y_Position");
+        Map<String, Object> position = (Map<String, Object>) incorrectFragmentLib.getFragment("c8y_Position");
 
         assertEquals(67L, position.get("lat"));
         assertEquals("123", position.get("lng"));
