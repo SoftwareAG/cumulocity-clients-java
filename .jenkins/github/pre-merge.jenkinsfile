@@ -268,7 +268,7 @@ def examples_verify() {
         dir('cumulocity-examples') {
           stage('examples verify') {
             try {
-              sh ".jenkins/scripts/mvn.sh install"
+              sh ".jenkins/scripts/mvn.sh install -Dskip.agent.package=true"
             } catch (e) {
               unstable('Examples verification failed')
             } finally {

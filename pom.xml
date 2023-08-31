@@ -462,6 +462,11 @@
         <dependencies>
             <!-- BOM DEPENDENCIES START -->
             <dependency>
+                <groupId>com.nsn.cumulocity.dependencies</groupId>
+                <artifactId>svenson</artifactId>
+                <version>${svenson.version}-${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.nsn.cumulocity.model</groupId>
                 <artifactId>device-capability-model</artifactId>
                 <version>${project.version}</version>
@@ -474,11 +479,6 @@
             <dependency>
                 <groupId>com.nsn.cumulocity.clients-java</groupId>
                 <artifactId>java-client-model</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.nsn.cumulocity.clients-java</groupId>
-                <artifactId>svenson</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
