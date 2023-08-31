@@ -8,6 +8,8 @@
         <version>${revision}${changelist}</version>
     </parent>
 
+    <groupId>com.nsn.cumulocity.dependencies</groupId>
+    <version>${svenson.version}-${revision}${changelist}</version>
     <artifactId>svenson</artifactId>
     <packaging>jar</packaging>
     <name>Cumulocity :: Clients Java :: Svenson</name>
