@@ -4,12 +4,14 @@ import com.cumulocity.mqtt.connect.client.MqttClientException;
 import com.cumulocity.mqtt.connect.client.MqttPublisher;
 import com.cumulocity.mqtt.connect.client.model.MqttMessage;
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 class MqttWebSocketPublisher implements MqttPublisher {
 
     private final static String SUBSCRIBER = "mqttConnectPublisher";
@@ -18,19 +20,19 @@ class MqttWebSocketPublisher implements MqttPublisher {
 
     private final AtomicInteger sequence = new AtomicInteger();
     private final MqttWebSocketConfig config;
-    private final TokenService tokenService;
+    private final TokenSupplier tokenSupplier;
 
-    private MqttWebSocketClient producer;
+    private WebSocketProducer producer;
 
     MqttWebSocketPublisher(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
         this.webSocketBaseUrl = webSocketBaseUrl;
         this.config = config;
-        this.tokenService = new TokenService(tokenApi, config.getTopic(), SUBSCRIBER);
+        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), SUBSCRIBER);
     }
 
     @Override
     public void publish(MqttMessage message) {
-        final String token = tokenService.getToken().getTokenString();
+        final String token = tokenSupplier.getToken().getTokenString();
 
         if (token == null) {
             throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
@@ -38,7 +40,7 @@ class MqttWebSocketPublisher implements MqttPublisher {
         if (producer == null) {
             try {
                 final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-                producer = new MqttWebSocketClient(uri);
+                producer = new WebSocketProducer(uri);
                 producer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new MqttClientException("Error publishing message!", e);
@@ -55,5 +57,18 @@ class MqttWebSocketPublisher implements MqttPublisher {
         if (producer != null) {
             producer.close();
         }
+    }
+
+    private static final class WebSocketProducer extends AbstractWebSocketClient {
+
+        public WebSocketProducer(URI serverUri) {
+            super(serverUri);
+        }
+
+        @Override
+        public void onMessage(String message) {
+            log.debug("Received ack for publish message {}", message);
+        }
+
     }
 }
