@@ -100,7 +100,7 @@ class MessageExchange {
 
     @Synchronized("messages")
     public void cancel() {
-        log.debug("canceling {}",  messages);
+        log.debug("canceling {}", messages);
 
 
         if (request.cancel(true)) {
@@ -165,7 +165,7 @@ class MessageExchange {
 
         private void heartBeatWatch(Response clientResponse) throws IOException {
             if (isOk(clientResponse)) {
-                InputStream responseStream = (InputStream)clientResponse.getEntity();
+                InputStream responseStream = (InputStream) clientResponse.getEntity();
                 log.debug("getting heartbeats  {}", clientResponse);
                 getHeartBeats(responseStream);
             }
@@ -274,7 +274,7 @@ class MessageExchange {
             for (Object jsonObject : jsonArray) {
                 try {
                     messages.addAll(transport.parseMessages(jsonObject.toString()));
-                } catch(ParseException | IllegalArgumentException e) {
+                } catch (ParseException | IllegalArgumentException e) {
                     log.debug("Failed to retry parse json message: {}", e.getMessage());
                 }
             }
