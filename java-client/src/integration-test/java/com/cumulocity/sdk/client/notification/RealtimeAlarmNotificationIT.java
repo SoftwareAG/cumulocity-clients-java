@@ -10,6 +10,7 @@ import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeAlarmMessage;
 import org.joda.time.DateTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -22,17 +23,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
 
-public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
+public class RealtimeAlarmNotificationIT extends JavaSdkITBase {
     private static final String ALARMS = "/alarms/";
     private static final String ALARMS_WITH_CHILDREN = "/alarmsWithChildren/";
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final AlarmApi alarmApi = platform.getAlarmApi();
 
+    Subscriber<String, RealtimeAlarmMessage> subscriber;
+
+    @AfterEach
+    public void cleanUp() {
+        if (subscriber != null) {
+            subscriber.disconnect();
+        }
+    }
+
     @Test
-    public void shouldReceiveCreateAlarmNotification() throws Exception {
+    public void shouldReceiveCreateAlarmNotification() {
         // given
-        Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
 
@@ -51,9 +61,9 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
     // https://cumulocity.atlassian.net/browse/MTM-38784
     @Disabled
     @Test
-    public void shouldReceiveUpdateAlarmNotification() throws Exception {
+    public void shouldReceiveUpdateAlarmNotification() {
         // given
-        Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(mo));
         TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
@@ -70,9 +80,9 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReceiveCreateChildAlarmNotification() throws Exception {
+    public void shouldReceiveCreateChildAlarmNotification() {
         // given
-        Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         TestSubscriptionListener<RealtimeAlarmMessage> subscriptionListener = new TestSubscriptionListener<>();
@@ -92,9 +102,9 @@ public class RealtimeAlarmNotificationClientIT extends JavaSdkITBase {
     // https://cumulocity.atlassian.net/browse/MTM-38784
     @Disabled
     @Test
-    public void shouldReceiveUpdateChildAlarmNotification() throws Exception {
+    public void shouldReceiveUpdateChildAlarmNotification() {
         // given
-        Subscriber<String, RealtimeAlarmMessage> subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeAlarmMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         AlarmRepresentation alarm = alarmApi.create(createAlarmRep(childMo));

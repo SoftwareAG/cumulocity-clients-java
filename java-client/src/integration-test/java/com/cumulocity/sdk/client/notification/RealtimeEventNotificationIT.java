@@ -8,9 +8,10 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.event.EventApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeEventMessage;
 import org.joda.time.DateTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
@@ -20,17 +21,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
 
-public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
+public class RealtimeEventNotificationIT extends JavaSdkITBase {
     private static final String EVENTS = "/events/";
     private static final String EVENTS_WITH_CHILDREN = "/eventsWithChildren/";
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
     final EventApi eventApi = platform.getEventApi();
 
+    private Subscriber<String, RealtimeEventMessage> subscriber;
+
+    @AfterEach
+    public void cleanUp() {
+        if (subscriber != null) {
+            subscriber.disconnect();
+        }
+    }
+
     @Test
-    public void shouldReceiveCreateEventNotification() throws Exception {
+    public void shouldReceiveCreateEventNotification() {
         // given
-        Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
 
@@ -46,9 +56,9 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReceiveUpdateEventNotification() throws Exception {
+    public void shouldReceiveUpdateEventNotification() {
         // given
-        Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
         TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
@@ -65,12 +75,12 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReceiveDeleteEventNotification() throws Exception {
+    public void shouldReceiveDeleteEventNotification() {
         // given
-        Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
+        Subscriber<String, RealtimeDeleteMessage> subscriber = getSubscriberForType(RealtimeDeleteMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         EventRepresentation event = eventApi.create(createEventRep(mo));
-        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -79,14 +89,17 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
 
         // then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
-        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteMessage.class);
         assertDeleteEventNotification(subscriptionListener.getNotification(), event);
+
+        // cleanup
+        subscriber.disconnect();
     }
 
     @Test
-    public void shouldReceiveCreateChildEventNotification() throws Exception {
+    public void shouldReceiveCreateChildEventNotification() {
         // given
-        Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         TestSubscriptionListener<RealtimeEventMessage> subscriptionListener = new TestSubscriptionListener<>();
@@ -103,9 +116,9 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReceiveUpdateChildEventNotification() throws Exception {
+    public void shouldReceiveUpdateChildEventNotification() {
         // given
-        Subscriber<String, RealtimeEventMessage> subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
+        subscriber = getSubscriberForType(RealtimeEventMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
@@ -123,13 +136,13 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
     }
 
     @Test
-    public void shouldReceiveDeleteChildEventNotification() throws Exception {
+    public void shouldReceiveDeleteChildEventNotification() {
         // given
-        Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
+        Subscriber<String, RealtimeDeleteMessage> subscriber = getSubscriberForType(RealtimeDeleteMessage.class, platform);
         ManagedObjectRepresentation parentMO = inventoryApi.create(aSampleMo().build());
         ManagedObjectRepresentation childMo = aSampleChildMo(parentMO.getId());
         EventRepresentation event = eventApi.create(createEventRep(childMo));
-        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(EVENTS_WITH_CHILDREN + parentMO.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -138,8 +151,11 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
 
         // then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
-        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteMessage.class);
         assertDeleteEventNotification(subscriptionListener.getNotification(), event);
+
+        // cleanup
+        subscriber.disconnect();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -174,7 +190,7 @@ public class RealtimeEventNotificationClientIT extends JavaSdkITBase {
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo(realtimeAction);
     }
 
-    private void assertDeleteEventNotification(RealtimeDeleteRepresentationWrapper notification, EventRepresentation source) {
+    private void assertDeleteEventNotification(RealtimeDeleteMessage notification, EventRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
     }
