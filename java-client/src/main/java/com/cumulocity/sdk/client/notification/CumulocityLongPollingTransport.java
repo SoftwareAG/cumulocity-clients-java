@@ -54,7 +54,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private final Client httpClient;
 
-    final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
+    final List<MessageExchange> exchanges = new LinkedList<>();
 
     final ScheduledExecutorService executorService = newScheduledThreadPool(WORKERS, new CumulocityLongPollingTransportThreadFactory());
 
@@ -125,7 +125,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
 
     private void createMessageExchange(final TransportListener listener, final String content, List<Mutable> messages) {
         final ConnectionHeartBeatWatcher watcher = new ConnectionHeartBeatWatcher(executorService, resolveHeartbeatInterval());
-        httpClient.property(ClientProperties.READ_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval()+30));
+        httpClient.property(ClientProperties.READ_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(resolveHeartbeatInterval() + 30));
         final MessageExchange exchange = new MessageExchange(this, httpClient, executorService, listener, watcher, unauthorizedConnectionWatcher, messages);
         watcher.addConnectionListener(new ConnectionIdleListener() {
             @Override
@@ -146,7 +146,7 @@ class CumulocityLongPollingTransport extends HttpClientTransport {
     }
 
     private long resolveHeartbeatInterval() {
-        final long heartbeat = Long.getLong(CumulocityLongPollingTransport.class.getName()+ ".long-poll.heartbeat-interval", TimeUnit.MINUTES.toSeconds(12));
+        final long heartbeat = Long.getLong(CumulocityLongPollingTransport.class.getName() + ".long-poll.heartbeat-interval", TimeUnit.MINUTES.toSeconds(12));
         logger.debug("Long poll heartbeat interval resolved to {} seconds", heartbeat);
         return heartbeat;
     }
