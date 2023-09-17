@@ -314,7 +314,6 @@ public class SubscriberImplTest {
     }
 
     @Test
-    @Disabled // FIXME (issue with class casting)
     public void shouldNotAddSubscribeListenerWhenChannelHasSubscriber() {
         final String channelId = "/channel";
         final ClientSessionChannel channel = givenChannel(channelId);
