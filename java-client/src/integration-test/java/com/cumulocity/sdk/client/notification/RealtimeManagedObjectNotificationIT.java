@@ -6,7 +6,7 @@ import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeManagedObjectMessage;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
 
-public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
+public class RealtimeManagedObjectNotificationIT extends JavaSdkITBase {
     private static final String MANAGEDOBJECTS = "/managedobjects/";
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
@@ -41,6 +41,9 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         // then
         await().atMost(TEN_SECONDS).untilAsserted(() -> assertThat(subscriptionListener.getNotifications())
                 .anySatisfy(notification -> assertCreateManagedObjectNotification(notification, managedObjectRep)));
+
+        // cleanup
+        subscriber.disconnect();
     }
 
     @Test
@@ -62,14 +65,17 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeManagedObjectMessage.class);
         assertUpdateManagedObjectNotification(subscriptionListener.getNotification(), updatedMO);
+
+        // cleanup
+        subscriber.disconnect();
     }
 
     @Test
     public void shouldReceiveDeleteMONotification() {
         // given
-        Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
+        Subscriber<String, RealtimeDeleteMessage> subscriber = getSubscriberForType(RealtimeDeleteMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
-        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MANAGEDOBJECTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -78,8 +84,11 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
 
         // then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
-        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteMessage.class);
         assertDeleteManagedObjectNotification(subscriptionListener.getNotification(), mo);
+
+        // cleanup
+        subscriber.disconnect();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -101,7 +110,7 @@ public class RealtimeManagedObjectNotificationClientIT extends JavaSdkITBase {
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("UPDATE");
     }
 
-    private void assertDeleteManagedObjectNotification(RealtimeDeleteRepresentationWrapper notification, ManagedObjectRepresentation source) {
+    private void assertDeleteManagedObjectNotification(RealtimeDeleteMessage notification, ManagedObjectRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
     }
