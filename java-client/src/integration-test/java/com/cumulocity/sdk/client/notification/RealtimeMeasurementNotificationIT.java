@@ -7,7 +7,7 @@ import com.cumulocity.sdk.client.common.JavaSdkITBase;
 import com.cumulocity.sdk.client.common.TestSubscriptionListener;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
 import com.cumulocity.sdk.client.measurement.MeasurementApi;
-import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteRepresentationWrapper;
+import com.cumulocity.sdk.client.notification.wrappers.RealtimeDeleteMessage;
 import com.cumulocity.sdk.client.notification.wrappers.RealtimeMeasurementMessage;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TEN_SECONDS;
 
-public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
+public class RealtimeMeasurementNotificationIT extends JavaSdkITBase {
     private static final String MEASUREMENTS = "/measurements/";
 
     final InventoryApi inventoryApi = platform.getInventoryApi();
@@ -41,15 +41,17 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
         assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeMeasurementMessage.class);
         assertMeasurementNotification(subscriptionListener.getNotification(), measurement, "CREATE");
+
+        subscriber.disconnect();
     }
 
     @Test
     public void shouldReceiveDeleteMeasurementNotification() throws Exception {
         // given
-        Subscriber<String, RealtimeDeleteRepresentationWrapper> subscriber = getSubscriberForType(RealtimeDeleteRepresentationWrapper.class, platform);
+        Subscriber<String, RealtimeDeleteMessage> subscriber = getSubscriberForType(RealtimeDeleteMessage.class, platform);
         ManagedObjectRepresentation mo = inventoryApi.create(aSampleMo().build());
         MeasurementRepresentation measurement = measurementApi.create(createMeasurementRep(mo));
-        TestSubscriptionListener<RealtimeDeleteRepresentationWrapper> subscriptionListener = new TestSubscriptionListener<>();
+        TestSubscriptionListener<RealtimeDeleteMessage> subscriptionListener = new TestSubscriptionListener<>();
 
         // when
         subscriber.subscribe(MEASUREMENTS + mo.getId().getValue(), subscriptionListener, subscriptionListener, true);
@@ -58,8 +60,10 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
 
         // then
         await().atMost(TEN_SECONDS).until(subscriptionListener::notificationReceived);
-        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteRepresentationWrapper.class);
+        assertThat(subscriptionListener.getNotification()).isExactlyInstanceOf(RealtimeDeleteMessage.class);
         assertDeleteMeasurementNotification(subscriptionListener.getNotification(), measurement);
+
+        subscriber.disconnect();
     }
 
     private static ManagedObjectRepresentationBuilder aSampleMo() {
@@ -81,7 +85,7 @@ public class RealtimeMeasurementNotificationClientIT extends JavaSdkITBase {
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo(realtimeAction);
     }
 
-    private void assertDeleteMeasurementNotification(RealtimeDeleteRepresentationWrapper notification, MeasurementRepresentation source) {
+    private void assertDeleteMeasurementNotification(RealtimeDeleteMessage notification, MeasurementRepresentation source) {
         assertThat(notification.getData()).isEqualTo(source.getId().getValue());
         assertThat(notification.getAttrs().get("realtimeAction")).isEqualTo("DELETE");
     }
