@@ -14,6 +14,17 @@
     <packaging>jar</packaging>
     <name>Cumulocity :: Clients Java :: Svenson</name>
 
+    <licenses>
+        <license>
+            <name>BSD-3-Clause</name>
+            <url>https://github.com/fforw/svenson/blob/svenson-1.5.8/LICENSE.TXT</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Cumulocity GmbH</name>
+    </organization>
+
     <dependencies>
         <dependency>
             <groupId>com.google.code.svenson</groupId>
