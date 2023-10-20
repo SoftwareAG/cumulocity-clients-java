@@ -1,0 +1,76 @@
+<HTML>
+<BODY>
+Cumulocity SDK - Java MQTT Service Client library provides the classes necessary to interact with the Cumulocity IoT MQTT Service.
+
+<p>The Cumulocity SDK Java MQTT Service Client library provides means to the following operations:
+<ul>
+    <li>Publishing messages to Cumulocity MQTT Service via WebSocket protocol</li>
+    <li>Subscribing to messages from Cumulocity MQTT Service via WebSocket protocol</li>
+</ul>
+<p>
+    Example usage for publishing messages to MQTT Service via WebSocket:
+
+<pre>
+        // Message to be sent
+        final String payload = "Hello World";
+
+        // Construct a new MqttMessage and set the payload
+        final MqttMessage message = new MqttMessage();
+        message.setPayload(payload.getBytes());
+
+        // Build MqttConfig with topic to which the message is to be sent
+        final MqttConfig config = MqttConfig.webSocket().topic(topic).build();
+
+        // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
+        final MqttClient client = MqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
+
+        // Build MqttPublisher and publish MqttMessage. Close the resource either with usage as below or by calling publisher.close()
+        try (final MqttPublisher publisher = client.buildPublisher(config)) {
+            publisher.publish(message);
+        } catch (Exception e) {
+            log.error("Could not sent message to {}", topic, e);
+        }
+
+    </pre>
+
+<p>
+    Example usage for subscribing to messages from MQTT Service via WebSocket:
+
+<pre>
+
+        // Build MqttConfig with topic and subscriber name
+        final MqttConfig config = MqttConfig.webSocket().topic(topic).subscriber(subscriberName).build();
+
+        // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
+        final MqttClient client = MqttClient.webSocket()
+                .url(webSocketBaseUrl)
+                .tokenApi(tokenApi)
+                .build();
+
+        // Build MqttSubscriber
+        final MqttSubscriber subscriber = client.buildSubscriber(config);
+
+        // Subscribe by passing implementation of MqttMessageListener to handle events from the websocket server.
+        subscriber.subscribe(new MqttMessageListener() {
+            &#64;Override
+            public void onMessage(MqttMessage message) {
+                log.info("Message Received: {}", new String(message.getPayload()));
+            }
+
+            &#64;Override
+            public void onError(Throwable t) {
+                log.error("WebSocket Error", t);
+            }
+        });
+
+        // Close the resource after usage
+        subscriber.close();
+
+    </pre>
+
+
+</BODY>
+</HTML>
