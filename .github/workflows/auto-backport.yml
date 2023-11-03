@@ -1,0 +1,38 @@
+name: auto-backport
+on:
+  pull_request_target:
+    types: ["labeled", "closed"]
+
+jobs:
+  backport:
+    name: Backport PR
+    runs-on: [self-hosted, Linux, X64, aks-spot]
+    if: |
+      github.event.pull_request.merged == true
+      && contains(github.event.pull_request.labels.*.name, 'auto-backport')
+      && (
+        (github.event.action == 'labeled' && github.event.label.name == 'auto-backport')
+        || (github.event.action == 'closed')
+      )
+    steps:
+      - name: Get GH App token
+        id: app-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ vars.C8Y_BACKPORT_APP_ID }}
+          private_key: ${{ secrets.C8Y_BACKPORT_APP_PRIVATE_KEY }}
+
+      - name: Backport Action
+        uses: sqren/backport-github-action@v8.9.7
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          auto_backport_label_prefix: auto-backport-to-
+          add_original_reviewers: true
+
+      - name: Info log
+        if: ${{ success() }}
+        run: cat ~/.backport/backport.info.log
+
+      - name: Debug log
+        if: ${{ failure() }}
+        run: cat ~/.backport/backport.debug.log
