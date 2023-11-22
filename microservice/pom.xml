@@ -19,7 +19,7 @@
         <cumulocity.core.version>${project.version}</cumulocity.core.version>
         <cumulocity.clients.version>${project.version}</cumulocity.clients.version>
 
-        <spring-boot-dependencies.version>2.7.14</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.7.17</spring-boot-dependencies.version>
         <jetty.version>9.4.51.v20230217</jetty.version>
         <guava.version>31.0.1-jre</guava.version>
         <googleauth.version>1.1.1</googleauth.version>
