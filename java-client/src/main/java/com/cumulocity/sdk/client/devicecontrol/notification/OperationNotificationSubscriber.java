@@ -33,6 +33,11 @@ public class OperationNotificationSubscriber implements Subscriber<GId, Operatio
     }
 
     @Override
+    public Subscription<GId> subscribe(GId agentId, SubscriptionListener<GId, OperationRepresentation> handler, int numberOfMaxRetries) throws SDKException {
+        return subscriber.subscribe(agentId, handler, numberOfMaxRetries);
+    }
+
+    @Override
     public Subscription<GId> subscribe(GId agentId,  SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<GId, OperationRepresentation> handler,
                                        boolean autoRetry) throws SDKException {

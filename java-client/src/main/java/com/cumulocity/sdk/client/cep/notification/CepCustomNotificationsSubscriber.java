@@ -22,6 +22,7 @@ package com.cumulocity.sdk.client.cep.notification;
 import com.cumulocity.sdk.client.PlatformParameters;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.notification.*;
+import org.cometd.bayeux.Message;
 
 public class CepCustomNotificationsSubscriber implements Subscriber<String, Object> {
     
@@ -46,6 +47,11 @@ public class CepCustomNotificationsSubscriber implements Subscriber<String, Obje
 
     public Subscription<String> subscribe(final String channelID, final SubscriptionListener<String, Object> handler) throws SDKException {
         return subscriber.subscribe(channelID, handler);
+    }
+
+    @Override
+    public Subscription<String> subscribe(String channelId, SubscriptionListener<String, Object> handler, int numberOfMaxRetries) throws SDKException {
+        return subscriber.subscribe(channelId, handler, numberOfMaxRetries);
     }
 
     @Override

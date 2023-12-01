@@ -26,6 +26,11 @@ public class RealtimeNotificationSubscriber<T> implements Subscriber<String, T> 
     }
 
     @Override
+    public Subscription<String> subscribe(final String deviceId, SubscriptionListener<String, T> handler, int numberOfMaxRetries) throws SDKException {
+        return subscriber.subscribe(deviceId, handler);
+    }
+
+    @Override
     public Subscription<String> subscribe(String deviceId,
                                           SubscribeOperationListener subscribeOperationListener,
                                           SubscriptionListener<String, T> handler,

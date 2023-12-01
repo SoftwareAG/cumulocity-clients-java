@@ -20,11 +20,14 @@
 package com.cumulocity.sdk.client.notification;
 
 import com.cumulocity.sdk.client.SDKException;
+import org.cometd.bayeux.Message;
 
 
 public interface Subscriber<T, R> {
 
     Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler) throws SDKException;
+
+    Subscription<T> subscribe(T object, final SubscriptionListener<T, R> handler, int numberOfMaxRetries) throws SDKException;
 
     Subscription<T> subscribe(T object, final SubscribeOperationListener subscribeOperationListener,
                               final SubscriptionListener<T, R> handler,

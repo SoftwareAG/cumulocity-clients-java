@@ -60,6 +60,11 @@ public class InventoryRealtimeNotificationsSubscriber implements Subscriber<Stri
     }
 
     @Override
+    public Subscription<String> subscribe(String channelID, SubscriptionListener<String, ManagedObjectNotification> handler, int numberOfMaxRetries) throws SDKException {
+        return subscriber.subscribe(channelPrefix + channelID, handler, numberOfMaxRetries);
+    }
+
+    @Override
     public Subscription<String> subscribe(String channelID, SubscribeOperationListener subscribeOperationListener,
                                        SubscriptionListener<String, ManagedObjectNotification> handler,
                                        boolean autoRetry) throws SDKException {

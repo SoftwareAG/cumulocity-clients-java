@@ -90,18 +90,23 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, true);
     }
 
+    public Subscription<T> subscribe(T object, final SubscriptionListener<T, Message> handler, int numberOfMaxRetries) throws SDKException {
+        return this.subscribe(object, new LoggingSubscribeOperationListener(), handler, true, 0, numberOfMaxRetries);
+    }
+
     public Subscription<T> subscribe(T object,
                                      final SubscribeOperationListener subscribeOperationListener,
                                      final SubscriptionListener<T, Message> handler,
                                      final boolean autoRetry) throws SDKException {
-        return subscribe(object, subscribeOperationListener, handler, autoRetry, 0);
+        return subscribe(object, subscribeOperationListener, handler, autoRetry, 0, 0);
     }
 
     synchronized Subscription<T> subscribe(T object,
                                            final SubscribeOperationListener subscribeOperationListener,
                                            final SubscriptionListener<T, Message> handler,
                                            final boolean autoRetry,
-                                           final int retriesCount) throws SDKException {
+                                           final int retriesCount,
+                                           final int numberOfMaxRetries) throws SDKException {
         checkArgument(object != null, "object can't be null");
         checkArgument(handler != null, "handler can't be null");
         checkArgument(subscribeOperationListener != null, "subscribeOperationListener can't be null");
@@ -129,7 +134,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
         if (firstSubscriber) {
             final ClientSessionChannel metaSubscribeChannel = session.getChannel(ClientSessionChannel.META_SUBSCRIBE);
             SubscriptionResultListener subscriptionResultListener = new SubscriptionResultListener(
-                    subscriptionRecord, listener, subscribeOperationListener, channel, autoRetry, retriesCount);
+                    subscriptionRecord, listener, subscribeOperationListener, channel, autoRetry, numberOfMaxRetries, retriesCount);
             metaSubscribeChannel.addListener(subscriptionResultListener);
         }
 
@@ -320,22 +325,24 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private final boolean autoRetry;
 
+        private final int numberOfMaxRetries;
+
         private final int retriesCount;
 
         private SubscriptionResultListener(SubscriptionRecord subscribed, MessageListenerAdapter listener,
                                            SubscribeOperationListener subscribeOperationListener,
-                                           ClientSessionChannel channel, boolean autoRetry, int retriesCount) {
+                                           ClientSessionChannel channel, boolean autoRetry, int numberOfMaxRetries, int retriesCount) {
             this.subscription = subscribed;
             this.listener = listener;
             this.subscribeOperationListener = subscribeOperationListener;
             this.channel = channel;
             this.autoRetry = autoRetry;
+            this.numberOfMaxRetries = numberOfMaxRetries;
             this.retriesCount = retriesCount;
         }
 
         @Override
         public void onMessage(ClientSessionChannel metaSubscribeChannel, Message message) {
-
             if (!Channel.META_SUBSCRIBE.equals(metaSubscribeChannel.getId())) {
                 // Should never be here
                 log.warn("Unexpected message to wrong channel, to SubscriptionSuccessListener: {}, {}", metaSubscribeChannel, message);
@@ -354,8 +361,14 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                     if (message.containsKey(Message.ERROR_FIELD)) {
                         String error = (String) message.get(Message.ERROR_FIELD);
                         if (error.contains("402::Unknown")) {
-                            log.warn("Resubscribing for channel {}", this.channel.getId());
-                            resubscribeFailedSubscription();
+                            if (numberOfMaxRetries > 0 && retriesCount >= numberOfMaxRetries) {
+                                log.warn("Number of max retries reached. Cancelling subscription for {}", channel.getId());
+                                channel.unsubscribe();
+                                subscriptions.remove(subscription);
+                            } else {
+                                log.warn("Resubscribing for channel {}", this.channel.getId());
+                                resubscribeFailedSubscription();
+                            }
                         }
                     }
                     handleError(message);
@@ -370,7 +383,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
 
         private void resubscribeFailedSubscription() {
             if (session.isConnected() && retriesCount <= RETRIES_ON_SUBSCRIPTION_FAILURES) {
-                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry, retriesCount + 1);
+                subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry, retriesCount + 1, numberOfMaxRetries);
             } else {
                 log.warn("Not Connected for channel {}", this.channel.getId());
                 subscriptions.markAsFailed(subscription);
@@ -393,7 +406,7 @@ class SubscriberImpl<T> implements Subscriber<T, Message>, ConnectionListener {
                         @Override
                         public void onMessage(ClientSessionChannel channel, Message message) {
                             subscribe(subscription.getId(), subscribeOperationListener, listener.handler, autoRetry,
-                                    retriesCount + 1);
+                                    retriesCount + 1, numberOfMaxRetries);
                         }
                     });
                 }

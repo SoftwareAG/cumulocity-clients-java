@@ -38,6 +38,11 @@ class TypedSubscriber<T, R> implements Subscriber<T, R> {
     }
 
     @Override
+    public Subscription<T> subscribe(T object, SubscriptionListener<T, R> handler, int numberOfMaxRetries) throws SDKException {
+        return subscriber.subscribe(object, new MappingSubscriptionListener<T, R>(handler, dataType), numberOfMaxRetries);
+    }
+
+    @Override
     public Subscription<T> subscribe(T agentId, SubscribeOperationListener subscribeOperationListener,
                                      SubscriptionListener<T, R> handler,
                                      boolean autoRetry) throws SDKException {
