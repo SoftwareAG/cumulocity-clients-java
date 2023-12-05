@@ -23,9 +23,10 @@ import lombok.Synchronized;
 import org.cometd.bayeux.Message.Mutable;
 import org.cometd.client.transport.TransportListener;
 import org.cometd.common.TransportException;
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.JSON;
+import org.svenson.JSONParser;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -269,11 +270,11 @@ class MessageExchange {
          * continue when single message parsing fail
          */
         private boolean retryHandleContent(String content) {
-            JSONArray jsonArray = new JSONArray(content);
-            List<Mutable> messages = new ArrayList<>(jsonArray.length());
+            List<?> jsonArray = JSONParser.defaultJSONParser().parse(List.class, content);
+            List<Mutable> messages = new ArrayList<>(jsonArray.size());
             for (Object jsonObject : jsonArray) {
                 try {
-                    messages.addAll(transport.parseMessages(jsonObject.toString()));
+                    messages.addAll(transport.parseMessages(JSON.defaultJSON().forValue(jsonObject)));
                 } catch (ParseException | IllegalArgumentException e) {
                     log.debug("Failed to retry parse json message: {}", e.getMessage());
                 }
