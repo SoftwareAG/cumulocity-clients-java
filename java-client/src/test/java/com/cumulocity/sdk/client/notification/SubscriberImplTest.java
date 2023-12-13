@@ -325,7 +325,7 @@ public class SubscriberImplTest {
         verify(metaSubscribeChannel).addListener(any(MessageListener.class));
 
         final AtomicBoolean notified = new AtomicBoolean(false);
-        SubscriberImpl<Object>.SubscriptionRecord subscriptionRecord = subscriber.new SubscriptionRecord(channelId, listener1, null);
+        SubscriberImpl<Object>.SubscriptionRecord subscriptionRecord = subscriber.new SubscriptionRecord(channelId, listener1, null, true);
         when(channel.getSubscribers()).thenReturn(singletonList(subscriber.new MessageListenerAdapter(listener1, channel, channelId, subscriptionRecord)));
         subscriber.subscribe(channelId, new SubscribeOperationListener() {
             @Override
