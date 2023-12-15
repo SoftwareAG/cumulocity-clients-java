@@ -32,10 +32,10 @@ public interface RestOperations extends AutoCloseable {
 
     void postStream(String path, InputStream inputStream, MediaType inputStreamMediaType);
 
-    <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
+    <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, MediaType mediaType,
                                                   Class<T> responseClass);
 
-    <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream,
+    <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream, MediaType mediaType,
                                                           Class<T> responseClass);
 
     <T extends ResourceRepresentationWithId> T put(String path, MediaType mediaType, T representation) throws SDKException;
