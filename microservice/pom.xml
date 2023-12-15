@@ -74,13 +74,6 @@
                 <type>pom</type>
                 <version>${logback.version}</version>
             </dependency>
-	    <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jul-to-slf4j</artifactId>
-                <scope>import</scope>
-                <type>pom</type>
-                <version>${slf4j.version}</version>
-            </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured-bom</artifactId>
