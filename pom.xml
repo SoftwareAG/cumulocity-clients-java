@@ -58,7 +58,7 @@
         <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
         <microemu.version>2.0.4</microemu.version>
         <mockito.version>4.5.1</mockito.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <slf4j.version>2.0.7</slf4j.version>
         <spring.version>${spring-framework.version}</spring.version><!-- deprecated, use spring-framework.version instead -->
         <spring-framework.version>5.3.24</spring-framework.version>
         <svenson.version>1.5.8</svenson.version>
