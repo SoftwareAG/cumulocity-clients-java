@@ -29,6 +29,7 @@
         <nexus.basePath>/nexus/content/repositories</nexus.basePath>
 	<logback.version>1.3.12</logback.version>
 	<slf4j.version>2.0.7</slf4j.version>
+	<log4j.version>2.17.2</log4j.version>
     </properties>
 
     <modules>
@@ -73,6 +74,14 @@
                 <scope>import</scope>
                 <type>pom</type>
                 <version>${logback.version}</version>
+            </dependency>
+
+	    <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <scope>import</scope>
+                <type>jar</type>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
