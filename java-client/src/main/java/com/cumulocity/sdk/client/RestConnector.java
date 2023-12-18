@@ -436,6 +436,7 @@ public class RestConnector implements RestOperations {
         config.property(ClientProperties.FOLLOW_REDIRECTS, true);
 
         registerClasses(config);
+        registerExternalFilters(platformParameters,config);
         config.register(new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials()));
         config.register(new BufferedResponseStreamInterceptor());
 
@@ -453,6 +454,16 @@ public class RestConnector implements RestOperations {
         client.setPlatformParameters(platformParameters);
 
         return client;
+    }
+
+    private static void registerExternalFilters(PlatformParameters platformParameters,ClientConfig config) {
+         if (platformParameters.customFilterSet != null) {
+            synchronized (platformParameters.customFilterSet) {
+                for (ClientRequestFilter filters : platformParameters.customFilterSet) {
+                    config.register(filters);
+                }
+            }
+        }
     }
 
     private static HttpClientConnectionManager createConnectionManager(PlatformParameters platformParameters) {

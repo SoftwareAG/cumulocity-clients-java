@@ -28,6 +28,7 @@ import com.cumulocity.sdk.client.interceptor.HttpClientInterceptor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.ws.rs.client.ClientRequestFilter;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +78,8 @@ public class PlatformParameters implements AutoCloseable {
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
+    Set<ClientRequestFilter> customFilterSet = Collections.newSetFromMap(new ConcurrentHashMap<>());;
+
     private final Object lock = new Object();
 
     /** This property determines whether the chunked encoding is used and if so,
@@ -101,6 +104,14 @@ public class PlatformParameters implements AutoCloseable {
         }
         this.host = host;
         this.cumulocityCredentials = credentials;
+    }
+
+    public boolean registerCustomFilter(ClientRequestFilter filter) {
+        return customFilterSet.add(filter);
+    }
+
+    public boolean unregisterCustomFilter(ClientRequestFilter filter) {
+        return customFilterSet.remove(filter);
     }
 
     public PlatformParameters(String host, CumulocityCredentials credentials, ClientConfiguration clientConfiguration, int pageSize) {
