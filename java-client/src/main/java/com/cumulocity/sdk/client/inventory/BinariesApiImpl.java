@@ -22,12 +22,22 @@ public class BinariesApiImpl implements BinariesApi {
 
     @Override
     public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, byte[] bytes) throws SDKException {
-        return restConnector.postFile(getBinariesUrl(), container, bytes, ManagedObjectRepresentation.class);
+        return uploadFile(container, bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    }
+
+    @Override
+    public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, byte[] bytes, MediaType mediaType) throws SDKException {
+        return restConnector.postFile(getBinariesUrl(), container, bytes, mediaType, ManagedObjectRepresentation.class);
     }
 
     @Override
     public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, InputStream inputStream) throws SDKException {
-        return restConnector.postFileAsStream(getBinariesUrl(), container, inputStream, ManagedObjectRepresentation.class);
+        return uploadFile(container, inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    }
+
+    @Override
+    public ManagedObjectRepresentation uploadFile(ManagedObjectRepresentation container, InputStream inputStream, MediaType mediaType) throws SDKException {
+        return restConnector.postFileAsStream(getBinariesUrl(), container, inputStream, mediaType, ManagedObjectRepresentation.class);
     }
 
     @Override
