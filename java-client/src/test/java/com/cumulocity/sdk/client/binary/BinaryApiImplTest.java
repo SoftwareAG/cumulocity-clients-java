@@ -53,10 +53,25 @@ public class BinaryApiImplTest {
         byte[] binaryData = {1,2,4,6,6};
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         ManagedObjectRepresentation created = new ManagedObjectRepresentation();
-        when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation,binaryData,ManagedObjectRepresentation.class)).thenReturn(created);
+        when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation, binaryData, MediaType.APPLICATION_OCTET_STREAM_TYPE, ManagedObjectRepresentation.class)).thenReturn(created);
 
         // When
         ManagedObjectRepresentation mor = binariesApi.uploadFile(managedObjectRepresentation,binaryData);
+
+        // Then
+        assertThat(mor, sameInstance(created));
+    }
+
+    @Test
+    public void shouldUploadFileAsByteArrayWithCustomMediaType() throws SDKException {
+        // Given
+        byte[] binaryData = {1,2,4,6,6};
+        ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
+        ManagedObjectRepresentation created = new ManagedObjectRepresentation();
+        when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation, binaryData, MediaType.TEXT_PLAIN_TYPE, ManagedObjectRepresentation.class)).thenReturn(created);
+
+        // When
+        ManagedObjectRepresentation mor = binariesApi.uploadFile(managedObjectRepresentation, binaryData, MediaType.TEXT_PLAIN_TYPE);
 
         // Then
         assertThat(mor, sameInstance(created));
@@ -68,10 +83,25 @@ public class BinaryApiImplTest {
         InputStream inputStream = IOUtils.toInputStream("hello");
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
         ManagedObjectRepresentation created = new ManagedObjectRepresentation();
-        when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation,inputStream, ManagedObjectRepresentation.class)).thenReturn(created);
+        when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation, inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE, ManagedObjectRepresentation.class)).thenReturn(created);
 
         // When
         ManagedObjectRepresentation mor = binariesApi.uploadFile(managedObjectRepresentation,inputStream);
+
+        // Then
+        assertThat(mor, sameInstance(created));
+    }
+
+    @Test
+    public void shouldUploadFileAsStreamWithCustomMediaType() throws SDKException {
+        // Given
+        InputStream inputStream = IOUtils.toInputStream("hello");
+        ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
+        ManagedObjectRepresentation created = new ManagedObjectRepresentation();
+        when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation, inputStream, MediaType.TEXT_PLAIN_TYPE, ManagedObjectRepresentation.class)).thenReturn(created);
+
+        // When
+        ManagedObjectRepresentation mor = binariesApi.uploadFile(managedObjectRepresentation, inputStream, MediaType.TEXT_PLAIN_TYPE);
 
         // Then
         assertThat(mor, sameInstance(created));
@@ -155,7 +185,7 @@ public class BinaryApiImplTest {
         // Given
         byte[] binaryData = {1,2,4,6,6};
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
-        when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation,binaryData,ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
+        when(restConnector.postFile(INVENTORY_BINARY_URL, managedObjectRepresentation, binaryData, MediaType.APPLICATION_OCTET_STREAM_TYPE, ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
 
         // When
         Throwable thrown = catchThrowable(() -> binariesApi.uploadFile(managedObjectRepresentation,binaryData));
@@ -169,7 +199,7 @@ public class BinaryApiImplTest {
         // Given
         InputStream inputStream = IOUtils.toInputStream("hello");
         ManagedObjectRepresentation managedObjectRepresentation = new ManagedObjectRepresentation();
-        when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation,inputStream,ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
+        when(restConnector.postFileAsStream(INVENTORY_BINARY_URL, managedObjectRepresentation, inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE, ManagedObjectRepresentation.class)).thenThrow(SDKException.class);
 
         // When
         Throwable thrown = catchThrowable(() -> binariesApi.uploadFile(managedObjectRepresentation,inputStream));
