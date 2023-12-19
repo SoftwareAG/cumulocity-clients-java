@@ -211,24 +211,24 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
-    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
+    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, MediaType mediaType,
                                                          Class<T> responseClass) {
         Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
         form.bodyPart(new FormDataBodyPart("filesize", String.valueOf(bytes.length)));
-        form.bodyPart(new FormDataBodyPart("file", bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        form.bodyPart(new FormDataBodyPart("file", bytes, mediaType));
         Entity<MultiPart> file = Entity.entity(form, addBoundary(form.getMediaType()));
         return parseResponseWithoutId(responseClass, builder.post(file), CREATED.getStatusCode());
     }
 
     @Override
     public <T extends ResourceRepresentation> T postFileAsStream(String path, T representation,
-                                                                 InputStream inputStream, Class<T> responseClass) {
+                                                                 InputStream inputStream, MediaType mediaType, Class<T> responseClass) {
         Builder builder = getResourceBuilder(path);
         FormDataMultiPart form = new FormDataMultiPart();
         form.bodyPart(new FormDataBodyPart("object", representation, MediaType.APPLICATION_JSON_TYPE));
-        form.bodyPart(new FormDataBodyPart("file", inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        form.bodyPart(new FormDataBodyPart("file", inputStream, mediaType));
         Entity<MultiPart> stream = Entity.entity(form, addBoundary(form.getMediaType()));
         return parseResponseWithoutId(responseClass, builder.post(stream), CREATED.getStatusCode());
     }
