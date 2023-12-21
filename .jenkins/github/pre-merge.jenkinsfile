@@ -205,7 +205,7 @@ def agents_verify() {
           dir('cumulocity-agents') {
             stage('agents build') {
               try {
-                sh ".jenkins/scripts/mvn.sh -DskipTests install -Dcumulocity.core.version=${VERSIONS.release}"
+                sh ".jenkins/scripts/mvn.sh -DskipTests install"
               } catch (e) {
                 stopPipeline('Build agents', e)
               } finally {
@@ -232,7 +232,7 @@ def agents_verify() {
         dir('cumulocity-agents') {
           stage('agents verify') {
             try {
-              sh ".jenkins/scripts/mvn.sh verify -Dcumulocity.core.version=${VERSIONS.release}"
+              sh ".jenkins/scripts/mvn.sh verify"
             } catch (e) {
               unstable('Agents verification failed')
             } finally {
