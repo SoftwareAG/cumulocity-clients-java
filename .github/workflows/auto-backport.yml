@@ -15,18 +15,9 @@ jobs:
         || (github.event.action == 'closed')
       )
     steps:
-      - name: Get GH App token
-        id: app-token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ vars.C8Y_BACKPORT_APP_ID }}
-          installation_id: ${{ secrets.C8Y_BACKPORT_INSTALL_ID }}
-          private_key: ${{ secrets.C8Y_BACKPORT_APP_PRIVATE_KEY }}
-
-      - name: Backport Action
         uses: sqren/backport-github-action@v8.9.7
         with:
-          github_token: ${{ steps.app-token.outputs.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           auto_backport_label_prefix: auto-backport-to-
           add_original_reviewers: true
 
