@@ -36,8 +36,7 @@
     <properties>
         <revision>1020.38.0</revision>
         <changelist>-SNAPSHOT</changelist>
-        <!-- hardcoded version of `3rd-license-maven-plugin` and `cumulocity-sdk-resource-bundles` -->
-        <cumulocity.core.version>1015.0.0</cumulocity.core.version>
+        <cumulocity-dependencies-tools.version>1020.40.0</cumulocity-dependencies-tools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <nexus.url>http://localhost:8080</nexus.url>
@@ -407,7 +406,7 @@
                 <plugin>
                     <groupId>com.nsn.cumulocity.dependencies</groupId>
                     <artifactId>3rd-license-maven-plugin</artifactId>
-                    <version>${cumulocity.core.version}</version>
+                    <version>${cumulocity-dependencies-tools.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -658,7 +657,7 @@
                                 <configuration>
                                     <resourceBundles>
                                         <resourceBundle>
-                                            com.nsn.cumulocity.dependencies:cumulocity-sdk-resource-bundles:${cumulocity.core.version}
+                                            com.nsn.cumulocity.dependencies:cumulocity-sdk-resource-bundles:${cumulocity-dependencies-tools.version}
                                         </resourceBundle>
                                     </resourceBundles>
                                 </configuration>
