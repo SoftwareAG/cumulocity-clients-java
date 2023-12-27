@@ -37,6 +37,22 @@ public class BinariesApiIT extends JavaSdkITBase {
     }
 
     @Test
+    public void shouldUploadFileWithCustomMimeType() {
+        // given
+        ManagedObjectRepresentation container = new ManagedObjectRepresentation();
+        container.setName("java-sdk_sample_binary");
+        container.setType("sag_Binary");
+        container.set("iot.cumulocity.com", "domain");
+
+        InputStream file = getFileInputStream("sampleTestFile.txt");
+        // when
+        ManagedObjectRepresentation uploaded = binariesApi.uploadFile(container, file, MediaType.TEXT_PLAIN_TYPE);
+        // then
+        assertThat(uploaded).isNotNull();
+        assertThat(uploaded.get("contentType")).isEqualTo(MediaType.TEXT_PLAIN);
+    }
+
+    @Test
     public void shouldUploadBinaryData() {
         // given
         byte[] binaryData = {0, 1, 2, 4, 5, 6};
