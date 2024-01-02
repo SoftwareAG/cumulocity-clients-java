@@ -5,5 +5,7 @@
   "sourcePRLabels": ["was-backported"],
   "targetPRLabels": ["backport"],
   "targetBranchChoices": ["release/r1018.0.0", "release/r1017.0.0", "release/r1016.0.0", "release/r1015.0.0", "release/r1014.0.0"],
-  "fork": false
+  "fork": false,
+  "autoMerge": true,
+  "autoMergeMethod": "rebase"
 }
