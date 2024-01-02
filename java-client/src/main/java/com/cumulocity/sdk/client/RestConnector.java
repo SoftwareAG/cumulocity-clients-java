@@ -211,6 +211,11 @@ public class RestConnector implements RestOperations {
     }
 
     @Override
+    public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, Class<T> responseClass) {
+        return postFile(path, representation, bytes, MediaType.APPLICATION_OCTET_STREAM_TYPE, responseClass);
+    }
+
+    @Override
     public <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, MediaType mediaType,
                                                          Class<T> responseClass) {
         Builder builder = getResourceBuilder(path);
@@ -220,6 +225,11 @@ public class RestConnector implements RestOperations {
         form.bodyPart(new FormDataBodyPart("file", bytes, mediaType));
         Entity<MultiPart> file = Entity.entity(form, addBoundary(form.getMediaType()));
         return parseResponseWithoutId(responseClass, builder.post(file), CREATED.getStatusCode());
+    }
+
+    @Override
+    public <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream, Class<T> responseClass) {
+        return postFileAsStream(path, representation, inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE, responseClass);
     }
 
     @Override
