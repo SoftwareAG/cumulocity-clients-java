@@ -30,8 +30,16 @@ public interface RestOperations extends AutoCloseable {
     <T extends ResourceRepresentation> T putStream(String path, MediaType mediaType, InputStream content,
                                                    Class<T> responseClass);
 
+    @Deprecated
+    <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes,
+                                                  Class<T> responseClass);
+
     <T extends ResourceRepresentation> T postFile(String path, T representation, byte[] bytes, MediaType mediaType,
                                                   Class<T> responseClass);
+
+    @Deprecated
+    <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream,
+                                                          Class<T> responseClass);
 
     <T extends ResourceRepresentation> T postFileAsStream(String path, T representation, InputStream inputStream, MediaType mediaType,
                                                           Class<T> responseClass);
