@@ -381,7 +381,7 @@ def cucumber_java(instance) {
               string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
               string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
               string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'BUILD_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
@@ -439,7 +439,7 @@ def java_token_tests(instance) {
               string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
               string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
               string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'BUILD_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
