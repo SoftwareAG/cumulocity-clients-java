@@ -202,12 +202,27 @@
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>
-            <url>${nexus.url}${nexus.basePath}/snapshots/</url>
+            <url>${nexus.url}${nexus.basePath}/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>release</id>
-            <url>${nexus.url}${nexus.basePath}/releases/</url>
+            <url>${nexus.url}${nexus.basePath}/releases</url>
         </repository>
     </distributionManagement>
 
+    <profiles>
+        <profile>
+            <id>pre-merge</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>pre-merge</id>
+                    <url>${nexus.url}${nexus.basePath}/pre-merge</url>
+                </snapshotRepository>
+                <repository>
+                    <id>pre-merge</id>
+                    <url>${nexus.url}${nexus.basePath}/pre-merge</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
