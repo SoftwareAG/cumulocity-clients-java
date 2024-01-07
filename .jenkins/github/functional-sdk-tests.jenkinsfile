@@ -1,0 +1,113 @@
+@Library('c8y-common-steps') _
+
+def resolvedScm
+
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          imagePullSecrets:
+          - name: "ci-registry-pull"
+          containers:
+          - name: "java"
+            image: "registry.stage.c8y.io/ci/jdk:11"
+            command: ["/bin/sh"]
+            args: ["-c", "cat"]
+            tty: true
+            env:
+            - name: JENKINS_URL
+              value: http://jenkins.ci.svc.cluster.local:8080/
+            - name: MAVEN_USER_HOME
+              value: /home/jenkins/agent
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+            workingDir: "/home/jenkins/agent"
+            resources:
+              requests:
+                cpu: 2
+                memory: 3Gi
+              limits:
+                cpu: 3
+                memory: 3Gi
+        '''
+    }
+  }
+
+  options {
+    timeout(time: 4, unit: 'HOURS')
+    skipDefaultCheckout()
+    copyArtifactPermission('/**')
+  }
+
+  parameters {
+    string(name: 'TEST_BRANCH', defaultValue: 'develop', description: 'tests branch/revision to checkout; for comma separated list checks out first existing one')
+    string(name: 'TEST_DOMAIN', defaultValue: 'smoke.dev.c8y.io', description: 'FQDN of the test environment')
+    string(name: 'MAVEN_ARGS', defaultValue: '', description: 'optional additional Maven build arguments')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        echo 'Checkout current version of jenkins scripts'
+        checkout(scm: [
+            $class: 'GitSCM',
+            branches: scm.branches,
+            userRemoteConfigs: scm.userRemoteConfigs,
+            extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '.jenkins/*']]]]
+        ])
+        sh 'mv ${WORKSPACE}/.jenkins ${WORKSPACE_TMP}/'
+
+        echo "Resolving branches ${params.TEST_BRANCH}..."
+        script {
+          branchList = params.TEST_BRANCH.replace('refs/tags/','').split(',').collect()
+          resolvedScm = resolveScm(
+              source: [
+                  $class: 'GitSCMSource',
+                  remote: scm.userRemoteConfigs[0].url,
+                  traits: [gitBranchDiscovery(), gitTagDiscovery()],
+                  credentialsId: scm.userRemoteConfigs[0].credentialsId
+              ],
+              targets: branchList
+          )
+        }
+
+        echo "Checkout version ${resolvedScm.branches} of tests"
+        checkout(scm: [
+            $class: 'GitSCM',
+            branches: resolvedScm.branches.collect{ [name: it.name] },
+            userRemoteConfigs: scm.userRemoteConfigs,
+            extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/*'], [path: '!.jenkins']]]]
+        ])
+        sh 'mv ${WORKSPACE_TMP}/.jenkins ${WORKSPACE}/'
+      }
+    }
+
+    stage('Run tests') {
+      environment {
+        MVN_SETTINGS = credentials('maven-settings')
+        MAVEN_PROFILES = 'integration'
+        ADMIN_CREDENTIALS = credentials('pre-merge-management')
+      }
+      steps {
+        container('java') {
+          catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+            sh """\
+                .jenkins/scripts/mvn.sh verify \\
+                    --file java-client \\
+                    --define 'cumulocity.host=http://${params.TEST_DOMAIN}:8111'
+               """.stripIndent()
+          }
+        }
+      }
+      post {
+        always {
+          archiveArtifacts(artifacts: '**/TEST-*.xml', allowEmptyArchive: true)
+          junit(testResults: '**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
+        }
+      }
+    }
+  }
+}
