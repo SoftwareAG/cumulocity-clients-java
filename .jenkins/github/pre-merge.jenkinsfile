@@ -75,11 +75,11 @@ podTemplate(containers: [
           'examples verify': {
             examples_verify()
           },
-          'java cucumber tests': {
-            java_cucumber_tests()
+          'core functional tests': {
+            core_functional_tests()
           },
-          'sdk cucumber tests': {
-            sdk_cucumber_tests()
+          'sdk functional tests': {
+            sdk_functional_tests()
           },
           failFast: true
       )
@@ -150,13 +150,14 @@ def build_and_verify() {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       withEnv([
           "VERSION=${VERSIONS.revision}",
-          "CHANGE_VERSION=.${VERSIONS.changeList}"
+          "CHANGE_VERSION=.${VERSIONS.changeList}",
+          'MAVEN_PROFILES=ci,pre-merge'
       ]) {
         lock(resource: LOCKS.build) {
           stage('sdk build') {
             dir('cumulocity-clients-java') {
               try {
-                sh '.jenkins/scripts/mvn.sh -DskipTests install'
+                sh '.jenkins/scripts/mvn.sh -DskipTests deploy'
               } catch (e) {
                 stopPipeline('Build sdk', e)
               }
@@ -186,7 +187,8 @@ def agents_verify() {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       withEnv([
           "VERSION=${VERSIONS.revision}",
-          "CHANGE_VERSION=.${VERSIONS.changeList}"
+          "CHANGE_VERSION=.${VERSIONS.changeList}",
+          "MAVEN_ARGS=--define c8y.clients.version=${VERSIONS.current}"
       ]) {
         lock(resource: LOCKS.agents) {
           stage('agents checkout') {
@@ -215,12 +217,12 @@ def agents_verify() {
 
             stage('agents publish') {
               try {
-                sshagent(credentials: ['jenkins-master']) {
-                  sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum'"
-                  sh "ssh hudson@staging-resources.cumulocity.com 'mkdir -p /var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images'"
+                withResourcesServer {
+                  sh "ssh ${SSH_OPTIONS} ${RESOURCES_SERVER} 'mkdir -p ${RESOURCES_PATH}/yum'"
+                  sh "find . -ipath '*/target/*' -iname '*.rpm' -print -exec scp {} ${RESOURCES_SERVER}:${RESOURCES_PATH}/yum/ \\;"
 
-                  sh "find . -iname '*.rpm' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/yum/ \\;"
-                  sh "find . -iname '*.zip' -exec scp {} hudson@staging-resources.cumulocity.com:/var/www/staging-resources/pre-merge/${VERSIONS.changeList}/kubernetes-images/ \\;"
+                  sh "ssh ${SSH_OPTIONS} ${RESOURCES_SERVER} 'mkdir -p ${RESOURCES_PATH}/kubernetes-images'"
+                  sh "find . -ipath '*/target/*' -iname '*.zip' -print -exec scp {} ${RESOURCES_SERVER}:${RESOURCES_PATH}/kubernetes-images/ \\;"
                 }
               } catch (e) {
                 stopPipeline('Publish agents', e)
@@ -250,7 +252,8 @@ def examples_verify() {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       withEnv([
           "VERSION=${VERSIONS.revision}",
-          "CHANGE_VERSION=.${VERSIONS.changeList}"
+          "CHANGE_VERSION=.${VERSIONS.changeList}",
+          "MAVEN_ARGS=--define c8y.version=${VERSIONS.current}"
       ]) {
         stage('examples checkout') {
           try {
@@ -281,17 +284,17 @@ def examples_verify() {
   }
 }
 
-def java_cucumber_tests() {
+def core_functional_tests() {
   spinup_instance(INSTANCES.java)
   update_instance(INSTANCES.java)
-  cucumber_java(INSTANCES.java)
+  core_functional_java(INSTANCES.java)
 }
 
-def sdk_cucumber_tests() {
+def sdk_functional_tests() {
   spinup_instance(INSTANCES.sdk)
   update_instance(INSTANCES.sdk)
-  sdk_tests(INSTANCES.sdk)
-  java_token_tests(INSTANCES.sdk)
+  sdk_functional(INSTANCES.sdk)
+  core_functional_token(INSTANCES.sdk)
 }
 
 def spinup_instance(instance) {
@@ -348,7 +351,7 @@ def update_instance(instance) {
               -e 'env_name=${instance.name}-dev-c8y-io' \
               -e 'agents_version=${VERSIONS.currentRpm}' \
               -e 'microservices_version=${VERSIONS.current}' \
-              -e 'pr_number=${VERSIONS.changeList}' \
+              -e 'pr_number=${VERSIONS.current}' \
               pre-merge-deploy.yaml
           """
         } catch (e) {
@@ -359,96 +362,62 @@ def update_instance(instance) {
   }
 }
 
-def cucumber_java(instance) {
-  stage('cucumber java tests') {
+def core_functional_java(instance) {
+  stage('core functional java tests') {
     container('default') {
-      withCredentials([
-          usernameColonPassword(credentialsId: 'staging-resources.cumulocity.com-k8screds', variable: 'RELEASE_RESOURCES_CREDENTIALS'),
-          usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
-          string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')
-      ]) {
-        withEnv([
-            "RELEASE_RESOURCES_URL=https://${RELEASE_RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com"
-        ]) {
-          job = build job: 'Functional/Multibranch-cumulocity_cucumber_java', parameters: [
-              string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-              string(name: 'TEST_TAG', value: params.java_test_tags),
-              string(name: 'KUB_NAMESPACE', value: "${instance.name}-dev-c8y-io.svc.cluster.local"),
-              string(name: 'DEPLOYMENT_ENVIRONMENT', value: instance.domain),
-              string(name: 'MANAGE_USER', value: MANAGEMENT_USER),
-              string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-              string(name: 'TENANT_PASS', value: TENANT_PASSWD),
-              string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
-          ], wait: true, propagate: false
+      job = build job: 'Functional/cucumber-java', parameters: [
+          string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
+          string(name: 'TEST_TAGS', value: params.java_test_tags),
+          string(name: 'TEST_DOMAIN', value: instance.domain),
+          string(name: 'AUTH_SCHEME', value: 'basic'),
+          string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com/pre-merge/${VERSIONS.current}"),
+          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current}"),
+      ], wait: true, propagate: false
 
-          if (job.result != 'SUCCESS') {
-            unstable('Cucumber Java tests failed')
-          }
-          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch-cumulocity_cucumber_java', selector: specific("${job.number}"), target: 'java', optional: true)
-          junit(testResults: 'java/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
-        }
+      if (job.result != 'SUCCESS') {
+        unstable('Cucumber Java tests failed')
       }
+      copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/cucumber-java', selector: specific("${job.number}"), target: 'java', optional: true)
+      junit(testResults: 'java/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
     }
   }
 }
 
-def sdk_tests(instance) {
-  stage('sdk java tests') {
+def sdk_functional(instance) {
+  stage('sdk functional tests') {
     container('default') {
-      withCredentials([
-          usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')
-      ]) {
-        job = build job: 'Functional/Multibranch_cumulocity_java_sdk', parameters: [
-            string(name: 'DEPLOY_ENVIRONMENT', value: instance.domain),
-            string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-            string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-            string(name: 'BUILD_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
-        ], wait: true, propagate: false
+      job = build job: 'Functional/java-sdk', parameters: [
+          string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
+          string(name: 'TEST_DOMAIN', value: instance.domain),
+          string(name: 'MAVEN_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
+      ], wait: true, propagate: false
 
-        if (job.result != 'SUCCESS') {
-          unstable('SDK functional tests failed')
-        }
-        copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_java_sdk', selector: specific("${job.number}"), target: 'sdk', optional: true)
-        junit(testResults: 'sdk/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
+      if (job.result != 'SUCCESS') {
+        unstable('SDK functional tests failed')
       }
+      copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/java-sdk', selector: specific("${job.number}"), target: 'sdk', optional: true)
+      junit(testResults: 'sdk/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
     }
   }
 }
 
-def java_token_tests(instance) {
-  stage('java token tests') {
+def core_functional_token(instance) {
+  stage('core functional token tests') {
     container('default') {
-      withCredentials([
-          usernameColonPassword(credentialsId: 'staging-resources.cumulocity.com-k8screds', variable: 'RELEASE_RESOURCES_CREDENTIALS'),
-          usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD'),
-          string(credentialsId: 'pre-merge-tenant', variable: 'TENANT_PASSWD')
-      ]) {
-        withEnv([
-            "RELEASE_RESOURCES_URL=https://${RELEASE_RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com"
-        ]) {
-          job = build job: 'Functional/Multibranch_cumulocity_cucumber_token_java', parameters: [
-              string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-              string(name: 'TEST_ENV', value: instance.domain),
-              string(name: 'KUB_NAMESPACE', value: "${instance.name}-dev-c8y-io.svc.cluster.local"),
-              string(name: 'TEST_TAG', value: '@passwordInternal'),
-              string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-              string(name: 'TENANT_PASS', value: TENANT_PASSWD),
-              string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
-          ], wait: true, propagate: false
+      job = build job: 'Functional/cucumber-java', parameters: [
+          string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
+          string(name: 'TEST_TAGS', value: '@passwordInternal'),
+          string(name: 'TEST_DOMAIN', value: instance.domain),
+          string(name: 'AUTH_SCHEME', value: 'oauth-internal-all'),
+          string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com/pre-merge/${VERSIONS.current}"),
+          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current}"),
+      ], wait: true, propagate: false
 
-          if (job.result != 'SUCCESS') {
-            unstable('SDK token tests failed')
-          }
-          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_cucumber_token_java', selector: specific("${job.number}"), target: 'token', optional: true)
-          junit(testResults: 'token/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
-        }
+      if (job.result != 'SUCCESS') {
+        unstable('SDK token tests failed')
       }
+      copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/cucumber-java', selector: specific("${job.number}"), target: 'token', optional: true)
+      junit(testResults: 'token/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
     }
   }
 }
@@ -458,8 +427,8 @@ def teardown_instance(instance) {
 }
 
 def clean_up_resources() {
-  sshagent(credentials: ['jenkins-master']) {
-    sh "ssh -o 'StrictHostKeyChecking=no' hudson@staging-resources.cumulocity.com 'rm -rf /var/www/staging-resources/pre-merge/${VERSIONS.changeList}'"
+  withResourcesServer {
+    sh "ssh ${SSH_OPTIONS} ${RESOURCES_SERVER} 'rm -rf ${RESOURCES_PATH}'"
   }
 }
 
@@ -508,5 +477,18 @@ def releaseVersionOf(String revision) {
     return "${major}.${minor - 1}.${maintenance}".toString()
   } else {
     return revision
+  }
+}
+
+def withResourcesServer(Closure body) {
+  withEnv([
+      "SSH_OPTIONS=-o 'StrictHostKeyChecking=no'",
+      "SCP_OPTIONS=-BCr -o 'StrictHostKeyChecking=no'",
+      'RESOURCES_SERVER=hudson@staging-resources.cumulocity.com',
+      "RESOURCES_PATH=/var/www/staging-resources/pre-merge/${VERSIONS.current}"
+  ]) {
+    sshagent(credentials: ['jenkins-master']) {
+      body()
+    }
   }
 }
