@@ -31,6 +31,8 @@ public class MqttMetadata {
 
     private String responseTopic;
 
+    private String topic;
+
     /**
      * @return the client id of the MQTT client.
      */
@@ -100,4 +102,10 @@ public class MqttMetadata {
         return this.responseTopic;
     }
 
+    /**
+     * @return the MQTT topic
+     */
+    public String getTopic() {
+        return topic;
+    }
 }
