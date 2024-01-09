@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.cumulocity.model.ID;
+import com.cumulocity.sdk.client.inventory.InventoryApi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.identity.ExternalIDCollectionRepresentation;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -42,21 +42,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class IdentityIT extends JavaSdkITBase {
 
     private IdentityApi identity;
+    private InventoryApi inventory;
 
     private static final int NOT_FOUND = 404;
 
     private List<ExternalIDRepresentation> input;
     private List<ExternalIDRepresentation> result1;
     private ExternalIDCollectionRepresentation collection1;
+    private ManagedObjectRepresentation mo;
 
     private boolean notFound;
 
     @BeforeEach
     public void setup() throws Exception {
         identity = platform.getIdentityApi();
+        inventory = platform.getInventoryApi();
         input = new ArrayList<>();
         result1 = new ArrayList<>();
         notFound = false;
+        mo = iHaveManagedObject();
     }
 
     @AfterEach
@@ -75,7 +79,7 @@ public class IdentityIT extends JavaSdkITBase {
     @Test
     public void createExternalIdAndGetAllForTheGlobalId() {
         // given
-        iHaveManagedObject(100, "DN-1", "com.nsn.DN");
+        iHaveExternalIDBinding(mo, "DN-1", "com.nsn.DN");
         // when
         iCallCreate();
         // then
@@ -85,8 +89,9 @@ public class IdentityIT extends JavaSdkITBase {
     @Test
     public void createMultipleExternalIdsAndGetAllForTheGlobalId() {
         // given
-        iHaveManagedObject(200, "com.type1", "1002");
-        iHaveManagedObject(200, "com.dn", "DN-1");
+        iHaveExternalIDBinding(mo, "com.type1", "1002");
+        iHaveExternalIDBinding(mo, "com.dn", "DN-1");
+
         // when
         iCreateAll();
         // then
@@ -97,7 +102,7 @@ public class IdentityIT extends JavaSdkITBase {
     @Test
     public void createOneExternalIdAndGetTheExternalId() {
         // given
-        iHaveManagedObject(100, "DN-1", "com.nsn.DN");
+        iHaveExternalIDBinding(mo, "DN-1", "com.nsn.DN");
         // when
         iCallCreate();
         iGetTheExternalId();
@@ -108,7 +113,7 @@ public class IdentityIT extends JavaSdkITBase {
     @Test
     public void createOneExternalIdAndDeleteIdAndGetTheExternalId() {
         // given
-        iHaveManagedObject(100, "DN-1", "com.nsn.DN");
+        iHaveExternalIDBinding(mo, "DN-1", "com.nsn.DN");
         // when
         iCallCreate();
         iDeleteTheExternalId();
@@ -120,16 +125,16 @@ public class IdentityIT extends JavaSdkITBase {
     // ------------------------------------------------------------------------
     // Given
     // ------------------------------------------------------------------------
-    private void iHaveManagedObject(long globalId, String extId, String type) {
+    private void iHaveExternalIDBinding(ManagedObjectRepresentation mo, String extId, String type) {
         ExternalIDRepresentation rep = new ExternalIDRepresentation();
         rep.setExternalId(extId);
         rep.setType(type);
-        ManagedObjectRepresentation mo = new ManagedObjectRepresentation();
-        GId gId = new GId();
-        gId.setValue(Long.toString(globalId));
-        mo.setId(gId);
         rep.setManagedObject(mo);
         input.add(rep);
+    }
+
+    private ManagedObjectRepresentation iHaveManagedObject(){
+        return inventory.create(new ManagedObjectRepresentation());
     }
 
     // ------------------------------------------------------------------------
