@@ -103,6 +103,8 @@ public class MqttMetadata {
     }
 
     /**
+     * Retrieves the MQTT topic. If necessary, this property must be explicitly configured when employing an MQTT WebSocket Producer.
+     *
      * @return the MQTT topic
      */
     public String getTopic() {
