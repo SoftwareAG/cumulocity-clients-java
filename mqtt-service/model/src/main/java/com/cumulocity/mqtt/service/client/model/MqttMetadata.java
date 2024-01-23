@@ -1,9 +1,13 @@
 package com.cumulocity.mqtt.service.client.model;
 
+
 import lombok.*;
 
 import java.util.Map;
 
+/**
+ * Represents the Metadata of a {@link MqttMessage}
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -11,14 +15,22 @@ import java.util.Map;
 public class MqttMetadata {
 
     private String clientId;
+
     private int messageId;
+
     private boolean dupFlag;
+
     private Map<String, String> userProperties;
+
     private PayloadFormatIndicator payloadFormatIndicator;
+
     private String contentType;
+
     private byte[] correlationData;
+
     private String responseTopic;
 
+    private String topic;
 
     /**
      * @return the client id of the MQTT client.
@@ -87,5 +99,12 @@ public class MqttMetadata {
      */
     public String getResponseTopic() {
         return this.responseTopic;
+    }
+
+    /**
+     * @return the MQTT topic
+     */
+    public String getTopic() {
+        return topic;
     }
 }
