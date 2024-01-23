@@ -14,9 +14,10 @@ class MqttMessageConverterTest {
     @Test
     void shouldEncodeAndDecodeCorrectly() {
         // Given
-        final MqttMetadata metadata = new MqttMetadata();
-        metadata.setClientId("test");
-        metadata.setMessageId(100);
+        final MqttMetadata metadata =MqttMetadata.builder().
+                clientId("test").
+                messageId(100).
+                build();
         final MqttMessage message = new MqttMessage("message".getBytes(), metadata);
 
         // When
