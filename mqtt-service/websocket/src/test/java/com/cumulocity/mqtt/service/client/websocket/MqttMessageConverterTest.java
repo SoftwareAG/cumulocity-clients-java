@@ -14,7 +14,7 @@ class MqttMessageConverterTest {
     @Test
     void shouldEncodeAndDecodeCorrectly() {
         // Given
-        final MqttMetadata metadata =MqttMetadata.builder().
+        final MqttMetadata metadata = MqttMetadata.builder().
                 clientId("test").
                 messageId(100).
                 build();
