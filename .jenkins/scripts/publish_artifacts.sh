@@ -14,48 +14,34 @@ fi
 
 yum_srv=hudson@staging-resources.cumulocity.com
 
+STAGING_RESOURCES_DIR="/var/www/staging-resources/sag/java-sdk/${VERSION}/"
+STAGING_RESOURCES_TARGET="${yum_srv}:${STAGING_RESOURCES_DIR}"
+
 ### Publishing to maven ###
-echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${VERSION}.tar.gz to resources tmp "
-scp cumulocity-sdk/maven-repository/target/maven-repository-*.tar.gz ${yum_srv}:/tmp/maven-repository-${VERSION}.tar.gz
-ssh ${yum_srv} "mkdir -p /tmp/maven-repository-${VERSION} ; tar -xvzf /tmp/maven-repository-${VERSION}.tar.gz -C /tmp/maven-repository-${VERSION}"
-echo "Publish extracted files to maven repository"
-ssh ${yum_srv} "cp -Rn /tmp/maven-repository-${VERSION}/com/* /var/www/resources/maven/repository/com/ "
-ssh ${yum_srv} "cp -Rn /tmp/maven-repository-${VERSION}/c8y/* /var/www/resources/maven/repository/c8y/ "
-echo "Cleanup tmp files"
-ssh ${yum_srv} "rm -R /tmp/maven-repository-${VERSION}*"
+echo "Publish cumulocity-sdk/maven-repository/target/maven-repository-${VERSION}.tar.gz to staging resources "
+scp cumulocity-sdk/maven-repository/target/maven-repository-${VERSION}.tar.gz ${STAGING_RESOURCES_TARGET}
+ssh ${yum_srv} "echo ${VERSION} > ${STAGING_RESOURCES_DIR}:/version.txt"
 
-echo "Publishing java-client/target/java-client-${VERSION}-javadoc.jar to resources tmp "
-scp java-client/target/java-client-${VERSION}-javadoc.jar ${yum_srv}:/tmp/java-client-${VERSION}-javadoc.jar
-ssh ${yum_srv} "mkdir -p /resources/documentation/javasdk/${VERSION} ; unzip -o /tmp/java-client-${VERSION}-javadoc.jar -d /resources/documentation/javasdk/${VERSION}"
+echo "Publishing java-client/target/java-client-${VERSION}-javadoc.jar to staging resources "
+scp java-client/target/java-client-${VERSION}-javadoc.jar ${STAGING_RESOURCES_TARGET}
 
 if [ "release" == "${RELEASE_TYPE}" ]; then
-  echo "Update current symbolic link of javasdk javadocs"
-  ssh ${yum_srv} "rm -f /resources/documentation/javasdk/current ; ln -s /resources/documentation/javasdk/${VERSION} /resources/documentation/javasdk/current"
+  #echo "Update current symbolic link of javasdk javadocs"
+  #ssh ${yum_srv} "rm -f /var/www/staging-resources/documentation/javasdk/current ; ln -s /var/www/staging-resources/documentation/javasdk/${VERSION} /resources/documentation/javasdk/current"
 fi
 
-echo "Delete /tmp/java-client-${VERSION}-javadoc.jar file"
-ssh ${yum_srv} "rm -f /tmp/java-client-${VERSION}-javadoc.jar"
-
-echo "Publishing microservice/target/microservice-dependencies-${VERSION}-javadoc.jar to resources tmp "
-scp microservice/target/microservice-dependencies-${VERSION}-javadoc.jar ${yum_srv}:/tmp/microservice-dependencies-${VERSION}-javadoc.jar
-ssh ${yum_srv} "mkdir -p /resources/documentation/microservicesdk/${VERSION} ; unzip -o /tmp/microservice-dependencies-${VERSION}-javadoc.jar -d /resources/documentation/microservicesdk/${VERSION}"
+echo "Publishing microservice/target/microservice-dependencies-${VERSION}-javadoc.jar to staging resources "
+scp microservice/target/microservice-dependencies-${VERSION}-javadoc.jar ${STAGING_RESOURCES_TARGET}
 
 if [ "release" == "${RELEASE_TYPE}" ]; then
-  echo "Update current symbolic link of microservicesdk javadocs"
-  ssh ${yum_srv} "rm -f /resources/documentation/microservicesdk/current ; ln -s /resources/documentation/microservicesdk/${VERSION} /resources/documentation/microservicesdk/current"
+  #echo "Update current symbolic link of microservicesdk javadocs"
+  #ssh ${yum_srv} "rm -f /resources/documentation/microservicesdk/current ; ln -s /resources/documentation/microservicesdk/${VERSION} /resources/documentation/microservicesdk/current"
 fi
-
-echo "Delete /tmp/microservice-dependencies-${VERSION}-javadoc.jar file"
-ssh ${yum_srv} "rm -f /tmp/microservice-dependencies-${VERSION}-javadoc.jar"
 
 echo "Publishing lpwan-backend/target/lpwan-backend-${VERSION}-javadoc.jar to resources tmp "
-scp lpwan-backend/target/lpwan-backend-${VERSION}-javadoc.jar ${yum_srv}:/tmp/lpwan-backend-${VERSION}-javadoc.jar
-ssh ${yum_srv} "mkdir -p /resources/documentation/lpwan-backend/${VERSION} ; unzip -o /tmp/lpwan-backend-${VERSION}-javadoc.jar -d /resources/documentation/lpwan-backend/${VERSION}"
+scp lpwan-backend/target/lpwan-backend-${VERSION}-javadoc.jar ${STAGING_RESOURCES_TARGET}
 
 if [ "release" == "${RELEASE_TYPE}" ]; then
-  echo "Update current symbolic link of lpwan-backend javadocs"
-  ssh ${yum_srv} "rm -f /resources/documentation/lpwan-backend/current ; ln -s /resources/documentation/lpwan-backend/${VERSION} /resources/documentation/lpwan-backend/current"
+  #echo "Update current symbolic link of lpwan-backend javadocs"
+  #ssh ${yum_srv} "rm -f /resources/documentation/lpwan-backend/current ; ln -s /resources/documentation/lpwan-backend/${VERSION} /resources/documentation/lpwan-backend/current"
 fi
-
-echo "Delete /tmp/lpwan-backend-${VERSION}-javadoc.jar file"
-ssh ${yum_srv} "rm -f /tmp/lpwan-backend-${VERSION}-javadoc.jar"
