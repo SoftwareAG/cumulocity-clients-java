@@ -183,6 +183,9 @@ def build_agents() {
         dir('cumulocity-agents') {
           stage('agents build & verify') {
             try {
+              // During the POD creation /etc/mtab symlink is removed. This might be related to this issue https://github.com/kubernetes/kubernetes/issues/96961
+              // but it never been resolved. We need /etc/mtab symlink because it resolves a file creation issue in our OPC UA unit tests. See: MTM-56794 and DM-2870
+              sh 'if [ ! -e \'/etc/mtab\' ]; then sudo ln -s ../proc/mounts /etc/mtab; fi'
               sh '.jenkins/scripts/mvn.sh package'
             } catch (e) {
               stopPipeline('Build & test agents', e)
