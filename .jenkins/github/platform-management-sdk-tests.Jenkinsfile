@@ -74,13 +74,12 @@ pipeline {
                         .any {env.ghprbSourceBranch.startsWith(it)}) {
                         // for versions 10.18 and before sdk is a part of cumulocity component
                         systemVersion = GetVersionFromSourceBranch('cumulocity')
-                    } else if (env.ghprbSourceBranch.contains('java-sdk')) {
-                        // when run for java-sdk component, take the version from its descriptor
-                        systemVersion = GetVersionFromSourceBranch('java-sdk')
+                    } else if (env.ghprbSourceBranch.contains('cumulocity')) {
+                        // when run for cumulocity component, take the version from staging approved branch
+                        systemVersion = GetVersionFromSourceBranch('java-sdk', env.ghprbSourceBranch.split('/')[0] + '/Staging-Approved')
                     } else {
-                        // otherwise runs for cumulocity component and is not yet independently
-                        // released, so keep taking the version of cumulocity component
-                        systemVersion = GetVersionFromSourceBranch('cumulocity')
+                        // otherwise runs for java-sdk component or staging, take the version from its descriptor
+                        systemVersion = GetVersionFromSourceBranch('java-sdk')
                     }
                 }
                 echo "Running tests for platform version ${systemVersion} on ${testInstanceDomain}"
