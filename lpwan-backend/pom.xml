@@ -8,7 +8,7 @@
     <version>${revision}${changelist}</version>
 
     <properties>
-        <revision>1017.0.433</revision>
+        <revision>1017.0.439</revision>
         <changelist>-SNAPSHOT</changelist>
         <java.version>1.8</java.version>
         <commons-lang3.version>3.11</commons-lang3.version>
