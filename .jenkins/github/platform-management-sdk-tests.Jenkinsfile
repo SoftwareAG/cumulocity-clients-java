@@ -70,17 +70,13 @@ pipeline {
             steps {
                 echo "Running from branch ${env.ghprbSourceBranch} on ${testInstanceDomain}"
                 script {
-                    if (['10.18.0.x', '10.17.0.x', '10.16.0.x', '10.15.0.x']
+                    if (['2024', '10.18.0.x', '10.17.0.x', '10.16.0.x', '10.15.0.x']
                         .any {env.ghprbSourceBranch.startsWith(it)}) {
-                        // for versions 10.18 and before sdk is a part of cumulocity component
+                        // for versions 2024 and before sdk is a part of cumulocity component
                         systemVersion = GetVersionFromSourceBranch('cumulocity')
-                    } else if (env.ghprbSourceBranch.contains('java-sdk')) {
-                        // when run for java-sdk component, take the version from its descriptor
-                        systemVersion = GetVersionFromSourceBranch('java-sdk')
                     } else {
-                        // otherwise runs for cumulocity component and is not yet independently
-                        // released, so keep taking the version of cumulocity component
-                        systemVersion = GetVersionFromSourceBranch('cumulocity')
+                        // later it's separate component so take the version from its descriptor
+                        systemVersion = GetVersionFromSourceBranch('java-sdk')
                     }
                 }
                 echo "Running tests for platform version ${systemVersion} on ${testInstanceDomain}"
