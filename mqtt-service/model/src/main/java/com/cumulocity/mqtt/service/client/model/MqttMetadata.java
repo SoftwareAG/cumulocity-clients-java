@@ -1,18 +1,17 @@
 package com.cumulocity.mqtt.service.client.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Map;
 
 /**
  * Represents the Metadata of a {@link MqttMessage}
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MqttMetadata {
 
     private String clientId;
