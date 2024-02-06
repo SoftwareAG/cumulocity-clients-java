@@ -95,6 +95,11 @@ public class SubscriberBuilder<T, R> {
         return this;
     }
 
+    public SubscriberBuilder<T, R> withUnauthorizedConnectionRetries(int retries) {
+        this.unauthorizedConnectionWatcher = new UnauthorizedConnectionWatcher(retries);
+        return this;
+    }
+
     public Subscriber<T, R> build() {
         verifyRequiredFields();
         return new TypedSubscriber<T, R>(new SubscriberImpl<T>(subscriptionNameResolver, createSessionProvider(), unauthorizedConnectionWatcher), dataType);
