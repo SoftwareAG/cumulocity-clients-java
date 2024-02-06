@@ -11,16 +11,26 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 class UnauthorizedConnectionWatcher {
 
-    private final Logger log = LoggerFactory.getLogger(UnauthorizedConnectionWatcher.class);
+    private static final Logger log = LoggerFactory.getLogger(UnauthorizedConnectionWatcher.class);
 
-    private static final int RETRY_COUNT_AFTER_UNAUTHORIZED = 5;
+    public static final int DEFAULT_RETRY_COUNT = 5;
 
     private final List<ConnectionListener> listeners = new ArrayList<>();
 
-    private int retryCounter = RETRY_COUNT_AFTER_UNAUTHORIZED;
+    private final int maxRetryCount;
+
+    private int retryCounter;
+
+    UnauthorizedConnectionWatcher() {
+        this(DEFAULT_RETRY_COUNT);
+    }
+
+    UnauthorizedConnectionWatcher(int maxRetryCount) {
+        this.maxRetryCount = maxRetryCount;
+        this.retryCounter = maxRetryCount;
+    }
 
     public void unauthorizedAccess() {
-        retryCounter--;
         if (shouldRetry()) {
             log.info("bayeux client received 401, still trying '{}' times before stopping reconnection", retryCounter);
         } else {
@@ -29,6 +39,7 @@ class UnauthorizedConnectionWatcher {
                 listener.onDisconnection(SC_UNAUTHORIZED);
             }
         }
+        retryCounter--;
     }
 
     public boolean shouldRetry() {
@@ -37,7 +48,7 @@ class UnauthorizedConnectionWatcher {
 
     public void resetCounter() {
         log.debug("Resetting unauthorized retry counter");
-        retryCounter = RETRY_COUNT_AFTER_UNAUTHORIZED;
+        retryCounter = maxRetryCount;
     }
 
     public void addListener(final ConnectionListener listener) {
