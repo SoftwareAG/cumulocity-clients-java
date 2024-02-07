@@ -25,6 +25,7 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -84,9 +85,8 @@ public class PayloadDecoderService<T extends UplinkMessage> {
      * @param source        the source device managed object
      * @param deviceType    the device type
      */
-    public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType, String... requestIds) {
-        List<String> requestIdList = asList(requestIds);
-        String requestId = requestIdList.isEmpty() ? "" : requestIdList.get(0);
+    public void decodeAndMap(T uplinkMessage, ManagedObjectRepresentation source, DeviceType deviceType) {
+        String requestId = MDC.get("requestId");
         final String tenantId = contextService.getContext().getTenant();
         Optional<MicroserviceCredentials> serviceUser = subscriptionsService.getCredentials(tenantId);
         contextService.runWithinContext(serviceUser.get(), () -> {
@@ -101,8 +101,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     MessageTypeMapping messageTypeMappings = deviceType.getMessageTypes().getMappingIndexesByMessageType(Integer.toString(messageTypeId));
 
                     if (messageTypeMappings == null) {
-                        log.debug("Request Id {}, Message type id {} not found for device type {}", requestId, messageTypeId, deviceType);
-                        log.warn("Message type id {} not found for device type {}", messageTypeId, deviceType);
+                        log.warn("Request Id {}, Message type id {} not found for device type {}", requestId, messageTypeId, deviceType);
                         return;
                     }
 
@@ -115,16 +114,14 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                             DecodedObject decodedObject = generateDecodedData(uplinkMessage, uplinkConfiguration);
                             payloadMappingService.addMappingsToCollection(mappingCollections, decodedObject, uplinkConfiguration);
                         } catch (PayloadDecodingFailedException e) {
-                            log.debug("Request Id {}, Error decoding payload for device type {}: {} Skipping decoding payload part", requestId, deviceType, e.getMessage());
-                            log.error("Error decoding payload for device type {}: {} Skipping decoding payload part", deviceType, e.getMessage());
+                            log.error("Request Id {}, Error decoding payload for device type {}: {} Skipping decoding payload part", requestId, deviceType, e.getMessage());
                         }
                     }
                     log.debug("Request Id {}, Executing mappings for device type {}", requestId, deviceType.getName());
                     payloadMappingService.executeMappings(mappingCollections, source, uplinkMessage.getDateTime());
                     log.debug("Request Id {}, Mappings executed for device type {}", requestId, deviceType.getName());
                 } catch (Exception e) {
-                    log.debug("Request Id {}, exception: {}", requestId, e.getMessage());
-                    log.error(e.getMessage());
+                    log.error("Request Id {}, exception: {}", requestId, e.getMessage());
                 }
             } else {
                 DecoderResult decoderResult;
@@ -142,7 +139,7 @@ public class PayloadDecoderService<T extends UplinkMessage> {
                     payloadMappingService.handleCodecServiceResponse(decoderResult, source, uplinkMessage.getExternalId());
                     log.debug("Request Id {}, Handling the decoder response for the device with EUI '{}' completed", requestId, uplinkMessage.getExternalId());
                 } catch (PayloadDecodingFailedException e) {
-                    log.error("Error handling the decoder response for the device with EUI '{}'.", uplinkMessage.getExternalId(), e);
+                    log.error("Request Id {}, Error handling the decoder response for the device with EUI '{}'.", requestId, uplinkMessage.getExternalId(), e);
                 }
             }
         });
