@@ -436,7 +436,7 @@ public class RestConnector implements RestOperations {
         config.property(ClientProperties.FOLLOW_REDIRECTS, true);
 
         registerClasses(config);
-        registerExternalFilters(platformParameters,config);
+        registerExternalFilters(platformParameters, config);
         config.register(new CumulocityAuthenticationFilter(platformParameters.getCumulocityCredentials()));
         config.register(new BufferedResponseStreamInterceptor());
 
@@ -456,13 +456,10 @@ public class RestConnector implements RestOperations {
         return client;
     }
 
-    private static void registerExternalFilters(PlatformParameters platformParameters,ClientConfig config) {
-         if (platformParameters.customFilterSet != null) {
-            synchronized (platformParameters.customFilterSet) {
-                for (ClientRequestFilter filters : platformParameters.customFilterSet) {
-                    config.register(filters);
-                }
-            }
+    private static void registerExternalFilters(PlatformParameters platformParameters,
+                                                ClientConfig config) {
+        for (ClientRequestFilter filter : platformParameters.customFilterSet) {
+            config.register(filter);
         }
     }
 

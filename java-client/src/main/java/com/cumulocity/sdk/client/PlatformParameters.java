@@ -78,7 +78,7 @@ public class PlatformParameters implements AutoCloseable {
 
     Set<HttpClientInterceptor> interceptorSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    Set<ClientRequestFilter> customFilterSet = Collections.newSetFromMap(new ConcurrentHashMap<>());;
+    Set<ClientRequestFilter> customFilterSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final Object lock = new Object();
 
