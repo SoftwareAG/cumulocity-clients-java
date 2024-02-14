@@ -40,7 +40,7 @@
 	</organization>
 
 	<properties>
-		<maven-plugin-version>3.2.5</maven-plugin-version>
+		<maven-plugin-version>3.8.1</maven-plugin-version>
 		<docker-client.version>8.16.0</docker-client.version>
 		<hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
 		<!-- TODO: fix javadoc generation. Will be implemented in DM-1177 -->
