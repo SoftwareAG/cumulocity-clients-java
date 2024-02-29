@@ -134,8 +134,9 @@ def calculate_versions() {
             ).trim()
             VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
             VERSIONS.currentRpm = "${VERSIONS.current}-1"
-            VERSIONS.release = releaseVersionOf(VERSIONS.revision)
-            echo "Building SDK version ${VERSIONS.current} on top of release version ${VERSIONS.release}"
+            releaseLine = pipelineReleaseLineForBranch(env.CHANGE_TARGET)
+            VERSIONS.core = GetVersionFromSourceBranch('cumulocity', releaseLine + '/PostMerge-cumulocity-Tested')
+            echo "Building SDK version ${VERSIONS.current} on top of Core version ${VERSIONS.core}"
           } catch (e) {
             stopPipeline('Version sdk', e)
           }
@@ -302,7 +303,7 @@ def spinup_instance(instance) {
     if (!JOB_ABORTED && currentBuild.result != 'UNSTABLE' && currentBuild.result != 'FAILURE') {
       build job: 'dev-x-cc-deployment', parameters: [
           string(name: 'DEPLOY_ENVIRONMENT', value: instance.name),
-          string(name: 'VERSION', value: VERSIONS.release),
+          string(name: 'VERSION', value: VERSIONS.core),
           string(name: 'BUILD_TYPE', value: 'custom'),
           string(name: 'LP_LIST', value: ''),
           booleanParam(name: 'DEPLOY_UI', value: false),
@@ -460,23 +461,6 @@ def devInstanceOf(String label, String tld = 'dev.c8y.io') {
       domain: "${instance_name}-${env.BUILD_NUMBER}-${label}.${tld}".toString(),
       licence: "${instance_name}-${env.BUILD_NUMBER}-${label}-enterprise.${tld}".toString(),
   ]
-}
-
-def releaseVersionOf(String revision) {
-  String[] versions = revision.split('\\.')
-  if (versions.length < 3) {
-    return revision
-  }
-  int major = Integer.parseInt(versions[0])
-  int minor = Integer.parseInt(versions[1])
-  int maintenance = Integer.parseInt(versions[2])
-  if (maintenance > 0) {
-    return "${major}.${minor}.${maintenance - 1}".toString()
-  } else if (minor > 0) {
-    return "${major}.${minor - 1}.${maintenance}".toString()
-  } else {
-    return revision
-  }
 }
 
 def withResourcesServer(Closure body) {
