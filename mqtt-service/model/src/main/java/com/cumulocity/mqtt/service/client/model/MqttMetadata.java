@@ -102,9 +102,29 @@ public class MqttMetadata {
     }
 
     /**
+     * Retrieves the MQTT topic associated with this metadata.
+     * <p>
+     * For messages published by an MQTT client, this field contains the name of the topic that the message was published to.
+     * <p>
+     * For messages published by an SDK client, this field contains the value passed to the MqttMetadata constructor,
+     * which is not necessarily the same as the MQTT topic the message was published to.
+     *
      * @return the MQTT topic
      */
     public String getTopic() {
         return topic;
+    }
+
+    /**
+     * Sets the MQTT topic.
+     * <p>
+     * Note: Setting this field does not affect the MQTT topic that a message will actually be published on.
+     * The value passed here will be included in the metadata of the message but may not necessarily
+     * correspond to the actual MQTT topic the message was published to.
+     *
+     * @param topic the MQTT topic
+     */
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 }
