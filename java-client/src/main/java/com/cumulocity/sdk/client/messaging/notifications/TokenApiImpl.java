@@ -13,6 +13,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
 
+import static javax.ws.rs.core.Response.Status.OK;
+
 @Slf4j
 @RequiredArgsConstructor
 public class TokenApiImpl implements TokenApi {
@@ -95,11 +97,13 @@ public class TokenApiImpl implements TokenApi {
             throw new IllegalArgumentException("token is null");
         }
 
-        final Response response = restConnector.getClient().target(getTokenUnsubscribeUri())
+        try (final Response response = restConnector.getClient()
+                .target(getTokenUnsubscribeUri())
                 .queryParam("token", token.getTokenString())
                 .request()
-                .post(Entity.text(""));
-        response.close();
+                .post(Entity.text(""))) {
+            restConnector.getResponseParser().checkStatus(response, OK.getStatusCode());
+        }
     }
 
     private String getTokenRequestUri() {

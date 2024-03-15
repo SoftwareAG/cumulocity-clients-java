@@ -1,9 +1,9 @@
 package com.cumulocity.mqtt.service.client.websocket;
 
+import com.cumulocity.mqtt.service.client.MessageListener;
 import com.cumulocity.mqtt.service.client.MqttClientException;
-import com.cumulocity.mqtt.service.client.MqttMessageListener;
 import com.cumulocity.mqtt.service.client.MqttSubscriber;
-import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
+import com.cumulocity.mqtt.service.client.SubscriberConfig;
 
 import java.net.URI;
 import java.util.Optional;
@@ -13,59 +13,69 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
 
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/consumer/?token=%s";
 
-    private final String webSocketBaseUrl;
-    private final TokenApi tokenApi;
-    private final MqttWebSocketConfig config;
+    private final WebSocketClientConfig clientConfig;
+    private final SubscriberConfig subscriberConfig;
     private final TokenSupplier tokenSupplier;
 
     private WebSocketConsumer consumer;
 
-    MqttWebSocketSubscriber(String webSocketBaseUrl, TokenApi tokenApi, MqttWebSocketConfig config) {
-        this.webSocketBaseUrl = webSocketBaseUrl;
-        this.tokenApi = tokenApi;
-        this.config = config;
-        this.tokenSupplier = new TokenSupplier(tokenApi, config.getTopic(), config.getSubscriber());
+    MqttWebSocketSubscriber(WebSocketClientConfig clientConfig, SubscriberConfig subscriberConfig) {
+        this.clientConfig = clientConfig;
+        this.subscriberConfig = subscriberConfig;
+        this.tokenSupplier = new TokenSupplier(clientConfig.getTokenApi(), subscriberConfig.getTopic(), subscriberConfig.getSubscriber());
     }
 
     @Override
-    public void subscribe(MqttMessageListener listener) {
+    public void subscribe(MessageListener listener) {
         if (consumer != null) {
             return;
         }
 
         final String token = tokenSupplier.getToken().getTokenString();
-
         if (token == null) {
-            throw new MqttClientException(String.format("Token could not be created for topic %s", config.getTopic()));
+            throw new MqttClientException(String.format("Token could not be created for topic %s", subscriberConfig.getTopic()));
         }
         try {
-            final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, webSocketBaseUrl, token));
-            consumer = new WebSocketConsumer(uri, listener);
-            consumer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
+            final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, clientConfig.getBaseUrl(), token));
+            consumer = new WebSocketConsumer(uri, subscriberConfig, listener);
+            consumer.connectBlocking(clientConfig.getConnectionTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new MqttClientException("WebSocket connection could not be established!", e);
         }
     }
 
     @Override
+    public void resubscribe() throws MqttClientException {
+        final MessageListener listener = consumer.messageListener;
+        close();
+        subscribe(listener);
+    }
+
+    @Override
     public void unsubscribe() {
-        tokenApi.unsubscribe(tokenSupplier.getToken());
+        clientConfig.getTokenApi().unsubscribe(tokenSupplier.getToken());
+    }
+
+    @Override
+    public boolean isConnected() {
+        return consumer != null && consumer.isOpen();
     }
 
     @Override
     public void close() {
-        if (consumer != null) {
+        if (isConnected()) {
             consumer.close();
         }
+        consumer = null;
     }
 
     private static final class WebSocketConsumer extends AbstractWebSocketClient {
 
-        private final MqttMessageListener listener;
+        private final MessageListener messageListener;
 
-        WebSocketConsumer(URI serverUri, MqttMessageListener listener) {
-            super(serverUri);
-            this.listener = listener;
+        WebSocketConsumer(URI serverUri, SubscriberConfig subscriberConfig, MessageListener messageListener) {
+            super(serverUri, subscriberConfig.getId(), subscriberConfig.getConnectionListener());
+            this.messageListener = messageListener;
         }
 
         @Override
@@ -75,15 +85,9 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
             final Optional<String> ackHeader = webSocketMessage.getAckHeader();
             final byte[] avroPayload = webSocketMessage.getAvroPayload();
 
-            listener.onMessage(MqttMessageConverter.decode(avroPayload));
+            messageListener.onMessage(MqttMessageConverter.decode(avroPayload));
 
             ackHeader.ifPresent(this::send);
-        }
-
-        @Override
-        public void onError(Exception e) {
-            super.onError(e);
-            listener.onError(e);
         }
 
     }

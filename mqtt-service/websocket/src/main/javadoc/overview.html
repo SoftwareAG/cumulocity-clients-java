@@ -1,6 +1,7 @@
 <HTML>
 <BODY>
-Cumulocity SDK - Java MQTT Service Client library provides the classes necessary to interact with the Cumulocity IoT MQTT Service.
+Cumulocity SDK - Java MQTT Service Client library provides the classes necessary to interact with the Cumulocity IoT
+MQTT Service.
 
 <p>The Cumulocity SDK Java MQTT Service Client library provides means to the following operations:
 <ul>
@@ -18,13 +19,27 @@ Cumulocity SDK - Java MQTT Service Client library provides the classes necessary
         final MqttMessage message = new MqttMessage();
         message.setPayload(payload.getBytes());
 
-        // Build MqttConfig with topic to which the message is to be sent
-        final MqttConfig config = MqttConfig.webSocket().topic(topic).build();
-
         // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
         final MqttClient client = MqttClient.webSocket()
                 .url(webSocketBaseUrl)
                 .tokenApi(tokenApi)
+                .build();
+
+        // Build MqttConfig with topic to which the message is to be sent
+        final PublisherConfig config = PublisherConfig.publisherConfig()
+                .id("measurementsPublisher")
+                .topic(topic)
+                .connectionListener(new ConnectionListener() {
+                    &#64;Override
+                    public void onError(Throwable error, String sourceId) {
+                        log.error("Publisher {} error", sourceId, error);
+                    }
+
+                    &#64;Override
+                    public void onDisconnected(String reason, String sourceId) {
+                        log.info("Publisher {} disconnected because of {}", sourceId, reason);
+                    }
+                })
                 .build();
 
         // Build MqttPublisher and publish MqttMessage. Close the resource either with usage as below or by calling publisher.close()
@@ -34,43 +49,53 @@ Cumulocity SDK - Java MQTT Service Client library provides the classes necessary
             log.error("Could not sent message to {}", topic, e);
         }
 
+        // Close the resource after usage
+        client.close();
     </pre>
 
 <p>
     Example usage for subscribing to messages from MQTT Service via WebSocket:
 
 <pre>
-
-        // Build MqttConfig with topic and subscriber name
-        final MqttConfig config = MqttConfig.webSocket().topic(topic).subscriber(subscriberName).build();
-
         // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
         final MqttClient client = MqttClient.webSocket()
                 .url(webSocketBaseUrl)
                 .tokenApi(tokenApi)
                 .build();
 
+        // Build MqttConfig with topic and subscriber name
+        final SubscriberConfig config = SubscriberConfig.subscriberConfig()
+                .id("mySubscriberForTopic1")
+                .topic(topic)
+                .subscriber(subscriberName)
+                .connectionListener(new ConnectionListener() {
+                    &#64;Override
+                    public void onError(Throwable error, String sourceId) {
+                        log.error("Subscriber {} error", sourceId, error);
+                    }
+
+                    &#64;Override
+                    public void onDisconnected(String reason, String sourceId) {
+                        log.info("Subscriber {} disconnected because of {}", sourceId, reason);
+                    }
+                })
+                .build();
+
         // Build MqttSubscriber
         final MqttSubscriber subscriber = client.buildSubscriber(config);
 
         // Subscribe by passing implementation of MqttMessageListener to handle events from the websocket server.
-        subscriber.subscribe(new MqttMessageListener() {
+        subscriber.subscribe(new MessageListener() {
             &#64;Override
             public void onMessage(MqttMessage message) {
                 log.info("Message Received: {}", new String(message.getPayload()));
-            }
-
-            &#64;Override
-            public void onError(Throwable t) {
-                log.error("WebSocket Error", t);
             }
         });
 
         // Close the resource after usage
         subscriber.close();
-
+        client.close();
     </pre>
-
 
 </BODY>
 </HTML>

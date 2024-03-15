@@ -1,5 +1,6 @@
 package com.cumulocity.mqtt.service.client.websocket;
 
+import com.cumulocity.mqtt.service.client.ConnectionListener;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -12,10 +13,15 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Slf4j
 abstract class AbstractWebSocketClient extends WebSocketClient {
 
+    private final String sourceId;
+    private final ConnectionListener connectionListener;
+
     private String connectionError;
 
-    AbstractWebSocketClient(final URI serverUri) {
+    AbstractWebSocketClient(final URI serverUri, final String sourceId, final ConnectionListener connectionListener) {
         super(serverUri);
+        this.sourceId = sourceId;
+        this.connectionListener = connectionListener;
     }
 
     @Override
@@ -36,7 +42,7 @@ abstract class AbstractWebSocketClient extends WebSocketClient {
         if (!super.isOpen()) {
             connectionError = String.format("Cannot connect: %s %s", reason, code);
         }
-        log.debug("Web socket connection closed for '{}' with core '{}' reason '{}' by {}", uri, code, reason, remote ? "client" : "server");
+        connectionListener.onDisconnected(String.format("%s%d by the %s", reason, code, remote ? "client" : "server"), sourceId);
     }
 
     @Override
@@ -44,7 +50,7 @@ abstract class AbstractWebSocketClient extends WebSocketClient {
         if (!super.isOpen()) {
             connectionError = String.format("Cannot connect: %s", e.getMessage());
         }
-        log.warn("Web socket error", e);
+        connectionListener.onError(e, sourceId);
     }
 
 }
