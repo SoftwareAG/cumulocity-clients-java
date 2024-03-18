@@ -1,0 +1,53 @@
+name: "CodeQL"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: [ cumulocity-clients-java ]
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+
+    env:
+      JAVA_VERSION: '11'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHE_TOKEN_PAT || github.token }}
+
+      - uses: IOTA/c8y-component-base/.github/actions/setup-java-maven@v1.0.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          C8Y_MVN_PUBLIC_USERNAME: ${{ secrets.C8Y_MVN_PUBLIC_USERNAME }}
+          C8Y_MVN_PUBLIC_PASSWORD: ${{ secrets.C8Y_MVN_PUBLIC_PASSWORD }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: 'java'
+
+      - name: Build java
+        run: |
+          echo "::debug::Effective maven settings: $(mvn help:effective-settings)"
+          .jenkins/scripts/mvn.sh install -DskipTests
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java"
+          output: "results"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: "${{ github.workspace }}/results/java.sarif"
