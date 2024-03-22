@@ -9,6 +9,8 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 class MqttWebSocketSubscriber implements MqttSubscriber {
 
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/consumer/?token=%s";
@@ -53,7 +55,8 @@ class MqttWebSocketSubscriber implements MqttSubscriber {
 
     @Override
     public void unsubscribe() {
-        clientConfig.getTokenApi().unsubscribe(tokenSupplier.getToken());
+        checkNotNull(consumer, "Subscriber is not connected");
+        consumer.send("unsubscribe_subscriber");
     }
 
     @Override
