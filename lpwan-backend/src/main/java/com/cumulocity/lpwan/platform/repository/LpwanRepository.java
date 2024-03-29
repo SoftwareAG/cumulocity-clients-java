@@ -159,6 +159,8 @@ public class LpwanRepository {
             } else {
                 throw new LpwanUserNotFoundException( String.format("Unable to find %s user credentials.", LnsConnectionDeserializer.getRegisteredAgentName().toLowerCase()));
             }
+            user.setId(userOpt.get().getId());
+            user.setRoles(userOpt.get().getRoles());
         } else {
             String generatedUserPassword = lpwanUserPasswordService.generatePasswordAndSave(username);
             if (generatedUserPassword != null) {
