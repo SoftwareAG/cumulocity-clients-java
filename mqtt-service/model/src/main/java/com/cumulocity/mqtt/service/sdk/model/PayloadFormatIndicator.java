@@ -1,4 +1,4 @@
-package com.cumulocity.mqtt.service.client.model;
+package com.cumulocity.mqtt.service.sdk.model;
 
 /**
  * Indicator for the payload.

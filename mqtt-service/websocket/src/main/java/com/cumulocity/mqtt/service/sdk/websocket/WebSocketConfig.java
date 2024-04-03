@@ -1,10 +1,10 @@
-package com.cumulocity.mqtt.service.client.websocket;
+package com.cumulocity.mqtt.service.sdk.websocket;
 
 import com.cumulocity.sdk.client.messaging.notifications.TokenApi;
 import lombok.Data;
 
 @Data
-class WebSocketClientConfig {
+class WebSocketConfig {
 
     private static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 2000;
 

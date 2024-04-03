@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.cumulocity.client.mqtt</groupId>
+        <groupId>com.cumulocity.sdk.mqtt</groupId>
         <artifactId>mqtt-service</artifactId>
         <version>${revision}${changelist}</version>
     </parent>
 
     <artifactId>mqtt-service-model</artifactId>
     <packaging>jar</packaging>
-    <name>Cumulocity :: Clients Java :: MQTT Service :: Model</name>
+    <name>Cumulocity :: SDK Java :: MQTT Service :: Model</name>
 
 </project>

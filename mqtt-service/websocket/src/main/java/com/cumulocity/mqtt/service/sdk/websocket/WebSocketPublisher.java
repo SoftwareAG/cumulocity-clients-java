@@ -1,9 +1,9 @@
-package com.cumulocity.mqtt.service.client.websocket;
+package com.cumulocity.mqtt.service.sdk.websocket;
 
-import com.cumulocity.mqtt.service.client.MqttClientException;
-import com.cumulocity.mqtt.service.client.MqttPublisher;
-import com.cumulocity.mqtt.service.client.PublisherConfig;
-import com.cumulocity.mqtt.service.client.model.MqttMessage;
+import com.cumulocity.mqtt.service.sdk.MqttServiceException;
+import com.cumulocity.mqtt.service.sdk.model.MqttServiceMessage;
+import com.cumulocity.mqtt.service.sdk.publisher.Publisher;
+import com.cumulocity.mqtt.service.sdk.publisher.PublisherConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-class MqttWebSocketPublisher implements MqttPublisher {
+class WebSocketPublisher implements Publisher {
 
     private final static String SUBSCRIBER = "mqttServicePublisher";
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/producer/?token=%s";
 
-    private final WebSocketClientConfig clientConfig;
+    private final WebSocketConfig config;
     private final PublisherConfig publisherConfig;
 
     private final AtomicInteger sequence = new AtomicInteger();
@@ -25,28 +25,28 @@ class MqttWebSocketPublisher implements MqttPublisher {
 
     private WebSocketProducer producer;
 
-    MqttWebSocketPublisher(WebSocketClientConfig clientConfig, PublisherConfig publisherConfig) {
-        this.clientConfig = clientConfig;
+    WebSocketPublisher(WebSocketConfig config, PublisherConfig publisherConfig) {
+        this.config = config;
         this.publisherConfig = publisherConfig;
-        this.tokenSupplier = new TokenSupplier(clientConfig.getTokenApi(), publisherConfig.getTopic(), SUBSCRIBER);
+        this.tokenSupplier = new TokenSupplier(config.getTokenApi(), publisherConfig.getTopic(), SUBSCRIBER);
     }
 
-    void connect() throws MqttClientException {
+    void connect() throws MqttServiceException {
         final String token = tokenSupplier.getToken().getTokenString();
         if (token == null) {
-            throw new MqttClientException(String.format("Token could not be created for topic %s", publisherConfig.getTopic()));
+            throw new MqttServiceException(String.format("Token could not be created for topic %s", publisherConfig.getTopic()));
         }
         try {
-            final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, clientConfig.getBaseUrl(), token));
+            final URI uri = new URI(String.format(WEBSOCKET_URL_PATTERN, config.getBaseUrl(), token));
             producer = new WebSocketProducer(uri, publisherConfig);
-            producer.connectBlocking(clientConfig.getConnectionTimeout(), TimeUnit.MILLISECONDS);
+            producer.connectBlocking(config.getConnectionTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw new MqttClientException("Error connecting to " + clientConfig.getBaseUrl(), e);
+            throw new MqttServiceException("Error connecting to " + config.getBaseUrl(), e);
         }
     }
 
     @Override
-    public void reconnect() throws MqttClientException {
+    public void reconnect() throws MqttServiceException {
         if (isConnected()) {
             close();
         }
@@ -54,8 +54,8 @@ class MqttWebSocketPublisher implements MqttPublisher {
     }
 
     @Override
-    public void publish(MqttMessage message) {
-        final byte[] data = MqttMessageConverter.encode(message);
+    public void publish(MqttServiceMessage message) {
+        final byte[] data = MessageConverter.encode(message);
         final String publishMessage = sequence.incrementAndGet() + "\n" + Base64.encodeBase64String(data);
 
         producer.send(publishMessage);

@@ -1,6 +1,6 @@
-package com.cumulocity.mqtt.service.client.websocket;
+package com.cumulocity.mqtt.service.sdk.websocket;
 
-import com.cumulocity.mqtt.service.client.ConnectionListener;
+import com.cumulocity.mqtt.service.sdk.listener.ConnectionListener;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

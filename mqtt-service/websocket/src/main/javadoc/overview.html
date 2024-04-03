@@ -15,17 +15,17 @@ MQTT Service.
         // Message to be sent
         final String payload = "Hello World";
 
-        // Construct a new MqttMessage and set the payload
-        final MqttMessage message = new MqttMessage();
+        // Construct a new MqttServiceMessage and set the payload
+        final MqttServiceMessage message = new MqttServiceMessage();
         message.setPayload(payload.getBytes());
 
-        // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
-        final MqttClient client = MqttClient.webSocket()
+        // Create an instance of MqttServiceApi by specifying the server URI to connect to along with TokenApi
+        final MqttServiceApi mqttServiceApi = MqttServiceApi.webSocket()
                 .url(webSocketBaseUrl)
                 .tokenApi(tokenApi)
                 .build();
 
-        // Build MqttConfig with topic to which the message is to be sent
+        // Build PublisherConfig with topic to which the message is to be sent
         final PublisherConfig config = PublisherConfig.publisherConfig()
                 .id("measurementsPublisher")
                 .topic(topic)
@@ -42,28 +42,28 @@ MQTT Service.
                 })
                 .build();
 
-        // Build MqttPublisher and publish MqttMessage. Close the resource either with usage as below or by calling publisher.close()
-        try (final MqttPublisher publisher = client.buildPublisher(config)) {
+        // Build Publisher and publish MqttServiceMessage. Close the resource either with usage as below or by calling publisher.close()
+        try (final Publisher publisher = mqttServiceApi.buildPublisher(config)) {
             publisher.publish(message);
         } catch (Exception e) {
             log.error("Could not sent message to {}", topic, e);
         }
 
         // Close the resource after usage
-        client.close();
+        mqttServiceApi.close();
     </pre>
 
 <p>
     Example usage for subscribing to messages from MQTT Service via WebSocket:
 
 <pre>
-        // Create an instance of MqttClient by specifying the server URI to connect to along with TokenApi
-        final MqttClient client = MqttClient.webSocket()
+        // Create an instance of MqttServiceApi by specifying the server URI to connect to along with TokenApi
+        final MqttServiceApi mqttServiceApi = MqttServiceApi.webSocket()
                 .url(webSocketBaseUrl)
                 .tokenApi(tokenApi)
                 .build();
 
-        // Build MqttConfig with topic and subscriber name
+        // Build SubscriberConfig with topic and subscriber name
         final SubscriberConfig config = SubscriberConfig.subscriberConfig()
                 .id("mySubscriberForTopic1")
                 .topic(topic)
@@ -81,20 +81,20 @@ MQTT Service.
                 })
                 .build();
 
-        // Build MqttSubscriber
-        final MqttSubscriber subscriber = client.buildSubscriber(config);
+        // Build Subscriber
+        final Subscriber subscriber = mqttServiceApi.buildSubscriber(config);
 
-        // Subscribe by passing implementation of MqttMessageListener to handle events from the websocket server.
+        // Subscribe by passing implementation of MessageListener to handle events from the websocket server.
         subscriber.subscribe(new MessageListener() {
             &#64;Override
-            public void onMessage(MqttMessage message) {
+            public void onMessage(MqttServiceMessage message) {
                 log.info("Message Received: {}", new String(message.getPayload()));
             }
         });
 
         // Close the resource after usage
         subscriber.close();
-        client.close();
+        mqttServiceApi.close();
     </pre>
 
 </BODY>

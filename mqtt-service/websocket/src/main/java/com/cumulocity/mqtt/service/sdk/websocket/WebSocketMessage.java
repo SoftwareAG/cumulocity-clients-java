@@ -1,4 +1,4 @@
-package com.cumulocity.mqtt.service.client.websocket;
+package com.cumulocity.mqtt.service.sdk.websocket;
 
 import lombok.RequiredArgsConstructor;
 

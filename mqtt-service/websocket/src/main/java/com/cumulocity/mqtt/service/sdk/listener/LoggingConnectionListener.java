@@ -1,4 +1,4 @@
-package com.cumulocity.mqtt.service.client;
+package com.cumulocity.mqtt.service.sdk.listener;
 
 import lombok.extern.slf4j.Slf4j;
 

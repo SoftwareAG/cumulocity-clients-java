@@ -1,7 +1,8 @@
-package com.cumulocity.mqtt.service.client.websocket;
+package com.cumulocity.mqtt.service.sdk.websocket;
 
-import com.cumulocity.mqtt.service.client.model.MqttMessage;
-import com.cumulocity.mqtt.service.client.model.MqttMetadata;
+import com.cumulocity.mqtt.service.sdk.model.MqttServiceMessage;
+import com.cumulocity.mqtt.service.sdk.model.MqttServiceMetadata;
+import com.cumulocity.mqtt.service.sdk.websocket.MessageConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -9,20 +10,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class MqttMessageConverterTest {
+class MessageConverterTest {
 
     @Test
     void shouldEncodeAndDecodeCorrectly() {
         // Given
-        final MqttMetadata metadata = MqttMetadata.builder().
+        final MqttServiceMetadata metadata = MqttServiceMetadata.builder().
                 clientId("test").
                 messageId(100).
                 build();
-        final MqttMessage message = new MqttMessage("message".getBytes(), metadata);
+        final MqttServiceMessage message = new MqttServiceMessage("message".getBytes(), metadata);
 
         // When
-        final byte[] encoded = MqttMessageConverter.encode(message);
-        final MqttMessage decodedMessage = MqttMessageConverter.decode(encoded);
+        final byte[] encoded = MessageConverter.encode(message);
+        final MqttServiceMessage decodedMessage = MessageConverter.decode(encoded);
 
         // Then
         assertThat(new String(decodedMessage.getPayload())).isEqualTo(new String(message.getPayload()));

@@ -1,23 +1,27 @@
-package com.cumulocity.mqtt.service.client;
+package com.cumulocity.mqtt.service.sdk.subscriber;
+
+import com.cumulocity.mqtt.service.sdk.MqttServiceApi;
+import com.cumulocity.mqtt.service.sdk.MqttServiceException;
+import com.cumulocity.mqtt.service.sdk.listener.MessageListener;
 
 /**
  * Interface for subscribing to messages from the server.
  * <p>
- * {@link MqttSubscriber} instances are created using {@link MqttClient#buildSubscriber(SubscriberConfig)}
+ * {@link Subscriber} instances are created using {@link MqttServiceApi#buildSubscriber(SubscriberConfig)}
  */
-public interface MqttSubscriber extends AutoCloseable {
+public interface Subscriber extends AutoCloseable {
 
     /**
      * Starts this subscriber, using the parameter {@link MessageListener} to handle its received messages
      *
      * @param listener the listener object
      */
-    void subscribe(MessageListener listener) throws MqttClientException;
+    void subscribe(MessageListener listener) throws MqttServiceException;
 
     /**
      * Resubscribes the subscriber by closing the current connection and subscribing again
      */
-    void resubscribe() throws MqttClientException;
+    void resubscribe() throws MqttServiceException;
 
     /**
      * Unsubscribes the subscriber

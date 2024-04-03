@@ -1,20 +1,20 @@
-package com.cumulocity.mqtt.service.client.model;
+package com.cumulocity.mqtt.service.sdk.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * MQTT message representation containing a payload and associated {@link MqttMetadata metadata}.
+ * MQTT Service message representation containing a payload and associated {@link MqttServiceMetadata metadata}.
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class MqttMessage {
+public class MqttServiceMessage {
 
     private byte[] payload;
 
-    private MqttMetadata metadata;
+    private MqttServiceMetadata metadata;
 
     /**
      * @return the payload of this message as a byte array. This will be an empty array if the payload is not present.
@@ -26,7 +26,7 @@ public class MqttMessage {
     /**
      * @return the metadata of this message.
      */
-    public MqttMetadata getMetadata() {
+    public MqttServiceMetadata getMetadata() {
         return this.metadata;
     }
 

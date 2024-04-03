@@ -1,5 +1,8 @@
-package com.cumulocity.mqtt.service.client;
+package com.cumulocity.mqtt.service.sdk.publisher;
 
+import com.cumulocity.mqtt.service.sdk.MqttServiceApi;
+import com.cumulocity.mqtt.service.sdk.listener.ConnectionListener;
+import com.cumulocity.mqtt.service.sdk.listener.LoggingConnectionListener;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -10,7 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
- * {@link PublisherConfig} provides configuration for {@link MqttPublisher}
+ * {@link PublisherConfig} provides configuration for {@link Publisher}
  */
 @ToString(exclude = {"connectionListener"})
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -31,14 +34,14 @@ public class PublisherConfig {
     }
 
     /**
-     * @return unique publisher id used to identify the instance of {@link MqttPublisher} in the {@link MqttClient} and {@link ConnectionListener}
+     * @return unique publisher id used to identify the instance of {@link Publisher} in the {@link MqttServiceApi} and {@link ConnectionListener}
      */
     public String getId() {
         return id;
     }
 
     /**
-     * @return the topic to which instance of {@link MqttPublisher} will connect to.
+     * @return the topic to which instance of {@link Publisher} will connect to.
      */
     public String getTopic() {
         return topic;

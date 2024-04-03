@@ -1,5 +1,8 @@
-package com.cumulocity.mqtt.service.client;
+package com.cumulocity.mqtt.service.sdk.subscriber;
 
+import com.cumulocity.mqtt.service.sdk.MqttServiceApi;
+import com.cumulocity.mqtt.service.sdk.listener.ConnectionListener;
+import com.cumulocity.mqtt.service.sdk.listener.LoggingConnectionListener;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -10,7 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
- * {@link SubscriberConfig} provides configuration for {@link MqttSubscriber}
+ * {@link SubscriberConfig} provides configuration for {@link Subscriber}
  */
 @ToString(exclude = {"connectionListener"})
 @FieldDefaults(makeFinal = true, level = PRIVATE)
@@ -34,21 +37,21 @@ public class SubscriberConfig {
     }
 
     /**
-     * @return unique subscriber id used to identify the instance of {@link MqttSubscriber} in the {@link MqttClient} and {@link ConnectionListener}
+     * @return unique subscriber id used to identify the instance of {@link Subscriber} in the {@link MqttServiceApi} and {@link ConnectionListener}
      */
     public String getId() {
         return id;
     }
 
     /**
-     * @return the topic to which instance of {@link MqttSubscriber} will connect to.
+     * @return the topic to which instance of {@link Subscriber} will connect to.
      */
     public String getTopic() {
         return topic;
     }
 
     /**
-     * @return the subscriber name (consumer name) which will be used by the instance of {@link MqttSubscriber}.
+     * @return the subscriber name (consumer name) which will be used by the instance of {@link Subscriber}.
      */
     public String getSubscriber() {
         return subscriber;
