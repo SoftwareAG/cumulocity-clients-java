@@ -12,8 +12,7 @@ pipeline {
         timeout(time: 20, unit: 'MINUTES')
     }
     triggers {
-        upstream(upstreamProjects: "/${currentBuild.fullProjectName.replaceFirst('cumulocity-clients-java', 'cumulocity-core')}",
-            threshold: hudson.model.Result.SUCCESS)
+        githubPush()
     }
     environment {
         MVN_SETTINGS = credentials('maven-settings')
