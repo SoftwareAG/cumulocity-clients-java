@@ -1,0 +1,292 @@
+# Important: when making product changes or upgrading third parties, this file MUST be kept updated, especially with if
+# there is any change to how cryptography is used, either directly in our code or by the third parties that we are
+# shipping or using in our product.
+
+Version of export compliance survey: 2023-v1
+
+Surveyed item: Cumulocity IoT Connection Libraries
+
+# When there is a change in cryptography requiring a new "full" EPC survey, change the reference
+ID of reference EPC survey where the last cryptography change occurred: 004188
+
+Date of last review or update by product team: 2024-03-04
+
+Product contacts:
+- martin.prodanov@softwareag.com
+- aleksander.fisz@softwareag.com
+
+# Specify just one product code per EPC UNLESS you are building all product codes together
+# in the same build process, and they always need the same EPC answers
+0) Product codes: 
+- CYJ # Cumulocity IoT Connection Libraries
+# e.g. - MYCODE
+# For products that use iData versionDetail:
+#- "CODE~VERSIONDETAIL"
+
+# Section 1 - basic info about product
+1.1) Department: Cumulocity
+1.2) Requested Priority for Review: 3
+1.3) Category of Item: Regular Price List Product
+  # e.g. "Internal Component (pre-Pack)", "Cloud Service", "CONTAINER Package (e.g. DOCKER)" etc. See EPC tool for full list of options
+1.4) Short Item Description: > 
+   Cumulocity IoT Microservice SDK for Java is a library for easy development of microservices for Cumulocity IoT. More information can be found on
+   https://cumulocity.com/guides/microservice-sdk/java/
+  # Please provide a THREE sentence high-level description of the product's FUNCTION and PURPOSE and link to PRODUCT LITERATURE
+1.6) PMM representative eMail address: Jane.Porter@softwareag.com
+1.7.4) Has any person of any 3rd Party (i.e. non-SAG, e.g. contractors, etc.) received or worked on the design and creation of this Surveyed Item prior to the submission of this survey for review?: true
+
+# Section 2 - Quick check (declassification criteria)
+2.4) Is the Surveyed Item specially designed for medical end-use?: false
+2.5) Is the Surveyed Item specially designed for and limited to banking or money transactions?: false
+2.6) Is the Surveyed Item's primary function or set of functions (i.e. primary purpose) one or more of the following: true
+  # 1. Information Security; 2. A computer, incl. operating systems, parts, or components therefore; 3. Sending, receiving or storing information; 4. Networking, incl. operation, admin., management, and provisioning.
+2.6.1) If no, please provide an explanation in case the primary function of the product may not be sending, receiving or storing information!: 
+# 2.6.2) The Surveyed Item is designed to serve the following purpose(s): ...
+2.6.2.1) Business or systems tasks such as systems operations, integration, and control: true
+2.6.2.2) Research, either scientific or analytical: false
+2.6.2.3) Secure intellectual property (IP) delivery and installation: false
+2.6.3) Is the Surveyed Item a pure Operations / Administration / or Maintenance tool (=OAM-Tool): false
+  # if true, answer 2.6.3.* OAM-related questions below:
+2.6.3.1) Is OAM a) if Setup or Administration of ... either Setup/Adjustment of parameters for another item, Setup/Adjustment of parameters for another item or Authentication data for the above tasks are supported: 
+2.6.3.2) Is OAM b) if Monitoring or Administration of operational conditions or the performance of another item applies: 
+2.6.3.3) Is OAM if Administration of protocols or data used for checking, in support of tasks a). and b). above applies: 
+2.6.3.4) Does the Surveyed Item provide or upgrade/extend cryptographic functionality that is not directly related to the setup or administration for support of the tasks a)1. and a)2. above?: 
+2.6.3.5) Does the Surveyed Item execute crypto functions/functionality on production data, rather than executing limited purpose cryptography only?: 
+
+2.6.4) Does the Surveyed Item have a purpose other than those listed above: false
+2.6.4.1) If true, explain/describe which other purpose is served by Surveyed Item: 
+2.7) Does Surveyed Item make use of/perform or provide cryptography?: true
+
+# UP-CLASSIFICATION CRITERIA
+2.8) Does the Surveyed Item contain '3RD PARTY ITEMS or PRODUCTS' or 'Software-internal COMPONENTS (pre-Pack Modules) and/or SELLABLE PRODUCTS' that provide Cryptography functionality?: true
+  # Does the Surveyed Item perform, activate, enable, access from external sources any cryptographic functionality (incl. SSL), or make it available to its users or to external software/hardware?
+2.8.1) Cryptography capabilities of '3rd PARTY ITEMS or PRODUCTS' required by the Surveyed Item shall be provided/made available and usable to the end-user via SEPARATE INSTALLATION and/or for USAGE that is INDEPENDENT of the Surveyed Item?: false
+2.8.2) Cryptography capabilities of 'SAG-internal COMPONENTS' (pre-Pack Modules) or 'SELLABLE Software AG PRODUCTS' required by the Surveyed Item shall be provided/made available and usable to the end-user via SEPARATE INSTALLATION and/or for USAGE that is INDEPENDENT: false
+
+# MASS MARKET EVALUATION
+# Shall this version of the Surveyed Item be made available to the public under the following conditions?
+2.9) Do all of the following distribution properties apply for the Surveyed Item?: true
+  # The item shall be made available (i) in object code only AND
+  # (ii) for download over the Internet AND
+  # (iii) for free AND
+  # (iv) for anonymous consumption or access (i.e. for any end-user and w/o any user registration) AND
+  # (v) for (unmonitored) download from everywhere (i.e. no restriction for downloads from e.g. Cuba, Iran, N.Korea, Sudan, Syria, Crimea)?
+  # Means: We intend to provide our software object code for public consumption on a "fire and forget" basis, completely unrestricted for any user
+  # and unmonitored/unattended by Software AG. Users must NOT be analyzed/tracked or contacted for follow ups, etc.!
+2.10) Public retail market availability criteria fulfilled? (Please see (i) info text box!): false
+  # Is the Surveyed Item generally available to the public by being sold (or rented or handed out for free), without restriction and EXCLUSIVELY,
+  # from stock at RETAIL SELLING POINTS in over-the-counter, mail order (incl. webshops), electronic (incl. communities) or telephone call transactions?
+2.11) Is Surveyed Item designed for installation by the user w/o substantial support by Software AG?: true
+  # only answer if 2.10=true
+2.12) Does Surveyed Item have crypto functionality that can be easily changed by the user?: false
+  # only answer if 2.10=true
+
+# AVAILABILITY INFO
+# The following dates apply only to the first release where a full (AgileApps) survey was submitted; they are used for
+# prioritizing the initial survey and do not need to be updated for no-change releases
+3.1) Name of Virtual Suite Release (if available): 
+3.1.1) Preview-ECR Date: 
+3.1.2) GA Date: 2024-03-15
+3.2) Availability-Type - Shall the Surveyed Item at any time (prior and after release) be available to third parties as On-Premise installation solution only?: false
+  # if true, skip the following 3.2.* questions
+3.2.1) Shall the unreleased Preview/Early Customer Review (ECR) version of the Surveyed Item be hosted for Customer (p)review and access from SAG-internal servers and/or SAG-external servers (e.g. Amazon cloud)?: 
+3.2.2) Shall the Surveyed Item be available for customer use as: Cloud Product/Service and as On Premise product
+  # Valid options are: "Cloud Product/Service - hosted only" or "Cloud Product/Service and as On Premise product"
+3.2.2.1) The Surveyed Item will be available for customer use in: Public and Private Cloud environments
+  # Valid options are: "Private Cloud environments only", "Public Cloud environments only" or "Public and Private Cloud environments"
+
+3.3) Shall THIS version of the Surveyed Item be made available in Docker-type environments?: false
+  # if false, skip the following 3.3.x questions:
+3.3.1) Specify Container Environments: 
+  # e.g. DOCKER Cloud Rocket, LXD,
+3.3.2) Item uploaded to CONTAINER environment is available to every such environment user for free and without limitations?: 
+3.3.3) Item uploaded to CONTAINER environment is available to selected (or SAG-contracted) customers only?: 
+
+3.4.1) Is the Surveyed Item and/or related knowledge/know how ("Technology") specifically designed / constructed to serve "Surveillance Systems" purposes: false
+  # See full EPC for a long detailed explanation of this. Excludes Accounting of fees, Data collection functions within network elements, etc
+3.4.2) Is the Surveyed Item and/or related knowledge/know how ("Technology") specifically designed/constructed or modified for (see info icon): false
+  # See full EPC for a long detailed explanation of this.
+
+# 4. ADD-ONS
+4.1) Country of Origin - Please specify the location (country) of the build environment for the final build: Germany
+4.2) Is there any US-Person contribution to the Surveyed Item?: false
+  # For the worst case evaluation consider US-origin for any item whose origin/source location is not identifiable!
+  # Please note that US-Persons are counted as such, when they are residents of the US (i.e. have a US passport or when they are green-card holders!)
+4.2.1) Enter Percentage (T) of US-Technology Contributions by SAG's US-resident staff or US-resident contractors (in relation to the Non-US Technology / Contributions): 
+  # Additional calculation to estimate commingled US-based Technology Contributions to the self-developed part of the Surveyed Item.
+  # Finally, sum up the contributions of US-residents and those having a US passport (or a greencard!), having worked on the project for this Surveyed Item
+4.2.1.1) Enter Percentage (T) of US-Technology Contributions by SAG's US-resident staff or US-resident contractors: 
+  # Preferred calculation method. If available, sum up fair market values (price) of all US components and divide by fair market price of total offering
+  # of our Surveyed Item package. If not possible, choose the next lower alternative for remaining us parts!
+4.3) Does any former item/product version stem from past development that was performed in the US?: true
+  # By this question we try to find out, whether a product that is handled outside of the US still contains parts that were once created in the US and influence the US amount calculation!
+4.3.1) Estimate the portion % of the initial US product's software code that is still part in today's deliverable: 5.00%
+  # Enter estimated figures such as "<6%", ">=6%" and "<<20%"; ">=20 and <=25%"; or ">>25%". If you definitely cannot determine that value, write >=99%.
+
+# 3rd PARTY ITEMS AND PRODUCTS
+4.4) Are there Z-CODE-3RD-PARTY ITEMS packaged with this Surveyed Item that are not otherwise contained in a used and declared pre-packaged component?: true
+4.4.1) Do any of the provided 3RD PARTY COMPONENTS and PRODUCTS provide cryptographic functionality ('Crypto Support?') that is available to the Surveyed Item or for further external consumption?: 
+
+4.5) Are there pre-packaged SAG-internal COMPONENT modules or commercial SAG PRODUCTS integrated and distributed with this Surveyed product package?: false
+4.5.1) Do any of the provided pre-packaged COMPONENT modules or SELLABLE Software AG PRODUCTS provide cryptographic functionality ('Crypto Support?') that is available to the Surveyed Item or for further external consumption?: 
+
+4.6) Is this Surveyed Item JUST a bundle (package) of other unmodified SAG-products?: false
+  # If true, then NO CLASSIFICATION can be evaluated for this item. Please refer to the Classifications of each single packaged item which would be valid instead!
+  # Note: A BUNDLE in this sense is a selection of otherwise available export classified items/parts.
+  # A fair example is an SAP package: No addition of individual new code is permitted, as it would require additional classification review.
+  # The highest classification of all included items will determine the most critical classification of the entire BUNDLE package!
+4.6.1) Are there product codes / versions shipped standalone - which are bundled along with this Surveyed Item and have not been listed for this Survey?: false
+4.7) Are there product codes / versions shipped standalone - which are known to be using/depending on this Surveyed Item and have NOT BEEN LISTED for this Survey under TAB(0)?: true
+  # If true, please add these Depending Items as part of the component SBOM in the EPC survey.
+
+# ACTIVATION AGENT SUPPORT - Product Enablement by License Key or Access Code
+5.1) Does the Surveyed Item require an ACTIVATION AGENT (e.g. Lic.Key or User-ID/pwd) to be executed (or accessed) by users and is it otherwise not usable/accessible when provided without such an Agent?: true
+  # if false, skip remaining 5.1.* questions
+# 5.1.1) Please check with true any of the following statements if correct/applicable: The Activation Agent (Key) ...
+5.1.1.1) ... switches on/off the whole Surveyed Item (i.e. is useless if disabled). incl. all additionally installed components and/or 3rd party items (i.e. Surveyed Item is useless at all times, if AGENT (Key) is absent): true
+5.1.1.2) ... switches on/off just the Surveyed Item's cryptography. , incl. (at least) the cryptography of all additionally installed components and/or 3rd party items: false
+5.1.1.3) ... switches on/off some feature functions only (i.e. available cryptography functions may still work): false
+5.1.1.4) ... has other purposes (Please explain/describe): 
+5.2) Is that ACTIVATION AGENT at the time of delivery/customer-download always separated from all alternative products?: true
+5.2.1) Specify ProductCode(s)/Version(s) of alternative products, having the ACTIVATION AGENT activated upon delivery: > 
+   CYB
+   SOURCE CODE
+
+# SOURCE CODE
+5.3) Does the delivered Survey Item consist of or contain SOURCE-CODE?: true
+  # if false, skip remaining 5.3.* questions
+5.3.1) Specify which parts: all, it's open-source
+5.3.1.1) Does this SOURCE-CODE contain/support ENCRYPTION functions?: false
+5.3.1.2) Specify these SOURCE-CODE Modules: 
+5.3.1.3) Did this ENCRYPTION SOURCE-CODE receive a BIS qualification for License Exception TSU?: false
+5.3.1.3.1) Link to related TSU announcement or similar proof of manufacturer or declare why unknown: CRYPTO PROVISIONING
+
+# CRYPTO PROVISIONING - for Resources Outside of Surveyed Item
+5.4) If the Surveyed Item is capable of performing crypto functions, are these restricted to supporting the Item's primary purpose? (Answer true if Item is crypto-free!): true
+# APPLICABLE CRYPTOGRAPHY FUNCTIONS
+# 5.5) Does the Surveyed Item PERFORM, ACTIVATE, or ENABLE OTHER ITEMS (e.g. from lists related to Q4.3 and Q4.4) THAT PERFORM any of the following FUNCTIONS?
+5.5.1) AUTHENTICATION, such as password protection or digital signatures: false
+5.5.2) COPY PROTECTION or License Key checking or enforcement: false
+5.5.3) ANTI-VIRUS protection: false
+5.5.4) SSL used for Authentication / password purposes ONLY: false
+5.5.5) KEY MANAGEMENT for keys used by public key infrastructure encryption: false
+5.5.6) Decryption ONLY (i.e. no encryption!): false
+5.5.7) ENCRYPTION for Non-Authentication and payload purposes, incl. using SSL: true
+5.6) If you clicked NO for every item (Q5.5.x), but Item does provide an interface by which other items or users can access external cryptographic functionality, explain that interface: 
+
+# CRYPTO PROTOCOLS
+# 6.1) Does the Surveyed Item implement or support the encryption protocols below?
+6.1.1) SSL or TLS: true
+6.1.1a) JDK - if used, Specify name of TP- or SAG-iData component ('module') where JDK is accessed from: OpenJDK11
+6.1.1b) .NET - if used, Specify name of TP- or SAG-iData component ('module') where .NET is accessed from: false
+6.1.1c) OpenSSL - if used, Specify name of TP- or SAG-iData component ('module') where OpenSSL is accessed from: > 
+   No
+   CYX - Cumulocity Modules for NGinx
+  # e.g. We get our OpenSSL from the "SSL" iData component, which is pulled in via the dependency on XXX
+6.1.1d) ENTRUST - if used, Specify name of TP- or SAG-iData component ('module') where ENTRUST  is accessed from: false
+6.1.1e) Others - if used, Specify name of TP- or SAG-iData component ('module') where SSL-Crypto is accessed from: false
+6.1.2) SSH: false
+6.1.2a) J2SSH - if used, specify SSH-J2SSH-Source-Info: false
+6.1.2b) Others - if used, Specify in comma-separated list the name of TP- or SAG-iData component(s) ('module(s)') where SSH-Other library (libraries) reside(s) for access: false
+6.1.3) IPSEC - if used, Specify name of TP- or SAG-iData component(s) ('module(s)') where IPSEC functionality is drawn from (i.e. accessed): false
+6.1.4) PKCS - if used, Provide comma-separated list of supported PKCS standard variants: false
+6.1.5) Other - if used, Provide comma-separated list of other crypto functions used not yet mentioned before (incl. Base64, MD5 and any other high or low level crypto): > 
+   No
+   AES256, SHA256, HMAC-SHA1, X.509 (Appendix Q8.1)
+
+6.2) Does the Surveyed Item exclusively make use of, support or activate encryption protocols from OpenSSL and/or JDK only, (and) just for SSL- and TLS-based network communication security purposes?: true
+  # Do not answer with true to this question, if any other encryption protocols are used, supported or activated which are not retrieved from OpenSSL and or JDK's SSL!
+6.2.1) Does the Surveyed Item support or implement SYMMETRIC algorithms and key lengths greater than 56 bits?: false
+6.2.1.1) List all SYMMETRIC crypto algorithm names plus key lengths that will not be described for this product elsewhere (for example, in a 'Supplement 6' document): > 
+   For SSL: - OpenJDK - all what is available from CentOS 7 - All from BouncyCastle - AES256 256 bits (see Summary under Appendix Q8.1)
+6.3) Does the Surveyed Item support or implement ELLIPTIC encryption (that is, asymmetric algorithms based on discrete logarithms other than in a multiplicative group of finite field of size, with a key length greater than 112 bit)?: false
+6.3.1) If Yes, list all Elliptic crypto algorithm names plus key lengths that have not been described for this product elsewhere (for example, in a Supplement 6 document): 
+6.4) Does the Surveyed Item support or implement ASYMMETRIC algorithms and key lengths greater than 512 bit?: true
+6.4.1) List all ASYMMETRIC crypto algorithm names plus key lengths that have not been described for this product elsewhere (for example, in a 'Supplement 6' document): TLS/SSL 2048 to 4096
+
+# AUTHORITY REVIEW ASSESSMENT
+# Official Authority Review is likely required in case any answer below is true!
+7.1) Is the Surveyed Item a network infrastructure product (e.g. firmware for a hardware router)?: false
+7.2) Does the Surveyed Item have cryptographic functionality that has been modified or customized for a specific customer?: false
+7.2.1) Does Surveyed Item use crypto functionality which was or is specifically developed or individually modified for authorities of the Federal Republic of Germany?: 
+7.3) Is the Surveyed Item encryption software, or a commodity, or a component thereof, that is designed, modified or customized for a government end user or end use?: false
+7.3.1) Does the Surveyed Item - independent of any supported cryptographic content or abilities - make use of any software, hardware or Technology , that has the property of being specifically developed for military purposes (that you/R&D are aware of)?: false
+7.4) Does the Surveyed Item provide proprietary cryptographic functionality or is it an encryption component that is user-accessible and that can be easily changed by the user?: false
+  # Encryption component does not include encryption software that would be considered 'publicly available' (e.g. products with license exception TSU), as that term is used in section 740.13(e)(1) of the EAR.
+7.5) Does the Surveyed Item provide functionality necessary to perform quantum cryptography?: false
+7.6) Is the Surveyed Item encryption software that was modified or customized for high-performance digital computers?: false
+7.7) Does the Surveyed Item perform crypto-analytic functions?: false
+  # Systems, equipment, applications, specific electronic assemblies, modules and integrated circuits designed or modified to perform cryptanalytic functions,
+  # software having the characteristics of cryptanalytic hardware or performing cryptanalytic functions, or technology for the
+  # development, production or use of cryptanalytic commodities or software.
+7.8) Does the Surveyed Item incorporate an open cryptographic interface (OCI)?: false
+  # Note: Java 1.6 - 1.8 are not considered to contain an OCI
+  # In general, this is a mechanism designed to allow a customer or other party to insert cryptographic functionality without the intervention, help or assistance
+  # of the manufacturer (here Software AG) or its agents, e.g.manufacturer's signing of cryptographic code or proprietary interfaces
+  # (i.e. delivery of Java without JCE module would constitute such an open cryptographic interface).
+  # If the cryptographic interface implements a fixed set of cryptographic algorithms, key lengths or key exchange management systems, that cannot be changed,
+  # it will not be considered an "open" cryptographic interface. All general application programming interfaces
+  # (e.g., those that accept either a cryptographic or non-cryptographic interface but do not themselves maintain any cryptographic functionality)
+  # will not be considered "open" cryptographic interfaces.
+# 7.9) This section involves transfer of Technology relating to the Surveyed Item:
+7.9.1) Is non-standard proprietary cryptography Technology transferred to end users of the Surveyed Item?: false
+7.9.2) Is Technology other than crypto-analytic, non-standard-crypto, or OCI items transferred to end users of the Surveyed Item?: false
+7.10) Is the Surveyed Item encryption software, or an encryption commodity, or a component, THAT is designed, modified or customized for a government end user or end use?: false
+  # NB: This is numbered "7.10" in the AgileApps tool but "7.10.1" in the PDF AgileApps generates - here we use the PDF numbering
+7.10.1) Is the Surveyed Item encryption software, or an encryption commodity, or a component, THAT CONTAINS or can use or activate one or more of the following resources?: false
+  # NB: This is number "7.10.2" in the AgileApps tool
+  # True if the product is an SDK that enables development applications that adhere to Java Specification Requests (JSRs) or other specifications
+  # that support the use of cryptography. Otherwise, click No. Also false if the surveyed item incorporates and uses an already classified Software AG's
+  # Software Designer Framework Component (SDF) for provision of such functionality.
+7.10.1.1) The SDK uses cryptographic functions of a connected library only for accessing other resources securely, but the Main-Product does not expose such a crypto library's functions to other software or to the modules themselves that are written with: false
+7.10.1.2) The SDK provides cryptographic functions of built-in crypto facilities - or access to crypto functions from connected, external libraries - to other software or to the modules themselves that are written with that SDK (SDK WITH CRYPTO): false
+7.10.1.3) The SDK not just provides access to crypto functions but (also) explicitly provides means to build new cryptographic functions (CRYPTO SDK): false
+
+ # if false, skip 7.10.2.* questions
+  # Note: Such a Crypto SDK must be treated like an 'SDK with crypto', requiring official BIS reviews whenever a modification of cryptography is applied to any crypto function of underlying crypto libraries. Such activities require advanced/early TCA review!
+  # BIS acknowledged that the language of this question [= 740.17 (b)(3)(iv)] is a bit unclear and that it might possibly be clarified in the future.
+  # Basically, this question intends to capture products that 'turn on,' such as via a license key, hardware dongle, or some other software routine,
+  # cryptographic functionality in another product that would otherwise remain dormant or inaccessible to the user. Such products still require the
+  # official 30-day classification request even if the crypto functionality that is being activated or turned on would be self-classifiable.
+  # However, an important distinction must be made between products that "activate or enable cryptographic functionality...which would otherwise remain disabled"
+  # and products that simply call to or use cryptographic functionality that is already available to the user. For instance, APX 8.2, which BIS
+  # determined would be eligible for self-classification under G400014, "uses the built-in encryption functionality of Microsoft .NET security APIs from the .NET runtime."
+  # This use or call of crypto functionality that the user already has access to (that is, is already enabled) would imply an answer of No answer to this question.
+
+# APPENDIX
+# Provide an explanation of the purpose of any applied encryption, describe the data that is being encrypted,
+# and provide a list of algorithms used in the encryption (including symmetry type and associated key lengths).
+# Also provide any additional comments.
+8.1) Describe additional important technical details here: 
+
+8.2.1) Third parties that implement cryptography:
+  # The TPs/components directly containing (NOT just indirectly using/accessing) cryptographic
+  # functionality must be listed here since version upgrades to these libraries must be checked
+  # for changes that could affect the export classification
+
+  # For each one, if crypto is used by Surveyed Item &/or provided for external use, specify the
+  # "purpose" (what this item uses cryptography for e.g. TLS payload confidentiality)
+  # and if known, what strength of cryptography (algos/key lengths).
+  # The section 6.1 questions may need updating if the strength increases
+
+  # When crypto is NOT used or provided for external use, specify "not used"
+  8.2.1a) Components:
+  8.2.1b) Third parties:
+    httpclient:
+      Algorithm: SSL/TLS
+      Purpose: Https connection to third party systems
+    Java-WebSocket:
+      Algorithm: SSL/TLS
+      Purpose: Secure web socket connection to notificatio 2.0
+
+8.2.2) Third parties that use (or provide for external use) cryptography implemented by another library:
+  # This is only for libraries that do NOT implement cryptography themselves
+  # It is only required to list libraries that determine the usage/purpose i.e. what this item uses cryptography for (e.g. TLS payload confidentiality)
+  # or the strength (algorithm/key length) of the cryptography
+  # (which may be a subset of what cryptographic implementations like JDK/OpenSSL are capable of)
+
+  # For each one, if crypto is used by Surveyed Item &/or provided for external use, specify
+  # the purpose (e.g. TLS payload confidentiality) and if known what strength of cryptography (algos/key lengths).
+  8.2.2a) Components:
+    # none
+  8.2.2b) Third parties:

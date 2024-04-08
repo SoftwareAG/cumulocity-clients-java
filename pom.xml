@@ -331,6 +331,15 @@
                     <version>2.14</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.cyclonedx</groupId>
+                    <artifactId>cyclonedx-maven-plugin</artifactId>
+                    <configuration>
+                        <outputName>java-sdk-bom</outputName>
+                        <verbose>false</verbose><!-- = ${cyclonedx.verbose} -->
+                    </configuration>
+                    <version>2.7.10</version>
+                </plugin>
+                <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.8.0</version>
@@ -661,6 +670,30 @@
                                         </resourceBundle>
                                     </resourceBundles>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>scan</id>
+            <!--We want to generate one dependency bom for all the projects-->
+            <modules>
+                <module>microservice</module>
+                <module>lpwan-backend</module>
+            </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>makeAggregateBom</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>

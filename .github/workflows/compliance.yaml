@@ -1,0 +1,68 @@
+name: Compliance
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      # defaults
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-scan:
+    name: Java SDK Compliance
+    permissions: write-all
+    runs-on: [ cumulocity-clients-java ]
+    env:
+      COMPONENT_NAME: java-sdk
+      IDATA_CODE: CYJ
+      TPP_FETCHER_URL: ${{ vars.C8Y_TPP_FETCHER_URL }}
+      JAVA_VERSION: '11'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: IOTA/c8y-component-base/.github/actions/setup-java-maven@v1.0.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          C8Y_MVN_PUBLIC_USERNAME: ${{ secrets.C8Y_MVN_PUBLIC_USERNAME }}
+          C8Y_MVN_PUBLIC_PASSWORD: ${{ secrets.C8Y_MVN_PUBLIC_PASSWORD }}
+
+      - name: Prepare BOM file for management service
+        id: prepare_sbom_file
+        run: .jenkins/scripts/mvn.sh --activate-profiles scan --file pom.xml clean validate
+
+      - name: Calculate compliance upload identifier
+        id: calculate_upload_id
+        run: |
+          VERSION=`.jenkins/scripts/mvn.sh --quiet --non-recursive --file pom.xml --define exec.executable='echo' --define exec.args='${revision}' exec:exec `
+          HASH=$(git rev-parse --short "$GITHUB_SHA")
+          echo "Setting VERSION to '$VERSION-build$(date +'%Y%m%d')-$HASH' (github.ref=${{ github.ref }})"
+          echo "BUILD_ID=$VERSION-build$(date +'%Y%m%d')-$HASH" >> $GITHUB_ENV
+
+      - name: Uploading Gateway BOM file
+        uses: IOTA/c8y-component-base/.github/actions/compliance/third-party-upload@v2.0
+        with:
+          cyclonedx-bom-files: ./target/java-sdk-bom.json # space-separated list of BOM files in CycloneDX format
+
+      - name: Check approval
+        uses: IOTA/c8y-component-base/.github/actions/compliance/third-party-licensing-check@v2.0
+        with:
+          dry-run: ${{ contains(github.event.pull_request.labels.*.name, 'tp-request-skip') }} # during workflow dev/testing set this label on the PR; prevents submitting third party approval requests to TCA
+      
+      - uses: IOTA/c8y-component-base/.github/actions/compliance/export@v2.0
+        name: Review Compliance Export  
+        id: compliance-export
+        if: always()
+        with:
+          product-idata-code: ${{env.IDATA_CODE}}
+          component-dependencies-idata-version: ""
+          export-compliance-yaml: ./export-compliance.yaml
+          dry-run: true
+          verbose: false
