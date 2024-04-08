@@ -677,8 +677,8 @@
             </build>
         </profile>
         <profile>
-            <id>scan</id>
-            <!--We want to generate one dependency bom for all the projects-->
+            <id>compliance</id>
+            <!-- We want to generate a single dependency bom for all the projects -->
             <modules>
                 <module>microservice</module>
                 <module>lpwan-backend</module>

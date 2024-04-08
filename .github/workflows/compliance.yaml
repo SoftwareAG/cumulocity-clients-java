@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -36,7 +36,9 @@ jobs:
 
       - name: Prepare BOM file for management service
         id: prepare_sbom_file
-        run: .jenkins/scripts/mvn.sh --activate-profiles scan --file pom.xml clean validate
+        env:
+          MAVEN_PROFILES: ci,compliance
+        run: .jenkins/scripts/mvn.sh --file pom.xml clean validate
 
       - name: Calculate compliance upload identifier
         id: calculate_upload_id
