@@ -2,6 +2,8 @@ package com.cumulocity.mqtt.service.sdk.websocket;
 
 import com.cumulocity.mqtt.service.sdk.MqttServiceException;
 import com.cumulocity.mqtt.service.sdk.model.MqttServiceMessage;
+import com.cumulocity.mqtt.service.sdk.model.util.AvroMessageConverter;
+import com.cumulocity.mqtt.service.sdk.model.util.MessageConverter;
 import com.cumulocity.mqtt.service.sdk.publisher.Publisher;
 import com.cumulocity.mqtt.service.sdk.publisher.PublisherConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ class WebSocketPublisher implements Publisher {
 
     private final static String SUBSCRIBER = "mqttServicePublisher";
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/producer/?token=%s";
+    private final static MessageConverter messageConverter = new AvroMessageConverter();
 
     private final WebSocketConfig config;
     private final PublisherConfig publisherConfig;
@@ -55,7 +58,7 @@ class WebSocketPublisher implements Publisher {
 
     @Override
     public void publish(MqttServiceMessage message) {
-        final byte[] data = MessageConverter.encode(message);
+        final byte[] data = messageConverter.encode(message);
         final String publishMessage = sequence.incrementAndGet() + "\n" + Base64.encodeBase64String(data);
 
         producer.send(publishMessage);

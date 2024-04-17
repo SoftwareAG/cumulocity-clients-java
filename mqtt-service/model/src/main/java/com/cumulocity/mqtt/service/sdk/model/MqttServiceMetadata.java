@@ -2,6 +2,7 @@ package com.cumulocity.mqtt.service.sdk.model;
 
 
 import lombok.*;
+import org.apache.avro.reflect.Nullable;
 
 import java.util.Map;
 
@@ -14,22 +15,29 @@ import java.util.Map;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MqttServiceMetadata {
 
+    @Nullable
     private String clientId;
 
     private int messageId;
 
     private boolean dupFlag;
 
+    @Nullable
     private Map<String, String> userProperties;
 
+    @Nullable
     private PayloadFormatIndicator payloadFormatIndicator;
 
+    @Nullable
     private String contentType;
 
+    @Nullable
     private byte[] correlationData;
 
+    @Nullable
     private String responseTopic;
 
+    @Nullable
     private String topic;
 
     /**

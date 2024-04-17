@@ -19,7 +19,7 @@
 
     <properties>
         <tootallnate.websocket.version>1.5.3</tootallnate.websocket.version>
-        <pulsar.version>3.1.0</pulsar.version>
+        <avro.version>1.11.3</avro.version>
     </properties>
 
     <modules>

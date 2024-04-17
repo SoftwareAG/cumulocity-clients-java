@@ -38,11 +38,6 @@
             <artifactId>Java-WebSocket</artifactId>
             <version>${tootallnate.websocket.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.pulsar</groupId>
-            <artifactId>pulsar-client</artifactId>
-            <version>${pulsar.version}</version>
-        </dependency>
 
         <!-- Testing -->
         <dependency>

@@ -2,6 +2,8 @@ package com.cumulocity.mqtt.service.sdk.websocket;
 
 import com.cumulocity.mqtt.service.sdk.MqttServiceException;
 import com.cumulocity.mqtt.service.sdk.listener.MessageListener;
+import com.cumulocity.mqtt.service.sdk.model.util.AvroMessageConverter;
+import com.cumulocity.mqtt.service.sdk.model.util.MessageConverter;
 import com.cumulocity.mqtt.service.sdk.subscriber.Subscriber;
 import com.cumulocity.mqtt.service.sdk.subscriber.SubscriberConfig;
 
@@ -14,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 class WebSocketSubscriber implements Subscriber {
 
     private final static String WEBSOCKET_URL_PATTERN = "%s/notification2/consumer/?token=%s";
+    private final static MessageConverter messageConverter = new AvroMessageConverter();
 
     private final WebSocketConfig config;
     private final SubscriberConfig subscriberConfig;
@@ -88,7 +91,7 @@ class WebSocketSubscriber implements Subscriber {
             final Optional<String> ackHeader = webSocketMessage.getAckHeader();
             final byte[] avroPayload = webSocketMessage.getAvroPayload();
 
-            messageListener.onMessage(MessageConverter.decode(avroPayload));
+            messageListener.onMessage(messageConverter.decode(avroPayload));
 
             ackHeader.ifPresent(this::send);
         }
