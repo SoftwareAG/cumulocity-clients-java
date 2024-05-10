@@ -369,24 +369,18 @@ def cucumber_java(instance) {
         withEnv([
             "RELEASE_RESOURCES_URL=https://${RELEASE_RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com"
         ]) {
-          job = build job: 'Functional/Multibranch-cumulocity_cucumber_java', parameters: [
+          job = build job: 'Functional/cucumber-java', parameters: [
               string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-              string(name: 'TEST_TAG', value: params.java_test_tags),
-              string(name: 'KUB_NAMESPACE', value: "${instance.name}-dev-c8y-io.svc.cluster.local"),
-              string(name: 'DEPLOYMENT_ENVIRONMENT', value: instance.domain),
-              string(name: 'MANAGE_USER', value: MANAGEMENT_USER),
-              string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-              string(name: 'TENANT_PASS', value: TENANT_PASSWD),
-              string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'TEST_TAGS', value: params.java_test_tags),
+              string(name: 'TEST_DOMAIN', value: instance.domain),
+              string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com"),
+              string(name: 'MAVEN_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
             unstable('Cucumber Java tests failed')
           }
-          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch-cumulocity_cucumber_java', selector: specific("${job.number}"), target: 'java', optional: true)
+          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/cucumber-java', selector: specific("${job.number}"), target: 'java', optional: true)
           junit(testResults: 'java/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
         }
       }
@@ -400,17 +394,16 @@ def sdk_tests(instance) {
       withCredentials([
           usernamePassword(credentialsId: 'pre-merge-management', usernameVariable: 'MANAGEMENT_USER', passwordVariable: 'MANAGEMENT_PASSWD')
       ]) {
-        job = build job: 'Functional/Multibranch_cumulocity_java_sdk', parameters: [
-            string(name: 'DEPLOY_ENVIRONMENT', value: instance.domain),
+        job = build job: 'Functional/java-sdk', parameters: [
             string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-            string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-            string(name: 'BUILD_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
+            string(name: 'TEST_DOMAIN', value: instance.domain),
+            string(name: 'MAVEN_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
         ], wait: true, propagate: false
 
         if (job.result != 'SUCCESS') {
           unstable('SDK functional tests failed')
         }
-        copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_java_sdk', selector: specific("${job.number}"), target: 'sdk', optional: true)
+        copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/java-sdk', selector: specific("${job.number}"), target: 'sdk', optional: true)
         junit(testResults: 'sdk/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
       }
     }
@@ -428,23 +421,19 @@ def java_token_tests(instance) {
         withEnv([
             "RELEASE_RESOURCES_URL=https://${RELEASE_RESOURCES_CREDENTIALS}@staging-resources.cumulocity.com"
         ]) {
-          job = build job: 'Functional/Multibranch_cumulocity_cucumber_token_java', parameters: [
+          job = build job: 'Functional/cucumber-java', parameters: [
               string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
-              string(name: 'TEST_ENV', value: instance.domain),
-              string(name: 'KUB_NAMESPACE', value: "${instance.name}-dev-c8y-io.svc.cluster.local"),
-              string(name: 'TEST_TAG', value: '@passwordInternal'),
-              string(name: 'MANAGE_PASS', value: MANAGEMENT_PASSWD),
-              string(name: 'TENANT_PASS', value: TENANT_PASSWD),
-              string(name: 'RESOURCES_COMMON_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_SAG_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'RESOURCES_EXAMPLES_URL', value: RELEASE_RESOURCES_URL),
-              string(name: 'BUILD_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'TEST_TAGS', value: '@passwordInternal'),
+              string(name: 'TEST_DOMAIN', value: instance.domain),
+              string(name: 'AUTH_SCHEME', value: 'oauth-internal-all'),
+              string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com"),
+              string(name: 'MAVEN_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
             unstable('SDK token tests failed')
           }
-          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/Multibranch_cumulocity_cucumber_token_java', selector: specific("${job.number}"), target: 'token', optional: true)
+          copyArtifacts(filter: '**/TEST-*.xml', fingerprintArtifacts: true, projectName: 'Functional/cucumber-java', selector: specific("${job.number}"), target: 'token', optional: true)
           junit(testResults: 'token/**/TEST-*.xml', keepLongStdio: true, allowEmptyResults: true)
         }
       }
