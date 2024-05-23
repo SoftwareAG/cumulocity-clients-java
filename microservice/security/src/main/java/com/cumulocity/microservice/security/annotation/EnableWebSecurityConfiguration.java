@@ -53,7 +53,7 @@ public class EnableWebSecurityConfiguration {
 
         http
                 .authorizeRequests(authorize -> authorize
-                        .antMatchers("/metadata", "/health", "/prometheus", "/metrics").permitAll()
+                        .antMatchers("/metadata", "/health", "/prometheus", "/metrics", "/version").permitAll()
                         .anyRequest().fullyAuthenticated()
                 )
                 .httpBasic(withDefaults())

@@ -3,3 +3,4 @@ com.cumulocity.microservice.monitoring.health.configuration.MicroserviceHealthDe
 com.cumulocity.microservice.monitoring.health.indicator.MemoryHealthIndicatorConfiguration
 com.cumulocity.microservice.monitoring.health.indicator.PlatformHealthIndicatorConfiguration
 com.cumulocity.microservice.monitoring.health.indicator.SubscriptionHealthIndicatorConfiguration
+com.cumulocity.microservice.monitoring.version.indicator.VersionEndpointAutoConfiguration
