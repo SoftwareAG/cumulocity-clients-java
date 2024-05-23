@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.monitoring.health.controller.configuration;
+package com.cumulocity.microservice.monitoring.health.indicator.subscribtion;
 
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import org.springframework.context.annotation.Bean;

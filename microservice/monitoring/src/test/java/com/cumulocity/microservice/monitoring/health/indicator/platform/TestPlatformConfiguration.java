@@ -1,4 +1,4 @@
-package com.cumulocity.microservice.monitoring.health.controller.configuration;
+package com.cumulocity.microservice.monitoring.health.indicator.platform;
 
 import com.cumulocity.microservice.context.annotation.EnableContextSupport;
 import com.cumulocity.microservice.subscription.model.core.PlatformProperties;

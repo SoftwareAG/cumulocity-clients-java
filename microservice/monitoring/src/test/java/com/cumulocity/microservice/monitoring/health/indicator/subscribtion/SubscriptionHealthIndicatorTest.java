@@ -1,29 +1,28 @@
-package com.cumulocity.microservice.monitoring.health.controller;
+package com.cumulocity.microservice.monitoring.health.indicator.subscribtion;
 
-import com.cumulocity.microservice.monitoring.health.controller.configuration.TestConfiguration;
-import com.cumulocity.microservice.monitoring.health.controller.configuration.TestMicroserviceSubscriptionConfiguration;
+import com.cumulocity.microservice.monitoring.health.indicator.TestHealthIndicatorConfiguration;
+import com.cumulocity.microservice.monitoring.MockMvcTestBase;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.ApiVersion;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
-@DirtiesContext(classMode = AFTER_CLASS)
-@SpringBootTest(classes = { TestMicroserviceSubscriptionConfiguration.class, TestConfiguration.class },
-        properties = {
+@DirtiesContext
+@SpringBootTest(classes = {TestHealthIndicatorConfiguration.class, TestMicroserviceSubscriptionConfiguration.class})
+@TestPropertySource(properties = {
         "management.endpoint.health.enabled=true",
         "management.endpoints.web.exposure.include=health"
 })
-public class SubscriptionHealthIndicatorTest {
+public class SubscriptionHealthIndicatorTest extends MockMvcTestBase {
 
     @Autowired
     private MicroserviceSubscriptionsService subscriptionsService;

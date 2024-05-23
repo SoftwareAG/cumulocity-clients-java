@@ -1,16 +1,20 @@
 package com.cumulocity.microservice.monitoring.health.indicator;
 
+import com.cumulocity.microservice.monitoring.health.annotation.EnableHealthIndicator;
 import com.cumulocity.microservice.monitoring.health.indicator.memory.HeapMemoryHealthIndicator;
 import com.cumulocity.microservice.monitoring.health.indicator.memory.HeapMemoryHealthIndicatorProperties;
 import com.cumulocity.microservice.monitoring.health.indicator.memory.NonHeapMemoryHealthIndicator;
 import com.cumulocity.microservice.monitoring.health.indicator.memory.NonHeapMemoryHealthIndicatorProperties;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+@AutoConfiguration
+@ConditionalOnBean(value = Object.class, annotation = EnableHealthIndicator.class)
 public class MemoryHealthIndicatorConfiguration {
-    @Configuration
+
+    @AutoConfiguration
     public static class HeapMemoryHealthIndicatorConfiguration {
 
         @Bean
@@ -24,10 +28,9 @@ public class MemoryHealthIndicatorConfiguration {
         public HeapMemoryHealthIndicatorProperties heapMemoryHealthIndicatorProperties() {
             return new HeapMemoryHealthIndicatorProperties();
         }
-
     }
 
-    @Configuration
+    @AutoConfiguration
     public static class NonHeapMemoryHealthIndicatorConfiguration {
 
         @Bean
@@ -40,6 +43,5 @@ public class MemoryHealthIndicatorConfiguration {
         public NonHeapMemoryHealthIndicatorProperties nonHeapMemoryHealthIndicatorProperties() {
             return new NonHeapMemoryHealthIndicatorProperties();
         }
-
     }
 }

@@ -1,0 +1,5 @@
+com.cumulocity.microservice.monitoring.actuator.configuration.MicroserviceActuatorDefaultAutoConfiguration
+com.cumulocity.microservice.monitoring.health.configuration.MicroserviceHealthDefaultAutoConfiguration
+com.cumulocity.microservice.monitoring.health.indicator.MemoryHealthIndicatorConfiguration
+com.cumulocity.microservice.monitoring.health.indicator.PlatformHealthIndicatorConfiguration
+com.cumulocity.microservice.monitoring.health.indicator.SubscriptionHealthIndicatorConfiguration
