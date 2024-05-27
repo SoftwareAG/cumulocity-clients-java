@@ -365,13 +365,14 @@ def update_instance(instance) {
 def core_functional_java(instance) {
   stage('core functional java tests') {
     container('default') {
+      namespace = instance.domain.replace('.', '-')
       job = build job: 'Functional/cucumber-java', parameters: [
           string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
           string(name: 'TEST_TAGS', value: params.java_test_tags),
           string(name: 'TEST_DOMAIN', value: instance.domain),
           string(name: 'AUTH_SCHEME', value: 'basic'),
           string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com/pre-merge/${VERSIONS.current}"),
-          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current}"),
+          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current} -Dkubernetes.namespace=${namespace}.svc.cluster.local"),
       ], wait: true, propagate: false
 
       if (job.result != 'SUCCESS') {
