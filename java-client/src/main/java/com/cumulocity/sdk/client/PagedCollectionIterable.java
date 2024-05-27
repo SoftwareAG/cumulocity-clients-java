@@ -1,8 +1,9 @@
 package com.cumulocity.sdk.client;
 
-import java.util.Iterator;
-
 import com.cumulocity.rest.representation.BaseCollectionRepresentation;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class PagedCollectionIterable<T, C extends BaseCollectionRepresentation<T>> implements Iterable<T>, Iterator<T> {
 
@@ -54,6 +55,9 @@ public class PagedCollectionIterable<T, C extends BaseCollectionRepresentation<T
 
     @Override
     public T next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         counter++;
         return iterator.next();
     }
