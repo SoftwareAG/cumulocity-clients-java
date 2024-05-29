@@ -135,7 +135,7 @@ def calculate_versions() {
             VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
             VERSIONS.currentRpm = "${VERSIONS.current}-1"
             releaseLine = pipelineReleaseLineForBranch(env.CHANGE_TARGET)
-            VERSIONS.core = GetVersionFromSourceBranch('cumulocity', releaseLine + '/PostMerge-cumulocity-Tested')
+            VERSIONS.core = GetVersionFromSourceBranch('cumulocity', releaseLine + '/Staging-Ready')
             echo "Building SDK version ${VERSIONS.current} on top of Core version ${VERSIONS.core}"
           } catch (e) {
             stopPipeline('Version sdk', e)
