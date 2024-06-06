@@ -277,7 +277,7 @@ def update_instance(instance) {
 
             ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 \
               -i ${instance.name}-internal.dev.c8y.io, \
-              --user centos \
+              --user rocky \
               --private-key ../.chef/keys/chef_cumulocity.pem \
               --skip-tags 'update-core,layeredproducts' \
               -e 'env_name=${instance.name}-dev-c8y-io' \
