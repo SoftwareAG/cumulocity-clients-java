@@ -3,6 +3,7 @@
 def adminCredentialsId
 def testInstanceDomain
 def systemVersion
+def testBranch
 
 pipeline {
     agent {
@@ -41,27 +42,25 @@ pipeline {
         timeout(time: 4, unit: 'HOURS')
         skipDefaultCheckout()
     }
+    parameters {
+        string(name: 'TEST_BRANCH', defaultValue: '', description: 'tests branch/revision to checkout; determined from env.ghprbSourceBranch when left empty')
+        string(name: 'TEST_DOMAIN', defaultValue: '', description: 'FQDN of the test environment; determined from env.ghprbSourceBranch when left empty')
+        choice(name: 'ADMIN_CREDENTIALS', choices: ['post-merge-admin', 'e2eAdmin'], description: 'Admin credentials ID; only used when TEST_DOMAIN is given')
+    }
     stages {
-        stage('Initialize for post-merge') {
-            when {
-                expression { return env.ghprbSourceBranch.contains('/PostMerge') }
-            }
+        stage('Initialize') {
             steps{
                 script {
-                    adminCredentialsId = "post-merge-admin"
-                    testInstanceDomain = postMergeTestingDomain(env.ghprbSourceBranch)
-                }
-            }
-        }
-
-        stage('Initialize for staging') {
-            when {
-                expression { return env.ghprbSourceBranch.contains('/Staging') }
-            }
-            steps{
-                script {
-                    adminCredentialsId = "e2eAdmin"
-                    testInstanceDomain = stagingTestingDomain(env.ghprbSourceBranch)
+                    if (!params.TEST_DOMAIN.isEmpty()) {
+                        testInstanceDomain = params.TEST_DOMAIN
+                        adminCredentialsId = params.ADMIN_CREDENTIALS
+                    } else if (env.ghprbSourceBranch.contains('/Staging')) {
+                        testInstanceDomain = stagingTestingDomain(env.ghprbSourceBranch)
+                        adminCredentialsId = 'e2eAdmin'
+                    } else {
+                        testInstanceDomain = postMergeTestingDomain(env.ghprbSourceBranch)
+                        adminCredentialsId = 'post-merge-admin'
+                    }
                 }
             }
         }
@@ -70,16 +69,21 @@ pipeline {
             steps {
                 echo "Running from branch ${env.ghprbSourceBranch} on ${testInstanceDomain}"
                 script {
-                    if (['2024', '10.18.0.x', '10.17.0.x', '10.16.0.x', '10.15.0.x']
+                    if (!params.TEST_BRANCH.isEmpty()) {
+                        testBranch = params.TEST_BRANCH
+                    } else if (['2024', '10.18.0.x', '10.17.0.x', '10.16.0.x', '10.15.0.x']
                         .any {env.ghprbSourceBranch.startsWith(it)}) {
                         // for versions 2024 and before sdk is a part of cumulocity component
                         systemVersion = GetVersionFromSourceBranch('cumulocity')
+                        testBranch = "refs/tags/clients-java-${systemVersion}"
                     } else {
                         // later it's separate component so take the version from its descriptor
                         systemVersion = GetVersionFromSourceBranch('java-sdk')
+                        testBranch = "refs/tags/clients-java-${systemVersion}"
                     }
+                    echo "Running tests for branch ${testBranch} on ${testInstanceDomain}"
                 }
-                echo "Running tests for platform version ${systemVersion} on ${testInstanceDomain}"
+
             }
         }
 
@@ -97,7 +101,7 @@ pipeline {
                 echo "Checkout version ${systemVersion} of tests"
                 checkout(scm: [
                     $class: 'GitSCM',
-                    branches: [[name: "refs/tags/clients-java-${systemVersion}"]],
+                    branches: [[name: testBranch]],
                     userRemoteConfigs: scm.userRemoteConfigs,
                     extensions: [[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/*'], [path: '!.jenkins']]]]
                 ])
@@ -140,15 +144,14 @@ pipeline {
     post {
         always {
             script {
-                if (env.ghprbSourceBranch.contains('/Staging')) {
-                    build job: "cucumber-tenants-cleanup",
-                        parameters: [
-                                string(name: "DOMAIN", value: "${testInstanceDomain}"),
-                                string(name: "TENANT_PREFIX", value: "plama-sdk"),
-                                string(name: "TEST_MODE", value: "false")
-                        ],
-                        propagate: false, wait: true
-                }
+                build job: "cucumber-tenants-cleanup",
+                    parameters: [
+                        string(name: "DOMAIN", value: "${testInstanceDomain}"),
+                        string(name: "TENANT_PREFIX", value: "plama-sdk"),
+                        string(name: "TEST_MODE", value: "false")
+                    ],
+                    propagate: false, wait: false
+
             }
         }
     }
