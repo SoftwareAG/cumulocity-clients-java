@@ -3,13 +3,16 @@ package com.cumulocity.microservice.security.annotation;
 import com.cumulocity.microservice.security.filter.PostAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.PreAuthenticateServletFilter;
 import com.cumulocity.microservice.security.filter.PrePostFiltersConfiguration;
+import com.cumulocity.microservice.security.filter.provider.HttpContextProvider;
 import com.cumulocity.microservice.security.token.CumulocityOAuthConfiguration;
 import com.cumulocity.microservice.security.token.CumulocityOAuthMicroserviceFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,6 +36,9 @@ public class EnableWebSecurityConfiguration {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Value("${management.security.roles:TENANT_MANAGEMENT_ADMIN}")
+    private String[] securityRolesLoggersActuator;
+
     @Autowired
     public void configureAuthenticationManager(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
@@ -51,9 +57,14 @@ public class EnableWebSecurityConfiguration {
                                                    PostAuthenticateServletFilter postAuthenticateServletFilter)
             throws Exception {
 
+        if (securityRolesLoggersActuator.length == 0) {
+            securityRolesLoggersActuator = new String[] {"TENANT_MANAGEMENT_ADMIN"};
+        }
+
         http
                 .authorizeRequests(authorize -> authorize
                         .antMatchers("/metadata", "/health", "/prometheus", "/metrics", "/version").permitAll()
+                        .antMatchers(HttpMethod.POST, "/loggers/*", "/loggers").hasAnyRole(securityRolesLoggersActuator)
                         .anyRequest().fullyAuthenticated()
                 )
                 .httpBasic(withDefaults())

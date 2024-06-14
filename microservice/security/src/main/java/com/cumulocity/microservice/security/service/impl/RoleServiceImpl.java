@@ -35,7 +35,7 @@ public class RoleServiceImpl implements RoleService {
         final List<String> result = Lists.newArrayList();
         try {
             final CurrentUserRepresentation currrentUser = userApi.getCurrentUser();
-    
+
             final List<RoleRepresentation> effectiveRoles = currrentUser.getEffectiveRoles();
             if (effectiveRoles != null && !effectiveRoles.isEmpty()) {
                 for (final Object roleObject : effectiveRoles) {
