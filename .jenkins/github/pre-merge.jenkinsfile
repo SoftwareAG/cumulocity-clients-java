@@ -187,9 +187,7 @@ def agents_verify() {
   container('default') {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       withEnv([
-          "VERSION=${VERSIONS.revision}",
-          "CHANGE_VERSION=.${VERSIONS.changeList}",
-          "MAVEN_ARGS=--define c8y.clients.version=${VERSIONS.current}"
+          "MAVEN_ARGS=--define cumulocity-agents.version=${VERSIONS.current} --define c8y.clients.version=${VERSIONS.current}"
       ]) {
         lock(resource: LOCKS.agents) {
           stage('agents checkout') {
