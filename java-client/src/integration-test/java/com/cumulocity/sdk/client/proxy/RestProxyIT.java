@@ -1,16 +1,26 @@
 package com.cumulocity.sdk.client.proxy;
 
+import com.cumulocity.rest.representation.builder.ManagedObjectRepresentationBuilder;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.SDKException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.function.Function;
 
+import static com.cumulocity.rest.representation.builder.RestRepresentationObjectMother.anMoRepresentationLike;
+import static com.cumulocity.rest.representation.builder.SampleManagedObjectRepresentation.MO_REPRESENTATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class RestProxyIT extends BaseProxyIT {
+
+    @BeforeEach
+    public void setup() {
+        ManagedObjectRepresentation rep = aSampleMo().build();
+        platform.getInventoryApi().create(rep);
+    }
 
     @Test
     public void shouldSendRequestThroughNotAuthenticatedProxy() {
@@ -64,5 +74,9 @@ public class RestProxyIT extends BaseProxyIT {
                     }
                 })
                 .isEqualTo(407);
+    }
+
+    private static ManagedObjectRepresentationBuilder aSampleMo() {
+        return anMoRepresentationLike(MO_REPRESENTATION);
     }
 }
