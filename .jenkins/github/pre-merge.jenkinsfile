@@ -187,7 +187,9 @@ def agents_verify() {
   container('default') {
     withCredentials([file(credentialsId: 'maven-settings', variable: 'MVN_SETTINGS')]) {
       withEnv([
-          "MAVEN_ARGS=--define cumulocity-agents.version=${VERSIONS.current} --define c8y.clients.version=${VERSIONS.current}"
+          "VERSION=${VERSIONS.revision}",
+          "CHANGE_VERSION=.${VERSIONS.changeList}",
+          "MAVEN_CLI_ARGS=--define c8y.clients.version=${VERSIONS.current}"
       ]) {
         lock(resource: LOCKS.agents) {
           stage('agents checkout') {
@@ -252,7 +254,7 @@ def examples_verify() {
       withEnv([
           "VERSION=${VERSIONS.revision}",
           "CHANGE_VERSION=.${VERSIONS.changeList}",
-          "MAVEN_ARGS=--define c8y.version=${VERSIONS.current}"
+          "MAVEN_CLI_ARGS=--define c8y.version=${VERSIONS.current}"
       ]) {
         stage('examples checkout') {
           try {
@@ -370,7 +372,7 @@ def core_functional_java(instance) {
           string(name: 'TEST_DOMAIN', value: instance.domain),
           string(name: 'AUTH_SCHEME', value: 'basic'),
           string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com/pre-merge/${VERSIONS.current}"),
-          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current} -Dkubernetes.namespace=${namespace}.svc.cluster.local -Denterprise.domain.licence=${generateLicence(instance.enterpriseDomain)} -Denterprise.domain=${instance.enterpriseDomain} -Dsecond.enterprise.domain=${instance.secondEnterpriseDomain}"),
+          string(name: 'MAVEN_CLI_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current} -Dkubernetes.namespace=${namespace}.svc.cluster.local -Denterprise.domain.licence=${generateLicence(instance.enterpriseDomain)} -Denterprise.domain=${instance.enterpriseDomain} -Dsecond.enterprise.domain=${instance.secondEnterpriseDomain}"),
       ], wait: true, propagate: false
 
       if (job.result != 'SUCCESS') {
@@ -388,7 +390,7 @@ def sdk_functional(instance) {
       job = build job: 'Functional/java-sdk', parameters: [
           string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
           string(name: 'TEST_DOMAIN', value: instance.domain),
-          string(name: 'MAVEN_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
+          string(name: 'MAVEN_CLI_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
       ], wait: true, propagate: false
 
       if (job.result != 'SUCCESS') {
@@ -409,7 +411,7 @@ def core_functional_token(instance) {
           string(name: 'TEST_DOMAIN', value: instance.domain),
           string(name: 'AUTH_SCHEME', value: 'oauth-internal-all'),
           string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com/pre-merge/${VERSIONS.current}"),
-          string(name: 'MAVEN_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current}"),
+          string(name: 'MAVEN_CLI_ARGS', value: "-Dc8y.clients.version=${VERSIONS.current} -Dresources.common.version=${VERSIONS.current} -Dresources.sag.version=${VERSIONS.current} -Dresources.example.version=${VERSIONS.current}"),
       ], wait: true, propagate: false
 
       if (job.result != 'SUCCESS') {

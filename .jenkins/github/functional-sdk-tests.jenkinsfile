@@ -45,7 +45,7 @@ pipeline {
   parameters {
     string(name: 'TEST_BRANCH', defaultValue: 'develop', description: 'tests branch/revision to checkout; for comma separated list checks out first existing one')
     string(name: 'TEST_DOMAIN', defaultValue: 'smoke.dev.c8y.io', description: 'FQDN of the test environment')
-    string(name: 'MAVEN_ARGS', defaultValue: '', description: 'optional additional Maven build arguments')
+    string(name: 'MAVEN_CLI_ARGS', defaultValue: '', description: 'optional additional Maven build arguments')
   }
 
   stages {
