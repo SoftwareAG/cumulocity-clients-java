@@ -374,7 +374,7 @@ def cucumber_java(instance) {
               string(name: 'TEST_TAGS', value: params.java_test_tags),
               string(name: 'TEST_DOMAIN', value: instance.domain),
               string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com"),
-              string(name: 'MAVEN_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'MAVEN_CLI_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
@@ -397,7 +397,7 @@ def sdk_tests(instance) {
         job = build job: 'Functional/java-sdk', parameters: [
             string(name: 'TEST_BRANCH', value: "${env.CHANGE_BRANCH},${env.CHANGE_TARGET}"),
             string(name: 'TEST_DOMAIN', value: instance.domain),
-            string(name: 'MAVEN_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
+            string(name: 'MAVEN_CLI_ARGS', value: "-Drevision=${VERSIONS.revision} -Dchangelist=.${VERSIONS.changeList}"),
         ], wait: true, propagate: false
 
         if (job.result != 'SUCCESS') {
@@ -427,7 +427,7 @@ def java_token_tests(instance) {
               string(name: 'TEST_DOMAIN', value: instance.domain),
               string(name: 'AUTH_SCHEME', value: 'oauth-internal-all'),
               string(name: 'RESOURCES_SERVER', value: "staging-resources.cumulocity.com"),
-              string(name: 'MAVEN_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
+              string(name: 'MAVEN_CLI_ARGS', value: "-Dresources.example.version=${VERSIONS.release} -Dresources.common.version=${VERSIONS.release} -Dresources.sag.version=${VERSIONS.release}"),
           ], wait: true, propagate: false
 
           if (job.result != 'SUCCESS') {
