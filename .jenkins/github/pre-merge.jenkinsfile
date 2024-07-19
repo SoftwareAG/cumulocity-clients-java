@@ -33,7 +33,7 @@ podTemplate(containers: [
         workingDir: '/home/jenkins/agent'
     ),
     containerTemplate(
-        name: 'dind-daemon',
+        name: 'docker',
         image: 'registry.stage.c8y.io/ci/docker:19.03-dind',
         command: 'dockerd-entrypoint.sh',
         args: '',
@@ -58,6 +58,12 @@ podTemplate(containers: [
         resourceRequestMemory: '1024Mi',
         resourceLimitCpu: '2',
         resourceLimitMemory: '1024Mi',
+    ),
+    containerTemplate(
+        name: 'helm',
+        image: 'registry.stage.c8y.io/ci/c8y-helm-charts:latest',
+        ttyEnabled: true,
+        command: 'cat'
     )
 ], imagePullSecrets: ['ci-registry-pull']) {
 
@@ -133,7 +139,7 @@ def calculate_versions() {
                 script: '.jenkins/scripts/mvn.sh -f . -N -Dexec.executable=\'echo\' -Dexec.args=\'${revision}\' exec:exec -q'
             ).trim()
             VERSIONS.current = "${VERSIONS.revision}.${VERSIONS.changeList}"
-            VERSIONS.currentRpm = "${VERSIONS.current}-1"
+            VERSIONS.currentSem = "${VERSIONS.revision}-${VERSIONS.changeList}"
             releaseLine = pipelineReleaseLineForBranch(env.CHANGE_TARGET)
             VERSIONS.core = GetVersionFromSourceBranch('cumulocity', releaseLine + '/Staging-Ready')
             echo "Building SDK version ${VERSIONS.current} on top of Core version ${VERSIONS.core}"
@@ -219,14 +225,41 @@ def agents_verify() {
             stage('agents publish') {
               try {
                 withResourcesServer {
-                  sh "ssh ${SSH_OPTIONS} ${RESOURCES_SERVER} 'mkdir -p ${RESOURCES_PATH}/yum'"
-                  sh "find . -ipath '*/target/*' -iname '*.rpm' -print -exec scp {} ${RESOURCES_SERVER}:${RESOURCES_PATH}/yum/ \\;"
-
                   sh "ssh ${SSH_OPTIONS} ${RESOURCES_SERVER} 'mkdir -p ${RESOURCES_PATH}/kubernetes-images'"
                   sh "find . -ipath '*/target/*' -iname '*.zip' -print -exec scp {} ${RESOURCES_SERVER}:${RESOURCES_PATH}/kubernetes-images/ \\;"
                 }
               } catch (e) {
                 stopPipeline('Publish agents', e)
+              }
+            }
+
+            stage('agents docker image') {
+              container('docker') {
+                withDockerRegistry(url:'http://registry.stage.c8y.io/testing',credentialsId:'registry_stage_robot_escaped') {
+                  try {
+                    sh """
+                      docker tag ssl-management-agent-server:latest registry.stage.c8y.io/testing/ssl-management-agent-server:${VERSIONS.currentSem}
+                      docker push registry.stage.c8y.io/testing/ssl-management-agent-server:${VERSIONS.currentSem}
+                    """
+                  } catch (e) {
+                    stopPipeline('Publish agent artifacts', e)
+                  }
+                }
+              }
+            }
+
+            stage('helm chart push') {
+              container('helm') {
+                dir('ssl-management-agent/server/helm') {
+                  withCredentials([usernamePassword(credentialsId: 'stage-chartmuseum', passwordVariable: 'HELM_PASSWORD', usernameVariable: 'HELM_USERNAME')]) {
+                    sh "sed -i 's/^version.*/version: ${VERSIONS.currentSem}/g' Chart.yaml"
+                    sh "sed -i 's/^appVersion.*/appVersion: ${VERSIONS.currentSem}/g' Chart.yaml"
+
+                    sh "helm package ."
+                    sh "helm repo add --username=${HELM_USERNAME} --password=${HELM_PASSWORD} ssl-management https://registry.stage.c8y.io/chartrepo/testing"
+                    sh "helm push ssl-management-${VERSIONS.currentSem}.tgz ssl-management"
+                  }
+                }
               }
             }
           }
@@ -338,22 +371,30 @@ def update_instance(instance) {
 
       dir('cumulocity-chef/smoke') {
         try {
-          sh """#!/bin/bash
-            set -eux
+          withCredentials([usernamePassword(credentialsId: 'stage-chartmuseum', passwordVariable: 'HELM_PASSWORD', usernameVariable: 'HELM_USERNAME')]) {
+            sh """#!/bin/bash
+              set -eux
 
-            chmod 600 ../.chef/keys/chef_cumulocity.pem
+              chmod 600 ../.chef/keys/chef_cumulocity.pem
 
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 \
-              -i ${instance.name}-internal.dev.c8y.io, \
-              --user rocky \
-              --private-key ../.chef/keys/chef_cumulocity.pem \
-              --skip-tags 'update-core,layeredproducts' \
-              -e 'env_name=${instance.name}-dev-c8y-io' \
-              -e 'agents_version=${VERSIONS.currentRpm}' \
-              -e 'microservices_version=${VERSIONS.current}' \
-              -e 'pr_number=${VERSIONS.current}' \
-              pre-merge-deploy.yaml
-          """
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -v -T 300 \
+                -i ${instance.name}-internal.dev.c8y.io, \
+                --user rocky \
+                --private-key ../.chef/keys/chef_cumulocity.pem \
+                --skip-tags 'update-core,layeredproducts' \
+                -e 'env_name=${instance.name}-dev-c8y-io' \
+                -e 'pr_number=${VERSIONS.current}' \
+                -e 'microservices_version=${VERSIONS.current}' \
+                -e 'lp_microservices_version=${VERSIONS.current}' \
+                -e 'helm_charts=ssl-management-agent' \
+                -e 'containerized_ontoplb=true' \
+                -e 'sslmanagement_chart_repo=testing' \
+                -e 'ssl_management_version=${VERSIONS.currentSem}' \
+                -e 'registry_user=${HELM_USERNAME}' \
+                -e 'registry_password=${HELM_PASSWORD}' \
+                pre-merge-deploy.yaml
+            """
+          }
         } catch (e) {
           stopPipeline('Update instance', e)
         }
