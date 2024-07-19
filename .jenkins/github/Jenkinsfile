@@ -9,7 +9,7 @@ pipeline {
         quietPeriod(15)
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 20, unit: 'MINUTES')
+        timeout(time: 1, unit: 'HOURS')
     }
     triggers {
         githubPush()
