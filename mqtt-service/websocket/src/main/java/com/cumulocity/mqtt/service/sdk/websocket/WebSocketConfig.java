@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 class WebSocketConfig {
 
-    private static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 2000;
+    private static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = 30000;
 
     private String baseUrl;
     private TokenApi tokenApi;
