@@ -65,15 +65,25 @@ public class JwtTokenAuthentication implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return currentUserRepresentation != null ? currentUserRepresentation.getUserName() : null;
+        return getUserName();
     }
 
     @Override
     public String getName() {
+        final String tenantName = getTenantName();
+        final String userName = getUserName();
+        if (userName != null && tenantName != null) {
+            return tenantName + "/" + userName;
+        } else {
+            return userName;
+        }
+    }
+
+    private String getUserName() {
         return currentUserRepresentation != null ? currentUserRepresentation.getUserName() : null;
     }
 
-    String getTenantName(){
+    String getTenantName() {
         return userCredentials == null ? null : userCredentials.getTenant();
     }
 }
