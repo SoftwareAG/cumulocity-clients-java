@@ -13,7 +13,7 @@ pipeline {
           - name: "ci-registry-pull"
           containers:
           - name: "java"
-            image: "registry.stage.c8y.io/ci/jdk:11"
+            image: "registry.stage.c8y.io/ci/jdk:17"
             command: ["/bin/sh"]
             args: ["-c", "cat"]
             tty: true

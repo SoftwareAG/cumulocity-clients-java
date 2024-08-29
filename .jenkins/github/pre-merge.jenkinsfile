@@ -17,7 +17,7 @@ ERROR_COUNT = 0
 podTemplate(containers: [
     containerTemplate(
         name: 'default',
-        image: 'registry.stage.c8y.io/ci/jdk:11',
+        image: 'registry.stage.c8y.io/ci/jdk:17',
         ttyEnabled: true,
         command: '/bin/sh -c',
         args: "cat",
