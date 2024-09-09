@@ -417,11 +417,6 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>com.nsn.cumulocity.dependencies</groupId>
-                    <artifactId>3rd-license-maven-plugin</artifactId>
-                    <version>${cumulocity-dependencies-tools.version}</version>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
